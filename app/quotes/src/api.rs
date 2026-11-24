@@ -79,7 +79,8 @@ pub use crate::capability_match::{
 pub use crate::card_notices::{
     CardNotice, QUOTE_HOURS, card_payload, job_page_prefix, queue_card_notice, sent_count,
 };
-pub use crate::card_pool::{CardPool, card_pool, card_pool_at};
+pub use crate::card_pool::{CardPool, card_pool, card_pool_at, pair_coverage, pair_pool_at};
+pub use crate::carded_job::{QuoteStanding, carded_job, carded_job_id, quote_standing};
 pub use crate::cards::{CardParts, DEFAULT_MIN_WORDS, Danger, JobCard, Place, Timing, build_card};
 pub use crate::count_update::COUNT_UPDATE_KIND;
 pub use crate::edit_withdraw::{Saved, Withdrawal, save_quote, withdraw_quote};

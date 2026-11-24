@@ -1,0 +1,30 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT step_up_at FROM businesses.team_member WHERE id = $1 AND business_id = $2 AND removed_at IS NULL AND step_up_session = $3",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "step_up_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "businesses.team_member",
+            "name": "step_up_at"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "99cec541f20f353f610861069e11fbd9294699d2ebcbe91edf7aa956154e4ddf"
+}

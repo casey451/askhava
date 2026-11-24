@@ -179,8 +179,13 @@ fn skip_reason(block: &Block) -> Option<&'static str> {
 
 /// The home page's text content as the page renders with no database.
 fn home_text() -> String {
-    let html = home_page(&SitePages::default(), false, None, "fake-token".to_owned())
-        .expect("home page renders");
+    let html = home_page(
+        &SitePages::default(),
+        false,
+        None,
+        (None, "fake-token".to_owned()),
+    )
+    .expect("home page renders");
     page_text(&html)
 }
 

@@ -8,26 +8,28 @@
 //! server-rendered page with the chat so far above it (A11Y-035): the job, then the mobile number,
 //! then the Verify code. Each form carries a fresh message ID that T103's `chat_message` keeps as
 //! the PRIV-008 message ID, so a retried `POST` stores nothing twice (D-3189). The typed words are
-//! scrubbed by the composition's [`Scrub`] (`privacy::api::scrub`, which `site` may not call) before
-//! anything reads them. The typed number goes back only in
-//! the code form's hidden field on this `no-store` page; it is never logged, stored here or put in
-//! a URL (D-4044). The code step is the composition's [`ChatKeys`] (T103's `send_code` and
+//! scrubbed by the composition before anything reads them: with keys by [`ChatKeys::read`] (after
+//! the code with her vault name and stated names, T649, D-4294), else by [`Scrub`]
+//! (`privacy::api::scrub`, which `site` may not call); after the code her raw words go only to
+//! [`ChatKeys::turn`], so her name-and-address answer reaches the vault (INT-027). The typed number goes back
+//! only into this `no-store` page, in the code form's hidden field (D-4044) and, after a refused number, in its field; it is never logged, stored here or put in a URL.
+//! A refusing notice is a focused error summary first in `main` linking to the field, and a refused message step refills her words (A11Y-030, T656). The code step is the composition's [`ChatKeys`] (T103's `send_code` and
 //! `check_code` over the vault and Verify, D-963, D-3144); without it (dev and `Ci`) the code step sends and stores nothing and
 //! says codes can't be sent right now, answering 200 (D-3744). A new request SEC-014's limit
-//! refuses opens nothing and the page says to try again later. The cross-site and CSRF checks are `server`'s layer, which hands the page its token as [`ChatCsrf`] (D-3882); [`carry`] takes the home request box's post (T593).
+//! refuses opens nothing and the page says to try again later. The cross-site and CSRF checks are `server`'s layer, which hands the page its token as [`ChatCsrf`] (D-3882) and a `POST` its client IP as [`ChatClientIp`] (SEC-040, D-4292); [`carry`] takes the home request box's post (T593).
 
 use std::future::Future;
-use std::net::{IpAddr, SocketAddr};
+use std::net::IpAddr;
 use std::sync::Arc;
 
 use askama::Template;
 use askhava_core::api::Environment;
 use askhava_intake::api::rules::{Settings as IntakeSettings, language_from_code};
 use askhava_intake::api::{
-    ChatAnswer, ChatError, ChatIn, ChatSettings, Checked, chat_message, start_chat,
+    ChatAnswer, ChatError, ChatIn, ChatSettings, Checked, chat_message, chat_opt_out, start_chat,
     web_chat_consent_text,
 };
-use axum::extract::{ConnectInfo, Query, State};
+use axum::extract::{Query, State};
 use axum::http::StatusCode;
 use axum::response::{Html, IntoResponse, Response};
 use axum::routing::get;
@@ -35,7 +37,7 @@ use axum::{Extension, Form, Router};
 use jiff::Timestamp;
 use rand::TryRng;
 use rand::rngs::SysRng;
-use secrecy::SecretString;
+use secrecy::{ExposeSecret, SecretString};
 use serde::Deserialize;
 use sqlx::PgPool;
 use sqlx::postgres::PgConnection;
@@ -55,8 +57,26 @@ const MAX_SAID: usize = 20;
 #[derive(Clone)]
 pub struct ChatCsrf(pub String);
 
-/// AI-002, PRIV-001: the composition's scrubber (`privacy::api::scrub` with no vault name).
+/// SEC-014, SEC-040, D-4292: the client IP `server`'s chat layer read with
+/// `portals::api::security_event_client` (the edge's header, never the socket peer), put in a
+/// `POST`'s extensions only when it is not unspecified; [`post`] keys intake's new-request limit
+/// on it, and without it the limit gets no IP. No `Debug`, so it cannot reach a log (R6).
+#[derive(Clone, Copy)]
+pub struct ChatClientIp(pub IpAddr);
+
+/// AI-002, PRIV-001: the composition's scrubber (`privacy::api::scrub` with no vault name), used
+/// when there are no [`ChatKeys`] (dev and `Ci`: no session passes the code).
 pub type Scrub = fn(&str) -> String;
+
+/// AI-003, AI-020, D-2088, D-4294: one chat message as [`ChatKeys::read`] scrubbed it, and
+/// whether its turn goes on (`false` after a vault error that fell back to the empty-context
+/// scrub: only the opt-out check runs).
+pub struct ChatRead {
+    /// The scrubbed words, never the raw text.
+    pub words: String,
+    /// Whether the turn goes on to intake.
+    pub go_on: bool,
+}
 
 /// D-963, D-3144, D-3744: the code step, implemented by `server` over T103's `send_code` and
 /// `check_code` with the vault, Verify and `ASKHAVA_ID_SECRET`. A full number is never logged.
@@ -79,6 +99,25 @@ pub trait ChatKeys: Send + Sync + 'static {
         typed: (&SecretString, &str),
         at: (ChatSettings, Timestamp),
     ) -> impl Future<Output = Result<Checked, ChatError>> + Send;
+    /// AI-003, AI-020, D-2088, D-4294: `raw` scrubbed for the session of `key`: after the code
+    /// with her vault name and stated names (`privacy::api::read_inbound_for`), before it with
+    /// none. A vault database or audit error is an error (nothing kept); any other vault error
+    /// gives the empty-context scrub with `go_on` false.
+    fn read(
+        &self,
+        db: &mut PgConnection,
+        key: &SecretString,
+        raw: &SecretString,
+    ) -> impl Future<Output = Result<ChatRead, ChatError>> + Send;
+    /// INT-027, D-4294: intake's chat turn (`chat_raw_message`) with `raw`, the vault and the
+    /// LIST's public names; `raw` is never logged, stored or shown back.
+    fn turn(
+        &self,
+        db: &mut PgConnection,
+        key: &SecretString,
+        said: (&ChatIn<'_>, &SecretString),
+        intake: IntakeSettings,
+    ) -> impl Future<Output = Result<ChatAnswer, ChatError>> + Send;
 }
 
 /// The one question a page asks (A11Y-035).
@@ -89,27 +128,27 @@ enum Ask {
     Code,
 }
 
-/// A line the page shows above the form, and whether it is an error.
+/// A line the page shows, and whether it is an error: a focused summary first in `main` (A11Y-030).
 type Notice = (&'static str, bool);
 
 const NO_CODES: Notice = (
     "We can't send codes right now. Please try again later.",
-    false,
+    true,
 );
 const EMPTY: Notice = ("Please tell us about the job first, then press Send.", true);
 const BAD_NUMBER: Notice = ("Please enter a US cell number, like 928-555-0100.", true);
 const OPTED_OUT: Notice = (
     "That number has opted out of our texts. Text START to us from that phone, then try again.",
-    false,
+    true,
 );
 const WRONG_CODE: Notice = (
     "That code doesn't match. Check the text and try again.",
     true,
 );
-const TOO_MANY: Notice = ("Too many tries. Please wait a bit and try again.", false);
+const TOO_MANY: Notice = ("Too many tries. Please wait a bit and try again.", true);
 const TRY_LATER: Notice = (
     "We can't take new requests right now. Please try again later.",
-    false,
+    true,
 );
 const OPEN: Notice = (
     "Thanks, we've got your request. We just sent you a text.",
@@ -277,7 +316,7 @@ async fn page<C: ChatKeys>(
         said: Vec::new(),
         number: String::new(),
     };
-    chat.answer(turn, Ask::Message, None).await
+    chat.render(turn, (Ask::Message, None), String::new()).await
 }
 
 /// `POST` [`REQUEST_PATH`]: one turn of the chat; a form with no session key or message ID is a
@@ -285,7 +324,7 @@ async fn page<C: ChatKeys>(
 async fn post<C: ChatKeys>(
     State(chat): State<Chat<C>>,
     csrf: Option<Extension<ChatCsrf>>,
-    client: Option<Extension<ConnectInfo<SocketAddr>>>,
+    client: Option<Extension<ChatClientIp>>,
     Form(form): Form<Posted>,
 ) -> Response {
     let turn = Turn::posted(&form, token(csrf));
@@ -293,21 +332,34 @@ async fn post<C: ChatKeys>(
     let (Some(mut turn), Ok(id)) = (turn, id) else {
         return StatusCode::BAD_REQUEST.into_response();
     };
-    let ip = client.map(|Extension(ConnectInfo(a))| a.ip());
-    let Ok(mut db) = chat.pool.acquire().await else {
-        return chat.answer(turn, Ask::Message, Some(FAILED)).await;
+    let ip = client.map(|Extension(ChatClientIp(ip))| ip);
+    let (ask, notice) = match chat.pool.acquire().await {
+        Ok(mut db) => chat.turned(&mut db, &mut turn, &form, (id, ip)).await,
+        Err(_) => (Ask::Message, Some(FAILED)),
     };
-    let db = &mut *db;
-    let step = match form.step.as_str() {
-        "number" => chat.number(db, &mut turn).await,
-        "code" => chat.code(db, &turn, &form.code, ip).await,
-        _ => chat.message(db, &mut turn, id, &form.words).await,
-    };
-    let (ask, notice) = step.unwrap_or_else(|error| {
-        tracing::warn!(%error, "web-chat turn failed");
-        (Ask::Message, Some(FAILED))
-    });
-    chat.answer(turn, ask, notice).await
+    let words = refill(&form, ask, notice);
+    chat.render(turn, (ask, notice), words).await
+}
+
+/// A11Y-030 (T656): her words back in the chat box after a refused or failed message step, cut
+/// to [`WORDS_MAX_CHARS`]; only escaped into this page, never stored, logged or added to `said`.
+fn refill(form: &Posted, ask: Ask, notice: Option<Notice>) -> String {
+    let message_step = !matches!(form.step.as_str(), "number" | "code");
+    if message_step && ask == Ask::Message && notice.is_some_and(|n| n.1) {
+        form.words.chars().take(WORDS_MAX_CHARS).collect()
+    } else {
+        String::new()
+    }
+}
+
+/// A11Y-030, D-4044: whether the page keeps the typed number: in the code form's hidden field,
+/// or in the number field after a refused number; any other page drops it.
+fn keeps_number(ask: Ask, notice: Option<Notice>) -> bool {
+    match ask {
+        Ask::Code => true,
+        Ask::Number => notice.is_some_and(|n| n.1),
+        Ask::Message => false,
+    }
 }
 
 /// AI-021, A11Y-035, T593: the most characters the chat box takes (its `maxlength`, and the home
@@ -320,7 +372,7 @@ pub const WORDS_MAX_CHARS: usize = 1000;
 async fn carry<C: ChatKeys>(
     State(chat): State<Chat<C>>,
     csrf: Option<Extension<ChatCsrf>>,
-    client: Option<Extension<ConnectInfo<SocketAddr>>>,
+    client: Option<Extension<ChatClientIp>>,
     Form(form): Form<Posted>,
 ) -> Response {
     if form.chat.is_empty() && form.step.is_empty() {
@@ -332,13 +384,42 @@ async fn carry<C: ChatKeys>(
 type Step = Result<(Ask, Option<Notice>), ChatError>;
 
 impl<C: ChatKeys> Chat<C> {
-    /// INT-002, PRIV-008: her scrubbed words as T103's chat message under message ID `id`.
+    /// One turn for the posted form's step; a failed step asks for the job again with
+    /// [`FAILED`].
+    async fn turned(
+        &self,
+        db: &mut PgConnection,
+        turn: &mut Turn,
+        form: &Posted,
+        (id, ip): (Uuid, Option<IpAddr>),
+    ) -> (Ask, Option<Notice>) {
+        let step = match form.step.as_str() {
+            "number" => self.number(db, turn).await,
+            "code" => self.code(db, turn, &form.code, ip).await,
+            _ => self.message(db, turn, id, &form.words).await,
+        };
+        step.unwrap_or_else(|error| {
+            tracing::warn!(%error, "web-chat turn failed");
+            (Ask::Message, Some(FAILED))
+        })
+    }
+
+    /// INT-002, PRIV-008, AI-003, D-4294: her words, scrubbed by the keys' [`ChatKeys::read`]
+    /// (with no keys by [`Scrub`]), as T103's chat message under message ID `id`.
     async fn message(&self, db: &mut PgConnection, turn: &mut Turn, id: Uuid, raw: &str) -> Step {
-        let words = (self.scrub)(raw);
+        let (key, now) = (turn.key(), Timestamp::now());
+        let raw = SecretString::from(raw.to_owned());
+        let read = match &self.keys {
+            Some(keys) => keys.read(db, &key, &raw).await?,
+            None => ChatRead {
+                words: (self.scrub)(raw.expose_secret()),
+                go_on: true,
+            },
+        };
+        let words = read.words;
         if words.trim().is_empty() {
             return Ok((Ask::Message, Some(EMPTY)));
         }
-        let (key, now) = (turn.key(), Timestamp::now());
         start_chat(
             db,
             &key,
@@ -352,25 +433,47 @@ impl<C: ChatKeys> Chat<C> {
             words: &words,
             received_at: now,
         };
-        // Without keys no session passes the code, so the text path never reads this secret.
-        let secret = self.keys.as_ref().map(|k| k.secret().clone());
-        let secret = secret.unwrap_or_else(|| SecretString::from(String::new()));
-        Ok(
-            match chat_message(db, &secret, &key, &msg, self.intake).await? {
-                ChatAnswer::Shown(_, text) => {
-                    turn.add(true, &text);
-                    (Ask::Message, None)
-                }
-                ChatAnswer::AskNumber => (Ask::Number, None),
-                ChatAnswer::Texted(_) => (Ask::Message, Some(TEXTED)),
-            },
-        )
+        let Some(answer) = self.said(db, &key, (&msg, &raw), read.go_on).await? else {
+            return Ok((Ask::Message, Some(FAILED)));
+        };
+        Ok(match answer {
+            ChatAnswer::Shown(_, text) => {
+                turn.add(true, &text);
+                (Ask::Message, None)
+            }
+            ChatAnswer::AskNumber => (Ask::Number, None),
+            ChatAnswer::Texted(_) | ChatAnswer::Replied(_) => (Ask::Message, Some(TEXTED)),
+        })
     }
 
-    /// CON-025, D-3744: the typed number gets a Verify code; without keys nothing is sent or
-    /// stored.
+    /// The message's turn in intake: through the keys with the raw words (D-4294); after a vault
+    /// read that fell back (`go_on` false) only the opt-out check, `None` when it took nothing
+    /// (D-2088); with no keys T103's `chat_message`.
+    async fn said(
+        &self,
+        db: &mut PgConnection,
+        key: &SecretString,
+        (msg, raw): (&ChatIn<'_>, &SecretString),
+        go_on: bool,
+    ) -> Result<Option<ChatAnswer>, ChatError> {
+        match &self.keys {
+            Some(keys) if go_on => keys.turn(db, key, (msg, raw), self.intake).await.map(Some),
+            Some(_) => chat_opt_out(db, key, msg).await,
+            None => {
+                // Without keys no session passes the code, so the text path never reads it.
+                let secret = SecretString::from(String::new());
+                chat_message(db, &secret, key, msg, self.intake)
+                    .await
+                    .map(Some)
+            }
+        }
+    }
+
+    /// CON-025, D-3744: the typed number gets a Verify code; without keys nothing is sent,
+    /// stored or shown back.
     async fn number(&self, db: &mut PgConnection, turn: &mut Turn) -> Step {
         let Some(keys) = &self.keys else {
+            turn.number.clear();
             return Ok((Ask::Number, Some(NO_CODES)));
         };
         let number = SecretString::from(turn.number.clone());
@@ -427,19 +530,15 @@ impl<C: ChatKeys> Chat<C> {
         self.render(turn, (Ask::Message, None), words).await
     }
 
-    /// The page for `turn` asking `ask` with `notice` (WEB-014, WEB-006, AI-026, WEB-007).
-    async fn answer(&self, turn: Turn, ask: Ask, notice: Option<Notice>) -> Response {
-        self.render(turn, (ask, notice), String::new()).await
-    }
-
-    /// The page for `turn` asking `ask` with `notice`, `words` already in the chat box.
+    /// The page for `turn` asking `ask` with `notice`, `words` already in the chat box (WEB-014,
+    /// WEB-006, AI-026, WEB-007).
     async fn render(
         &self,
         mut turn: Turn,
         (ask, notice): (Ask, Option<Notice>),
         words: String,
     ) -> Response {
-        if ask != Ask::Code {
+        if !keeps_number(ask, notice) {
             turn.number.clear();
         }
         let spanish = IntakeSettings {
@@ -471,6 +570,17 @@ impl<C: ChatKeys> Chat<C> {
                 tracing::error!(%error, "request page render failed");
                 StatusCode::INTERNAL_SERVER_ERROR.into_response()
             }
+        }
+    }
+}
+
+impl RequestPage {
+    /// A11Y-030: the id of the one field this page asks for, the error summary's link target.
+    fn field(&self) -> &'static str {
+        match self.ask {
+            Ask::Message => "chat-words",
+            Ask::Number => "chat-number",
+            Ask::Code => "chat-code",
         }
     }
 }
@@ -515,7 +625,7 @@ mod tests {
 
     use askhava_core::api::Environment;
     use askhava_intake::api::rules::Settings as IntakeSettings;
-    use askhava_intake::api::{ChatError, ChatSettings, Checked};
+    use askhava_intake::api::{ChatAnswer, ChatError, ChatIn, ChatSettings, Checked};
     use axum::body::{Body, to_bytes};
     use axum::http::{Request, StatusCode, header};
     use jiff::Timestamp;
@@ -524,9 +634,12 @@ mod tests {
     use sqlx::postgres::PgConnection;
     use tower::ServiceExt;
 
+    use askama::Template;
+
     use super::{
-        Ask, ChatKeys, NO_CODES, OPEN, Scrub, TOO_MANY, TRY_LATER, WRONG_CODE, after_check,
-        chat_routes,
+        Ask, BAD_NUMBER, ChatKeys, ChatRead, EMPTY, FAILED, NO_CODES, Notice, OPEN, OPTED_OUT,
+        Posted, RequestPage, Scrub, TEXTED, TOO_MANY, TRY_LATER, Turn, WRONG_CODE, after_check,
+        chat_routes, keeps_number, refill,
     };
 
     /// AI-026's sentence, word for word (`docs/spec/ai.md:30`).
@@ -556,6 +669,23 @@ mod tests {
             _: (ChatSettings, Timestamp),
         ) -> Result<Checked, ChatError> {
             unreachable!("no code is checked without the part")
+        }
+        async fn read(
+            &self,
+            _: &mut PgConnection,
+            _: &SecretString,
+            _: &SecretString,
+        ) -> Result<ChatRead, ChatError> {
+            unreachable!("nothing is read through keys that are not given")
+        }
+        async fn turn(
+            &self,
+            _: &mut PgConnection,
+            _: &SecretString,
+            _: (&ChatIn<'_>, &SecretString),
+            _: IntakeSettings,
+        ) -> Result<ChatAnswer, ChatError> {
+            unreachable!("no turn runs through keys that are not given")
         }
     }
 
@@ -639,5 +769,115 @@ mod tests {
         assert!(open.0 == Ask::Message && open.1 == Some(OPEN));
         assert!(after_check(&Checked::Wrong) == (Ask::Code, Some(WRONG_CODE)));
         assert!(after_check(&Checked::TooManyTries) == (Ask::Number, Some(TOO_MANY)));
+    }
+
+    /// Fake words and a fake number for the refill checks.
+    const WORDS: &str = "The tap drips all night";
+    const TYPED: &str = "+19285550101";
+
+    /// The page asking `ask` with `notice`, her words and number given, rendered with no pool.
+    fn shown(ask: Ask, notice: Option<Notice>) -> String {
+        let (notice, error) = notice.unwrap_or(("", false));
+        let turn = Turn {
+            csrf: String::new(),
+            chat: "0123456789abcdef0123456789abcdef".to_owned(),
+            g: String::new(),
+            said: super::said_line("you My sink leaks").into_iter().collect(),
+            number: TYPED.to_owned(),
+        };
+        let page = RequestPage {
+            banner_shown: false,
+            ai_on: false,
+            consent_es: "es".to_owned(),
+            consent_en: "en".to_owned(),
+            turn,
+            ask,
+            notice,
+            error,
+            message: String::new(),
+            words: WORDS.to_owned(),
+        };
+        page.render().expect("page")
+    }
+
+    /// The opening tag of the element with `id` in `html`.
+    fn tag<'a>(html: &'a str, id: &str) -> &'a str {
+        let at = html.find(&format!("id=\"{id}\"")).expect("element");
+        let start = html[..at].rfind('<').expect("tag start");
+        &html[start..at + html[at..].find('>').expect("tag end")]
+    }
+
+    /// TD-A11Y-04 (A11Y-030, A11Y-035): each notice that refuses her answer or sends her back a
+    /// step is the focused error summary first in `main`, linking to the field, which carries
+    /// `aria-invalid`; the title begins "Error: "; her words or number are back, never a code.
+    #[test]
+    fn td_a11y_04_refusing_notices_are_a_focused_summary_first_in_main() {
+        let (message, number, code) = (Ask::Message, Ask::Number, Ask::Code);
+        let cases = [
+            (EMPTY, message, "chat-words"),
+            (FAILED, message, "chat-words"),
+            (TRY_LATER, message, "chat-words"),
+            (BAD_NUMBER, number, "chat-number"),
+            (OPTED_OUT, number, "chat-number"),
+            (NO_CODES, number, "chat-number"),
+            (TOO_MANY, number, "chat-number"),
+            (WRONG_CODE, code, "chat-code"),
+        ];
+        for (notice, ask, field) in cases {
+            let html = shown(ask, Some(notice));
+            assert!(html.contains("<title>Error: "), "{}", notice.0);
+            let (_, main) = html
+                .split_once("<main id=\"main\" tabindex=\"-1\">")
+                .expect("main");
+            let summary = "<div id=\"chat-notice\" role=\"alert\" tabindex=\"-1\" autofocus>";
+            assert!(main.trim_start().starts_with(summary), "{}", notice.0);
+            assert!(main.contains(&format!("<p><a href=\"#{field}\">")));
+            assert_eq!(html.matches("id=\"chat-notice\"").count(), 1);
+            let input = tag(&html, field);
+            assert!(input.contains("aria-invalid=\"true\""), "{field}");
+            assert!(input.contains(&format!("aria-describedby=\"{field}-hint chat-notice\"")));
+            let kept = match ask {
+                Ask::Message => html.contains(&format!(">{WORDS}</textarea>")),
+                Ask::Number => input.contains(&format!("value=\"{TYPED}\"")),
+                Ask::Code => !input.contains("value="),
+            };
+            assert!(kept, "{}", notice.0);
+        }
+    }
+
+    /// TD-A11Y-04 (A11Y-030): the received and texted notices stay in the status region after the
+    /// chat so far, with no "Error: ", no focus and no field marked invalid.
+    #[test]
+    fn td_a11y_04_progress_notices_stay_in_the_status_region() {
+        for notice in [OPEN, TEXTED] {
+            let html = shown(Ask::Message, Some(notice));
+            assert!(!html.contains("Error: ") && !html.contains("autofocus"));
+            let region = html
+                .find("id=\"chat-notice\" role=\"status\"")
+                .expect("status");
+            let line = html.find(&notice.0.replace('\'', "&#39;")).expect("line");
+            let h1 = html.find("<h1").expect("h1");
+            assert!(h1 < html.find("<ol>").expect("chat") && html.find("<ol>") < Some(region));
+            assert!(region < line && !html.contains("aria-invalid"));
+        }
+    }
+
+    /// A11Y-030, D-4044: the number is kept on the code step and after a refused number only;
+    /// her words come back only after a refused or failed message step.
+    #[test]
+    fn refilled_values_follow_the_step() {
+        assert!(keeps_number(Ask::Code, None) && keeps_number(Ask::Number, Some(BAD_NUMBER)));
+        assert!(!keeps_number(Ask::Number, None) && !keeps_number(Ask::Message, Some(FAILED)));
+        let form = |step: &str| Posted {
+            step: step.to_owned(),
+            words: "A".repeat(super::WORDS_MAX_CHARS + 5),
+            ..Posted::default()
+        };
+        let back = refill(&form("message"), Ask::Message, Some(EMPTY));
+        assert_eq!(back.chars().count(), super::WORDS_MAX_CHARS);
+        assert!(!refill(&form(""), Ask::Message, Some(FAILED)).is_empty());
+        assert!(refill(&form("message"), Ask::Message, Some(TEXTED)).is_empty());
+        assert!(refill(&form("message"), Ask::Number, None).is_empty());
+        assert!(refill(&form("code"), Ask::Message, Some(TRY_LATER)).is_empty());
     }
 }

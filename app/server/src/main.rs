@@ -58,6 +58,7 @@ async fn main() -> io::Result<()> {
     // Nothing is served under a key set missing a held index version (D-4418, D-4473).
     let vault = askhava_server::business_portal::vault_from_settings(&settings, std::env::vars())?;
     askhava_server::check_index_keys(&pool, vault.as_ref()).await?;
+    askhava_server::set_update_footer_from(&settings, std::env::vars())?;
     askhava_server::catalog_start::store_catalog(&pool).await?;
     let control =
         TestControl::from_settings(&settings, std::env::vars()).map_err(io::Error::other)?;
@@ -107,9 +108,10 @@ fn liveness_limit() -> io::Result<askhava_server::liveness::LivenessLimit> {
 
 /// `parts` with the served business sign-in, sign-up, portal `vault` (built and checked at start,
 /// D-4418) and Confirm settings from `settings` and the process environment (T280, T302, T300,
-/// T261), the step-up page's Verify part (T364), the homeowner sign-in's Verify part (T307), the web chat's code-step keys (T489) and the
+/// T261), the step-up page's Verify part (T364), the quote page's update keys (T729), the homeowner sign-in's Verify part (T307), the web chat's code-step keys (T489) and the
 /// site pages' settings (T102) with the business number for the business page's WEB-024 line
-/// (T769, D-4931); each errors as its own builder does, naming a key, never a value.
+/// (T769, D-4931) and the homeowner number with the Gate C launch date for the home pages' texting
+/// number (T725, WEB-017, D-4709); each errors as its own builder does, naming a key, never a value.
 fn business_parts(
     settings: &askhava_core::api::Settings,
     pool: &sqlx::PgPool,
@@ -131,10 +133,15 @@ fn business_parts(
     let chat = askhava_server::chat_codes::chat_keys(settings, std::env::vars())?;
     let homeowner = askhava_server::homeowner_portal::homeowner_verify(settings, std::env::vars())?;
     let photos = askhava_server::homeowner_portal::photo_parts(settings, std::env::vars())?;
+    let data_link = askhava_server::data_link_postal(settings, std::env::vars())?;
     let link_codes = askhava_server::action_links::confirm_link_codes(settings, std::env::vars())?;
     let press_codes = askhava_server::action_links::confirm_link_codes(settings, std::env::vars())?;
     let number = askhava_server::business_number(settings.business_number())?;
-    let pages = askhava_site::api::SitePages::from_settings(settings);
+    let env: Vec<(String, String)> = std::env::vars().collect();
+    let texting = askhava_server::homeowner_number(settings, &env)?;
+    let pages = askhava_site::api::SitePages::from_settings(settings)
+        .with_homeowner_texting(texting, settings.launch_date());
+    let quote_keys = askhava_server::quote_page_keys(settings, std::env::vars())?;
     Ok(parts
         .with_sign_in(signin)
         .with_sign_up(signup)
@@ -142,11 +149,13 @@ fn business_parts(
         .with_address_changes(address)
         .with_homeowner_verify(homeowner)
         .with_photos(photos)
+        .with_data_link_postal(data_link)
         .with_vault(vault)
         .with_business_number(number.clone())
         .with_confirm_part(confirm)
         .with_confirm_link_codes(link_codes)
         .with_confirm_codes(press_codes)
+        .with_quote_page_keys(quote_keys)
         .with_chat_codes(chat)
         .with_site_pages(pages.with_business_number(number))
         .with_environment(settings.environment())

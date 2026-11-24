@@ -37,6 +37,7 @@ pub use crate::media_fetch::{
     Taken as PhotoTaken, fetch_twilio_media, make_concept, shorter_side, take_picture_text,
     take_upload,
 };
+pub use crate::message_body::delete_job_words;
 pub use crate::message_body::{
     CUT_WORDS_KIND, ProblemWords, WORDS_KEPT_FOR, cut_problem_words, keep_problem_words,
     problem_words, run_words_cut_at, run_words_purge, schedule_words_cut,
@@ -70,6 +71,11 @@ pub use crate::scrub::{
 };
 pub use crate::scrub_context::read_inbound_for;
 pub use crate::suppression_phone::phone_for_index;
+pub use crate::update_email::{
+    UPDATE_EMAIL_BOUNCED, UPDATE_EMAIL_CONFIRMED, UPDATE_EMAIL_STORED, UpdateAddress, UpdateEmail,
+    UpdateStatus, confirm_update_address, mark_update_bounced, read_update_address,
+    store_update_address, update_status,
+};
 pub use crate::vault::{
     BASELINE_FLOOR, BASELINE_HOURS, IndexVersionsError, RATE_MULTIPLE, SHARED_AT_PICK, Vault,
     check_read_rates, find_by_phone, phone_digests, rotate_batch, settle_index_versions,

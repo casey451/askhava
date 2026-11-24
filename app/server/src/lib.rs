@@ -22,7 +22,8 @@ use askhava_intake::api::rules::Settings as IntakeSettings;
 use askhava_payments::api::{Minter, stripe_webhook_routes};
 use askhava_portals::api::{
     Answer, ApprovalSecret, ConfirmRoute, ConfirmSettings, PickCodeKeys, SecretAnswer,
-    confirm_routes_with, feedback_routes, pick_flow_routes, quote_page_routes, security_headers,
+    confirm_routes_with, feedback_routes, pick_flow_routes, quote_page_routes_with,
+    security_headers,
 };
 use askhava_privacy::api::{SessionMint, Vault};
 use axum::Router;
@@ -40,6 +41,7 @@ pub mod address_changes;
 pub mod business_contacts;
 pub mod business_guarded_changes;
 pub mod business_portal;
+pub mod business_settings_routes;
 pub mod business_signin;
 pub mod business_signup;
 pub mod business_step_up;
@@ -49,16 +51,20 @@ pub mod cant_take_route;
 pub mod catalog_start;
 pub mod chat_codes;
 pub mod checkin;
+pub mod digest_email;
 pub mod email_due;
 pub mod email_provider;
+pub mod health_watch;
 pub mod healthz;
 pub mod homeowner_portal;
 pub mod inbound_retry;
 pub mod inbound_text;
 pub mod inbound_voice;
+pub mod job_page_route;
 pub mod liveness;
 pub mod no_handler_alert;
 pub mod offdb_stream;
+pub mod owner_ai_routes;
 pub mod owner_portal;
 pub mod owner_signin;
 pub mod owner_tools;
@@ -136,6 +142,7 @@ struct SiteParts {
     environment: Environment,
     chat: Option<chat_codes::ChatParts>,
     link_codes: Option<action_links::LinkCodes>,
+    quote_keys: Option<(Vault, IdSecret)>,
 }
 
 impl Default for SiteParts {
@@ -145,6 +152,7 @@ impl Default for SiteParts {
             environment: Environment::Dev,
             chat: None,
             link_codes: None,
+            quote_keys: None,
         }
     }
 }
@@ -163,6 +171,7 @@ struct BusinessParts {
     confirm_codes: Option<askhava_portals::api::PressCodes>,
     homeowner: Option<homeowner_portal::HomeownerVerify>,
     photos: Option<homeowner_portal::PhotoParts>,
+    data_link_postal: Option<askhava_messaging::api::PostalAddress>,
     business_number: Option<askhava_messaging::api::SendingNumber>,
     report: owner_tools::SecretReport,
 }
@@ -215,6 +224,17 @@ impl RouterParts {
     #[must_use]
     pub fn with_photos(mut self, photos: Option<homeowner_portal::PhotoParts>) -> Self {
         self.business.photos = photos;
+        self
+    }
+
+    /// Adds the data-request link email's footer postal line (T804; [`data_link_postal`]);
+    /// without it a listed number's portal request gets no link and is told nothing was sent.
+    #[must_use]
+    pub fn with_data_link_postal(
+        mut self,
+        postal: Option<askhava_messaging::api::PostalAddress>,
+    ) -> Self {
+        self.business.data_link_postal = postal;
         self
     }
 
@@ -293,6 +313,15 @@ impl RouterParts {
     #[must_use]
     pub fn with_confirm_link_codes(mut self, codes: action_links::LinkCodes) -> Self {
         self.site.link_codes = Some(codes);
+        self
+    }
+
+    /// Adds the quote page's update keys (T729, TXT-018, D-5442, [`quote_page_keys`]): the vault
+    /// that seals an update address and the ID secret of its confirm link; without them the update
+    /// choice stores nothing.
+    #[must_use]
+    pub fn with_quote_page_keys(mut self, keys: Option<(Vault, IdSecret)>) -> Self {
+        self.site.quote_keys = keys;
         self
     }
 
@@ -400,16 +429,41 @@ impl ApprovalSecret for StripeApproval {
     }
 }
 
+/// The owner's sign-in ([`owner_signin`], T303), home, settings and switches ([`owner_portal`],
+/// T310, the opt-out with `vault`), help requests (`portals`' T530) and AI page
+/// ([`owner_ai_routes`], T737).
+fn owner_pages(
+    pool: &PgPool,
+    vault: Option<Arc<Vault>>,
+    webhooks: Option<&Arc<inbound_text::Webhooks>>,
+) -> Router {
+    let owner = owner_signin::routes(pool.clone())
+        .merge(owner_portal::routes(pool.clone(), vault, webhooks))
+        .merge(owner_ai_routes::routes(pool.clone()));
+    owner.merge(askhava_portals::api::owner_help_routes(
+        pool.clone(),
+        Arc::new(SystemClock),
+        Some(session_minter()),
+        webhooks.map(|hooks| hooks.id_secret.clone()),
+    ))
+}
+
 /// The served business sign-in (T280) and sign-up (T302) routes, each only when its part is given,
 /// the business portal (T300) over `pool`, always (`business_portal::served`), and the Confirm
 /// route (T261) from the Stripe hooks, with the parts' Confirm settings, else none; the "Can't
-/// take it" page and button ([`cant_take_route`], T472), always; the business step-up page
-/// ([`business_step_up`], T364), always, sending codes only with its part, and the role, removal
-/// and monthly-limit changes behind it ([`business_guarded_changes`], T565), and the notice and
+/// take it" page and button ([`cant_take_route`], T472), always; the business job page
+/// ([`job_page_route`], T666, with photo links only with the photo parts and the webhooks' ID
+/// secret), always; the business step-up page
+/// ([`business_step_up`], T364), always, sending codes only with its part, with the team page
+/// (T544, the portal's vault), and the role, removal
+/// and monthly-limit changes behind it ([`business_guarded_changes`], T565), the service-area
+/// settings, shared-inbox switch and contact card ([`business_settings_routes`], T733, the card
+/// with the voice hooks' pool numbers), and the notice and
 /// backup address changes ([`address_changes`], T542, changing only with their part), and the
 /// owner's waiting-phones page ([`phone_approval`], T397, with the portal's vault), always; and the
 /// owner's sign-in, step-up and sign-out routes ([`owner_signin`], T303) and home, settings and
-/// switches ([`owner_portal`], T310, the opt-out with the portal's vault) and refund review, audit
+/// switches ([`owner_portal`], T310, the opt-out with the portal's vault), AI page
+/// ([`owner_ai_routes`], T737) and refund review, audit
 /// log and health page ([`owner_tools`], T304, refunding only with the Stripe hooks and the
 /// Confirm settings' ID secret), always; and the
 /// homeowner portal's sign-in, home, texts-off and data routes ([`homeowner_portal`], T307,
@@ -433,32 +487,31 @@ fn business_pages(
         };
         confirm_routes_with(route, parts.confirm_codes.clone())
     });
-    let owner = owner_signin::routes(pool.clone()).merge(owner_portal::routes(
-        pool.clone(),
-        parts.vault.clone(),
-        webhooks,
-    ));
-    let owner = owner.merge(askhava_portals::api::owner_help_routes(
-        pool.clone(),
-        Arc::new(SystemClock),
-        Some(session_minter()),
-        webhooks.map(|hooks| hooks.id_secret.clone()),
-    ));
+    let owner = owner_pages(&pool, parts.vault.clone(), webhooks);
     let tools = owner_tools::routes(pool.clone(), stripe, &parts.confirm, parts.report);
     let cant_take = cant_take_route::routes(pool.clone());
-    let homeowner = homeowner_portal::routes(pool.clone(), webhooks, parts.homeowner, parts.photos);
-    let step_up = business_step_up::routes(pool.clone(), parts.step_up)
+    let links = webhooks.filter(|_| parts.photos.is_some());
+    let job_page = job_page_route::routes(pool.clone(), links.map(|hooks| &hooks.id_secret));
+    let homeowner = homeowner_portal::routes(
+        pool.clone(),
+        webhooks,
+        (parts.homeowner, parts.data_link_postal),
+        parts.photos,
+    );
+    let step_up = business_step_up::routes(pool.clone(), parts.step_up, parts.vault.clone())
         .merge(business_guarded_changes::routes(pool.clone()))
         .merge(address_changes::routes(pool.clone(), parts.address))
         .merge(phone_approval::routes(
             pool.clone(),
             parts.vault.clone(),
             webhooks,
-        ));
+        ))
+        .merge(business_settings_routes::served(pool.clone(), voice));
     let portal_parts = (parts.vault, parts.business_number);
     let portal = business_portal::served(pool, portal_parts, (webhooks, voice))
         .merge(confirm)
         .merge(cant_take)
+        .merge(job_page)
         .merge(step_up);
     (parts.signin)
         .map_or_else(Router::new, business_signin::ServedSignIn::into_router)
@@ -492,6 +545,7 @@ fn link_and_site_pages(
         environment,
         chat,
         link_codes,
+        quote_keys: _,
     } = site;
     let clock: Arc<dyn Clock> = Arc::new(SystemClock);
     let not_found = askhava_site::api::not_found(pool.clone());
@@ -569,11 +623,11 @@ pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterP
         limit,
         statics,
         business,
-        site,
+        mut site,
     } = parts.into();
     let (webhooks, voice, pick_keys, stripe) = hooks;
     let business = business_pages(business, pool.clone(), (&webhooks, &voice, &stripe));
-    let quote_page = quote_page_routes(pool.clone(), Arc::new(SystemClock));
+    let quote_page = quote_routes(&pool, &mut site);
     let pick_flow = pick_flow_routes(pool.clone(), Arc::new(SystemClock), pick_keys);
     let pages = link_and_site_pages(&pool, &statics, site, webhooks.as_deref());
     // Each 403 of these four is a source or signature refusal, recorded as a capped
@@ -695,20 +749,11 @@ fn checked_postal(line: &str) -> io::Result<askhava_messaging::api::PostalAddres
         .map_err(|_| bad_postal())
 }
 
-/// The published homeowner Terms a page pick accepts: the exact text of
-/// `docs/legal/homeowner-terms.md`, compiled in, whose second line names its version (TERMS-016).
-const HOMEOWNER_TERMS: &str = include_str!("../../../docs/legal/homeowner-terms.md");
-
-/// The version `HOMEOWNER_TERMS` names on its "Version <v>" line, or `unversioned`. `pub(crate)`
-/// so this file's own tests still find it when `tests/integration/tests/task_registry.rs` compiles
-/// the file in place (T327).
+/// The version of the published homeowner Terms (`core::api::homeowner_terms`, TERMS-016).
+/// `pub(crate)` so this file's own tests still find it when
+/// `tests/integration/tests/task_registry.rs` compiles the file in place (T327).
 pub(crate) fn terms_version() -> String {
-    HOMEOWNER_TERMS
-        .lines()
-        .find_map(|l| l.strip_prefix("Version "))
-        .and_then(|rest| rest.split_whitespace().next())
-        .unwrap_or("unversioned")
-        .to_owned()
+    askhava_core::api::homeowner_terms().0.to_owned()
 }
 
 /// The page pick's keys (T246, D-1516), built from `settings` and `pairs` as [`job_text_keys`]
@@ -741,9 +786,39 @@ where
     let client_ip = ClientIpPolicy::from_pairs(pairs.clone()).map_err(io::Error::other)?;
     let twilio = TwilioConfig::from_settings(settings, pairs).map_err(io::Error::other)?;
     let (_, _, verify) = twilio_clients(&twilio).map_err(io::Error::other)?;
-    let terms = (terms_version(), HOMEOWNER_TERMS);
+    let terms = (terms_version(), askhava_core::api::homeowner_terms().1);
     let keys = PickCodeKeys::new(verify, vault, id_secret, terms);
     Ok(Some(keys.with_client_ip(client_ip)))
+}
+
+/// The quote page's routes with the parts' update keys, taken out of `site` (T729, TXT-018).
+fn quote_routes(pool: &PgPool, site: &mut SiteParts) -> Router {
+    quote_page_routes_with(pool.clone(), Arc::new(SystemClock), site.quote_keys.take())
+}
+
+/// The quote page's update keys (T729, TXT-018, D-5340): the vault from [`vault_from`] and
+/// `ASKHAVA_ID_SECRET`, checked as the webhooks check it; `None` when either is unset (the update
+/// choice then stores nothing).
+///
+/// # Errors
+///
+/// [`vault_from`]'s, or a too-short ID secret, named, never its value.
+pub fn quote_page_keys<I>(settings: &Settings, pairs: I) -> io::Result<Option<(Vault, IdSecret)>>
+where
+    I: IntoIterator<Item = (String, String)>,
+{
+    let pairs: Vec<(String, String)> = pairs.into_iter().collect();
+    let Some(vault) = vault_from(settings, pairs.clone())? else {
+        return Ok(None);
+    };
+    let Some((_, secret)) = pairs
+        .into_iter()
+        .find(|(k, v)| k == ID_SECRET && !v.trim().is_empty())
+    else {
+        return Ok(None);
+    };
+    let secret = IdSecret::new(1, SecretString::from(secret.trim().to_owned()));
+    Ok(Some((vault, secret.map_err(io::Error::other)?)))
 }
 
 /// The vault from `VAULT_KEY` and `VAULT_INDEX_KEY` in `pairs` (D-1302, D-1306): with neither,
@@ -1282,18 +1357,17 @@ where
     if let Some(senders) = senders {
         register_notice_senders(&mut registry, senders, (Arc::clone(&clock), confirm));
     }
-    let photo_clock = Arc::clone(&clock);
     askhava_privacy::api::register_photo_deletes(
         &mut registry,
         Arc::clone(&photos),
         id_secret.clone(),
-        photo_clock,
+        Arc::clone(&clock),
     );
     register_alert_emails(&mut registry, settings, &clock, pairs.clone())?;
     register_business_handlers(&mut registry, settings, &clock, pairs.clone())?;
     register_email_due(&mut registry, settings, &clock, pairs.clone())?;
     register_paused_safety(&mut registry);
-    no_handler_alert::register(&mut registry, settings.environment(), Arc::clone(&clock));
+    register_alert_checks(&mut registry, settings, &clock, pairs.clone())?;
     watch_checks::register(&mut registry, settings, &clock)?;
     register_timer_backstop(&mut registry, Arc::clone(&clock));
     register_license_reapply(&mut registry, Arc::clone(&clock));
@@ -1322,21 +1396,24 @@ where
     askhava_recovery::api::register_restore(&mut registry, settings, Arc::clone(&clock))
         .map_err(io::Error::other)?;
     register_whos_calling(&mut registry, settings, (&id_secret, &clock), pairs.clone())?;
-    register_twilio_handlers(&mut registry, settings, (id_secret, clock, confirm), pairs)?;
+    let twilio = (id_secret, clock, confirm, photos);
+    register_twilio_handlers(&mut registry, settings, twilio, pairs)?;
     Ok(registry)
 }
 
 /// The handlers that need the Twilio settings: the inbound retry, the safety call, the two owner
-/// calls (T484), the outbox
+/// calls (T484), `intake`'s picture texts over the photo storage `photos` (T675,
+/// [`register_picture_text`]), the outbox
 /// sender (with both vault keys), the body deletes and the masked-line handlers. With no Twilio
 /// settings (dev and CI only) none is registered.
 fn register_twilio_handlers(
     registry: &mut Registry,
     settings: &Settings,
-    (id_secret, clock, confirm): (
+    (id_secret, clock, confirm, photos): (
         SecretString,
         Arc<dyn Clock>,
         askhava_picks::api::ConfirmSettings,
+        Arc<LocalStorage>,
     ),
     pairs: Vec<(String, String)>,
 ) -> io::Result<()> {
@@ -1358,6 +1435,8 @@ fn register_twilio_handlers(
     register_owner_calls(registry, settings, (&twilio, &id_secret), pairs.clone())?;
     let (sms, _, _) = twilio_clients(&twilio).map_err(io::Error::other)?;
     let sms = with_status_url(settings, sms);
+    let pictures = (photos, &id_secret, &clock);
+    register_picture_text(registry, (&twilio, sms.clone()), pictures, pairs.clone())?;
     let vaults = (
         vault_from(settings, pairs.clone())?,
         vault_from(settings, pairs.clone())?,
@@ -1375,6 +1454,96 @@ fn register_twilio_handlers(
     askhava_messaging::api::register_body_deletes(registry, sms, id_secret, scan_clock);
     let masked = (twilio.pool().clone(), clock);
     register_masked(registry, settings, masked, pairs)?;
+    Ok(())
+}
+
+/// INT-044, SEC-041, PRIV-014 (T675, D-5337, D-5459): the production
+/// `intake::api::PictureSource`: the photo storage, the seal from `VAULT_KEY` (as
+/// `homeowner_portal::PhotoParts::new` builds it), the ID secret, T794's
+/// `picture_media::TwilioPictureMedia` and the configured Twilio account SID, from which alone
+/// each media URL is rebuilt.
+struct ServerPictures {
+    storage: Arc<LocalStorage>,
+    seal: askhava_privacy::api::PhotoSeal,
+    id_secret: SecretString,
+    media: picture_media::TwilioPictureMedia,
+    account: String,
+}
+
+impl ServerPictures {
+    /// The Twilio media URL of `tail`, exactly `{message SID}/{media SID}` (D-5459); `None` for
+    /// any other shape.
+    fn url(&self, tail: &str) -> Option<String> {
+        let (message, media) = tail.split_once('/')?;
+        let sid = |s: &str| s.len() == 34 && s.bytes().all(|b| b.is_ascii_alphanumeric());
+        (sid(message) && sid(media)).then(|| {
+            format!(
+                "https://api.twilio.com/2010-04-01/Accounts/{}/Messages/{message}/Media/{media}",
+                self.account
+            )
+        })
+    }
+}
+
+impl askhava_intake::api::PictureSource for ServerPictures {
+    /// SEC-041: `privacy::api::take_picture_text` over the rebuilt URL; a tail of another shape is
+    /// refused with nothing fetched or deleted.
+    async fn take(
+        &self,
+        db: &mut sqlx::PgConnection,
+        job: Uuid,
+        url: &str,
+        (min_side, at): (u32, jiff::Timestamp),
+    ) -> Result<askhava_privacy::api::PictureText, askhava_privacy::api::PhotoError> {
+        use askhava_privacy::api::{MediaState, PhotoTaken, PictureText, take_picture_text};
+        let Some(url) = self.url(url) else {
+            let (taken, media) = (PhotoTaken::Refused, MediaState::NothingToDelete);
+            return Ok(PictureText { taken, media });
+        };
+        let keys = (&self.seal, &*self.storage, &self.id_secret);
+        take_picture_text(db, keys, &self.media, (job, &url), (min_side, at)).await
+    }
+
+    /// INT-044, SEC-018: deletes the media at Twilio, keyed on its URL.
+    async fn discard(&self, url: &str) -> bool {
+        use askhava_privacy::api::PictureTextMedia;
+        let Some(url) = self.url(url) else {
+            return false;
+        };
+        let key = askhava_adapters::api::IdempotencyKey::derive(
+            &self.id_secret,
+            "picture_text.media_discard",
+            &[&url],
+        );
+        self.media.delete_media(&key, &url).await.is_ok()
+    }
+}
+
+/// INT-044 (T675, D-5251, D-5337): `intake.picture_text` over [`ServerPictures`]; with no
+/// `VAULT_KEY` (dev and CI only) nothing is registered.
+fn register_picture_text(
+    registry: &mut Registry,
+    (twilio, sms): (&TwilioConfig, TwilioSms),
+    (photos, id_secret, clock): (Arc<LocalStorage>, &SecretString, &Arc<dyn Clock>),
+    pairs: Vec<(String, String)>,
+) -> io::Result<()> {
+    let Some(key) = vault_keys(pairs).0 else {
+        return Ok(());
+    };
+    let seal = askhava_privacy::api::PhotoSeal::new(&key).map_err(io::Error::other)?;
+    let source = ServerPictures {
+        storage: photos,
+        seal,
+        id_secret: id_secret.clone(),
+        media: picture_media::TwilioPictureMedia::new(sms),
+        account: twilio.account_sid().to_owned(),
+    };
+    let secret = id_secret.clone();
+    let keys = Arc::new(askhava_intake::api::PictureKeys { source, secret });
+    let at = Arc::clone(clock);
+    registry.register(askhava_intake::api::PICTURE_TEXT_KIND, move |pool, task| {
+        askhava_intake::api::run_picture_text_at(pool, Arc::clone(&keys), task, at.now())
+    });
     Ok(())
 }
 
@@ -2208,8 +2377,13 @@ pub fn business_number(
 }
 
 /// `ASKHAVA_HOMEOWNER_NUMBER` from `pairs` (the last one wins): `None` when unset in dev and CI,
-/// an error naming the key when unset in test and live (D-3149) or not `+1` and ten digits.
-fn homeowner_number(
+/// an error naming the key when unset in test and live (D-3149) or not `+1` and ten digits. The
+/// sender, the drill and the home pages' texting number (T725, WEB-017, D-4709) read it here.
+///
+/// # Errors
+///
+/// The missing or invalid setting, named, never its value.
+pub fn homeowner_number(
     settings: &Settings,
     pairs: &[(String, String)],
 ) -> io::Result<Option<askhava_messaging::api::SendingNumber>> {
@@ -2406,10 +2580,30 @@ fn register_business_clocked(registry: &mut Registry, clock: &Arc<dyn Clock>) {
     });
 }
 
+/// The 5-minute health check ([`health_watch`], T624, D-4280) with its `/healthz` limits from
+/// `pairs`, then the hourly dead-letter check ([`no_handler_alert`]); both raise only in test and
+/// live (OPS-004).
+///
+/// # Errors
+///
+/// A bad health-limit setting in `pairs`, named, never its value.
+fn register_alert_checks(
+    registry: &mut Registry,
+    settings: &Settings,
+    clock: &Arc<dyn Clock>,
+    pairs: Vec<(String, String)>,
+) -> io::Result<()> {
+    let limits = healthz::HealthLimits::from_pairs(pairs)?;
+    health_watch::register(registry, settings.environment(), limits, Arc::clone(clock));
+    no_handler_alert::register(registry, settings.environment(), Arc::clone(clock));
+    Ok(())
+}
+
 /// SEC-025, OPS-038, D-3750 (T470): `messaging.email_due`, always registered: with T469's
 /// provider and the vault the drain sends queued emails, its business addresses through
 /// [`email_due::NoticeAddresses`] and its coverage rows to [`OWNER_INBOX_EMAIL`]; without either
 /// (dev and CI without the Resend key) a run does nothing and queues no next run.
+/// It also registers the weekly digest check ([`digest_email::register`], T524, OPS-030).
 fn register_email_due(
     registry: &mut Registry,
     settings: &Settings,
@@ -2417,6 +2611,7 @@ fn register_email_due(
     pairs: Vec<(String, String)>,
 ) -> io::Result<()> {
     use askhava_messaging::api::{EmailDrain, register_email_due};
+    digest_email::register(registry, settings, clock, pairs.clone())?;
     let provider = email_provider::email_provider(settings, pairs.clone())?;
     let vault = vault_from(settings, pairs.clone())?.map(Arc::new);
     let inbox = pairs
@@ -2445,6 +2640,48 @@ where
     let pairs: Vec<(String, String)> = pairs.into_iter().collect();
     let provider = email_provider::email_provider(settings, pairs.clone())?;
     Ok(provider.is_some() && vault_from(settings, pairs)?.is_some())
+}
+
+/// TXT-018, SEC-028 (T730): sets the update emails' footer postal line from the email provider's
+/// settings once the provider and the vault are both set, so a homeowner who chose email gets her
+/// updates by email; otherwise they stay text. Returns whether it was set.
+///
+/// # Errors
+///
+/// A bad email provider or vault setting, named, never its value.
+pub fn set_update_footer_from<I>(settings: &Settings, pairs: I) -> io::Result<bool>
+where
+    I: IntoIterator<Item = (String, String)>,
+{
+    let postal = data_link_postal(settings, pairs)?;
+    Ok(postal.is_some_and(askhava_messaging::api::set_update_footer))
+}
+
+/// PRIV-031, SEC-028 (T804, D-5339): the footer postal line of the data-request link email, the
+/// update emails' own ([`set_update_footer_from`]'s rule); `None` while those stay text, and
+/// then a listed number's portal request gets no link.
+///
+/// # Errors
+///
+/// A bad email provider or vault setting, named, never its value.
+pub fn data_link_postal<I>(
+    settings: &Settings,
+    pairs: I,
+) -> io::Result<Option<askhava_messaging::api::PostalAddress>>
+where
+    I: IntoIterator<Item = (String, String)>,
+{
+    let pairs: Vec<(String, String)> = pairs.into_iter().collect();
+    let Some(provider) = email_provider::email_provider(settings, pairs.clone())? else {
+        return Ok(None);
+    };
+    if vault_from(settings, pairs)?.is_none() {
+        return Ok(None);
+    }
+    let (postal, kind) = provider.postal();
+    let postal =
+        askhava_messaging::api::PostalAddress::new(postal, kind).map_err(io::Error::other)?;
+    Ok(Some(postal))
 }
 
 /// An account mailer over provider `p`'s client, email key, postal line and shared daily limit,

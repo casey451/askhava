@@ -44,6 +44,7 @@ async fn main() -> io::Result<()> {
     // No task runs under a key set missing a held index version (D-4418, D-4473).
     let vault = askhava_server::business_portal::vault_from_settings(&settings, std::env::vars())?;
     askhava_server::check_index_keys(&pool, vault.as_ref()).await?;
+    askhava_server::set_update_footer_from(&settings, std::env::vars())?;
     let owner = WorkerId::new(&pool).await.map_err(io::Error::other)?;
     let control =
         TestControl::from_settings(&settings, std::env::vars()).map_err(io::Error::other)?;
@@ -102,13 +103,28 @@ async fn schedule_messaging(conn: &mut sqlx::PgConnection, now: jiff::Timestamp)
         .map_err(io::Error::other)
 }
 
+/// The two alert checks' first runs: this hour's dead-letter check (T327) and this 5-minute
+/// slot's health check (T624, D-4280), each under its own slot's dedupe key.
+async fn schedule_alert_checks(
+    conn: &mut sqlx::PgConnection,
+    now: jiff::Timestamp,
+) -> io::Result<()> {
+    askhava_server::no_handler_alert::schedule(conn, now)
+        .await
+        .map_err(io::Error::other)?;
+    askhava_server::health_watch::schedule(conn, now)
+        .await
+        .map_err(io::Error::other)
+}
+
 /// The first nightly Stripe reconcile (T433), then the first runs of `watch_checks`' hourly
 /// vault-read check and daily volume check (T525, SEC-047, OPS-052), the nightly encrypted export
 /// (T109, OPS-013), the first monthly test restore (T648, OPS-013), `businesses`' daily
 /// deliverability re-test run (T686, BIZ-042), `picks`' hourly open-cards email run (T684,
 /// CARD-022), `intake`'s daily consent
 /// sweep (T563, CON-022) and, only when `email` (the provider and vault exist), `messaging`'s
-/// queued-email drain (T470, D-3750), each under its own dedupe key.
+/// queued-email drain (T470, D-3750) and the daily weekly-digest check (T524, OPS-030), each
+/// under its own dedupe key.
 async fn schedule_checks(
     conn: &mut sqlx::PgConnection,
     now: jiff::Timestamp,
@@ -116,6 +132,9 @@ async fn schedule_checks(
 ) -> io::Result<()> {
     if email {
         askhava_messaging::api::schedule_email_due(conn, now)
+            .await
+            .map_err(io::Error::other)?;
+        askhava_server::digest_email::schedule_digest(conn, now)
             .await
             .map_err(io::Error::other)?;
     }
@@ -168,7 +187,7 @@ async fn schedule_licenses(
 }
 
 /// Queues the daily tasks at start (the chain check, the masked-line expiry sweep (T662), the retention sweep, the body cut, the
-/// photo orphan sweep, the day-31 body scan, this hour's dead-letter check, the job timer
+/// photo orphan sweep, the day-31 body scan, this hour's dead-letter and health checks ([`schedule_alert_checks`]), the job timer
 /// backstop, the hourly request count (T105), the safe-mode check (T487), the session sweep and rate-limit prune (T436), the license-map re-apply, each daily license list (T371), the outbox sender's
 /// first run, the deferral check, the weekly opt-out rate check ([`schedule_messaging`]) and the first nightly Stripe reconcile
 /// (T433) with the hourly vault-read and daily volume checks and the daily consent sweep ([`schedule_checks`], T525, T563)) and runs the intake golden set once.
@@ -194,9 +213,7 @@ async fn schedule_start(
     askhava_privacy::api::schedule_words_cut(&mut conn, now)
         .await
         .map_err(io::Error::other)?;
-    askhava_server::no_handler_alert::schedule(&mut conn, now)
-        .await
-        .map_err(io::Error::other)?;
+    schedule_alert_checks(&mut conn, now).await?;
     askhava_jobs::api::schedule_backstop(&mut conn, now)
         .await
         .map_err(io::Error::other)?;

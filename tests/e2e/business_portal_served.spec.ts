@@ -73,8 +73,13 @@ function seedReleasedPick(business: string): string {
       VALUES ('${contact}', ${field("name", HER.name)}, ${field("phone", HER.phone)}, ${field("address", HER.address)})),
     j AS (INSERT INTO jobs.job (status, emergency, created_at, status_at, timer_from)
       VALUES ('connected', false, now(), now(), now()) RETURNING id),
+    n AS (UPDATE jobs.job_number_next SET next = next + 1 RETURNING next - 1 AS n),
+    num AS (INSERT INTO jobs.job_number (number, job_id, issued_at) SELECT n.n, j.id, now() FROM n, j),
     p AS (INSERT INTO picks.pick (id, job_id, business_id, quote_number, channel, status, picked_at)
-      SELECT '${pick}', id, '${business}', 1, 'page', 'free', now() FROM j RETURNING id, job_id)
+      SELECT '${pick}', id, '${business}', 1, 'page', 'free', now() FROM j RETURNING id, job_id),
+    fee AS (INSERT INTO payments.pick_fee (pick_id, business_id, job_id, mode, kind, amount_cents, terms_version, fixed_at)
+      SELECT p.id, '${business}', p.job_id, t.mode, 'fee_free', 0, t.authorization_version, now()
+      FROM p, payments.fee_terms t)
     INSERT INTO picks.release (pick_id, job_id, business_id, basis, released_at, contact_id, mail_chosen)
     SELECT id, job_id, '${business}', 'no_fee', now(), '${contact}', false FROM p`, "the released pick");
   return pick;

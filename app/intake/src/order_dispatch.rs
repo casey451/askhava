@@ -18,10 +18,10 @@
 //! ZIP re-ask is neither used nor renewed (D-4441). Any other reply asks the ZIP when it never was,
 //! else is read by `zip_step::answer_zip`; once her town is stored the trade check tells the
 //! coverage (`routing::apply` for a closed category, else `routing::tell_coverage` with
-//! `quotes::api::request_coverage`'s count). With no trade read, each later reply is the trade
+//! `quotes::api::pair_coverage`'s count). With no trade read, each later reply is the trade
 //! answer (the ZIP reply itself too, "86403 my sink leaks"); its job opens through [`open_job`]
-//! keyed with her new property, never `begin_job`, and nothing is written or sent when it names no
-//! trade. Step 11 (`order::ask_last_question`, once per request) is called last, only once step 5
+//! keyed with her new property, never `begin_job`; a reply naming no trade gets `trade_ask`,
+//! asked twice at most, then nothing (D-4441). Step 11 (`order::ask_last_question`, once per request) is called last, only once step 5
 //! told the coverage (the `trade_check` marker; D-3702, D-4441), and not in a turn that sent a
 //! SPLIT offer ([`offered_now`]): it waits for her next reply, so SPLIT reaches [`second_job`].
 //!
@@ -37,6 +37,13 @@
 //! [`hold_911`]) holds the order until SAFE, which resumes at the open step ([`ask_open_again`]).
 //! An Emergency choice stored before her town is released when the ZIP comes in ([`zip_answer`]).
 //! TXT-041's Spanish line follows the first reply ([`first_text`]).
+//!
+//! Steps 9 and 10 (T675, D-4360, D-5251): when the trade questions are done, [`questions`] hands
+//! the turn to `photos::photo_steps` (the photo ask, her YES or REMOVE for each stored photo, the
+//! look questions of a `design: true` category), which calls step 11 once they end. A picture
+//! text (its `photo_pending` marker, written by the inbound route) never moves them on; the
+//! `intake.picture_text` task's photo step does (`picture_text.rs`). Her card carries only the
+//! photos she confirmed (`photos::confirmed_photos`, INT-044, CARD-013).
 //!
 //! INT-032's two jobs (T711, D-4439, corrected by T717, D-4441): a first text whose two
 //! `trade_reading` rows opened the first trade's job gets the `two_jobs` text once, right after
@@ -68,14 +75,24 @@
 //! When her name and address were stored during a SAFE hold, so no card was shown, SAFE shows it
 //! for the first time ([`card_first`], D-5041); START never does.
 //!
-//! A ZIP reply, a trade answer, ALSO or SPLIT is never kept as words (INT-049). No words or ZIP
-//! are logged.
+//! The trade questions (T716, D-4441, D-4602, D-4777): every keyword pair of the first text (or of
+//! a trade answer) is stored as one set of `job_type.<trade>` step markers, codes only
+//! ([`store_pairs`]), and step 5, the card and the trade questions read the newest set back
+//! ([`stored_pairs`], [`rebuilt`], [`final_pairs`]); "Which fits best?" ([`fit_turn`]) comes
+//! before the coverage line when `matching::candidates` calls for it, and the count carries the
+//! pairs, each under its own trade's license. A two-word first text naming a trade has its
+//! scrubbed words held under the request's own ID until the ZIP's turn keeps them for its job
+//! ([`keep_held_words`], D-5400).
+//!
+//! A ZIP reply, a trade answer, a "Which fits best?" reply, ALSO or SPLIT is never kept as words
+//! (INT-049). No words or ZIP are logged.
 
 use askhava_jobs::api::create;
 use askhava_messaging::api::Language;
 use askhava_ops::api::Actor;
 use askhava_quotes::api::{
-    CardFacts, CardParts, Danger, Place as Site, Timing, card_pool, description, request_coverage,
+    CardFacts, CardParts, Danger, Place as Site, Timing, card_pool, description, pair_coverage,
+    purge_job_text,
 };
 use jiff::{SignedDuration, Timestamp};
 use jiff_sqlx::ToSqlx;
@@ -90,12 +107,16 @@ use askhava_quotes::api::Coverage;
 use crate::conversation::{ADDRESS_CONTACT, name_address_open, queue_text};
 use crate::emergency::{Hazard, Urgency};
 use crate::handlers::{queue_body, schedule_no_reply};
-use crate::matching::{Reading, candidates, keyword_reading, starts_second, trade_label};
+use crate::matching::{
+    Candidates, FitStep, KeywordReading, Reading, candidates, keyword_reading, starts_second,
+    stored_job_types_of, trade_label,
+};
 use crate::models::{self, IntakeError};
 use crate::order::{
-    BankTurn, CardIn, NEEDED_BY, TRADE_QUESTION_TEMPLATE, answer_day, ask_last_question, bank_turn,
-    choose_with_card, keep_words, show_built_card, spanish_line,
+    BankTurn, CardIn, NEEDED_BY, TRADE_QUESTION_TEMPLATE, answer_day, bank_turn, choose_with_card,
+    keep_words, show_built_card, spanish_line,
 };
+use crate::photos::{PhotoJob, confirmed_photos, photo_steps};
 use crate::question_bank::starts_now;
 use crate::refusal_inputs::move_states;
 use crate::replies::quote_link;
@@ -103,6 +124,7 @@ use crate::routing::{
     Outcome, Request, Routing, SPLIT_TEMPLATE, apply, is_split_reply, route, tell_coverage,
     trade_is_open,
 };
+use crate::routing_confidence::after_fit;
 use crate::rules::{SAFETY_TEMPLATE, Settings, Then, opens_job};
 use crate::service::{
     Handled, NEEDED_BY_TEMPLATE, Queued, Screened, TextIn, Trade, answer_how_soon, ask_how_soon,
@@ -112,6 +134,9 @@ use crate::summary_step::{AUTO_SEND_AFTER, CardStep, Shown, answer_card, card_re
 use crate::zip_step::{
     ZIP_QUESTION_TEMPLATE, ZipPlace, ZipStep, answer_zip, ask_zip, read_zip, zip_body,
 };
+
+/// One stored candidate: (catalog category ID, job type label) (D-4602).
+type Pair = (String, String);
 
 /// The step-marker question holding one trade the keyword reading named (codes only, at most two,
 /// first-named first).
@@ -137,6 +162,21 @@ const CHOICE: &str = "emergency_choice";
 const CARD_EDIT: &str = "edit";
 /// The prefix of the card state `summary_step::show_card` stores for a shown card.
 const CARD_SHOWN: &str = "shown.";
+/// The step-marker question prefix of one stored (trade, job type) pair, `job_type.<trade>`, its
+/// choice the folded label (D-4602, D-4618).
+const JOB_TYPE: &str = "job_type.";
+/// The step marker of "Which fits best?": `asked` at each asking, then `chosen` or `kept`.
+const WHICH_FITS: &str = "which_fits";
+/// The step marker written at each asking of `trade_ask`.
+const TRADE_ASK: &str = "trade_ask";
+/// The choice of an asking marker.
+const ASKED: &str = "asked";
+/// The [`WHICH_FITS`] choice once she chose one job type (INT-014).
+const CHOSEN: &str = "chosen";
+/// "Which fits best?" with its numbered options (INT-014, T716).
+pub const WHICH_FITS_TEMPLATE: &str = "which_fits";
+/// The one question asked at step 5 when her words named no trade (D-4441, T716).
+pub const TRADE_ASK_TEMPLATE: &str = "trade_ask";
 
 /// Where request `conversation` is in the order, read from its stored rows.
 struct Place {
@@ -217,16 +257,20 @@ pub(crate) async fn first_text(
         return Ok(());
     };
     let (words, at) = (msg.inbound.words, msg.received_at);
-    let trades = keyword_reading(words).trades;
+    let reading = keyword_reading(words);
+    let trades = &reading.trades;
     for (n, trade) in (0_i64..).zip(trades.iter().take(MAX_TRADES)) {
         let when = at + SignedDuration::from_micros(n);
         models::insert_plain(tx, conversation, (TRADE_READING, trade), when).await?;
     }
+    store_pairs(tx, conversation, &reading, at).await?;
     let emergency = matches!(handled.screened, Screened::Matched(_));
     if let Some(trade) = trades.first().filter(|_| opens_job(words, emergency)) {
         let ids = (place.homeowner, conversation);
         let job = open_job(tx, ids, (trade, None), (emergency, at)).await?;
         keep_words(tx, (conversation, job), msg.inbox_id, (words, at)).await?;
+    } else if !trades.is_empty() {
+        keep_words(tx, (conversation, conversation), msg.inbox_id, (words, at)).await?;
     }
     let line = spanish_line(tx, secret, (msg, conversation), settings).await?;
     handled.texts.extend(line);
@@ -412,8 +456,9 @@ async fn answered_beep(
 /// INT-049, INT-025, INT-037, CON-009, D-4441: the open question asked again after SAFE, an
 /// INT-037 answer (or, for T691, START), as the module comment says: the ZIP question when it was
 /// never asked (`ask_zip`), its text again with no row written when it was asked and her town is
-/// not stored, so the one re-ask is neither used nor renewed; nothing while a SAFE hold waits,
-/// nothing is open, the request is closed or `service::may_text` refuses the contact. A first ZIP
+/// not stored, so the one re-ask is neither used nor renewed; at step 5 an asked `trade_ask` or
+/// "Which fits best?" again, with no row written ([`open_question_again`], INT-014); nothing
+/// while a SAFE hold waits, nothing is open, the request is closed or `service::may_text` refuses the contact. A first ZIP
 /// question goes through [`ask_first_zip`] (INT-032's `two_jobs` after it, D-4441).
 ///
 /// # Errors
@@ -434,7 +479,7 @@ pub(crate) async fn ask_open_again(
     let (msg, conversation) = request;
     if place.town.is_some() {
         if !place.told {
-            return Ok(Vec::new());
+            return open_question_again(tx, secret, request, &place, settings).await;
         }
         let mut texts = ask_step(tx, secret, request, &place, settings).await?;
         if texts.is_empty() {
@@ -592,12 +637,13 @@ async fn zip_answer(
     )
 }
 
-/// INT-016, INT-017, INT-009, INT-032: step 5 once her town is stored. The request's own first
-/// job and its first `trade_reading` trade; a short first text that read a trade but opened no job
-/// opens it now, keyed with her new property; with no trade read, this reply is read as the trade
-/// answer ([`trade_answer`]; nothing is written or sent when it names no trade). Then the coverage
-/// is told, and an ALSO second job's right after it ([`tell_also`], D-4441); empty when nothing
-/// went.
+/// INT-016, INT-017, INT-009, INT-032, INT-014, PRIV-008: step 5 once her town is stored. The
+/// request's own first job and its first `trade_reading` trade; a short first text that read a
+/// trade but opened no job opens it now, keyed with her new property, its held words kept as the
+/// job's ([`keep_held_words`], D-5400); with no trade read, this reply is read as the trade answer
+/// ([`trade_answer`]), else `trade_ask` is asked ([`ask_trade`]). "Which fits best?" comes first
+/// when the candidates call for it ([`fit_turn`]); then the coverage is told, and an ALSO second
+/// job's right after it ([`tell_also`], D-4441); empty when nothing went.
 async fn trade_check(
     tx: &mut PgConnection,
     secret: &SecretString,
@@ -612,15 +658,23 @@ async fn trade_check(
             let property = models::latest_property(tx, place.homeowner).await?;
             let ids = (place.homeowner, conversation);
             let job = open_job(tx, ids, (trade, property), (false, at)).await?;
-            (trade.clone(), job, String::new())
+            (
+                trade.clone(),
+                job,
+                keep_held_words(tx, (conversation, job), at).await?,
+            )
         }
         (None, _) => match trade_answer(tx, msg, (place.homeowner, conversation)).await? {
             Some((trade, job)) => (trade, job, msg.inbound.words.to_owned()),
-            None => return Ok(Vec::new()),
+            None => return ask_trade(tx, secret, (msg, conversation), settings).await,
         },
     };
     let request = (msg, conversation);
-    let told = (trade.as_str(), job, words.as_str());
+    let pairs = match fit_turn(tx, secret, request, &trade, settings).await? {
+        Fit::Asked(queued) => return Ok(vec![queued]),
+        Fit::Go(pairs) => pairs,
+    };
+    let told = (trade.as_str(), job, (words.as_str(), &pairs[..]));
     let mut texts = tell(tx, secret, request, told, (reached, settings, true)).await?;
     let other = place.trades.iter().find(|t| **t != trade);
     if let Some(other) = other.filter(|_| texts.iter().any(|q| q.template == SPLIT_TEMPLATE)) {
@@ -655,7 +709,8 @@ async fn tell_also(
     let Some(job) = jobs.into_iter().find(|j| *j != first) else {
         return Ok(Vec::new());
     };
-    let told = (second.as_str(), job, words);
+    let pairs = rebuilt(second, &stored_pairs(tx, conversation, second).await?).job_types;
+    let told = (second.as_str(), job, (words, &pairs[..]));
     tell(tx, secret, request, told, (reached, settings, false)).await
 }
 
@@ -683,7 +738,8 @@ async fn second_job(
                 Some(first) => kept_words(tx, first).await?,
                 None => String::new(),
             };
-            let told = (trade, job, words.as_str());
+            let pairs = rebuilt(trade, &stored_pairs(tx, conversation, trade).await?).job_types;
+            let told = (trade, job, (words.as_str(), &pairs[..]));
             let reached = ((town, place.zip.as_deref()), settings, false);
             texts.extend(tell(tx, secret, request, told, reached).await?);
         }
@@ -754,16 +810,381 @@ async fn kept_words(tx: &mut PgConnection, job: Uuid) -> Result<String, IntakeEr
     Ok(kept.map(|d| d.text()).unwrap_or_default())
 }
 
+/// INT-014, INT-015, D-4441: the open step-5 question again with no row written: `trade_ask` once
+/// asked while no trade is read, else "Which fits best?" while asked and not answered; else
+/// nothing.
+async fn open_question_again(
+    tx: &mut PgConnection,
+    secret: &SecretString,
+    request: (&TextIn<'_>, Uuid),
+    place: &Place,
+    settings: Settings,
+) -> Result<Vec<Queued>, IntakeError> {
+    let conversation = request.1;
+    let Some(trade) = place.trades.first() else {
+        if asked(tx, conversation, TRADE_ASK).await? == 0 {
+            return Ok(Vec::new());
+        }
+        return Ok(vec![send_trade_ask(tx, secret, request, settings).await?]);
+    };
+    let latest = models::latest_answer(tx, conversation, WHICH_FITS).await?;
+    if latest.as_deref() != Some(ASKED) {
+        return Ok(Vec::new());
+    }
+    let found = rebuilt(trade, &stored_pairs(tx, conversation, trade).await?);
+    let Some(options) = found.which_fits else {
+        return Ok(Vec::new());
+    };
+    Ok(vec![
+        ask_fit(tx, secret, request, &options, settings).await?,
+    ])
+}
+
+/// How many times step-marker question `question` was asked in `conversation`.
+async fn asked(
+    tx: &mut PgConnection,
+    conversation: Uuid,
+    question: &str,
+) -> Result<i64, IntakeError> {
+    sqlx::query_scalar!(
+        r#"SELECT count(*) AS "n!" FROM intake.intake_answer WHERE conversation_id = $1
+             AND question_id = $2 AND choice = $3"#,
+        conversation,
+        question,
+        ASKED
+    )
+    .fetch_one(tx)
+    .await
+    .map_err(|_| IntakeError::Database)
+}
+
+/// INT-016, INT-015, D-4441: no trade is read and this reply named none: `trade_ask` while it was
+/// asked fewer than twice (a [`TRADE_ASK`] marker each time), else nothing and the request waits;
+/// each later reply is still read as the trade answer. Never the INT-017 reply for want of a trade.
+async fn ask_trade(
+    tx: &mut PgConnection,
+    secret: &SecretString,
+    request: (&TextIn<'_>, Uuid),
+    settings: Settings,
+) -> Result<Vec<Queued>, IntakeError> {
+    let (msg, conversation) = request;
+    if asked(tx, conversation, TRADE_ASK).await? >= 2 {
+        return Ok(Vec::new());
+    }
+    models::insert_plain(tx, conversation, (TRADE_ASK, ASKED), msg.received_at).await?;
+    Ok(vec![send_trade_ask(tx, secret, request, settings).await?])
+}
+
+/// D-4441, TXT-003: queues `trade_ask` in the request's language (Spanish only while on).
+async fn send_trade_ask(
+    tx: &mut PgConnection,
+    secret: &SecretString,
+    (msg, conversation): (&TextIn<'_>, Uuid),
+    settings: Settings,
+) -> Result<Queued, IntakeError> {
+    let template = (
+        TRADE_ASK_TEMPLATE,
+        request_language(tx, conversation).await?,
+    );
+    let subject = [conversation, msg.inbox_id];
+    let on = settings.spanish_conversations_on;
+    queue_text(tx, secret, msg.contact, template, &subject, on).await
+}
+
+/// INT-014, INT-012, TXT-003: queues "Which fits best?" in the request's language (Spanish only
+/// while on), `options` numbered from 1 after it (the job type labels as `matching` reads them
+/// back, D-103); writes no row.
+async fn ask_fit(
+    tx: &mut PgConnection,
+    secret: &SecretString,
+    (msg, conversation): (&TextIn<'_>, Uuid),
+    options: &[String],
+    settings: Settings,
+) -> Result<Queued, IntakeError> {
+    let numbered: Vec<String> = (1..)
+        .zip(options)
+        .map(|(n, o)| match o.strip_suffix("_other") {
+            Some(t) => format!("{n}) other {}", trade_label(t)),
+            None => format!("{n}) {o}"),
+        })
+        .collect();
+    let language = request_language(tx, conversation).await?;
+    let on = settings.spanish_conversations_on;
+    let asked = render(WHICH_FITS_TEMPLATE, language, on, &[])
+        .map_err(|_| IntakeError::Template)?
+        .body;
+    let body = format!("{asked} {}", numbered.join(" "));
+    let to = (msg.contact, WHICH_FITS_TEMPLATE);
+    queue_body(tx, secret, to, &[conversation, msg.inbox_id], &body).await
+}
+
+/// What step 5 does before the coverage line (INT-014).
+enum Fit {
+    /// "Which fits best?" was asked; the coverage line waits for her reply.
+    Asked(Queued),
+    /// Go on to the coverage line with these candidate pairs.
+    Go(Vec<(String, String)>),
+}
+
+/// INT-014, INT-015, INT-012, INT-040, D-103, D-105: "Which fits best?" before the coverage line
+/// when the stored candidates call for it ([`rebuilt`]): asked once (an `asked` marker), its
+/// reply read by `Candidates::fit_step`: a chosen job type is stored as the request's one pair
+/// ([`store_pairs`], marker `chosen`), an unusable reply asks once more with the same options in
+/// the same order, a second one or "Not sure" keeps every candidate (marker `kept`, or
+/// `kept_unsure` when `routing_confidence::after_fit` marks the card, INT-040). Her reply is never
+/// kept as words.
+async fn fit_turn(
+    tx: &mut PgConnection,
+    secret: &SecretString,
+    request: (&TextIn<'_>, Uuid),
+    trade: &str,
+    settings: Settings,
+) -> Result<Fit, IntakeError> {
+    let (msg, conversation) = request;
+    let latest = models::latest_answer(tx, conversation, WHICH_FITS).await?;
+    if latest.as_deref().is_some_and(|l| l != ASKED) {
+        return Ok(Fit::Go(final_pairs(tx, conversation, trade).await?));
+    }
+    let found = rebuilt(trade, &stored_pairs(tx, conversation, trade).await?);
+    let Some(options) = found.which_fits.clone() else {
+        return Ok(Fit::Go(found.job_types));
+    };
+    let times = asked(tx, conversation, WHICH_FITS).await?;
+    let step = match times {
+        0 => FitStep::AskAgain(options),
+        n => found.fit_step(msg.inbound.words, u8::try_from(n).unwrap_or(2)),
+    };
+    let at = msg.received_at;
+    let mark = match (&step, after_fit(&step)) {
+        (FitStep::AskAgain(options), _) => {
+            models::insert_plain(tx, conversation, (WHICH_FITS, ASKED), at).await?;
+            let queued = ask_fit(tx, secret, request, options, settings).await?;
+            return Ok(Fit::Asked(queued));
+        }
+        (FitStep::Chosen(_), _) => CHOSEN,
+        (_, Some(out)) if out.not_certain => "kept_unsure",
+        _ => "kept",
+    };
+    let (FitStep::Chosen(kept) | FitStep::KeepAll(kept)) = step else {
+        return Ok(Fit::Go(found.job_types));
+    };
+    if mark == CHOSEN {
+        let mut set = kept.job_types.clone();
+        set.extend(other_job_pairs(tx, conversation, trade).await?);
+        write_pairs(tx, conversation, &set, at).await?;
+    }
+    models::insert_plain(tx, conversation, (WHICH_FITS, mark), at).await?;
+    Ok(Fit::Go(kept.job_types))
+}
+
+/// D-4602: a job type label folded for the `intake_answer.choice` check: lower case, every run
+/// of other characters one `_` ("AC not cooling" is `ac_not_cooling`).
+fn label_code(label: &str) -> String {
+    let mut code = String::new();
+    for c in label.chars() {
+        if c.is_ascii_alphanumeric() {
+            code.push(c.to_ascii_lowercase());
+        } else if !code.ends_with('_') {
+            code.push('_');
+        }
+    }
+    code.trim_end_matches('_').to_owned()
+}
+
+/// D-4602, D-4618, INT-007, INT-049: stores the keyword pairs of `reading` (its `job_types`,
+/// `boundary` and `licensed_only`) as one set at `at`, codes only, never her words.
+async fn store_pairs(
+    tx: &mut PgConnection,
+    conversation: Uuid,
+    reading: &KeywordReading,
+    at: Timestamp,
+) -> Result<(), IntakeError> {
+    let mut pairs: Vec<(String, String)> = Vec::new();
+    let all = reading.job_types.iter().chain(&reading.boundary);
+    for (t, j) in all.chain(&reading.licensed_only) {
+        let pair = ((*t).to_owned(), (*j).to_owned());
+        if !pairs.contains(&pair) {
+            pairs.push(pair);
+        }
+    }
+    write_pairs(tx, conversation, &pairs, at).await
+}
+
+/// D-4602: writes `pairs` as `job_type.<trade>` rows, every one at `at` (one set).
+async fn write_pairs(
+    tx: &mut PgConnection,
+    conversation: Uuid,
+    pairs: &[(String, String)],
+    at: Timestamp,
+) -> Result<(), IntakeError> {
+    for (trade, label) in pairs {
+        let question = format!("{JOB_TYPE}{trade}");
+        models::insert_plain(tx, conversation, (&question, &label_code(label)), at).await?;
+    }
+    Ok(())
+}
+
+/// D-4602, D-4618, INT-032: the newest stored set of (trade, job type) pairs for `trade`'s job,
+/// each choice read back only by matching a label `matching::stored_job_types_of(trade)` gives,
+/// folded the same way; a choice matching none is dropped, and so is a pair of the request's other
+/// `trade_reading` trade, which is its own job (INT-032's ALSO or SPLIT), not this one's.
+async fn stored_pairs(
+    tx: &mut PgConnection,
+    conversation: Uuid,
+    trade: &str,
+) -> Result<Vec<(String, String)>, IntakeError> {
+    newest_set(tx, conversation, trade, false).await
+}
+
+/// D-4602: the newest stored set's pairs, folded back to labels as [`stored_pairs`] says; with
+/// `other` false those that are not of the request's other `trade_reading` trade (`trade`'s job),
+/// with `other` true only those that are (the other job's).
+async fn newest_set(
+    tx: &mut PgConnection,
+    conversation: Uuid,
+    trade: &str,
+    other: bool,
+) -> Result<Vec<(String, String)>, IntakeError> {
+    let rows = sqlx::query!(
+        r#"SELECT substr(a.question_id, 10) AS "trade!", a.choice AS "choice!"
+           FROM intake.intake_answer a WHERE a.conversation_id = $1 AND a.choice IS NOT NULL
+             AND starts_with(a.question_id, $2)
+             AND a.answered_at = (SELECT max(b.answered_at) FROM intake.intake_answer b
+               WHERE b.conversation_id = $1 AND starts_with(b.question_id, $2))
+             AND EXISTS (SELECT 1 FROM intake.intake_answer r WHERE r.conversation_id = $1
+               AND r.question_id = $3 AND r.choice = substr(a.question_id, 10) AND r.choice <> $4)
+               = $5
+           ORDER BY a.question_id, a.choice"#,
+        conversation,
+        JOB_TYPE,
+        TRADE_READING,
+        trade,
+        other
+    )
+    .fetch_all(tx)
+    .await
+    .map_err(|_| IntakeError::Database)?;
+    Ok(rows
+        .into_iter()
+        .filter_map(|r| {
+            let labels = stored_job_types_of(&r.trade);
+            let label = labels.into_iter().find(|l| label_code(l) == r.choice)?;
+            Some((r.trade, label.to_owned()))
+        })
+        .collect())
+}
+
+/// D-4602, INT-032: the newest stored set's pairs of the request's other `trade_reading` trade,
+/// its own ALSO or SPLIT job; "Which fits best?" for `trade`'s job writes them again with the
+/// chosen pair, so the other job keeps its job type, candidates and license check (CARD-001,
+/// LIC-043).
+async fn other_job_pairs(
+    tx: &mut PgConnection,
+    conversation: Uuid,
+    trade: &str,
+) -> Result<Vec<(String, String)>, IntakeError> {
+    newest_set(tx, conversation, trade, true).await
+}
+
+/// D-4602, D-105, D-102: `trade`'s candidates rebuilt from stored `pairs` by
+/// `matching::candidates`, each pair put back where `keyword_reading` of its own label puts it
+/// (a licensed-only label, a license-boundary job type, or a plain one); a label of `trade` its
+/// own reading does not name stands as a reading of it.
+fn rebuilt(trade: &str, pairs: &[(String, String)]) -> Candidates {
+    let mut kw = KeywordReading::default();
+    let mut plain = None;
+    for (t, j) in pairs {
+        let own = keyword_reading(j);
+        let same = |p: &&(&str, &str)| p.0 == t && p.1 == j;
+        if let Some(&p) = own.licensed_only.iter().find(same) {
+            kw.licensed_only.push(p);
+        } else if let Some(&p) = own.job_types.iter().find(same) {
+            kw.job_types.push(p);
+            if own.boundary.contains(&p) {
+                kw.boundary.push(p);
+            }
+        } else if t == trade {
+            plain = Some(j.as_str());
+        }
+    }
+    let read = Reading {
+        trade,
+        job_type: plain,
+    };
+    candidates(trade, [read, read], &kw)
+}
+
+/// D-5606, CARD-001: the pairs a card send uses for `trade`'s job, read by [`final_pairs`] as
+/// the coverage count reads them; `None` when the request stored no (trade, job type) pair, so
+/// the send keeps the stored card's facts.
+pub(crate) async fn send_pairs(
+    tx: &mut PgConnection,
+    conversation: Uuid,
+    trade: &str,
+) -> Result<Option<Vec<(String, String)>>, IntakeError> {
+    if stored_pairs(tx, conversation, trade).await?.is_empty() {
+        return Ok(None);
+    }
+    Ok(Some(final_pairs(tx, conversation, trade).await?))
+}
+
+/// D-4602, INT-014: `trade`'s candidate pairs: the chosen set once "Which fits best?" chose one
+/// (`<trade>_other` when the choice was that), else [`rebuilt`]'s.
+async fn final_pairs(
+    tx: &mut PgConnection,
+    conversation: Uuid,
+    trade: &str,
+) -> Result<Vec<(String, String)>, IntakeError> {
+    let pairs = stored_pairs(tx, conversation, trade).await?;
+    let chosen = models::latest_answer(tx, conversation, WHICH_FITS).await?;
+    if chosen.as_deref() != Some(CHOSEN) {
+        return Ok(rebuilt(trade, &pairs).job_types);
+    }
+    if pairs.is_empty() {
+        return Ok(vec![(trade.to_owned(), format!("{trade}_other"))]);
+    }
+    Ok(pairs)
+}
+
+/// D-5400, PRIV-008, INT-007: on the ZIP's turn that opens a short first text's `job`, keeps the
+/// scrubbed words [`first_text`] held under the request's own ID as the job's description, keyed
+/// with the request's first message (scrubbed again, as `order::keep_words` always does), and
+/// deletes the held row, in the same transaction. Returns the words; empty when none were held.
+async fn keep_held_words(
+    tx: &mut PgConnection,
+    (conversation, job): (Uuid, Uuid),
+    at: Timestamp,
+) -> Result<String, IntakeError> {
+    let held = kept_words(tx, conversation).await?;
+    if held.is_empty() {
+        return Ok(held);
+    }
+    let first = sqlx::query_scalar!(
+        "SELECT first_inbox_id FROM intake.conversation WHERE id = $1",
+        conversation
+    )
+    .fetch_one(&mut *tx)
+    .await
+    .map_err(|_| IntakeError::Database)?;
+    keep_words(tx, (conversation, job), first, (&held, at)).await?;
+    purge_job_text(tx, conversation)
+        .await
+        .map_err(|_| IntakeError::Quotes)?;
+    Ok(held)
+}
+
 /// INT-016, INT-043, INT-009, D-4441: her reply read as the trade answer; its first keyword trade
 /// opens the request's first job through [`open_job`], keyed with her newest property and with no
 /// INT-009 lookup (INT-007 governs a message's own words, not the order opening the job her answer
-/// named, so a one-word "plumbing" opens it too), then its `trade_reading` row is written.
+/// named, so a one-word "plumbing" opens it too), then its `trade_reading` row and its keyword
+/// pairs ([`store_pairs`], codes only) are written; her words are never kept (D-4360, D-4441).
 async fn trade_answer(
     tx: &mut PgConnection,
     msg: &TextIn<'_>,
     (homeowner, conversation): (Uuid, Uuid),
 ) -> Result<Option<(String, Uuid)>, IntakeError> {
-    let Some(trade) = keyword_reading(msg.inbound.words).trades.first().copied() else {
+    let reading = keyword_reading(msg.inbound.words);
+    let Some(trade) = reading.trades.first().copied() else {
         return Ok(None);
     };
     let at = msg.received_at;
@@ -776,26 +1197,26 @@ async fn trade_answer(
     )
     .await?;
     models::insert_plain(tx, conversation, (TRADE_READING, trade), at).await?;
+    store_pairs(tx, conversation, &reading, at).await?;
     Ok(Some((trade.to_owned(), job)))
 }
 
 /// INT-016, INT-017, LIC-046, D-4441: `job`'s coverage line. For the first job (`first`) a trade
 /// in no open category gets the INT-017 reply through `routing::apply`, else the `trade_check`
 /// marker is written; a second job's is `Coverage::NotCovered` for that job alone. Otherwise the
-/// count, by `quotes::api::request_coverage` for the trade's candidates read from `words`, goes
-/// through `routing::tell_coverage`. LIC-017, LIC-018 (T776, D-5081): `route` reads `words`, the
+/// count, by `quotes::api::pair_coverage` for the stored candidate `pairs` (D-4777), goes through
+/// `routing::tell_coverage`. LIC-017, LIC-018 (T776, D-5081): `route` reads `words`, the
 /// move reading of `refusal_inputs::move_states` and the candidate job types, so a move leaving
 /// Arizona or a property-management request is refused here ([`refuse_card`] checks again later).
 async fn tell(
     tx: &mut PgConnection,
     secret: &SecretString,
     (msg, conversation): (&TextIn<'_>, Uuid),
-    (trade, job, words): (&str, Uuid, &str),
+    (trade, job, (words, pairs)): (&str, Uuid, (&str, &[Pair])),
     ((town, zip), settings, first): ((&str, Option<&str>), Settings, bool),
 ) -> Result<Vec<Queued>, IntakeError> {
     let area = [town];
-    let found = facts(trade, words).candidates;
-    let job_types: Vec<&str> = found.iter().map(String::as_str).collect();
+    let job_types: Vec<&str> = pairs.iter().map(|(_, j)| j.as_str()).collect();
     let req = Request {
         town,
         area: &area,
@@ -815,7 +1236,7 @@ async fn tell(
         job_type: None,
     };
     let coverage = match (route(&req), first) {
-        (Outcome::Continue, _) => count(tx, (town, zip), trade, words).await?,
+        (Outcome::Continue, _) => count(tx, (town, zip), trade, pairs).await?,
         (outcome, true) => {
             let told = apply(tx, secret, (&req, outcome), &routing).await?;
             return Ok(told.into_iter().collect());
@@ -829,40 +1250,24 @@ async fn tell(
     Ok(told.into_iter().collect())
 }
 
-/// CARD-001, INT-017: the coverage `quotes::api::request_coverage` counts in `(town, zip)` for
-/// `trade`'s candidates read from `words`.
+/// CARD-001, INT-017, LIC-043, D-4777: the coverage `quotes::api::pair_coverage` counts in
+/// `(town, zip)` for `trade`'s stored candidate `pairs`, each under its own trade's license.
 async fn count(
     tx: &mut PgConnection,
     (town, zip): (&str, Option<&str>),
     trade: &str,
-    words: &str,
+    pairs: &[(String, String)],
 ) -> Result<Coverage, IntakeError> {
-    let facts = facts(trade, words);
-    let quotes = |_| IntakeError::Quotes;
-    let pool = card_pool(tx, ((town, zip), &facts), String::new(), None)
+    pair_coverage(tx, ((town, zip), &facts(trade, pairs)), pairs)
         .await
-        .map_err(quotes)?;
-    request_coverage(tx, pool.map, ((town, zip), &facts), None)
-        .await
-        .map_err(quotes)
+        .map_err(|_| IntakeError::Quotes)
 }
 
-/// CARD-001, D-102: the card facts the count reads: `trade`'s candidate job types from the
-/// keyword reading of `words` (`<trade>_other` when none is named).
-fn facts(trade: &str, words: &str) -> CardFacts {
-    let reading = Reading {
-        trade,
-        job_type: None,
-    };
-    let found = candidates(trade, [reading, reading], &keyword_reading(words));
+/// CARD-001, D-102, D-4777: the card facts of `trade`'s job: every candidate pair's job type.
+fn facts(trade: &str, pairs: &[(String, String)]) -> CardFacts {
     CardFacts {
         category: trade.to_owned(),
-        candidates: found
-            .job_types
-            .into_iter()
-            .filter(|(t, _)| t == trade)
-            .map(|(_, j)| j)
-            .collect(),
+        candidates: pairs.iter().map(|(_, j)| j.clone()).collect(),
         emergency: false,
     }
 }
@@ -1019,8 +1424,8 @@ async fn refuse_card(
         return Ok(None);
     };
     let words = kept_words(tx, job).await?;
-    let found = facts(trade, &words).candidates;
-    let job_types: Vec<&str> = found.iter().map(String::as_str).collect();
+    let found = final_pairs(tx, conversation, trade).await?;
+    let job_types: Vec<&str> = found.iter().map(|(_, j)| j.as_str()).collect();
     let req = Request {
         town,
         area: &[town],
@@ -1049,7 +1454,7 @@ async fn refuse_card(
 
 /// INT-029, CARD-007, INT-030: the card `order::choose_with_card` stores before the choice can
 /// release the request's first job: its trade's and town's display names (`card_pool`), the
-/// candidates read from her kept words, the "How soon?" answer `soon` and, when a 911 text was
+/// stored candidates ([`final_pairs`]), the "How soon?" answer `soon` and, when a 911 text was
 /// sent, its situation ([`danger`]); the description is hers.
 async fn card_in(
     tx: &mut PgConnection,
@@ -1062,7 +1467,7 @@ async fn card_in(
     else {
         return Ok(None);
     };
-    let facts = facts(trade, &kept_words(tx, job).await?);
+    let facts = facts(trade, &final_pairs(tx, conversation, trade).await?);
     let reached = (town, place.zip.as_deref());
     let pool = card_pool(tx, (reached, &facts), String::new(), None)
         .await
@@ -1080,7 +1485,7 @@ async fn card_in(
         answers: Vec::new(),
         timing: Some(timing),
         danger: danger(tx, conversation).await?,
-        photos: Vec::new(),
+        photos: confirmed_photos(tx, job).await?,
         concept: None,
     };
     Ok(Some(CardIn {
@@ -1110,11 +1515,13 @@ async fn danger(tx: &mut PgConnection, conversation: Uuid) -> Result<Option<Dang
     }))
 }
 
-/// INT-039, INT-029, INT-004, INT-027: step 8 for the request's first job, through
-/// `order::bank_turn` (`hear`: this text answers the open question). Nothing while a job chosen as
-/// an emergency is not released (`question_bank::starts_now`). The next question goes as
+/// INT-039, INT-029, INT-004, INT-027, INT-044, INT-045: step 8 for the request's first job,
+/// through `order::bank_turn` (`hear`: this text answers the open question). Nothing while a job
+/// chosen as an emergency is not released (`question_bank::starts_now`). The next question goes as
 /// [`TRADE_QUESTION_TEMPLATE`]; a gas or burning smell answer holds the order ([`hold_911`]); when
-/// the set is done, step 11 (`order::ask_last_question`, once per request).
+/// the set is done, steps 9 and 10 (`photos::photo_steps`: the photo ask, her answers to shown
+/// photos, the look questions of a design category) and then step 11 (`order::ask_last_question`,
+/// once per request; T675, D-4360).
 async fn questions(
     tx: &mut PgConnection,
     secret: &SecretString,
@@ -1130,7 +1537,7 @@ async fn questions(
     if !starts_now(state.emergency, state.consented && state.area_done) {
         return Ok(Vec::new());
     }
-    let candidates = facts(trade, &kept_words(tx, job).await?).candidates;
+    let candidates = facts(trade, &final_pairs(tx, conversation, trade).await?).candidates;
     let spanish_on = settings.spanish_conversations_on;
     let spanish = spanish_on && request_language(tx, conversation).await? == Language::Es;
     let about = (trade.as_str(), &candidates[..], (state.emergency, spanish));
@@ -1144,10 +1551,14 @@ async fn questions(
             vec![queue_body(tx, secret, to, &subject, &prompt.render()).await?]
         }
         BankTurn::Safety(kind) => vec![hold_911(tx, secret, request, kind).await?],
-        BankTurn::Done => ask_last_question(tx, secret, request, spanish_on)
-            .await?
-            .into_iter()
-            .collect(),
+        BankTurn::Done => {
+            let about = PhotoJob {
+                trade,
+                job,
+                spanish_on,
+            };
+            photo_steps(tx, secret, request, about, hear).await?
+        }
     })
 }
 

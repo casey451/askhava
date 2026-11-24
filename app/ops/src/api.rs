@@ -33,6 +33,7 @@ pub use crate::digest_rows::{
     DigestAlert, DigestRow, StatusChangeRow, TradeActive, digest_alerts, digest_opened,
     digest_reminded, digest_sent, latest_digest, system_status_changes, trade_active_counts,
 };
+pub use crate::help_request_keys::help_requests_of_homeowner;
 pub use crate::help_requests::{
     Asker, HELP_ANSWERED_WITHIN, HELP_PUSH_ITEM, HelpLimits, HelpOpened, HelpRequest,
     add_owner_reply, help_keyword_recent, help_request, open_help_request, open_help_requests,
@@ -46,6 +47,7 @@ pub use crate::owner_alerts::{
     AlertSubject, OWNER_ACK_ACTION, PushedAlert, acknowledge_pushed_alert, alert_subject,
     pushed_alerts,
 };
+pub use crate::owner_alerts::{WAITING_ALERTS_MAX, WaitingAlert, waiting_alerts};
 pub use crate::safe_mode::{
     SAFE_MODE_AFTER, SAFE_MODE_EVERY, SAFE_MODE_KIND, SAFE_MODE_KINDS, SAFE_MODE_OFF_ACTION,
     SAFE_MODE_ON_ACTION, check_safe_mode, run_safe_mode_check, safe_mode_on, schedule_safe_mode,

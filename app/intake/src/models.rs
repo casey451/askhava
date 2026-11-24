@@ -716,7 +716,7 @@ pub(crate) async fn request_jobs(
 }
 
 /// Closes request `conversation` at `at` and drops its job links (INT-038); `false` if it was
-/// already closed.
+/// already closed. Its `intake.request_job` rows stay (D-4748).
 pub(crate) async fn close_request(
     db: &mut PgConnection,
     conversation: Uuid,
@@ -795,21 +795,37 @@ pub(crate) async fn latest_property(
     .map_err(|_| IntakeError::Database)
 }
 
-/// Sets request `conversation`'s first job if it has none (`conversation.job_id`).
+/// Sets request `conversation`'s first job if it has none (`conversation.job_id`) and records
+/// `job` in `intake.request_job`, which a close never drops (CARD-023, FEE-013, PRIV-011, D-4748,
+/// D-5553). Both job openers (`begin_job`, `order_dispatch`'s `open_job`) call it in their
+/// transaction right after the job's `job.%` link, whose time is the row's `opened_at`.
 pub(crate) async fn set_first_job(
     db: &mut PgConnection,
     conversation: Uuid,
     job: Uuid,
 ) -> Result<(), IntakeError> {
+    let err = |_| IntakeError::Database;
     sqlx::query!(
         "UPDATE intake.conversation SET job_id = COALESCE(job_id, $2) WHERE id = $1",
         conversation,
         job
     )
+    .execute(&mut *db)
+    .await
+    .map_err(err)?;
+    sqlx::query!(
+        "INSERT INTO intake.request_job (conversation_id, job_id, opened_at) \
+         SELECT $1, $2, COALESCE((SELECT max(answered_at) FROM intake.intake_answer \
+         WHERE conversation_id = $1 AND question_id LIKE 'job.%' AND choice = $3), now()) \
+         ON CONFLICT (conversation_id, job_id) DO NOTHING",
+        conversation,
+        job,
+        job.simple().to_string()
+    )
     .execute(db)
     .await
     .map(|_| ())
-    .map_err(|_| IntakeError::Database)
+    .map_err(err)
 }
 
 /// Records one request no business covers yet (INT-017, OPS-041).

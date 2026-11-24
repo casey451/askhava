@@ -34,6 +34,17 @@
 //! linked (409) and leaves the link unused. D-3877 (PICK-052): a note the served quote form
 //! returns writes one `quotes.note_returned` audit row with the reason's code name, never the
 //! note. The pending links come from `calls`' own `api` (a line, its start, `link_after_dial`).
+//! T714 (TD-SEC-80; SEC-004, PICK-033, D-4425): a Confirm link from `mint_text_confirm_link`
+//! passed with the code starts a 30-minute session (live at 29:59, refused at 30:00 as no
+//! session is, read with `business_principal` as the Confirm page reads it, since that page
+//! needs the Stripe hooks, D-5629), an emailed one's still answers at 29 days; only a text-minted grant is
+//! `text_started`; the token under another kind or object or with anything appended is answered
+//! as an unissued token and starts no session; a misshapen token is refused before any read;
+//! and only Confirm is minted by text. T814 (SEC-026, D-5316): a used link pressed again acts no
+//! more and shows its result: a Quote link the job page with the one stored quote (a new price
+//! stores nothing), a Confirm link the same 303, every other kind the "already used" page; a used
+//! link of a removed member, of one who lost the role, past its end, or of another signed-in
+//! person is the one not-found answer.
 
 use std::collections::BTreeSet;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -45,7 +56,8 @@ use askhava_adapters::api::{
 use askhava_businesses::api::{
     AccountStatus, Acting, Capability, CapabilityAnswers, Checks, Event, LargestJob, PauseReason,
     Roles, add_member, add_owner, apply, away_until, business, busy_until,
-    create as create_business, record_step_up, remove_member, save_capability, waiting_phones,
+    create as create_business, record_session_step_up, remove_member, save_capability, set_roles,
+    waiting_phones,
 };
 use askhava_calls::api::{
     Connected, assign_number, call_start_confirmed, link_after_dial, pending_link,
@@ -58,12 +70,14 @@ use askhava_messaging::api::sender_line;
 use askhava_ops::api::{Actor as AuditActor, export_audit};
 use askhava_picks::api::{ConfirmSettings, HoldAsk, PagePick, hold_ask, notice_sent, page_pick};
 use askhava_portals::api::{
-    ActionKind, ActionTarget, BUSY_DAYS_ERROR, CookieJar, PortalsError, SIGNIN_LINK_ROUTE, SignIn,
-    SignInAddress, SignInMail, csrf_token, ensure_pre_session, mint_action_link, open_action_link,
-    send_sign_in_link, signin_post,
+    ActionKind, ActionLinkError, ActionTarget, BUSY_DAYS_ERROR, CookieJar, PortalsError,
+    SIGNIN_LINK_ROUTE, SignIn, SignInAddress, SignInMail, csrf_token, ensure_pre_session,
+    mint_action_link, mint_text_confirm_link, open_action_link, send_sign_in_link, signin_post,
+    use_action_link,
 };
 use askhava_portals::api::{
-    CodeAddress, CodeFuture, CodeSent, CodeTo, ConfirmCodes, business_principal, set_inbox_shared,
+    CardDetach, CodeAddress, CodeFuture, CodeSent, CodeTo, ConfirmCodes, SESSION_COOKIE,
+    business_principal, leave, set_inbox_shared,
 };
 use askhava_privacy::api::Vault;
 use askhava_quotes::api::{
@@ -516,12 +530,144 @@ async fn td_sec_44_the_quote_form_acts_once_and_bounces_a_phone_number(pool: PgP
         "the quote and its facts are stored together"
     );
     assert!(!unused(&w, &path).await, "the stored quote used the link");
-    let again = send(&w, (&Method::POST, &path, &firm()), Site::Own).await;
+    let other = firm().replace("amount=325", "amount=990");
+    let again = send(&w, (&Method::POST, &path, &other), Site::Own).await;
     assert_eq!(
-        again,
-        not_found(&w, &Method::POST).await,
-        "a used link acts no more"
+        (again.status, again.no_store),
+        (200, true),
+        "{}",
+        again.text
     );
+    assert!(
+        again.text.contains("Quotes so far: 1."),
+        "a used link shows the job page again, one quote stored (SEC-026, D-5316): {}",
+        again.text
+    );
+    assert!(
+        !again.text.contains("990"),
+        "the second price is not stored"
+    );
+}
+
+/// SEC-026, D-5316, D-5320: the page a used link's second press shows for every kind but Quote
+/// and Confirm: 200, `no-store`, the portal link and nothing of the job.
+fn already_used(reply: &Reply) -> bool {
+    reply.status == 200
+        && reply.no_store
+        && reply.text.contains("This link was already used")
+        && reply.text.contains("href=\"/b\"")
+}
+
+/// A "Cards and quotes" member of `w`'s business and their used Quote link on a new carded job.
+async fn used_member_quote(w: &World, ends: Timestamp) -> (Uuid, String) {
+    let now = Timestamp::now();
+    let mut db = w.pool.acquire().await.expect("db");
+    let roles = Roles::new(true, false).expect("roles");
+    let member = add_member(&mut db, owner_acting(w), Uuid::new_v4(), roles, now)
+        .await
+        .expect("member");
+    let job = carded_job(&mut db, w.team, now).await;
+    drop(db);
+    let link = mint(w, (ActionKind::Quote, job), member, (now, ends)).await;
+    let path = path_of(&link);
+    let sent = send(w, (&Method::POST, &path, &firm()), Site::Own).await;
+    assert_eq!(sent.status, 200, "{}", sent.text);
+    assert!(!unused(w, &path).await, "the quote used the link");
+    (member, path)
+}
+
+/// `w`'s owner acting for the business.
+fn owner_acting(w: &World) -> Acting {
+    Acting {
+        business: w.team.business,
+        member: w.team.member,
+    }
+}
+
+/// TD-SEC-44, SEC-025, SEC-026, D-5316: a used link of a removed member, of a member who lost
+/// the role, and one past its window are the one not-found answer, and nothing more is stored.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_sec_44_a_used_link_of_a_removed_or_role_less_member_or_past_its_end_is_not_found(
+    pool: PgPool,
+) {
+    let w = world(&pool).await;
+    let answer = not_found(&w, &Method::POST).await;
+    let later = Timestamp::now() + SignedDuration::from_hours(2);
+    let (removed, gone) = used_member_quote(&w, later).await;
+    let mut db = pool.acquire().await.expect("db");
+    remove_member(&mut db, owner_acting(&w), removed, Timestamp::now())
+        .await
+        .expect("removed");
+    let (demoted, lost) = used_member_quote(&w, later).await;
+    let roles = Roles::new(false, true).expect("roles");
+    set_roles(&mut db, owner_acting(&w), demoted, roles)
+        .await
+        .expect("roles changed");
+    let soon = Timestamp::now() + SignedDuration::from_secs(3);
+    let (_, ended) = used_member_quote(&w, soon).await;
+    let wait = soon.duration_since(Timestamp::now()) + SignedDuration::from_millis(200);
+    tokio::time::sleep(wait.unsigned_abs()).await;
+    for path in [gone, lost, ended] {
+        let again = send(&w, (&Method::POST, &path, &firm()), Site::Own).await;
+        assert_eq!(again, answer, "{path}: not the one not-found answer");
+    }
+}
+
+/// TD-SEC-44, SEC-025, D-5316: a used Pause link pressed by another signed-in member of the same
+/// business is the one not-found answer and changes nothing.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_sec_44_a_used_session_link_of_another_person_is_not_found(pool: PgPool) {
+    let w = world(&pool).await;
+    let (me, jar) = signed_in(&w).await;
+    let (_, other) = signed_in(&w).await;
+    let checks = Checks {
+        code_done: true,
+        match_passed: true,
+        flagged: false,
+    };
+    moved(&w, Event::Checked(checks)).await;
+    let pause = live_for(&w, (ActionKind::Pause, w.team.business), me).await;
+    assert_eq!(act(&w, &pause, Site::Own, &jar).await.status, 200);
+    let theirs = act(&w, &pause, Site::Own, &other).await;
+    assert_eq!(theirs, not_found(&w, &Method::POST).await, "SEC-025");
+    assert_eq!(status(&w).await, ("paused", Some("self")), "paused once");
+}
+
+/// A card detacher for a business with no saved card: never asked.
+struct NoCards;
+
+impl CardDetach for NoCards {
+    fn detach(&self, _: &str) -> impl Future<Output = Result<(), AdapterError>> + Send {
+        std::future::ready(Err(AdapterError::NotSent))
+    }
+}
+
+/// TD-SEC-44, BIZ-051, SEC-026, D-5758: leaving uses up every unused link of the business without
+/// pressing it, so a Hold or Confirm link nobody pressed is then the one not-found answer, never
+/// "already used" nor the Confirm 303.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_sec_44_a_link_cancelled_by_leaving_is_not_found(pool: PgPool) {
+    let w = world(&pool).await;
+    let answer = not_found(&w, &Method::POST).await;
+    let pick = waiting_pick(&w).await;
+    let hold = path_of(&live(&w, ActionKind::Hold, pick).await);
+    let confirm = path_of(&live(&w, ActionKind::Confirm, pick).await);
+    let jar = session_of(&w, w.mailbox).await;
+    let now = Timestamp::now();
+    let mut db = pool.acquire().await.expect("db");
+    let owner = business_principal(&mut db, &jar, now).await.expect("read");
+    let owner = owner.expect("the owner is signed in");
+    let step = record_session_step_up(&mut db, owner_acting(&w), owner.session(), now).await;
+    step.expect("code");
+    leave(&mut db, &owner, (None, &NoCards), now)
+        .await
+        .expect("left");
+    drop(db);
+    for path in [hold, confirm] {
+        assert!(!unused(&w, &path).await, "{path}: leaving used it up");
+        let pressed = send(&w, (&Method::POST, &path, ""), Site::Own).await;
+        assert_eq!(pressed, answer, "{path}: not the one not-found answer");
+    }
 }
 
 /// The kinds whose `POST` acts with a business session (T455, T543, T463, T458, D-3675, D-3839,
@@ -791,11 +937,8 @@ async fn td_sec_44_pause_and_resume_act_once_with_the_persons_session(pool: PgPo
     assert!(done.no_store && done.text.contains("Job cards paused"));
     assert_eq!(status(&w).await, ("paused", Some("self")));
     let again = act(&w, &pause, Site::Own, &jar).await;
-    assert_eq!(
-        again,
-        not_found(&w, &Method::POST).await,
-        "a used link acts no more"
-    );
+    assert!(already_used(&again), "a used link: {}", again.text);
+    assert_eq!(status(&w).await, ("paused", Some("self")), "paused once");
     let resume = live_for(&w, (ActionKind::Resume, w.team.business), me).await;
     assert_eq!(act(&w, &resume, Site::Own, &jar).await.status, 200);
     assert_eq!(status(&w).await, ("active", None));
@@ -874,7 +1017,8 @@ async fn td_sec_44_the_hold_link_holds_the_pick_once(pool: PgPool) {
     assert!(held(&w, pick).await, "the HOLD is stored");
     assert!(!unused(&w, &path).await, "the link is used");
     let again = send(&w, (&Method::POST, &path, ""), Site::Own).await;
-    assert_eq!(again, not_found(&w, &Method::POST).await);
+    assert!(already_used(&again), "a used link: {}", again.text);
+    assert!(!again.text.contains("new-end"), "it holds no more");
 }
 
 /// TD-SEC-44, PICK-043, SEC-025, D-252, D-1956: a second Hold says why (409) and changes
@@ -951,13 +1095,11 @@ async fn td_sec_44_the_away_link_sets_the_time_once_with_the_persons_session(poo
         set.no_store && set.text.contains("Away until "),
         "D-285's answer line"
     );
-    assert!(away_end(&w).await.is_some_and(|t| t > Timestamp::now()));
-    let again = send_as(&w, (&Method::POST, &away, "&hours=2"), Site::Own, &jar).await;
-    assert_eq!(
-        again,
-        not_found(&w, &Method::POST).await,
-        "a used link acts no more"
-    );
+    let end = away_end(&w).await;
+    assert!(end.is_some_and(|t| t > Timestamp::now()));
+    let again = send_as(&w, (&Method::POST, &away, "&hours=3"), Site::Own, &jar).await;
+    assert!(already_used(&again), "a used link: {}", again.text);
+    assert_eq!(away_end(&w).await, end, "the end is set once");
 }
 
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
@@ -1048,12 +1190,9 @@ async fn td_sec_44_the_busy_link_pauses_once_with_the_persons_session(pool: PgPo
     let ahead = end.duration_since(Timestamp::now());
     let days = SignedDuration::from_hours(71)..=SignedDuration::from_hours(72);
     assert!(days.contains(&ahead), "the end is 3 days on");
-    let again = send_as(&w, (&Method::POST, &busy, "&days=3"), Site::Own, &jar).await;
-    assert_eq!(
-        again,
-        not_found(&w, &Method::POST).await,
-        "a used link acts no more"
-    );
+    let again = send_as(&w, (&Method::POST, &busy, "&days=5"), Site::Own, &jar).await;
+    assert!(already_used(&again), "a used link: {}", again.text);
+    assert_eq!(busy_end(&w).await, Some(end), "the end is set once");
 }
 
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
@@ -1188,9 +1327,20 @@ async fn td_sec_44_the_confirm_link_asks_for_a_code_then_signs_that_device_in(po
         (who.member(), who.business()),
         (w.team.member, w.team.business)
     );
-    let again = send(&w, (&Method::POST, &path, &right), Site::Own).await;
-    assert_eq!(again, not_found(&w, &Method::POST).await, "a used link");
-    assert_eq!(sends.load(Ordering::SeqCst), 1);
+    let pre = ensure_pre_session(CookieJar::new()).expect("pre-session");
+    let (again, to, replayed) = landed(&w, &path, &right, &pre).await;
+    let confirm = format!("/b/picks/{pick}/confirm");
+    assert_eq!(
+        (again, to),
+        (303, confirm),
+        "a used link: the same 303 (D-5316)"
+    );
+    let nobody = business_principal(&mut db, &replayed, Timestamp::now()).await;
+    assert!(
+        nobody.expect("read").is_none(),
+        "the replay signs nobody in"
+    );
+    assert_eq!(sends.load(Ordering::SeqCst), 1, "still one code sent");
 }
 
 /// TD-SEC-44, SEC-004, SEC-027, BIZ-038: the link's own person's live session needs no code
@@ -1218,9 +1368,10 @@ async fn td_sec_44_a_live_session_skips_the_code_unless_the_inbox_is_shared(pool
         business: w.team.business,
         member,
     };
-    record_step_up(&mut db, by, now).await.expect("step-up");
     let who = business_principal(&mut db, &jar, now).await;
     let who = who.expect("read").expect("signed in");
+    let code = record_session_step_up(&mut db, by, who.session(), now);
+    code.await.expect("step-up");
     let phone = CodeTo::Phone(SecretString::from("+19285550142"));
     let shared = set_inbox_shared(&mut db, &who, (true, &phone), now).await;
     shared.expect("shared");
@@ -1356,7 +1507,8 @@ async fn td_sec_44_the_link_phone_link_links_once_with_the_persons_session(pool:
     );
     assert!(!unused(&w, &path).await, "the link is used");
     let again = act(&w, &path, Site::Own, &jar).await;
-    assert_eq!(again, not_found(&w, &Method::POST).await, "it acts once");
+    assert!(already_used(&again), "a used link: {}", again.text);
+    assert_eq!(phones(&w, BLOCKED[0]).await, (false, 1), "it acts once");
     let request = pending(&w, w.team.business, BLOCKED[1], now).await;
     let owners = live_for(&w, (ActionKind::LinkPhone, request), w.team.member).await;
     let theirs = act(&w, &owners, Site::Own, &jar).await;
@@ -1442,4 +1594,289 @@ async fn td_sec_44_a_returned_note_is_audited_without_its_text(pool: PgPool) {
         "the reason's code name only, never the note (PRIV-028)"
     );
     assert!(unused(&w, &path).await, "the bounce leaves the link unused");
+}
+
+/// TD-SEC-80: the owner's `kind` link for `object` minted by text, live for two hours: its path.
+async fn text_link(
+    w: &World,
+    (kind, object): (ActionKind, Uuid),
+) -> Result<String, ActionLinkError> {
+    let mut db = w.pool.acquire().await.expect("db");
+    let now = Timestamp::now();
+    let target = ActionTarget {
+        kind,
+        object,
+        member: w.team.member,
+        business: w.team.business,
+    };
+    let span = (now, now + SignedDuration::from_hours(2));
+    let link = mint_text_confirm_link(&mut db, target, span).await?;
+    Ok(path_of(link.expose_secret()))
+}
+
+/// Signed out, the Confirm link at `path` asks for the code, then the right code signs a new
+/// device in: that device's cookies, and the times just before and just after the code.
+async fn coded_in(w: &World, path: &str) -> (CookieJar, Timestamp, Timestamp) {
+    let asked = send(w, (&Method::POST, path, ""), Site::Own).await;
+    assert_eq!(asked.status, 200, "the code step");
+    let pre = ensure_pre_session(CookieJar::new()).expect("pre-session");
+    let before = Timestamp::now();
+    let (status, _, jar) = landed(w, path, &format!("&code={RIGHT_CODE}"), &pre).await;
+    assert_eq!(status, 303, "the right code signs in");
+    (jar, before, Timestamp::now())
+}
+
+/// Whether `jar` is the owner's business session at `at`, read with `business_principal` as the
+/// Confirm page reads it (D-5629).
+async fn session_at(w: &World, jar: &CookieJar, at: Timestamp) -> bool {
+    let mut db = w.pool.acquire().await.expect("db");
+    let who = business_principal(&mut db, jar, at).await.expect("read");
+    who.is_some_and(|p| (p.member(), p.business()) == (w.team.member, w.team.business))
+}
+
+/// The business page `/b` with `jar` now, through the router: its status.
+async fn home(w: &World, jar: &CookieJar) -> u16 {
+    send_as(w, (&Method::GET, "/b", ""), Site::Own, jar)
+        .await
+        .status
+}
+
+/// TD-SEC-80, SEC-004, PICK-033, D-4425: a text-minted Confirm link passed with the code starts a
+/// session that ends 30 minutes after the code: live at 29:59, refused at 30:00 as no session is.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_sec_80_a_text_started_session_lasts_30_minutes(pool: PgPool) {
+    let (w, sends) = coded(&pool, true).await;
+    let pick = Uuid::new_v4();
+    let path = text_link(&w, (ActionKind::Confirm, pick))
+        .await
+        .expect("minted");
+    let (jar, before, after) = coded_in(&w, &path).await;
+    assert_eq!(sends.load(Ordering::SeqCst), 1, "one code sent");
+    assert!(!unused(&w, &path).await, "the right code used the link");
+    let pre = ensure_pre_session(CookieJar::new()).expect("pre-session");
+    assert_eq!(home(&w, &jar).await, 200, "the device is signed in");
+    assert_ne!(home(&w, &pre).await, 200, "no session is refused");
+    let almost = before + SignedDuration::from_secs(29 * 60 + 59);
+    assert!(session_at(&w, &jar, almost).await, "live at 29:59");
+    let ended = after + SignedDuration::from_mins(30);
+    assert!(!session_at(&w, &jar, ended).await, "refused at 30:00");
+    assert!(!session_at(&w, &pre, ended).await, "as no session is");
+}
+
+/// TD-SEC-80, SEC-004, D-3675: an emailed Confirm link passed with the code still starts a
+/// 30-day session, which answers at 29 days.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_sec_80_an_emailed_confirm_session_still_answers_at_29_days(pool: PgPool) {
+    let (w, _) = coded(&pool, true).await;
+    let path = path_of(&live(&w, ActionKind::Confirm, Uuid::new_v4()).await);
+    let (jar, _, after) = coded_in(&w, &path).await;
+    assert_eq!(home(&w, &jar).await, 200, "the device is signed in");
+    let later = after + SignedDuration::from_hours(29 * 24);
+    assert!(session_at(&w, &jar, later).await, "live at 29 days");
+}
+
+/// TD-SEC-80, D-4425: only a text-minted link's grant is `text_started`.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_sec_80_only_a_text_minted_grant_is_text_started(pool: PgPool) {
+    let w = world(&pool).await;
+    let pick = Uuid::new_v4();
+    let texted = text_link(&w, (ActionKind::Confirm, pick))
+        .await
+        .expect("minted");
+    let emailed = path_of(&live(&w, ActionKind::Confirm, pick).await);
+    let mut db = pool.acquire().await.expect("db");
+    for (path, text) in [(texted, true), (emailed, false)] {
+        let token = path.rsplit('/').next().expect("token");
+        let used = use_action_link(
+            &mut db,
+            (ActionKind::Confirm, pick),
+            token,
+            None,
+            Timestamp::now(),
+        );
+        let grant = used.await.expect("a grant");
+        assert_eq!(grant.text_started(), text, "{path}");
+    }
+}
+
+/// TD-SEC-80: the text-minted Confirm `token` for `pick` (at `path`) under every other kind,
+/// under another pick, and with text appended.
+fn elsewhere(path: &str, pick: Uuid, token: &str) -> Vec<String> {
+    let mut cases: Vec<String> = ActionKind::ALL
+        .into_iter()
+        .filter(|kind| *kind != ActionKind::Confirm)
+        .map(|kind| format!("/b/a/{}/{pick}/{token}", kind.slug()))
+        .collect();
+    cases.push(format!("/b/a/confirm/{}/{token}", Uuid::new_v4()));
+    for tail in ["%3Atext", ":text", "0", "%20"] {
+        cases.push(format!("{path}{tail}"));
+    }
+    cases
+}
+
+/// TD-SEC-80, SEC-025, D-4425: a text-minted token under another kind or object, or with
+/// anything appended, is the one not-found answer, uses nothing and starts no session.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_sec_80_a_text_token_elsewhere_or_appended_is_not_found(pool: PgPool) {
+    let (w, sends) = coded(&pool, true).await;
+    let pick = Uuid::new_v4();
+    let path = text_link(&w, (ActionKind::Confirm, pick))
+        .await
+        .expect("minted");
+    let token = path.rsplit('/').next().expect("token").to_owned();
+    let cases = elsewhere(&path, pick, &token);
+    let right = format!("&code={RIGHT_CODE}");
+    for method in [Method::GET, Method::POST] {
+        let answer = not_found(&w, &method).await;
+        for case in &cases {
+            let reply = send(&w, (&method, case, &right), Site::Own).await;
+            let today = case.replace(&token, UNISSUED);
+            let unissued = send(&w, (&method, &today, &right), Site::Own).await;
+            assert_eq!(
+                reply, unissued,
+                "{method} {case}: as an unissued token today"
+            );
+            if case.starts_with(&path) {
+                assert_eq!(reply, answer, "{method} {case}: not found");
+            }
+        }
+    }
+    let mut db = pool.acquire().await.expect("db");
+    for kind in ActionKind::ALL
+        .into_iter()
+        .filter(|k| *k != ActionKind::Confirm)
+    {
+        let open = open_action_link(&mut db, (kind, pick), &token, Timestamp::now()).await;
+        assert_eq!(
+            open,
+            Err(ActionLinkError::Ended),
+            "checked as {}",
+            kind.slug()
+        );
+    }
+    let pre = ensure_pre_session(CookieJar::new()).expect("pre-session");
+    for case in cases.iter().filter(|case| case.starts_with(&path)) {
+        let (status, _, jar) = landed(&w, case, &right, &pre).await;
+        assert_eq!(status, 404, "{case}");
+        assert!(
+            !session_at(&w, &jar, Timestamp::now()).await,
+            "{case}: no session"
+        );
+    }
+    assert!(unused(&w, &path).await, "nothing used the link");
+    assert_eq!(sends.load(Ordering::SeqCst), 0, "no code sent");
+}
+
+/// TD-SEC-80, D-4425: a token that is not 64 lower-case hex characters is refused before any
+/// read (in a broken transaction, where a read would fail as a store error).
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_sec_80_a_misshapen_token_is_refused_before_any_read(pool: PgPool) {
+    let mut tx = pool.begin().await.expect("tx");
+    let broken = sqlx::query!("SELECT 1 / $1::int AS x", 0)
+        .fetch_one(&mut *tx)
+        .await;
+    assert!(broken.is_err(), "the transaction is now aborted");
+    let at = (ActionKind::Confirm, Uuid::new_v4());
+    let now = Timestamp::now();
+    let upper = UNISSUED.to_uppercase();
+    let long = format!("{UNISSUED}0");
+    for token in [
+        upper.as_str(),
+        &long,
+        &UNISSUED[1..],
+        "",
+        &format!("{UNISSUED}:text")[..],
+    ] {
+        let open = open_action_link(&mut tx, at, token, now).await;
+        assert_eq!(open, Err(ActionLinkError::Ended), "open {token}");
+        let used = use_action_link(&mut tx, at, token, None, now).await;
+        assert_eq!(used, Err(ActionLinkError::Ended), "use {token}");
+    }
+    let read = open_action_link(&mut tx, at, UNISSUED, now).await;
+    assert!(
+        matches!(read, Err(ActionLinkError::Store(_))),
+        "a good shape is read"
+    );
+}
+
+/// TD-SEC-80, D-4425: minting any kind but Confirm by text is refused.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_sec_80_only_confirm_is_minted_by_text(pool: PgPool) {
+    let w = world(&pool).await;
+    for kind in ActionKind::ALL {
+        let minted = text_link(&w, (kind, w.job)).await;
+        assert_eq!(
+            minted.is_ok(),
+            kind == ActionKind::Confirm,
+            "{}",
+            kind.slug()
+        );
+        if kind != ActionKind::Confirm {
+            assert_eq!(minted, Err(ActionLinkError::NotAllowed));
+        }
+    }
+}
+
+/// TD-SEC-80: `member` (signed in as `jar`) marks their inbox shared after a fresh step-up.
+async fn share_inbox(w: &World, member: Uuid, jar: &CookieJar) {
+    let (mut db, now) = (w.pool.acquire().await.expect("db"), Timestamp::now());
+    let by = Acting {
+        business: w.team.business,
+        member,
+    };
+    let who = business_principal(&mut db, jar, now).await;
+    let who = who.expect("read").expect("signed in");
+    let code = record_session_step_up(&mut db, by, who.session(), now);
+    code.await.expect("step-up");
+    let phone = CodeTo::Phone(SecretString::from("+19285550142"));
+    let shared = set_inbox_shared(&mut db, &who, (true, &phone), now).await;
+    shared.expect("shared");
+}
+
+/// TD-SEC-80: the text-minted Confirm link of `member` for a new pick: its path.
+async fn text_link_for(w: &World, member: Uuid) -> String {
+    let mut db = w.pool.acquire().await.expect("db");
+    let now = Timestamp::now();
+    let target = ActionTarget {
+        kind: ActionKind::Confirm,
+        object: Uuid::new_v4(),
+        member,
+        business: w.team.business,
+    };
+    let span = (now, now + SignedDuration::from_hours(2));
+    let link = mint_text_confirm_link(&mut db, target, span).await;
+    path_of(link.expect("minted").expose_secret())
+}
+
+/// Whether `jar` is `member`'s business session at `at`, read as the Confirm page reads it.
+async fn held_at(w: &World, jar: &CookieJar, member: Uuid, at: Timestamp) -> bool {
+    let mut db = w.pool.acquire().await.expect("db");
+    let who = business_principal(&mut db, jar, at).await.expect("read");
+    who.is_some_and(|p| p.member() == member)
+}
+
+/// TD-SEC-80, SEC-004, SEC-027, D-4425, D-5630: a person signed in with a 30-day session and
+/// "This inbox is shared" on passes a text-minted, then an emailed, Confirm link with the right
+/// code: each link is used, no new session cookie is set, and the session they held is kept as
+/// it was, still live at 29 days, never shortened to 30 minutes or started again.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_sec_80_a_shared_inbox_code_keeps_the_live_session(pool: PgPool) {
+    let (w, sends) = coded(&pool, true).await;
+    let (member, jar) = signed_in(&w).await;
+    share_inbox(&w, member, &jar).await;
+    let emailed = live_for(&w, (ActionKind::Confirm, Uuid::new_v4()), member).await;
+    for path in [text_link_for(&w, member).await, emailed] {
+        let asked = act(&w, &path, Site::Own, &jar).await;
+        assert_eq!(asked.status, 200, "a shared inbox asks for the code");
+        let (status, _, set) = landed(&w, &path, &format!("&code={RIGHT_CODE}"), &jar).await;
+        assert_eq!(status, 303, "the right code goes on to the Confirm page");
+        assert!(!unused(&w, &path).await, "the right code used the link");
+        assert!(set.get(SESSION_COOKIE).is_none(), "no new session cookie");
+    }
+    assert_eq!(sends.load(Ordering::SeqCst), 2, "one code per link");
+    let later = Timestamp::now() + SignedDuration::from_hours(29 * 24);
+    assert!(
+        held_at(&w, &jar, member, later).await,
+        "the session is kept"
+    );
 }

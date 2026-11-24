@@ -111,7 +111,7 @@ pub use crate::open_cards_digest::{DigestFacts, MIN_LEFT, digest_goes, listable,
 pub use crate::optout::{
     FollowUp, InboundText, ListingKey, OPTOUT_FOLLOWUP_KIND, Outcome, RevokeChannel, listed_by,
     listing_key, on_inbound_text, queue_optout_followup, run_optout_followup, send_checked,
-    still_unlisted, suppress,
+    still_unlisted, suppress, suppress_indexed, suppress_logged,
 };
 pub use crate::optout_email::{
     OPTOUT_CONFIRMATION_EMAIL, OPTOUT_WROTE_AGAIN_EMAIL, OptOutEmailSender, WROTE_AGAIN_ACTION,
@@ -176,6 +176,10 @@ pub use crate::suppression_rekey::{
 pub use crate::suppression_versions::{SuppressionVersionsError, check_suppression_versions};
 pub use crate::templates::{
     Audience, Encoding, Language, Registry, Segments, TemplateError, Text, count_segments,
+};
+pub use crate::update_emails::{
+    DATA_REQUEST_TEMPLATE, DataLinkKind, LinkEmail, TEXT_ONLY_UPDATES, UPDATE_EMAIL_PREFIX,
+    UPDATE_TEMPLATES, queue_data_request_link, queue_update_email, set_update_footer,
 };
 
 /// Renders template `id` for a person whose wanted language is `wanted`, filling each `{name}` from

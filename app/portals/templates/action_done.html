@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{#- The answer to a second press of a used email action link (T814; SEC-026, BIZ-038, D-5316,
+    D-5320). Shown for every kind but Quote and Confirm, it says the link was used and links to
+    the business portal home, and names no job, amount or person. It answers only a POST, so it
+    has no PAGE_STATES entry; tests/e2e/action_done_served.spec.ts checks it with axe-core. -#}
+{% block title %}This link was already used{% endblock %}
+{% block main %}
+<h1>This link was already used</h1>
+<p id="used-why"><a href="{{ portal }}">Open your portal</a> to see where things stand.</p>
+{% endblock %}

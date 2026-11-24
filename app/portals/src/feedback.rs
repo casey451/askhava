@@ -14,6 +14,12 @@
 //! page says shown feedback is all the feedback received. No name, phone or address is read. The
 //! page is `noindex`, `no-store`, behind the cross-site refusal, and its form carries the
 //! pre-session CSRF token (SEC-042).
+//!
+//! Her words are checked as typed (empty, too long), then run through `privacy::api::scrub`
+//! (default common words, no vault name, a fresh name memory, as `help::scrubbed` does) and
+//! checked again for length on the scrubbed text, so `jobs.feedback.body` never keeps a phone
+//! number, email or street address she typed (PRIV-008, PRIV-001; D-5399, T819). The words go to
+//! `store` trimmed and scrubbed; a text that scrubs to only `[removed]` is stored as scrubbed.
 
 use std::sync::Arc;
 
@@ -22,6 +28,7 @@ use askhava_core::api::{Clock, LinkToken};
 use askhava_jobs::api::feedback::{MAX_CHARS, given, store};
 use askhava_jobs::api::quote_token::resolve;
 use askhava_jobs::api::{current, job_number};
+use askhava_privacy::api::{CommonWords, Known, NameMemory, scrub};
 use axum::Router;
 use axum::extract::{FromRef, Path, State};
 use axum::http::{HeaderValue, StatusCode};
@@ -44,11 +51,14 @@ pub const FEEDBACK_ROUTE: &str = "/f/{token}";
 /// `ink` centre when ticked, so its edge is at least 3:1 against the page (A11Y-007, WEB-027).
 pub const FEEDBACK_CSS_ROUTE: &str = "/static/portals/feedback.css";
 
-/// The stylesheet [`FEEDBACK_CSS_ROUTE`] serves (same origin, so the CSP allows it, SEC-013).
+/// The stylesheet [`FEEDBACK_CSS_ROUTE`] serves (same origin, so the CSP allows it, SEC-013). Under
+/// forced colours the box goes back to the native control, so its check never vanishes with the
+/// fill (A11Y-007, DESIGN_SPEC section 6, D-4252, T611).
 const FEEDBACK_CSS: &str = "#feedback-share{appearance:none;width:24px;height:24px;margin:0 8px 0 0;\
 vertical-align:middle;border:2px solid #6e8077;border-radius:3px;background:#fff}\
 #feedback-share:checked{background:#1e2926;box-shadow:inset 0 0 0 4px #fff}\
-#feedback-body{display:block;width:100%;max-width:40rem;box-sizing:border-box}\n";
+#feedback-body{display:block;width:100%;max-width:40rem;box-sizing:border-box}\
+@media (forced-colors:active){#feedback-share{appearance:auto}}\n";
 
 /// The shared form stylesheet a page with native checkboxes or radios links before the site's own
 /// (T101): Chromium reports a native box's edge as 0px and its fill as transparent, so each box is
@@ -57,13 +67,16 @@ vertical-align:middle;border:2px solid #6e8077;border-radius:3px;background:#fff
 pub const FORMS_CSS_ROUTE: &str = "/static/portals/forms.css";
 
 /// The stylesheet [`FORMS_CSS_ROUTE`] serves (same origin, so the CSP allows it, SEC-013). No
-/// `outline` rule, so the browser's focus outline stays visible.
+/// `outline` rule, so the browser's focus outline stays visible. Under forced colours each box goes
+/// back to the native control (`appearance:auto`), so its check never vanishes with the fill
+/// (A11Y-007, DESIGN_SPEC section 6, D-4252, T611).
 const FORMS_CSS: &str = "input[type=checkbox],input[type=radio]{appearance:none;width:24px;\
 height:24px;margin:0 8px 0 0;vertical-align:middle;border:2px solid #6e8077;background:#fff}\
 input[type=checkbox]{border-radius:3px}input[type=radio]{border-radius:50%}\
 input[type=checkbox]:checked,input[type=radio]:checked{background:#1e2926;\
 box-shadow:inset 0 0 0 4px #fff}span[id$=\"-hint\"],span[id$=\"-error\"]{display:block}\
-button{min-height:24px}\n";
+button{min-height:24px}\
+@media (forced-colors:active){input[type=checkbox],input[type=radio]{appearance:auto}}\n";
 
 /// JOB-017, WORD-001: the share box's label, word for word, with the display name and the public
 /// domain from the brand file (D-1932, T294).
@@ -177,6 +190,23 @@ pub(crate) fn check(body: &str) -> Option<Problem> {
     } else {
         None
     }
+}
+
+/// JOB-017, PRIV-008, PRIV-001 (D-5399): her `body` as it is stored: [`check`]ed as typed, then
+/// scrubbed with default common words, no vault name and a fresh name memory (the page holds no
+/// vault grant), then checked again for length on the scrubbed, trimmed text.
+pub(crate) fn scrubbed(body: &str) -> Result<String, Problem> {
+    if let Some(problem) = check(body) {
+        return Err(problem);
+    }
+    let common = CommonWords::default();
+    let known = Known {
+        common: &common,
+        vault_name: None,
+    };
+    let clean = scrub(body.trim(), &known, &mut NameMemory::default());
+    let words = clean.as_str().trim();
+    check(words).map_or_else(|| Ok(words.to_owned()), Err)
 }
 
 /// The feedback page's router over `pool`, timed by `clock` (JOB-017): `GET` and `POST`
@@ -307,10 +337,10 @@ async fn keep(
     })
 }
 
-/// `POST /f/{token}`: stores the words and the tick as sent, then shows the thanks (also for a
-/// repeat send, which stores nothing); a job that left Done after the page opened is a bare 404
-/// with nothing stored; an empty or too long send shows the form again with what was typed and the
-/// problem (JOB-017, A11Y-018).
+/// `POST /f/{token}`: stores the scrubbed words ([`scrubbed`]) and the tick as sent, then shows
+/// the thanks (also for a repeat send, which stores nothing); a job that left Done after the page
+/// opened is a bare 404 with nothing stored; an empty or too long send, as typed or scrubbed, shows
+/// the form again with what was typed and the problem (JOB-017, A11Y-018, PRIV-008).
 async fn send(
     State(page): State<FeedbackPage>,
     Path(raw): Path<String>,
@@ -324,19 +354,22 @@ async fn send(
     };
     let share = form.share.is_some();
     let csrf = csrf_token(&jar).unwrap_or_default();
-    if let Some(problem) = check(&form.body) {
-        let view = FeedbackView {
-            body: form.body,
-            share,
-            error: Some(problem.message()),
-            ..FeedbackView::form(request, raw.clone(), csrf)
-        };
-        return (StatusCode::UNPROCESSABLE_ENTITY, page_response(jar, &view)).into_response();
-    }
+    let words = match scrubbed(&form.body) {
+        Ok(words) => words,
+        Err(problem) => {
+            let view = FeedbackView {
+                body: form.body,
+                share,
+                error: Some(problem.message()),
+                ..FeedbackView::form(request, raw.clone(), csrf)
+            };
+            return (StatusCode::UNPROCESSABLE_ENTITY, page_response(jar, &view)).into_response();
+        }
+    };
     let Ok(mut db) = page.pool.acquire().await else {
         return StatusCode::INTERNAL_SERVER_ERROR.into_response();
     };
-    match keep(&mut db, job, (form.body.trim(), share), page.clock.now()).await {
+    match keep(&mut db, job, (&words, share), page.clock.now()).await {
         Ok(Kept::Stored | Kept::Already) => {}
         Ok(Kept::NotOpen) => return StatusCode::NOT_FOUND.into_response(),
         Err(status) => {
@@ -365,7 +398,7 @@ mod tests {
     use sqlx::PgConnection;
     use sqlx::types::Uuid;
 
-    use super::{FeedbackView, Kept, MAX_CHARS, Problem, check, keep, share_label};
+    use super::{FeedbackView, Kept, MAX_CHARS, Problem, check, keep, scrubbed, share_label};
 
     /// `text` with its English brand tokens filled from the brand file (WORD-001, D-1932).
     fn fill(text: &str) -> String {
@@ -450,6 +483,17 @@ mod tests {
             Problem::Empty.message(),
             "Please write something before you send."
         );
+    }
+
+    /// PRIV-008 (D-5399): the length check runs again on the scrubbed text, since `[removed]` can
+    /// be longer than the number it replaced; an empty send is refused before scrubbing.
+    #[test]
+    fn the_length_is_checked_again_after_scrubbing() {
+        let typed = format!("{} 5550142", "a".repeat(MAX_CHARS - 8));
+        assert_eq!(check(&typed), None);
+        assert_eq!(scrubbed(&typed), Err(Problem::TooLong));
+        assert_eq!(scrubbed("  "), Err(Problem::Empty));
+        assert_eq!(scrubbed(" call 5550142 "), Ok("call [removed]".to_owned()));
     }
 
     fn at(minute: i64) -> Timestamp {
@@ -721,6 +765,20 @@ mod token_tests {
             let tokens = ["#feedback-", "#6e8077", "#1e2926", "#fff"];
             let left = tokens.iter().fold(css.to_owned(), |c, t| c.replace(t, ""));
             assert!(!left.contains('#'), "{css}");
+        }
+    }
+
+    /// D-4252 (A11Y-007): each stylesheet keeps D-3700's drawn box and hands it back to the native
+    /// control under forced colours, after the drawn rule so it wins there.
+    #[test]
+    fn portal_stylesheets_hand_boxes_back_under_forced_colours() {
+        for css in [FEEDBACK_CSS, FORMS_CSS] {
+            let drawn = css.find("appearance:none").expect("drawn box");
+            let native = css
+                .find("@media (forced-colors:active)")
+                .expect("forced-colours block");
+            assert!(drawn < native, "{css}");
+            assert!(css[native..].contains("appearance:auto"), "{css}");
         }
     }
 }

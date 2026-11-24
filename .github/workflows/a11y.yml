@@ -18,6 +18,12 @@ on:
   push:
     branches: ["claude/**", "dependabot/**", "!claude/kit-state", "!claude/train/**", "!claude/wip/**"]
   workflow_call:
+# D-5554: a newer push to the same branch cancels its older run, freeing a shared runner; a push to main,
+# the nightly's workflow_call and any other event get a group of their own (the run id) and never cancel.
+# A literal prefix, never github.workflow (under workflow_call it names the caller, nightly-main.yml).
+concurrency:
+  group: ally-${{ github.event_name == 'push' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'push' && github.ref != 'refs/heads/main' }}
 permissions:
   contents: read
 env:
@@ -26,7 +32,7 @@ env:
 jobs:
   a11y:
     name: "Ally"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     # Pinned by digest (SEC-021, SEC-045), the same image as ci.yml.
     services:
@@ -48,8 +54,31 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           persist-credentials: false
+          fetch-depth: 200
+
+      - name: Does this change touch the app or the journeys? (E2e's rule, fail closed, D-489, D-5554)
+        id: changes
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # The rule is ci.yml's E2e rule exactly (tests/test_ci_workflow.py keeps them equal): Ally builds and serves
+          # the same app as E2e. The job always runs and passes when it skips, so the required name Ally reports on
+          # every head. Main, the nightly (it calls this workflow with its own event name) and any workflow_call run in full.
+          if [ "$EVENT_NAME" = "schedule" ] || [ "$EVENT_NAME" = "workflow_call" ] || [ "$EVENT_NAME" = "workflow_dispatch" ] || [ "$GITHUB_REF_NAME" = "main" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"; echo "run=true: a full run ($EVENT_NAME on $GITHUB_REF_NAME)"; exit 0
+          fi
+          # Fail closed: a failed fetch, merge-base or diff sets run=true, never reads as "nothing changed".
+          run=false
+          if ! git fetch --no-tags --depth=200 "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}" main:refs/remotes/origin/main; then run=true; fi
+          if ! base="$(git merge-base origin/main HEAD)"; then run=true; fi
+          if ! git diff --no-renames --name-only "$base" HEAD > "$RUNNER_TEMP/changed-files.txt"; then run=true; fi
+          < "$RUNNER_TEMP/changed-files.txt" grep -Eq '^(app/|migrations/|docs/legal/|docs/catalog/|docs/architecture\.md|docs/copy/mail-app-steps\.md|schemas/|stand_ins/|tests/(e2e|a11y|perf)/|tests/security/(Cargo\.toml|tests/(perf_db_route|control_router_absent)\.rs)|perf/|package(-lock)?\.json|tsconfig|Cargo\.(toml|lock)|rust-toolchain\.toml|\.sqlx/|\.github/workflows/(ci|a11y)\.yml)' && run=true
+          echo "run=$run" >> "$GITHUB_OUTPUT"
+          if [ "$run" = true ]; then echo "run=true: this change touches what Ally tests"; else echo "run=false: no Ally input changed, so the build and suite are skipped and Ally passes"; fi
 
       - name: Database roles the migrations grant to (askhava_app, askhava_migrator; D-092, D-491)
+        if: steps.changes.outputs.run == 'true'
         run: |
           for role in askhava_app askhava_migrator; do
             psql "$DATABASE_URL" -qtc "SELECT 1 FROM pg_roles WHERE rolname = '${role}'" | grep -q 1 \
@@ -58,40 +87,47 @@ jobs:
           done
 
       - name: Rust toolchain (the pinned release from rust-toolchain.toml)
+        if: steps.changes.outputs.run == 'true'
         run: |
           rustup toolchain install "$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)" --profile minimal
 
       - name: Rust build cache (the same build as ci.yml's E2e job, D-693)
+        if: steps.changes.outputs.run == 'true'
         uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
-          shared-key: e2e
+          shared-key: e2e-ubuntu-24.04
           # Restored on every run, saved only on main, where the nightly calls this workflow (D-2782).
           save-if: ${{ github.ref == 'refs/heads/main' }}
 
       - name: Build server and worker with test-control (never the release build, SEC-035)
+        if: steps.changes.outputs.run == 'true'
         run: |
           cargo build -p askhava-server --bins --locked --features askhava-core/test-control
 
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      - if: steps.changes.outputs.run == 'true'
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: "22"
           cache: npm
 
       - name: npm ci and the browser scripts (npm run build writes the .js beside each .ts)
+        if: steps.changes.outputs.run == 'true'
         run: |
           npm ci --ignore-scripts
           npm run build
 
       - name: Playwright browser cache (keyed by package-lock.json, which pins @playwright/test)
+        if: steps.changes.outputs.run == 'true'
         id: browsers
         # Restored on every run; saved by the step after the install, on main only (D-3143, as D-2782 did for the
         # Rust caches): a branch's entry is readable by that branch alone.
         uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          key: playwright-${{ runner.os }}-ubuntu-24.04-${{ hashFiles('package-lock.json') }}
 
       - name: Chromium and its system libraries
+        if: steps.changes.outputs.run == 'true'
         timeout-minutes: 15
         env:
           CACHE_HIT: ${{ steps.browsers.outputs.cache-hit }}
@@ -130,20 +166,21 @@ jobs:
           fi
 
       - name: Save the Playwright browsers to the cache (main only, D-3143)
-        if: github.ref == 'refs/heads/main' && steps.browsers.outputs.cache-hit != 'true'
+        if: github.ref == 'refs/heads/main' && steps.browsers.outputs.cache-hit != 'true' && steps.changes.outputs.run == 'true'
         uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: ~/.cache/ms-playwright
           key: ${{ steps.browsers.outputs.cache-primary-key }}
 
       - name: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing)
+        if: steps.changes.outputs.run == 'true'
         env:
           CI: "true"
         run: |
           npx playwright test --config tests/a11y/playwright.config.ts
 
       - name: Every axe incomplete result, listed in the job summary (A11Y-025)
-        if: always() && hashFiles('test-results/a11y-report/results.json') != ''
+        if: always() && steps.changes.outputs.run == 'true' && hashFiles('test-results/a11y-report/results.json') != ''
         run: |
           python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
           import json
@@ -166,7 +203,7 @@ jobs:
           PY
 
       - name: Keep the JSON report
-        if: always() && hashFiles('test-results/a11y-report/results.json') != ''
+        if: always() && steps.changes.outputs.run == 'true' && hashFiles('test-results/a11y-report/results.json') != ''
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: a11y-report

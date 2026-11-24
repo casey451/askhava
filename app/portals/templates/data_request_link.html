@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{#- The data-request link page (T804; PRIV-031, SEC-026, SEC-009, A11Y-011; D-5281, D-5339,
+    D-5340): opening the emailed link shows what she asked for and one button that posts the CSRF
+    token to the link's own path; nothing happens until it is pressed. A link that is unknown,
+    used or past its 15 minutes shows the one generic line with the homeowner sign-in link. After
+    the button: a copy says to sign in for the file (no data here), a delete shows the PRIV-011
+    sentence. No timer, no JavaScript. -#}
+{% block title %}{{ view.title }}{% endblock %}
+{% block main %}
+<h1>{{ view.title }}</h1>
+{% for line in view.lines %}<p>{{ line }}</p>
+{% endfor %}{% if view.button %}<form method="post" id="confirm-form">
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<button type="submit" id="confirm-request">{{ view.button_label }}</button>
+</form>
+{% endif %}{% if view.sign_in %}<p><a href="{{ sign_in }}">Sign in to your page</a></p>
+{% endif %}{% endblock %}

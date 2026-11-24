@@ -6,9 +6,9 @@
 //! times with their form (CARD-022); [`save_open_cards_times`] stores that person's choice through
 //! `businesses::api`, for themselves only. [`require_step_up`] is the gate every SEC-038 change
 //! calls first: a live 30-day session is not enough, the person must have passed a Verify code in
-//! the last 5 minutes (`businesses::api::has_fresh_step_up`); a refusal is one `authz_denied`
-//! security event (SEC-048). The routes ([`BUSINESS_HOME_ROUTE`], [`OPEN_CARDS_ROUTE`]) are served
-//! with the business portal (D-1728).
+//! the last 5 minutes in this same session (`businesses::api::has_fresh_step_up`, D-5314); a
+//! refusal is one `authz_denied` security event (SEC-048). The routes ([`BUSINESS_HOME_ROUTE`],
+//! [`OPEN_CARDS_ROUTE`]) are served with the business portal (D-1728).
 //!
 //! T195 (BIZ-015, BIZ-029, SEC-038; D-491, D-492, D-1912 to D-1916): [`billing_page`] and
 //! [`statement_csv`] show a `payments::api::Statement` (the ledger only; CSV, no PDF);
@@ -105,9 +105,9 @@ pub enum StepUpError {
     Database,
 }
 
-/// SEC-038, SEC-048, D-480: `Ok` only when `principal` passed a Verify code no more than 5
-/// minutes before `now`; else one `authz_denied` event for `route` with the member as actor, and
-/// one log line naming `change` (no value).
+/// SEC-038, SEC-048, D-480, D-5314: `Ok` only when `principal` passed a Verify code in its own
+/// session no more than 5 minutes before `now`; else one `authz_denied` event for `route` with
+/// the member as actor, and one log line naming `change` (no value).
 ///
 /// The refusal's event is written on `db`, so call this on a connection whose work is kept, never
 /// inside a transaction the caller rolls back when this refuses: the rollback would drop the
@@ -125,7 +125,7 @@ pub async fn require_step_up(
         business: principal.business,
         member: principal.member,
     };
-    let fresh = has_fresh_step_up(db, by, now).await;
+    let fresh = has_fresh_step_up(db, by, principal.session, now).await;
     if fresh.map_err(|_| StepUpError::Database)? {
         return Ok(());
     }
@@ -841,7 +841,7 @@ pub async fn reply_to_complaint(
 mod tests {
     use askhava_businesses::api::{
         BusinessesError, NewComplaint, add_owner, complaints, create, open_cards_times,
-        record_complaint, record_step_up,
+        record_complaint, record_session_step_up,
     };
     use askhava_payments::api::MoneyView;
 
@@ -903,6 +903,7 @@ mod tests {
             business,
             owner: true,
             roles: (true, true),
+            session: Uuid::new_v4(),
         };
         let codes = |c: &[&str]| c.iter().map(|s| (*s).to_owned()).collect::<Vec<_>>();
         for bad in [codes(&["8am", "noon", "5pm"]), codes(&["9am"])] {
@@ -1117,6 +1118,7 @@ mod tests {
             business,
             owner: true,
             roles: (true, true),
+            session: Uuid::new_v4(),
         };
         (Acting { business, member }, me)
     }
@@ -1132,7 +1134,8 @@ mod tests {
         assert_eq!(none, needs, "the gate refuses before payments sees the 0");
         let card = SavedCard::new("pm_fake1", "card", "visa", "4242").expect("card");
         assert_eq!(change_saved_card(&mut db, &me, &card, t(10)).await, needs);
-        record_step_up(&mut db, who, t(100)).await.expect("code");
+        let code = record_session_step_up(&mut db, who, me.session(), t(100));
+        code.await.expect("code");
         let zero = change_fee_limit(&mut db, &me, Some(0), t(100 + 240)).await;
         assert_eq!(zero, Err(BillingChangeError::Payments), "payments reached");
         let ok = change_fee_limit(&mut db, &me, Some(9_000), t(100 + 240)).await;

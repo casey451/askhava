@@ -827,14 +827,21 @@ def check(sim):
                 bad("photo_location_not_stripped", f"card {k['id']}")
 
     # --- texting rules, judged from the carrier log: night texts only as a direct reply (they texted in the last 15 min)
-    help_at = defaultdict(list)
-    for frm, body, t, sid in sim.sms.inbound_log:
-        if body.strip().upper() in ("HELP", "INFO"):
-            help_at[frm].append(t)
-    def help_reply(m):
-        """The HELP reply, which an opted-out number still gets (CON-018, D-131): the carrier log's kind, sent within
-        5 minutes of a HELP or INFO from that number."""
-        return m["kind"] == "help" and any(0 <= m["at"] - t <= 5 for t in help_at.get(m["to"], []))
+    def opted_out_before(phone, sid):
+        """Whether `phone` was opted out when inbound text `sid` came in: its last opt-out word or natural opt-out
+        before it came after its last START or UNSTOP. Such a HELP gets no text reply (CON-013, CON-018, D-5280).
+        The word list and pattern are the checker's own, never app.py's (F07, D-107)."""
+        out = False
+        for frm, body, t, s in sim.sms.inbound_log:
+            if s == sid:
+                break
+            up = body.strip().upper()
+            if frm == phone and up in ("START", "UNSTOP"):
+                out = False
+            elif frm == phone and (up in ("STOP", "STOPALL", "UNSUBSCRIBE", "CANCEL", "END", "QUIT")
+                                   or re.search(r"stop (texting|sending)|please stop", body.lower())):
+                out = True
+        return out
     stop_at = {}
     for frm, body, t, sid in sim.sms.inbound_log:
         if body.strip().upper() in ("STOP", "STOPALL", "UNSUBSCRIBE", "CANCEL", "END", "QUIT"):
@@ -844,7 +851,7 @@ def check(sim):
         if not (8 <= h < 21) and m["kind"] not in ("safety", "stop_confirm", "pick_code"):
             if not any(0 <= m["at"] - t <= 15 for t in inbound_by_phone.get(m["to"], [])):
                 bad("text_in_quiet_hours", f"{m['kind']} at {int(h)}:{int((h%1)*60):02d}")
-        if m["to"] in stop_at and m["at"] > stop_at[m["to"]] + 1 and m["kind"] != "stop_confirm" and not help_reply(m):
+        if m["to"] in stop_at and m["at"] > stop_at[m["to"]] + 1 and m["kind"] != "stop_confirm":
             later_start = [t for frm, body, t, sid in sim.sms.inbound_log if frm == m["to"] and body.strip().upper() in ("START", "UNSTOP") and t > stop_at[m["to"]]]
             if not later_start:
                 bad("text_after_stop", f"{m['kind']} to a STOPped phone")
@@ -1063,12 +1070,12 @@ def check(sim):
             bad("text_without_consent", f"{m['kind']} to a number that never contacted us")
     for frm, body, t, sid in sim.sms.inbound_log:
         upb = body.strip().upper()
-        if upb in ("HELP", "INFO"):
+        if upb in ("HELP", "INFO") and not opted_out_before(frm, sid):
             if not any(m["to"] == frm and t <= m["at"] <= t + 5 and "ask hava" in m["body"].lower() and ("@" in m["body"] or "555" in m["body"]) for m in sim.sms.log):
                 bad("help_not_answered", f"HELP from ...{frm[-4:]}")
         natural = re.search(r"stop (texting|sending)|please stop", body.lower()) and upb not in ("STOP", "STOPALL", "UNSUBSCRIBE", "CANCEL", "END", "QUIT")
         if natural or upb in ("STOP", "STOPALL", "UNSUBSCRIBE", "CANCEL", "END", "QUIT"):
-            later = [m for m in sim.sms.log if m["to"] == frm and m["at"] > t + 5 and m["kind"] not in ("stop_confirm", "optout_confirm") and not help_reply(m)]
+            later = [m for m in sim.sms.log if m["to"] == frm and m["at"] > t + 5 and m["kind"] not in ("stop_confirm", "optout_confirm")]
             resumed = any(f2 == frm and t2 > t and b2.strip().upper() in ("START", "UNSTOP") for f2, b2, t2, s2 in sim.sms.inbound_log)
             if natural and later and not resumed:
                 bad("natural_optout_ignored", f"'{body[:30]}' then {later[0]['kind']}")

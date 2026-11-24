@@ -6,9 +6,9 @@
 // its states and the seed function that stores one state with fake data and returns the path that
 // opens it. The checks (the route table, `NOT_PAGES`, the axe tags, which states run) live in
 // `fixtures.ts`, owner-only, so nothing here can narrow what is checked. Fake data only.
-import { createHash, randomBytes, randomUUID } from "node:crypto";
+import { createHash, createHmac, randomBytes, randomUUID } from "node:crypto";
 import { spawnSync } from "node:child_process";
-import { keyedUrl, seal } from "../e2e/keyed";
+import { keyedIdSecret, keyedUrl, psql, seal } from "../e2e/keyed";
 
 /** One seeded state of a page. */
 export interface PageState {
@@ -82,6 +82,50 @@ const PAUSED = `,
 
 const QUOTE_ROUTE = "/q/{token}";
 
+/** The quote page opened from the first update email's `?confirm=` link, on the keyed binary. */
+const CONFIRM_LINK_STATE = "update address with its confirm link";
+
+/**
+ * T729 (TXT-018, D-5340, D-5442): a homeowner on an empty vault contact, her request's
+ * conversation, her update `channel` and her update address row `:row` with salt `:salt`, bounced
+ * at `bounced`. The address bytes are a stand-in: a GET reads only the row's state, never them.
+ */
+function updates(channel: string, bounced: string): string {
+  return `,
+    uc AS (INSERT INTO privacy.contact (id) VALUES (gen_random_uuid()) RETURNING id),
+    uh AS (INSERT INTO intake.homeowner (contact_id, created_at) SELECT id, now() FROM uc RETURNING id),
+    uv AS (INSERT INTO intake.conversation (homeowner_id, job_id, language, first_inbox_id,
+      consent_template, consent_sent_at, opened_at)
+      SELECT uh.id, j.id, 'en', gen_random_uuid(), 'consent', now(), now() FROM uh, j),
+    ul AS (INSERT INTO messaging.update_channel (recipient_id, channel, updated_at)
+      SELECT id, '${channel}', now() FROM uc),
+    ue AS (INSERT INTO privacy.update_email (id, contact_id, email, source, confirm_salt, stored_at, bounced_at)
+      SELECT ':row', id, decode('00', 'hex'), 'quote_page', decode(':salt', 'hex'), now(), ${bounced} FROM uc)`;
+}
+
+/** `core::ids::link_token` for `LinkKind::Action`: the keyed binary's ID secret (version 1) over the row and salt. */
+function confirmToken(row: string, salt: Buffer): string {
+  const mac = createHmac("sha256", keyedIdSecret().trim());
+  const version = Buffer.alloc(2);
+  version.writeUInt16BE(1);
+  mac.update(version);
+  for (const part of [Buffer.from("link.action", "utf8"), Buffer.from(row.replace(/-/g, ""), "hex"), salt]) {
+    const length = Buffer.alloc(8);
+    length.writeBigUInt64BE(BigInt(part.length));
+    mac.update(length).update(part);
+  }
+  return mac.digest("hex");
+}
+
+/** Seeds a quote page state; the confirm-link state opens on the keyed binary with its `?confirm=` token. */
+function quoteSeed(state: PageState): Seeded {
+  const row = randomUUID();
+  const salt = randomBytes(16);
+  const sql = state.sql.replace(":row", row).replace(":salt", salt.toString("hex"));
+  const path = tokenSeed({ ...state, sql });
+  return state.name === CONFIRM_LINK_STATE ? `${keyedUrl()}${path}?confirm=${confirmToken(row, salt)}` : path;
+}
+
 /** The quote page's states (T053, T246; docs/test-design.md section 6: empty, filled, after pick, ...). */
 const QUOTE_STATES: readonly PageState[] = [
   ["no quotes yet", "No quotes yet.", "Quote #1", quotePage("open", 0)],
@@ -96,6 +140,10 @@ const QUOTE_STATES: readonly PageState[] = [
   ["closed", "Quote #2 (no longer available)", "Pick #", quotePage("closed", 3)],
   // T608 (D-4252): a long list, so the 900 ms end-time check sees the capped stagger.
   ["eight quotes", "Pick #8", "Quote #9", quotePage("quotes_ready", 8)],
+  // T729 (TXT-018, TD-TXT-38, D-5340, D-5442): the update choice's GET states.
+  ["update address waiting", "We sent a confirm link to that email.", "Confirm this email", quotePage("open", 0, updates("email", "NULL"))],
+  [CONFIRM_LINK_STATE, "Confirm this email", "We sent a confirm link to that email.", quotePage("open", 0, updates("email", "NULL"))],
+  ["update email bounced", "Your email bounced, so updates go by text again.", "Get updates by text only", quotePage("open", 0, updates("text", "now()"))],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: QUOTE_ROUTE, name, shows, hides, sql, statusRegions: ["quote-status"] }));
 
 const FEEDBACK_ROUTE = "/f/{token}";
@@ -293,8 +341,15 @@ const RELEASE_STATES: readonly PageState[] = [
     "We removed the homeowner's details",
     "Tip: on your first call",
     businessSql(`,
+    j AS (INSERT INTO jobs.job (status, emergency, created_at, status_at, timer_from)
+      VALUES ('connected', false, now(), now(), now()) RETURNING id),
+    n AS (UPDATE jobs.job_number_next SET next = next + 1 RETURNING next - 1 AS n),
+    num AS (INSERT INTO jobs.job_number (number, job_id, issued_at) SELECT n.n, j.id, now() FROM n, j),
     p AS (INSERT INTO picks.pick (id, job_id, business_id, quote_number, channel, status, picked_at)
-      SELECT ':pick', gen_random_uuid(), business_id, 1, 'page', 'free', now() FROM m RETURNING id, job_id, business_id),
+      SELECT ':pick', j.id, business_id, 1, 'page', 'free', now() FROM m, j RETURNING id, job_id, business_id),
+    fee AS (INSERT INTO payments.pick_fee (pick_id, business_id, job_id, mode, kind, amount_cents, terms_version, fixed_at)
+      SELECT p.id, p.business_id, p.job_id, t.mode, 'fee_free', 0, t.authorization_version, now()
+      FROM p, payments.fee_terms t),
     r AS (INSERT INTO picks.release (pick_id, job_id, business_id, basis, released_at, contact_id, mail_chosen)
       SELECT id, job_id, business_id, 'no_fee', now(), gen_random_uuid(), false FROM p)`),
   ],
@@ -398,6 +453,38 @@ const CANT_TAKE_STATES: readonly PageState[] = [
   ],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: CANT_TAKE_ROUTE, name, shows, hides, sql, statusRegions: [] }));
 
+const JOB_PAGE_ROUTE = "/b/jobs/{j}";
+
+/**
+ * The business job page (T666; CARD-023, CARD-019, PICK-051, D-4349, D-5526): the signed-in owner
+ * on an open job whose card went to her business, with no quote yet. The seed opens the job's
+ * UUID, which answers 303 to its number's page, so the number need not be known here.
+ */
+const JOB_PAGE_STATES: readonly PageState[] = [
+  [
+    "job page, no quote yet",
+    "Sent to 1 business. Quotes so far: 0.",
+    "find that page",
+    businessSql(`,
+    j AS (INSERT INTO jobs.job (id, status, emergency, created_at, status_at, timer_from)
+      VALUES (':pick', 'open', false, now(), now(), now()) RETURNING id),
+    n AS (UPDATE jobs.job_number_next SET next = next + 1 RETURNING next - 1 AS n),
+    num AS (INSERT INTO jobs.job_number (number, job_id, issued_at) SELECT n.n, j.id, now() FROM n, j),
+    c AS (INSERT INTO quotes.job_card (job_id, business_id, handyman, sent_at)
+      SELECT j.id, m.business_id, false, now() FROM j, m),
+    t AS (SELECT 'AC repair in Lake Havasu City. The AC runs but the air from the vents stays warm.' AS words),
+    sc AS (INSERT INTO quotes.shown_card (request_id, job_id, digest, card_text, town, place, photo_ids,
+      category, candidates, emergency, recorded_at, sent_at)
+      SELECT gen_random_uuid(), j.id, left(encode(sha256(convert_to(t.words, 'UTF8')), 'hex'), 32), t.words,
+        'Lake Havasu City', 'house', '{}', 'hvac_repair', ARRAY['AC not cooling'], false, now(), now() FROM j, t)`),
+  ],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: JOB_PAGE_ROUTE, name, shows, hides, sql, statusRegions: [] }));
+
+/** Seeds a job page state and opens the job by its UUID (the seed's `:pick`), which redirects. */
+function jobPageSeed(state: PageState): Seeded {
+  return portalSeed(false)({ ...state, route: "/b/jobs/{pick}" });
+}
+
 const INBOX_ROUTE = "/b/signup/inbox";
 
 /**
@@ -489,6 +576,12 @@ const OWNER_SETTINGS_ROUTE = "/owner/settings";
 /** The owner home (T310; OPS-003, FEE-007, BIZ-027): the switches, fee mode, rates and sign-ups. */
 const OWNER_HOME_STATES: readonly PageState[] = [
   ["owner home", "Pause or resume", "Each change needs a code from your authenticator app", OWNER_SESSION_SQL],
+  [
+    "owner home, an alert not sent to the phone",
+    "The database is over 70% full",
+    "No other alerts.",
+    `${OWNER_SESSION_SQL}; INSERT INTO ops.alert (kind, severity) VALUES ('ops.volume_low', 'normal')`,
+  ],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: OWNER_HOME_ROUTE, name, shows, hides, sql, statusRegions: [] }));
 
 /** The owner settings (T310; LIC-002, CON-035, PICK-048): the category switches and both forms. */
@@ -502,6 +595,32 @@ const OWNER_RELEASE_ROUTE = "/owner/release";
 const OWNER_RELEASE_STATES: readonly PageState[] = [
   ["owner release button", "Re-send the release notice", "Nothing was sent", OWNER_SESSION_SQL],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: OWNER_RELEASE_ROUTE, name, shows, hides, sql, statusRegions: ["release-status"] }));
+
+const OWNER_AI_ROUTE = "/owner/ai";
+
+/** The owner's AI page (T737; AI-008, A11Y-030): nothing recorded yet, so every gap is listed. */
+const OWNER_AI_STATES: readonly PageState[] = [
+  ["owner ai switch, nothing recorded", "Still needed before it can go on", "Nothing was changed", OWNER_SESSION_SQL],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: OWNER_AI_ROUTE, name, shows, hides, sql, statusRegions: ["ai-status"] }));
+
+const OWNER_PROBLEM_REPORTS_ROUTE = "/owner/problem-reports";
+
+/** The owner's PROBLEM reports (T712; JOB-016, D-4423): one fake report with its kind form. */
+const OWNER_PROBLEM_STATES: readonly PageState[] = [
+  [
+    "owner problem reports, one to count",
+    "Count as a complaint",
+    "No problem reports in the last 30 days.",
+    `; WITH j AS (INSERT INTO jobs.job (status, emergency, created_at, status_at, timer_from)
+      VALUES ('connected', false, now(), now(), now()) RETURNING id),
+    n AS (UPDATE jobs.job_number_next SET next = next + 1 RETURNING next - 1 AS n),
+    num AS (INSERT INTO jobs.job_number (number, job_id, issued_at) SELECT n.n, j.id, now() FROM n, j),
+    w AS (INSERT INTO privacy.message_body (inbox_id, job_id, words, safety, created_at)
+      SELECT ':pick'::uuid, j.id, 'Sample words: the tap still drips after the visit', false, now() FROM j)
+    INSERT INTO ops.alert (kind, severity, subject_kind, subject_id)
+      VALUES ('jobs.problem_report', 'normal', 'messaging.inbox', ':pick'::uuid)`,
+  ],
+].map(([name = "", shows = "", hides = "", extra = ""]) => ({ route: OWNER_PROBLEM_REPORTS_ROUTE, name, shows, hides, sql: OWNER_SESSION_SQL + extra, statusRegions: [] }));
 
 const OWNER_HELP_ROUTE = "/owner/help";
 
@@ -649,6 +768,26 @@ const PHONES_STATES: readonly PageState[] = [
   ["phones to approve, one waiting", "Phone number ending in 0150", "No phones are waiting", businessSql(WAITING_PHONE_SQL)],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: PHONES_ROUTE, name, shows, hides, sql, statusRegions: [] }));
 
+/**
+ * The business team page (T544; BIZ-023, FEE-041, D-5567): the owner signed in with one fake
+ * "Cards and quotes" member, so the role form and Remove button show (the unkeyed binary shows the
+ * numbered fixed line in place of each address).
+ */
+const TEAM_ROUTE = "/b/team";
+const TEAM_MEMBER_SQL = `,
+    mm AS (INSERT INTO businesses.team_member (business_id, mailbox_id, is_owner, cards_and_quotes,
+      confirm_and_billing, added_at) SELECT business_id, gen_random_uuid(), false, true, false,
+      now() + interval '1 second' FROM m)`;
+const TEAM_STATES: readonly PageState[] = [
+  ["business team, owner with one member", "Remove from your team", "There is a problem", businessSql(TEAM_MEMBER_SQL)],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: TEAM_ROUTE, name, shows, hides, sql, statusRegions: [] }));
+
+/** The service-area settings (T733; BIZ-010, BIZ-058): the owner signed in, nothing stored yet. */
+const SERVICE_AREA_SETTINGS_ROUTE = "/b/settings/service-area";
+const SERVICE_AREA_SETTINGS_STATES: readonly PageState[] = [
+  ["service area settings, nothing stored", "Save service area", "Fix these to save", businessSql("")],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: SERVICE_AREA_SETTINGS_ROUTE, name, shows, hides, sql, statusRegions: ["area-saved"] }));
+
 /** The homeowner sign-in form (T307, SEC-008): no seed, the plain path. */
 const HOMEOWNER_SIGNIN_ROUTE = "/h/sign-in";
 const HOMEOWNER_SIGNIN_STATES: readonly PageState[] = [
@@ -731,9 +870,40 @@ const NOT_FOUND_STATES: readonly PageState[] = [
   { route: NOT_FOUND_ROUTE, name: "unknown path, 404 page", statusRegions: [], shows: "We can't find that page.", hides: "Para propietarios", sql: "", status: 404 },
 ];
 
+/** The data-request link page's route (T804, PRIV-031, SEC-026, D-5332). */
+const DATA_LINK_ROUTE = "/help/my-data/{object}/{token}";
+
+/**
+ * Seeds a fake homeowner's delete request (its received audit row) and its link with a random salt,
+ * sent `sentAgo` ago, and opens the link on the keyed binary with the token made from its ID secret
+ * (`confirmToken`); `{object}` is the request's subject UUID, the audit row's ID as a UUID.
+ */
+function dataLinkSeed(state: PageState): Seeded {
+  const contact = randomUUID();
+  const salt = randomBytes(16);
+  const id = psql(state.sql.replaceAll(":contact", contact).replace(":salt", salt.toString("hex")));
+  const hex = BigInt(id).toString(16).padStart(32, "0");
+  const object = `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+  return `${keyedUrl()}/help/my-data/${object}/${confirmToken(object, salt)}`;
+}
+
+/** A fake delete request and its link, sent `ago` ago; returns the request's ID. */
+function dataLinkSql(ago: string): string {
+  return `WITH a AS (INSERT INTO ops.audit_log (actor_kind, actor_id, action, subject_kind, subject_id)
+      VALUES ('homeowner', ':contact', 'portals.data_delete_requested', 'privacy.contact', ':contact') RETURNING id)
+    INSERT INTO portals.data_request_link (request_id, salt, sent_at)
+      SELECT id, decode(':salt', 'hex'), now() - interval '${ago}' FROM a RETURNING request_id`;
+}
+
+/** The link page's states: a live link's confirm page and the generic page of an expired one. */
+const DATA_LINK_STATES: readonly PageState[] = [
+  { route: DATA_LINK_ROUTE, name: "live link, confirm page", statusRegions: [], shows: "You asked us to delete your data.", hides: "This link has expired", sql: dataLinkSql("0 minutes") },
+  { route: DATA_LINK_ROUTE, name: "expired link, generic page", statusRegions: [], shows: "This link has expired or was already used.", hides: "You asked us to delete", sql: dataLinkSql("1 hour") },
+];
+
 /** Every page's entry: its route, its states and its seed function. Append a new page's entry. */
 export const PAGE_ENTRIES: readonly PageEntry[] = [
-  { route: QUOTE_ROUTE, seed: tokenSeed, states: QUOTE_STATES },
+  { route: QUOTE_ROUTE, seed: quoteSeed, states: QUOTE_STATES },
   { route: FEEDBACK_ROUTE, seed: tokenSeed, states: FEEDBACK_STATES },
   { route: CHECK_IN_ROUTE, seed: checkInSeed, states: CHECK_IN_STATES },
   { route: SIGNIN_ROUTE, seed: (state) => state.route, states: SIGNIN_STATES },
@@ -746,6 +916,7 @@ export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: NOTICES_ROUTE, seed: portalSeed(true), states: NOTICES_STATES },
   { route: CONFIRM_ROUTE, seed: portalSeed(true), states: CONFIRM_STATES },
   { route: CANT_TAKE_ROUTE, seed: portalSeed(false), states: CANT_TAKE_STATES },
+  { route: JOB_PAGE_ROUTE, seed: jobPageSeed, states: JOB_PAGE_STATES },
   { route: INBOX_ROUTE, seed: portalSeed(false), states: INBOX_STATES },
   { route: CAPABILITY_ROUTE, seed: portalSeed(false), states: CAPABILITY_STATES },
   { route: "/", seed: (state) => state.route, states: SITE_PAGE_STATES.filter((s) => s.route === "/") },
@@ -781,6 +952,7 @@ export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: OWNER_SETTINGS_ROUTE, seed: portalSeed(false), states: OWNER_SETTINGS_STATES },
   { route: OWNER_RELEASE_ROUTE, seed: portalSeed(false), states: OWNER_RELEASE_STATES },
   { route: OWNER_HELP_ROUTE, seed: portalSeed(false), states: OWNER_HELP_STATES },
+  { route: OWNER_PROBLEM_REPORTS_ROUTE, seed: portalSeed(false), states: OWNER_PROBLEM_STATES },
   { route: OWNER_REFUND_ROUTE, seed: portalSeed(false), states: OWNER_TOOLS_STATES.filter((s) => s.route === OWNER_REFUND_ROUTE) },
   { route: OWNER_AUDIT_LOG_ROUTE, seed: portalSeed(false), states: OWNER_TOOLS_STATES.filter((s) => s.route === OWNER_AUDIT_LOG_ROUTE) },
   { route: OWNER_HEALTH_ROUTE, seed: portalSeed(false), states: OWNER_TOOLS_STATES.filter((s) => s.route === OWNER_HEALTH_ROUTE) },
@@ -791,6 +963,10 @@ export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: NOT_FOUND_ROUTE, seed: () => "/no-such-page", states: NOT_FOUND_STATES },
   { route: ADDRESS_CHANGE_ROUTE, seed: portalSeed(false), states: ADDRESS_CHANGE_STATES },
   { route: PHONES_ROUTE, seed: portalSeed(false), states: PHONES_STATES },
+  { route: OWNER_AI_ROUTE, seed: portalSeed(false), states: OWNER_AI_STATES },
+  { route: TEAM_ROUTE, seed: portalSeed(false), states: TEAM_STATES },
+  { route: DATA_LINK_ROUTE, seed: dataLinkSeed, states: DATA_LINK_STATES },
+  { route: SERVICE_AREA_SETTINGS_ROUTE, seed: portalSeed(false), states: SERVICE_AREA_SETTINGS_STATES },
 ];
 
 /** Every state of every page, in entry order. */

@@ -1,0 +1,41 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT license_number, recorded_at AS \"recorded_at!: jiff_sqlx::Timestamp\"\n           FROM licensing.business_license WHERE business_id = $1 AND agency = $2\n                 AND paused_at IS NULL AND verification <> 'typed_unchecked'",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "license_number",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "licensing.business_license",
+            "name": "license_number"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "recorded_at!: jiff_sqlx::Timestamp",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "licensing.business_license",
+            "name": "recorded_at"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "84114d519b55f1f4b72132c4f9e86e9c47358a64dc692611b90f4af02624a847"
+}

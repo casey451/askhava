@@ -16,7 +16,7 @@ use std::thread::ThreadId;
 use askhava_adapters::api::{AdapterError, Email, EmailAdapter, IdempotencyKey};
 use askhava_businesses::api::{
     Acting, BACKUP_CHANGED_KIND, CHANGED_KIND, NoticePurpose, Roles, add_member, add_owner, create,
-    notice_addresses, record_step_up,
+    notice_addresses, record_session_step_up,
 };
 use askhava_core::api::{MIGRATOR, SystemClock, WorkerId, claim};
 use askhava_messaging::api::{DailyLimit, MailboxCodeSender, MailboxKind};
@@ -274,11 +274,14 @@ async fn person(pool: &PgPool, owner: Option<Acting>, address: &str) -> Person {
     Person { by, mailbox, jar }
 }
 
-/// SEC-038: `by` passed a Verify code `ago` before now.
-async fn stepped_up(pool: &PgPool, by: Acting, ago: SignedDuration) {
-    let mut db = pool.acquire().await.expect("db");
-    let at = Timestamp::now().checked_sub(ago).expect("time");
-    record_step_up(&mut db, by, at).await.expect("step-up");
+/// SEC-038, D-5314: `p` passed a Verify code `ago` before now, in the session of `p.jar`.
+async fn stepped_up(pool: &PgPool, p: &Person, ago: SignedDuration) {
+    let (mut db, now) = (pool.acquire().await.expect("db"), Timestamp::now());
+    let at = now.checked_sub(ago).expect("time");
+    let who = business_principal(&mut db, &p.jar, now).await;
+    let id = who.expect("read").expect("signed in").session();
+    let code = record_session_step_up(&mut db, p.by, id, at);
+    code.await.expect("step-up");
 }
 
 /// The form body for `kind`, `member` and `address`.
@@ -425,7 +428,7 @@ async fn td_sec_71_no_fresh_step_up_goes_to_the_step_up_page(pool: PgPool) {
     );
     for ago in [None, Some(SignedDuration::from_secs(301))] {
         if let Some(ago) = ago {
-            stepped_up(&pool, x.by, ago).await;
+            stepped_up(&pool, &x, ago).await;
         }
         for (path, body) in [
             (
@@ -467,7 +470,7 @@ async fn td_sec_71_a_notice_change_mails_the_new_address_and_tells_the_old(pool:
         person(&pool, None, "owner@x.example").await,
     );
     let app = app(&pool, &mail);
-    stepped_up(&pool, x.by, SignedDuration::from_mins(4)).await;
+    stepped_up(&pool, &x, SignedDuration::from_mins(4)).await;
     let new = minted(&pool, "new@x.example").await;
     let posted = format!(
         "{}&mailbox={new}",
@@ -541,7 +544,7 @@ async fn td_sec_71_a_backup_change_and_its_removal(pool: PgPool) {
         person(&pool, None, "owner@x.example").await,
     );
     let app = app(&pool, &mail);
-    stepped_up(&pool, x.by, SignedDuration::from_mins(1)).await;
+    stepped_up(&pool, &x, SignedDuration::from_mins(1)).await;
     let body = form("backup", x.by.member, "spare@x.example");
     let r = post_own(&app, "/b/addresses/request", &x, &body).await;
     assert_eq!(r.status, 200);
@@ -568,12 +571,12 @@ async fn td_sec_71_a_backup_change_and_its_removal(pool: PgPool) {
         1,
         "the main address is told"
     );
-    stepped_up(&pool, x.by, SignedDuration::from_mins(6)).await;
+    stepped_up(&pool, &x, SignedDuration::from_mins(6)).await;
     let remove = format!("&member={}", x.by.member);
     let r = post_own(&app, "/b/addresses/remove-backup", &x, &remove).await;
     assert_eq!(r.status, 303, "a removal needs a fresh step-up");
     assert_eq!(card_notices(&pool, x.by.business).await, [x.mailbox, spare]);
-    stepped_up(&pool, x.by, SignedDuration::from_mins(2)).await;
+    stepped_up(&pool, &x, SignedDuration::from_mins(2)).await;
     let r = post_own(&app, "/b/addresses/remove-backup", &x, &remove).await;
     assert!(r.status == 200 && r.text.contains("removed your backup address"));
     assert_eq!(card_notices(&pool, x.by.business).await, [x.mailbox]);
@@ -594,8 +597,8 @@ async fn td_sec_71_another_business_member_is_not_found(pool: PgPool) {
     let y = person(&pool, None, "owner@y.example").await;
     let helper = person(&pool, Some(x.by), "helper@x.example").await;
     let app = app(&pool, &mail);
-    stepped_up(&pool, x.by, SignedDuration::from_mins(1)).await;
-    stepped_up(&pool, helper.by, SignedDuration::from_mins(1)).await;
+    stepped_up(&pool, &x, SignedDuration::from_mins(1)).await;
+    stepped_up(&pool, &helper, SignedDuration::from_mins(1)).await;
     let events = Events::captured();
     let before = events.count("authz_denied");
     let cases = [
@@ -641,7 +644,7 @@ async fn td_sec_71_cross_site_and_wrong_token_posts_are_refused_and_logged(pool:
         person(&pool, None, "owner@x.example").await,
     );
     let app = app(&pool, &mail);
-    stepped_up(&pool, x.by, SignedDuration::from_mins(1)).await;
+    stepped_up(&pool, &x, SignedDuration::from_mins(1)).await;
     let body = form("notice", x.by.member, "new@x.example");
     let forms = [
         ("/b/addresses/request", body.clone()),
@@ -678,7 +681,7 @@ async fn td_sec_71_another_members_address_is_refused_with_the_message(pool: PgP
     );
     person(&pool, Some(x.by), "helper@x.example").await;
     let app = app(&pool, &mail);
-    stepped_up(&pool, x.by, SignedDuration::from_mins(1)).await;
+    stepped_up(&pool, &x, SignedDuration::from_mins(1)).await;
     let taken = "Someone on your team already signs in with this address.";
     for kind in ["notice", "backup"] {
         let body = form(kind, x.by.member, "helper@x.example");

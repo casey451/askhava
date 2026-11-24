@@ -31,7 +31,11 @@
 //! (PICK-022, PICK-023, D-3890, D-3892): `GET` and `POST` [`OWNER_RELEASE_ROUTE`] serve the
 //! release button, which passes `owner_power` with `OwnerPower::Release` (no fresh factor,
 //! SEC-043) and only re-sends a standing release (`picks::api::resend_release`); a refusal is a
-//! 400 with the page and its error summary, a re-send a 200 with its line. Each change
+//! 400 with the page and its error summary, a re-send a 200 with its line. T712 (JOB-016,
+//! BIZ-012, D-4423): `GET` [`OWNER_PROBLEM_REPORTS_ROUTE`] lists the PROBLEM reports and `POST`
+//! [`OWNER_PROBLEM_COMPLAINT_ROUTE`] (alert ID and kind in the body, no fresh factor) counts one
+//! through `portals::count_problem_as_complaint` with the session's owner proof: a 303 to the
+//! list, a second press too; a refusal is a 400 with the list and its line. Each change
 //! writes its audit row in the owning crate (SEC-006, OPS-003). The BIZ-027 review target is the
 //! sign-up settings' `ASKHAVA_BIZ_REVIEW_TARGET_DAYS` read from the environment at start, else 4.
 
@@ -45,16 +49,20 @@ use askhava_portals::api::{
     OWNER_HOME_ROUTE, OWNER_OPT_OUT_ROUTE, OWNER_PAUSE_ROUTE, OWNER_RELEASE_ROUTE,
     OWNER_SAFETY_CALL_ROUTE, OWNER_SETTINGS_ROUTE, OWNER_SPANISH_ROUTE, OWNER_STRIPE_ANSWER_ROUTE,
     OWNER_TEXTING_ROUTE, OptOutForm, OwnerPrincipal, OwnerToolError, ReleaseForm, ReleaseScreen,
-    SafetyCallForm, SettingsNotice, SpanishForm, StepUpScreen, StripeAnswerForm, WebSecurity,
-    apply_owner_change, csrf_token, no_store, owner_bridge_press, owner_file_stripe_answer,
-    owner_home_page, owner_record_opt_out, owner_release_page, owner_release_resend,
-    owner_safety_call, owner_settings_page_with, owner_signed_out, owner_spanish,
-    owner_step_up_page, parse_change, refuse_cross_site,
+    SafetyCallForm, SettingsError, SettingsNotice, SpanishForm, StepUpScreen, StripeAnswerForm,
+    WebSecurity, apply_owner_change, csrf_token, no_store, owner_bridge_press,
+    owner_file_stripe_answer, owner_home_page, owner_record_opt_out, owner_release_page,
+    owner_release_resend, owner_safety_call, owner_settings_page_refused, owner_settings_page_with,
+    owner_signed_out, owner_spanish, owner_step_up_page, parse_change, refuse_cross_site,
 };
 use askhava_portals::api::{
     BusinessTextingForm, OWNER_BUSINESS_TEXTING_ROUTE, owner_business_texting,
 };
-use askhava_privacy::api::Vault;
+use askhava_portals::api::{
+    CountRefused, OWNER_PROBLEM_COMPLAINT_ROUTE, OWNER_PROBLEM_REPORTS_ROUTE, PressRefused,
+    count_problem_as_complaint, current_session, owner_problem_reports_page, problem_reports,
+};
+use askhava_privacy::api::{OwnerSessionProof, Vault};
 use axum::Router;
 use axum::extract::{Extension, FromRef, MatchedPath, State};
 use axum::http::StatusCode;
@@ -63,7 +71,8 @@ use axum::middleware::{from_fn, from_fn_with_state};
 use axum::response::{Html, IntoResponse, Response};
 use axum::routing::{get, post};
 use jiff::Timestamp;
-use sqlx::PgPool;
+use sqlx::types::Uuid;
+use sqlx::{PgConnection, PgPool};
 
 use crate::inbound_text::Webhooks;
 use crate::owner_signin::{OwnerSite, note_owner_site, require_owner};
@@ -270,6 +279,25 @@ impl CsrfField for ReleaseBody {
     }
 }
 
+/// The "Count as a complaint" press with its CSRF token; the alert ID and kind in the body
+/// (D-3890).
+#[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ProblemBody {
+    #[serde(default)]
+    csrf: String,
+    #[serde(default)]
+    alert: String,
+    #[serde(default)]
+    kind: String,
+}
+
+impl CsrfField for ProblemBody {
+    fn csrf(&self) -> &str {
+        &self.csrf
+    }
+}
+
 /// Which owner page a refusal shows again.
 #[derive(Clone, Copy)]
 enum Page {
@@ -313,6 +341,8 @@ pub fn routes(pool: PgPool, vault: Option<Arc<Vault>>, webhooks: Option<&Arc<Web
         .route(OWNER_SPANISH_ROUTE, post(spanish))
         .route(OWNER_BUSINESS_TEXTING_ROUTE, post(business_texting))
         .route(OWNER_RELEASE_ROUTE, get(release_page).post(release_press))
+        .route(OWNER_PROBLEM_REPORTS_ROUTE, get(problem_page))
+        .route(OWNER_PROBLEM_COMPLAINT_ROUTE, post(problem_press))
         .route_layer(from_fn(note_owner_site))
         .with_state(state)
         .layer(from_fn_with_state(security, refuse_cross_site))
@@ -372,8 +402,14 @@ async fn page_answer(
 
 /// The answer to a change `portals` did not make (SEC-043, D-3878): a stale factor is a 401 with
 /// the step-up form (its `authz_denied` event already recorded by `portals`), a refusal a 400 with
-/// `page` again, a database failure a 500. None links to the sign-in page.
-async fn not_made(tools: &Tools, jar: &CookieJar, error: &OwnerToolError, page: Page) -> Response {
+/// `page` again, a database failure a 500. None links to the sign-in page. A refusal with `kept`
+/// shows the settings page's A11Y-030 error form, the typed values kept and never logged (D-4727).
+async fn not_made(
+    tools: &Tools,
+    jar: &CookieJar,
+    error: &OwnerToolError,
+    (page, kept): (Page, Option<&SettingsError>),
+) -> Response {
     match error {
         OwnerToolError::NeedsFreshFactor => {
             let Some(csrf) = csrf_token(jar) else {
@@ -384,10 +420,26 @@ async fn not_made(tools: &Tools, jar: &CookieJar, error: &OwnerToolError, page: 
                 Err(_) => failed("step-up render"),
             }
         }
-        OwnerToolError::Refused => {
-            page_answer(tools, jar, (page, None), StatusCode::BAD_REQUEST).await
-        }
+        OwnerToolError::Refused => match kept {
+            Some(kept) => settings_refused(tools, jar, kept).await,
+            None => page_answer(tools, jar, (page, None), StatusCode::BAD_REQUEST).await,
+        },
         OwnerToolError::Database => failed("owner change"),
+    }
+}
+
+/// A11Y-030, D-4727: the settings page for a refused opt-out or Stripe answer, a 400 naming the
+/// field `kept` names, its typed values kept.
+async fn settings_refused(tools: &Tools, jar: &CookieJar, kept: &SettingsError) -> Response {
+    let Some(csrf) = csrf_token(jar) else {
+        return failed("csrf token");
+    };
+    let Ok(mut db) = tools.pool.acquire().await else {
+        return failed("database");
+    };
+    match owner_settings_page_refused(&mut db, &csrf, kept).await {
+        Ok(html) => (StatusCode::BAD_REQUEST, Html(html)).into_response(),
+        Err(_) => failed("owner page"),
     }
 }
 
@@ -442,14 +494,14 @@ async fn change(
         to: body.to,
     };
     let Some(parsed) = parse_change(route.as_str(), &form) else {
-        return not_made(&tools, &jar, &OwnerToolError::Refused, page).await;
+        return not_made(&tools, &jar, &OwnerToolError::Refused, (page, None)).await;
     };
     let Ok(mut db) = tools.pool.acquire().await else {
         return failed("database");
     };
     match apply_owner_change(&mut db, &principal, parsed, now).await {
         Ok(_) => see_other(back),
-        Err(error) => not_made(&tools, &jar, &error, page).await,
+        Err(error) => not_made(&tools, &jar, &error, (page, None)).await,
     }
 }
 
@@ -475,7 +527,7 @@ async fn bridge(
     };
     match owner_bridge_press(&mut db, &principal, &form, now).await {
         Ok(_) => see_other(OWNER_HOME_ROUTE),
-        Err(error) => not_made(&tools, &jar, &error, Page::Home).await,
+        Err(error) => not_made(&tools, &jar, &error, (Page::Home, None)).await,
     }
 }
 
@@ -504,7 +556,10 @@ async fn opt_out(
             let shown = (Page::Settings, Some(notice));
             page_answer(&tools, &jar, shown, StatusCode::OK).await
         }
-        Err(error) => not_made(&tools, &jar, &error, Page::Settings).await,
+        Err(error) => {
+            let kept = SettingsError::opt_out(&form);
+            not_made(&tools, &jar, &error, (Page::Settings, Some(&kept))).await
+        }
     }
 }
 
@@ -533,7 +588,10 @@ async fn stripe_answer(
             let shown = (Page::Settings, Some(notice));
             page_answer(&tools, &jar, shown, StatusCode::OK).await
         }
-        Err(error) => not_made(&tools, &jar, &error, Page::Settings).await,
+        Err(error) => {
+            let kept = SettingsError::stripe(&form);
+            not_made(&tools, &jar, &error, (Page::Settings, Some(&kept))).await
+        }
     }
 }
 
@@ -568,7 +626,7 @@ async fn safety_call(
             };
             page_answer(&tools, &jar, (Page::Settings, Some(notice)), status).await
         }
-        Err(error) => not_made(&tools, &jar, &error, Page::Settings).await,
+        Err(error) => not_made(&tools, &jar, &error, (Page::Settings, None)).await,
     }
 }
 
@@ -605,7 +663,7 @@ async fn spanish(
             };
             page_answer(&tools, &jar, (Page::Settings, Some(notice)), status).await
         }
-        Err(error) => not_made(&tools, &jar, &error, Page::Settings).await,
+        Err(error) => not_made(&tools, &jar, &error, (Page::Settings, None)).await,
     }
 }
 
@@ -641,7 +699,7 @@ async fn business_texting(
             };
             page_answer(&tools, &jar, (Page::Settings, Some(notice)), status).await
         }
-        Err(error) => not_made(&tools, &jar, &error, Page::Settings).await,
+        Err(error) => not_made(&tools, &jar, &error, (Page::Settings, None)).await,
     }
 }
 
@@ -700,6 +758,107 @@ async fn release_press(
     }
 }
 
+/// The owner session's read proof (SEC-046), else the owner door's signed-out answer.
+async fn session_proof(
+    db: &mut PgConnection,
+    jar: &CookieJar,
+    now: Timestamp,
+) -> Result<OwnerSessionProof, Box<Response>> {
+    match current_session(db, jar, now).await {
+        Ok(session) => session
+            .and_then(|s| s.owner_proof(crate::session_minter()))
+            .ok_or_else(|| Box::new(owner_signed_out())),
+        Err(_) => Err(Box::new(failed("owner session"))),
+    }
+}
+
+/// The problem reports page at `now`: with `refused`'s summary a 400, else a 200 (JOB-016,
+/// PRIV-006, SEC-046; reads only, through the session's owner proof).
+async fn reports_answer(
+    tools: &Tools,
+    jar: &CookieJar,
+    now: Timestamp,
+    refused: Option<PressRefused<'_>>,
+) -> Response {
+    let Some(csrf) = csrf_token(jar) else {
+        return failed("csrf token");
+    };
+    let Ok(mut db) = tools.pool.acquire().await else {
+        return failed("database");
+    };
+    let proof = match session_proof(&mut db, jar, now).await {
+        Ok(proof) => proof,
+        Err(refused) => return *refused,
+    };
+    let Ok(reports) = problem_reports(&mut db, &proof, now).await else {
+        return failed("problem reports");
+    };
+    let status = if refused.is_some() {
+        StatusCode::BAD_REQUEST
+    } else {
+        StatusCode::OK
+    };
+    match owner_problem_reports_page(&csrf, &reports, refused) {
+        Ok(html) => (status, Html(html)).into_response(),
+        Err(_) => failed("problem reports page"),
+    }
+}
+
+/// `GET` [`OWNER_PROBLEM_REPORTS_ROUTE`]: the last 30 days' PROBLEM reports, for the owner only,
+/// with no fresh factor (SEC-043 does not list it; JOB-016, SEC-006, PRIV-006, D-4423).
+async fn problem_page(
+    State(tools): State<Tools>,
+    Extension(site): Extension<OwnerSite>,
+    jar: CookieJar,
+) -> Response {
+    let now = match owner(&tools, &jar, &site).await {
+        Ok((_, now)) => now,
+        Err(refused) => return *refused,
+    };
+    reports_answer(&tools, &jar, now, None).await
+}
+
+/// `POST` [`OWNER_PROBLEM_COMPLAINT_ROUTE`] (JOB-016, BIZ-012, SEC-006, D-4423): counts the
+/// posted alert's PROBLEM report as one complaint of the posted kind through `portals`'
+/// `count_problem_as_complaint` (which writes the audit row), then a 303 to the list, a second
+/// press too. A refusal records nothing and shows the list again with its line.
+async fn problem_press(
+    State(tools): State<Tools>,
+    Extension(site): Extension<OwnerSite>,
+    jar: CookieJar,
+    CsrfForm(body): CsrfForm<ProblemBody>,
+) -> Response {
+    let (principal, now) = match owner(&tools, &jar, &site).await {
+        Ok(owner) => owner,
+        Err(refused) => return *refused,
+    };
+    let alert = Uuid::parse_str(body.alert.trim()).ok();
+    let refused = |why| PressRefused {
+        why,
+        alert,
+        kind: &body.kind,
+    };
+    let Some(id) = alert else {
+        return reports_answer(&tools, &jar, now, Some(refused(CountRefused::NotProblem))).await;
+    };
+    let Ok(mut db) = tools.pool.acquire().await else {
+        return failed("database");
+    };
+    let proof = match session_proof(&mut db, &jar, now).await {
+        Ok(proof) => proof,
+        Err(refused) => return *refused,
+    };
+    let press = (id, body.kind.as_str());
+    let counted =
+        count_problem_as_complaint(&mut db, &proof, press, (principal.owner(), now)).await;
+    drop(db);
+    match counted {
+        Ok(_) => see_other(OWNER_PROBLEM_REPORTS_ROUTE),
+        Err(CountRefused::Database) => failed("problem complaint"),
+        Err(why) => reports_answer(&tools, &jar, now, Some(refused(why))).await,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     //! SEC-010, D-5410: each owner form refuses a field its served page does not post.
@@ -707,9 +866,10 @@ mod tests {
     use super::*;
     use crate::owner_tools::tests::{check, parses};
 
-    /// SEC-010: the change, bridge, opt-out, Stripe, safety, Spanish, business texting and
-    /// release forms take their served names (`owner_home.html`, `owner_settings.html`,
-    /// `owner_release.html`) and refuse an unknown one.
+    /// SEC-010: the change, bridge, opt-out, Stripe, safety, Spanish, business texting, release
+    /// and problem-complaint forms take their served names (`owner_home.html`,
+    /// `owner_settings.html`, `owner_release.html`, `owner_problem_reports.html`) and refuse an
+    /// unknown one.
     #[test]
     fn each_owner_form_refuses_an_unknown_field() {
         check(&[
@@ -750,6 +910,7 @@ mod tests {
                 ],
             ),
             (parses::<ReleaseBody>, &["csrf", "press", "job"]),
+            (parses::<ProblemBody>, &["csrf", "alert", "kind"]),
         ]);
     }
 }

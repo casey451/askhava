@@ -9,6 +9,7 @@ Reads the workflow only; no network.
 from __future__ import annotations
 
 import re
+import shutil
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -327,3 +328,168 @@ def test_the_preflight_fails_unless_initdb_there_is_postgresql_16(tmp_path: Path
     assert done.returncode == code
     written = (tmp_path / "path").read_text(encoding="utf-8") if code == 0 else ""
     assert (written == f"{fake}\n") if code == 0 else (f"{fake}/initdb is missing" in done.stdout and "D-4708" in done.stdout)
+
+
+CHANGED = '"$RUNNER_TEMP/changed-files.txt"'
+FLAG_RULE = re.compile(r"^< " + re.escape(CHANGED) + r" grep -Eq '([^']+)' && (\w+)=true$", re.MULTILINE)
+FULL_RUN = ('if [ "$EVENT_NAME" = "schedule" ] || [ "$EVENT_NAME" = "workflow_call" ] || '
+            '[ "$EVENT_NAME" = "workflow_dispatch" ] || [ "$GITHUB_REF_NAME" = "main" ]; then')
+GATED = "steps.changes.outputs.run == 'true'"
+SKIPPERS = {"twin.yml": "twin", "a11y.yml": "a11y"}
+CHANGE_SKIPS = [("ci.yml", "checks", ("rust", "npm"), False), ("ci.yml", "lint", ("rust",), True),
+                ("ci.yml", "coverage", ("rust",), True), ("ci.yml", "e2e", ("run",), True),
+                ("twin.yml", "twin", ("run",), True), ("a11y.yml", "a11y", ("run",), True)]
+
+
+def _rules(flow: str, job: str) -> dict[str, str]:
+    (step,) = [s for s in _flow(flow)["jobs"][job]["steps"] if s.get("id") == "changes"]
+    return {flag: rule for rule, flag in FLAG_RULE.findall(step["run"])}
+
+
+@pytest.mark.parametrize(("flow", "job", "flags", "fetches"), CHANGE_SKIPS)
+def test_every_change_skip_captures_its_diff_fail_closed(flow: str, job: str, flags: tuple[str, ...], fetches: bool) -> None:
+    """D-5554: a failed fetch, merge-base or diff sets every flag true; the rule then greps the captured file."""
+    (step,) = [s for s in _flow(flow)["jobs"][job]["steps"] if s.get("id") == "changes"]
+    text, on_error = step["run"], "; then " + "; ".join(f"{f}=true" for f in flags) + "; fi"
+    capture = f'if ! git diff --no-renames --name-only "$base" HEAD > {CHANGED}{on_error}'
+    assert f'if ! base="$(git merge-base origin/main HEAD)"{on_error}' in text and capture in text, job
+    assert ("if ! git fetch --no-tags --depth=200 " in text) == fetches and "| grep" not in text and 'files="$(' not in text
+    assert (not fetches) or f"main:refs/remotes/origin/main{on_error}" in text
+    assert sorted(_rules(flow, job)) == sorted(flags) and text.index(capture) < text.index("grep -Eq"), job
+
+
+@pytest.mark.parametrize("flow", sorted(SKIPPERS))
+def test_twin_and_ally_run_their_changes_step_first_and_gate_every_later_step(flow: str) -> None:
+    """D-5554: the job always runs (no paths filter, no job-level if) and every step after `changes` is gated."""
+    whole, job = _flow(flow), _flow(flow)["jobs"][SKIPPERS[flow]]
+    assert set(whole[True]) == {"push", "workflow_call"} and "paths" not in whole[True]["push"] and "if" not in job
+    steps = job["steps"]
+    assert steps[0]["uses"].startswith("actions/checkout@") and steps[0]["with"]["fetch-depth"] == 200
+    assert steps[1]["id"] == "changes" and steps[1]["env"]["GH_TOKEN"] == "${{ github.token }}"
+    assert all(GATED in str(s.get("if", "")) for s in steps[2:]), flow
+    text = steps[1]["run"]
+    assert text.count(FULL_RUN) == 1 and text.index(FULL_RUN) < text.index("grep -Eq")
+    assert text[text.index(FULL_RUN):].splitlines()[1].strip().startswith('echo "run=true" >> "$GITHUB_OUTPUT";')
+    assert "proven" not in text and "ci_proven" not in str(steps)
+
+
+def test_allys_rule_is_e2es_and_e2e_and_npm_name_their_added_paths() -> None:
+    """D-5554: Ally copies E2e's rule; E2e's feature-on step builds three tests/security files; npm_audit runs in Checks."""
+    e2e = _rules("ci.yml", "e2e")["run"]
+    assert _rules("a11y.yml", "a11y")["run"] == e2e
+    for path in ("tests/security/Cargo.toml", "tests/security/tests/perf_db_route.rs",
+                 "tests/security/tests/control_router_absent.rs"):
+        assert re.match(e2e, path), path
+    assert all(re.match(_rules("ci.yml", "checks")["npm"], p) for p in ("scripts/npm_audit.py", ".github/workflows/ci.yml"))
+
+
+def test_twins_rule_names_every_input_its_steps_build_read_or_run() -> None:
+    """D-5554: twin.yml's steps build rules_bridge, run tests/contract and the twin gate; plan-only heads skip."""
+    rule = _rules("twin.yml", "twin")["run"]
+    for path in ("twin/gate.py", "app/core/src/db.rs", "migrations/0001.sql", "schemas/x.json", "stand_ins/x.json",
+                 "Cargo.toml", "Cargo.lock", "rust-toolchain.toml", ".sqlx/q.json", "tests/contract/test_rules_bridge.py",
+                 ".github/workflows/twin.yml", "docs/catalog/categories.yaml", "tests/conftest.py", ".cargo/audit.toml"):
+        assert re.match(rule, path), path
+    assert not any(re.match(rule, p) for p in ("docs/decisions.md", "kit/prompts/T834.md", ".github/workflows/ci.yml"))
+
+
+def test_ally_runs_on_e2es_image_with_its_shared_key_and_an_image_keyed_browser_cache() -> None:
+    """D-5554, D-4708: Ally shares E2e's build cache, so it runs on the same pinned image."""
+    job = _flow("a11y.yml")["jobs"]["a11y"]
+    assert job["runs-on"] == IMAGE and _cache_problems(job) == []
+    given = {s["with"].get("shared-key") or s["with"].get("key") for s in job["steps"] if "cache" in str(s.get("uses"))}
+    assert "e2e-ubuntu-24.04" in given and "playwright-${{ runner.os }}-ubuntu-24.04-${{ hashFiles('package-lock.json') }}" in given
+
+
+def _run_changes(tmp_path: Path, flow: str, job: str, touched: str, **env: str) -> tuple[str, str]:
+    """Runs the step in a scratch repository; a `git` shim fakes the network fetch (FETCH=fail makes it fail)."""
+    repo, shim = tmp_path / "repo", tmp_path / "bin"
+    shim.mkdir()
+    (shim / "git").write_text(f'#!/bin/sh\n[ "$1" = fetch ] && {{ [ "$FETCH" != fail ]; exit $?; }}\nexec {shutil.which("git")} "$@"\n')
+    (shim / "git").chmod(0o755)
+    who = ["-c", "user.name=Fake", "-c", "user.email=f@example.test"]
+    subprocess.run(["git", "init", "-q", str(repo)], check=True)
+    for args in (["commit", "-q", "--allow-empty", "-m", "base"], ["update-ref", "refs/remotes/origin/main", "HEAD"]):
+        subprocess.run(["git", *who, *args], cwd=repo, check=True)
+    if env.pop("no_main", ""):
+        subprocess.run(["git", "update-ref", "-d", "refs/remotes/origin/main"], cwd=repo, check=True)
+    (repo / touched).parent.mkdir(parents=True, exist_ok=True)
+    (repo / touched).write_text("x\n")
+    subprocess.run(["git", *who, "add", "-A"], cwd=repo, check=True)
+    subprocess.run(["git", *who, "commit", "-q", "-m", "change"], cwd=repo, check=True)
+    (step,) = [s for s in _flow(flow)["jobs"][job]["steps"] if s.get("id") == "changes"]
+    out = tmp_path / "out"
+    base = {"PATH": f"{shim}:/usr/bin:/bin", "GITHUB_OUTPUT": str(out), "RUNNER_TEMP": str(tmp_path),
+            "EVENT_NAME": "push", "GITHUB_REF_NAME": "claude/task/T1-x", "GH_TOKEN": "fake", "GITHUB_REPOSITORY": "o/r"}
+    done = subprocess.run(["bash", "-e", "-o", "pipefail", "-c", step["run"]], cwd=repo, env={**base, **env},
+                          capture_output=True, text=True, check=False)
+    assert done.returncode == 0, done.stderr
+    return out.read_text(encoding="utf-8"), done.stdout
+
+
+@pytest.mark.parametrize("flow", sorted(SKIPPERS))
+@pytest.mark.parametrize(("touched", "env", "run"), [
+    ("docs/notes.md", {}, "false"), ("app/x.rs", {}, "true"), ("docs/notes.md", {"FETCH": "fail"}, "true"),
+    ("docs/notes.md", {"no_main": "1"}, "true"), ("docs/notes.md", {"EVENT_NAME": "workflow_call"}, "true"),
+    ("docs/notes.md", {"EVENT_NAME": "schedule"}, "true"), ("docs/notes.md", {"EVENT_NAME": "workflow_dispatch"}, "true"),
+    ("docs/notes.md", {"GITHUB_REF_NAME": "main"}, "true")])
+def test_twin_and_ally_skip_only_an_untouched_branch_head_and_say_why(
+        tmp_path: Path, flow: str, touched: str, env: dict[str, str], run: str) -> None:
+    """D-5554: full runs on main and the called events; a failed fetch or merge-base runs in full; a skip passes."""
+    output, stdout = _run_changes(tmp_path, flow, SKIPPERS[flow], touched, **env)
+    assert output == f"run={run}\n" and f"run={run}: " in stdout
+
+
+@pytest.mark.parametrize(("job", "flag"), [("checks", "npm"), ("lint", "rust"), ("coverage", "rust"), ("e2e", "run")])
+def test_ci_change_skips_set_the_flag_when_main_cannot_be_read(tmp_path: Path, job: str, flag: str) -> None:
+    """D-5554: in ci.yml a failed fetch or merge-base reads as "everything changed", never as "nothing changed"."""
+    output, _ = _run_changes(tmp_path, "ci.yml", job, "docs/notes.md", no_main="1", FETCH="fail")
+    assert f"{flag}=true" in output and f"{flag}=false" not in output
+
+
+GATE_RUN = "${{ steps.tick.outputs.run || steps.wait.outputs.run || steps.check.outputs.run }}"
+GROUP_KEY = "${{ github.event_name == 'push' && github.ref || github.run_id }}"
+CANCEL = "${{ github.event_name == 'push' && github.ref != 'refs/heads/main' }}"
+CONCURRENT = [("ci.yml", "ci-"), ("twin.yml", "twin-"), ("a11y.yml", "ally-")]
+BRANCH = "refs/heads/claude/task/T001-fake"
+
+
+def gh_eval(expr: str, event: str, ref: str) -> Any:
+    """Evaluates the `${{ }}` subset the concurrency keys use (==, !=, &&, ||) for one event and ref."""
+    body = expr.removeprefix("${{").removesuffix("}}")
+    for key, value in (("github.event_name", event), ("github.ref", ref), ("github.run_id", "run-7")):
+        body = body.replace(key, repr(value))
+    return eval(body.replace("&&", " and ").replace("||", " or "), {"__builtins__": {}})
+
+
+def _gate() -> dict[str, Any]:
+    return _flow("backup-runner.yml")["jobs"]["gate"]
+
+
+def test_the_gates_run_output_reads_the_wait_step_between_tick_and_check() -> None:
+    """D-5554: a non-empty `run=false` from the wait step wins in `||`, so `backup` does not start."""
+    assert _gate()["outputs"]["run"] == GATE_RUN
+    assert _flow("backup-runner.yml")["jobs"]["backup"]["if"] == "needs.gate.outputs.run == 'true'"
+
+
+@pytest.mark.parametrize(("conclusion", "written"), [("cancelled", "run=false\n"), ("failure", "")])
+def test_the_wait_step_writes_run_false_only_for_a_cancelled_run(tmp_path: Path, conclusion: str, written: str) -> None:
+    step = next(s for s in _gate()["steps"] if s.get("id") == "wait")
+    out = tmp_path / "output"
+    out.touch()
+    done = subprocess.run([shutil.which("bash") or "bash", "-c", step["run"]], capture_output=True, text=True,
+                          env={"CONCLUSION": conclusion, "GITHUB_OUTPUT": str(out)}, check=False)
+    assert done.returncode == 0, done.stderr
+    assert out.read_text(encoding="utf-8") == written and f"checks {conclusion}" in done.stdout
+
+
+@pytest.mark.parametrize(("flow", "prefix"), CONCURRENT)
+def test_only_a_newer_push_to_the_same_branch_cancels_ci_twin_and_ally(flow: str, prefix: str) -> None:
+    """D-5554: a literal prefix, never github.workflow; main, the nightly's call and non-push runs never cancel."""
+    conc = _flow(flow)["concurrency"]
+    assert conc["group"] == prefix + GROUP_KEY and "github.workflow" not in conc["group"]
+    assert conc["cancel-in-progress"] == CANCEL
+    assert gh_eval(GROUP_KEY, "push", BRANCH) == BRANCH and gh_eval(CANCEL, "push", BRANCH) is True
+    for event, ref in (("push", "refs/heads/main"), ("schedule", "refs/heads/main"), ("workflow_dispatch", BRANCH)):
+        assert gh_eval(CANCEL, event, ref) is False
+        assert gh_eval(GROUP_KEY, event, ref) == (ref if event == "push" else "run-7")

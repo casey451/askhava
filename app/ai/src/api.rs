@@ -12,6 +12,9 @@
 use askhava_privacy::api::ScrubbedText;
 use sqlx::PgConnection;
 
+pub use crate::checklist::{
+    ChecklistError, PolicyVersion, ProviderTerms, record_policy_version, record_provider_terms,
+};
 pub use crate::health_figures::{AiFigures, ai_figures};
 pub use crate::models::{
     AdapterTransport, AiConfig, AiError, BrandedText, DAILY_CAP_KEY, DEFAULT_MODEL, Endpoint,
@@ -23,7 +26,8 @@ pub use crate::schemas::{
 };
 pub use crate::service::{AiOff, Intake, IntakeCall, Origin};
 pub use crate::switch::{
-    AiMode, Missing, SwitchError, WeeklyCounts, ai_mode, read_intake, set_ai_switch, weekly_counts,
+    AiMode, Missing, SwitchError, WeeklyCounts, ai_mode, missing_records, read_intake,
+    set_ai_switch, weekly_counts, zero_retention_in_force,
 };
 pub use crate::writer::{Document, WriteSources, Written, accept_document, accept_question};
 

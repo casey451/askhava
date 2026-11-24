@@ -73,6 +73,7 @@ pub use crate::handlers::{
     queue_call_back, receive_help_email, run_help_request_opened, run_no_reply, run_no_reply_at,
     texting_window,
 };
+pub use crate::job_answers::{JobAnswer, job_answers};
 pub use crate::job_language::job_language;
 pub use crate::job_texts::run_job_text_at;
 pub use crate::job_texts::{
@@ -102,14 +103,19 @@ pub use crate::order::{
     CardIn, Path, SPANISH_NOT_YET_TEMPLATE, Step, answer_narrowing, choose_with_card, keep_words,
     order, show_built_card, spanish_line,
 };
+pub use crate::order_dispatch::{TRADE_ASK_TEMPLATE, WHICH_FITS_TEMPLATE};
 pub use crate::photos::{
     LEAVE_OUT_LINE, MAX_PHOTO_ASKS, NO_PHOTO_LINE, PHOTO_ASK_TEMPLATE, PHOTO_CHECK_TEMPLATE,
-    PHOTO_HEIC_TEMPLATE, PHOTO_OK, PHOTO_REASK_TEMPLATE, PhotoPress, PhotoStep, PhotoText,
-    after_photo, card_went_out, confirmed_photos, left_off_note, photo_answer, photo_body,
-    photo_job_is_hers, photo_text, press_photo,
+    PHOTO_HEIC_TEMPLATE, PHOTO_OK, PHOTO_PENDING, PHOTO_REASK_TEMPLATE, PhotoPress, PhotoStep,
+    PhotoText, UPLOAD_PATH, after_photo, card_went_out, confirmed_photos, left_off_note,
+    note_picture_text, photo_answer, photo_body, photo_job_is_hers, photo_text, press_photo,
+};
+pub use crate::picture_text::{
+    HOLD_EVERY, HOLD_FOR, MAX_PICTURES, PICTURE_TEXT_KIND, PictureKeys, PictureSource, media_tail,
+    picture_payload, queue_picture_text, run_picture_text_at,
 };
 pub use crate::purge::{
-    REQUEST_PURGE_KIND, purge_answers, run_purge, run_purge_at, run_request_purge,
+    REQUEST_PURGE_KIND, jobs_of_contact, purge_answers, run_purge, run_purge_at, run_request_purge,
     run_request_purge_at, run_request_sweep, run_request_sweep_at, sweep_requests,
 };
 pub use crate::question_bank::{
@@ -161,6 +167,7 @@ pub use crate::web_chat::{
     chat_message, check_code, request_source, send_code, start_chat, web_chat_consent_text,
     web_chat_order,
 };
+pub use crate::web_chat::{ChatRaw, chat_contact, chat_opt_out, chat_raw_message};
 pub use crate::zip_step::{
     ZIP_AGAIN_TEMPLATE, ZIP_QUESTION_TEMPLATE, ZipPlace, ZipStep, answer_zip, ask_zip, place_zip,
     read_zip, zip_body,
@@ -180,27 +187,6 @@ pub mod rules {
         joins_open_job, language_code, language_from_code, number_named, opens_job, pick_option,
         plan, reads_spanish, shares_words, split_name_address, wanted_language,
     };
-}
-
-/// PRIV-011, PRIV-031: the jobs opened by requests of the homeowner whose vault contact is
-/// `contact`, so a delete in her portal clears only her own jobs' photos (T087, D-1939).
-///
-/// # Errors
-///
-/// [`IntakeError::Database`].
-pub async fn jobs_of_contact(
-    db: &mut sqlx::PgConnection,
-    contact: sqlx::types::Uuid,
-) -> Result<Vec<sqlx::types::Uuid>, IntakeError> {
-    sqlx::query_scalar!(
-        r#"SELECT DISTINCT c.job_id AS "job!" FROM intake.conversation c
-           JOIN intake.homeowner h ON h.id = c.homeowner_id
-           WHERE h.contact_id = $1 AND c.job_id IS NOT NULL"#,
-        contact,
-    )
-    .fetch_all(db)
-    .await
-    .map_err(|_| IntakeError::Database)
 }
 
 /// PRIV-011, D-3189: every request (open or closed) of the homeowner whose vault contact is

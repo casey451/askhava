@@ -1,7 +1,8 @@
 //! The owner portal's home and settings pages and the changes their forms post (T108; FEE-007,
 //! LIC-002, OPS-003, OPS-035, SEC-043, CON-024, BIZ-027; D-1843, D-1871, D-2128, D-3882, D-3890).
 //!
-//! [`owner_home_page`] shows the pushed alerts with the safe-mode acknowledgement, the pause
+//! [`owner_home_page`] shows the pushed alerts with the safe-mode acknowledgement, then the open
+//! alerts that never pushed, each by its plain name with no button (T779, D-5081, OPS-029), the pause
 //! switches (all, charging, texting and one per trade; no town has a record ID to scope one,
 //! D-3181), the fee mode read from `payments.fee_terms`, the homeowner line's texting switch,
 //! launch channel and number state (`messaging::api`), the status banner's off switch, each of the
@@ -62,7 +63,8 @@ use askhava_core::api::{NewTask, brand, enqueue};
 use askhava_messaging::api::{
     Audience, CONSENT_KEEP_YEARS, LaunchChannel, ModeStateError, NumberState, OutboxError,
     RevokeChannel, Week, WeekRate, alert_percent, launch_channel, load_lines, record_restore,
-    record_suspension, set_launch_channel, suppress, switch_off, switch_on, weekly_optout_rates,
+    record_suspension, set_launch_channel, suppress_logged, switch_off, switch_on,
+    weekly_optout_rates,
 };
 use askhava_messaging::api::{
     BusinessEligibility, business_eligibility, file_business_eligibility,
@@ -72,9 +74,9 @@ use askhava_messaging::api::{
     spanish_template_versions, turn_spanish_off, turn_spanish_on,
 };
 use askhava_ops::api::{
-    Actor, AuditEntry, AuditRow, Change, DELIVERY_ALERT, Switch, acknowledge_pushed_alert,
-    alert_subject, audit, audit_once, banner_shown, clear_banner, export_audit, is_paused,
-    pushed_alerts, set_switch,
+    Actor, AuditEntry, AuditRow, Change, DELIVERY_ALERT, Switch, VOLUME_HIGH_ALERT,
+    VOLUME_LOW_ALERT, acknowledge_pushed_alert, alert_subject, audit, audit_once, banner_shown,
+    clear_banner, export_audit, is_paused, pushed_alerts, set_switch, waiting_alerts,
 };
 use askhava_payments::api::{
     DisputeView, FeeMode, MoneyEventError, OwnerSubmission, PickRefundState, RefundOutcome,
@@ -137,6 +139,10 @@ pub const OWNER_REFUND_ACTION: &str = "portals.owner_refund";
 pub const OWNER_EVIDENCE_ACTION: &str = "portals.owner_dispute_evidence";
 /// How many audit rows one page of the viewer lists.
 pub const AUDIT_PAGE_ROWS: i64 = 100;
+/// The audit action of an owner-recorded opt-out; its row names the opt-out event (SEC-006, D-4727).
+pub const OWNER_OPT_OUT_ACTION: &str = "portals.owner_opt_out_recorded";
+/// The audit action of a filed Stripe written answer; its row names the filing (SEC-006, D-4727).
+pub const OWNER_STRIPE_ANSWER_ACTION: &str = "portals.owner_stripe_answer_filed";
 /// How many finished Arizona weeks of opt-out rates the home page lists (CON-024).
 pub const OPT_OUT_WEEKS: usize = 4;
 
@@ -390,6 +396,16 @@ struct AlertRow {
     press: String,
 }
 
+/// One open alert that never pushed, as listed: its plain name, severity, subject and raised
+/// time (OPS-029, D-5081; IDs and code names only, PRIV-006).
+#[derive(Debug, Clone)]
+struct WaitingRow {
+    name: String,
+    severity: String,
+    subject: Option<String>,
+    raised: String,
+}
+
 /// One audience's week of opt-outs (CON-024).
 #[derive(Debug, Clone)]
 struct RateRow {
@@ -414,6 +430,7 @@ struct HomeView<'a> {
     brand: &'a str,
     routes: [&'static str; 8],
     alerts: Vec<AlertRow>,
+    waiting: Vec<WaitingRow>,
     pauses: Vec<SwitchRow>,
     flat: bool,
     texting_on: bool,
@@ -431,6 +448,8 @@ struct HomeView<'a> {
 struct SettingsView<'a> {
     csrf: &'a str,
     notice: Option<&'static str>,
+    error: Option<(&'static str, &'static str)>,
+    kept: Kept,
     opt_out_route: &'static str,
     stripe_route: &'static str,
     stripe: Option<StripeRow>,
@@ -446,6 +465,22 @@ struct SettingsView<'a> {
     step_up_route: &'static str,
     home_route: &'static str,
     categories: Vec<SwitchRow>,
+}
+
+impl SettingsView<'_> {
+    /// A11Y-030: whether the refusal shown names the control with HTML ID `id`.
+    fn bad(&self, id: &str) -> bool {
+        self.error.is_some_and(|(field, _)| field == id)
+    }
+}
+
+/// A11Y-030: the values typed into the refused opt-out or Stripe-answer form, kept on the page.
+#[derive(Default)]
+struct Kept {
+    phone: String,
+    answered_on: String,
+    reference: String,
+    allows: String,
 }
 
 fn arizona(at: Timestamp) -> String {
@@ -512,6 +547,40 @@ async fn alert_rows(conn: &mut PgConnection) -> Result<Vec<AlertRow>, OwnerToolE
             raised: arizona(a.raised_at),
             pushed: arizona(a.pushed_at),
             acknowledged: a.acknowledged_at.map(arizona),
+        })
+        .collect())
+}
+
+/// The kind code of the off-database audit chain alert, raised by `server`'s nightly check.
+const CHAIN_ALERT: &str = "ops.audit_chain_broken";
+
+/// OPS-029, OPS-052, D-5081: an alert kind's plain name on the owner home; a kind without one
+/// shows its code name.
+fn alert_name(kind: String) -> String {
+    match kind.as_str() {
+        VOLUME_LOW_ALERT => "The database is over 70% full".to_owned(),
+        VOLUME_HIGH_ALERT => "The database is over 85% full".to_owned(),
+        CHAIN_ALERT => {
+            "The off-site copy of the audit log has a missing or changed entry".to_owned()
+        }
+        _ => kind,
+    }
+}
+
+/// OPS-029, OPS-052, D-5081: the open alerts that never pushed, newest first, with no button.
+async fn waiting_rows(conn: &mut PgConnection) -> Result<Vec<WaitingRow>, OwnerToolError> {
+    let alerts = waiting_alerts(conn).await.map_err(store)?;
+    Ok(alerts
+        .into_iter()
+        .map(|a| WaitingRow {
+            subject: a
+                .subject
+                .subject_kind
+                .zip(a.subject.subject_id)
+                .map(|(k, id)| format!("{k} {id}")),
+            name: alert_name(a.subject.kind),
+            severity: a.subject.severity,
+            raised: arizona(a.raised_at),
         })
         .collect())
 }
@@ -598,6 +667,7 @@ pub async fn owner_home_page(
         ],
         brand: brand().display_name(),
         alerts: alert_rows(conn).await?,
+        waiting: waiting_rows(conn).await?,
         pauses: pause_rows(conn).await?,
         flat: terms.mode() == FeeMode::Flat,
         texting_on: lines.homeowner.texting_on,
@@ -641,12 +711,30 @@ pub async fn owner_settings_page_with(
     csrf: &str,
     done: Option<SettingsNotice>,
 ) -> Result<String, OwnerToolError> {
-    let stripe = latest_stripe_answer(conn).await.map_err(store)?;
-    let safety = safety_approval(conn).await.map_err(store)?;
-    let spanish = spanish_switch(conn).await.map_err(store)?;
-    let versions = spanish_template_versions().map_err(store)?;
+    let error = done.and_then(SettingsNotice::control);
+    settings_page(conn, csrf, done, (error, Kept::default())).await
+}
+
+/// A11Y-030, CON-035, PICK-048, D-4727: the owner settings page after a refused opt-out or
+/// Stripe-answer filing: "Error: " in the title, a focused summary linking the field `error`
+/// names, the message by it and every typed value kept. Nothing here is logged.
+///
+/// # Errors
+///
+/// [`OwnerToolError::Database`] for a failed read or render.
+pub async fn owner_settings_page_refused(
+    conn: &mut PgConnection,
+    csrf: &str,
+    error: &SettingsError,
+) -> Result<String, OwnerToolError> {
+    let shown = (error.field.id(), error.field.line());
+    settings_page(conn, csrf, None, (Some(shown), error.kept())).await
+}
+
+/// LIC-002: one switch row per offered category.
+async fn category_rows(conn: &mut PgConnection) -> Result<Vec<SwitchRow>, OwnerToolError> {
     let list = category_list(conn).await.map_err(store)?;
-    let categories = list
+    Ok(list
         .categories
         .into_iter()
         .map(|c| SwitchRow {
@@ -655,10 +743,27 @@ pub async fn owner_settings_page_with(
             target: c.code,
             on: c.enabled,
         })
-        .collect();
+        .collect())
+}
+
+/// The settings page with `done`'s line, or the refusal `error` (control ID and message) and the
+/// `kept` values (LIC-002, CON-035, PICK-048, A11Y-030).
+async fn settings_page(
+    conn: &mut PgConnection,
+    csrf: &str,
+    done: Option<SettingsNotice>,
+    (error, kept): (Option<(&'static str, &'static str)>, Kept),
+) -> Result<String, OwnerToolError> {
+    let stripe = latest_stripe_answer(conn).await.map_err(store)?;
+    let safety = safety_approval(conn).await.map_err(store)?;
+    let spanish = spanish_switch(conn).await.map_err(store)?;
+    let versions = spanish_template_versions().map_err(store)?;
+    let categories = category_rows(conn).await?;
     SettingsView {
         csrf,
-        notice: done.map(SettingsNotice::line),
+        notice: done.filter(|d| !d.refused()).map(SettingsNotice::line),
+        error,
+        kept,
         safety_route: OWNER_SAFETY_CALL_ROUTE,
         safety: safety.map(|a| (a.date.strftime("%B %-d, %Y").to_string(), a.reference)),
         unmet: done.map(SettingsNotice::unmet).unwrap_or_default(),
@@ -1080,6 +1185,19 @@ impl SettingsNotice {
                 | Self::SpanishMissing(_)
                 | Self::BusinessTextingRefused
         )
+    }
+
+    /// A11Y-030, D-5657: for a refusal, the HTML ID of the control its message sits by and the
+    /// message; `None` for a change made.
+    fn control(self) -> Option<(&'static str, &'static str)> {
+        let id = match self {
+            Self::SafetyCallNoApproval => "safety-date",
+            Self::SafetyCallUnmet(_) => "safety-on",
+            Self::SpanishMissing(_) => "spanish-reviewed-on",
+            Self::BusinessTextingRefused => "business-on",
+            _ => return None,
+        };
+        Some((id, self.line()))
     }
 
     /// TXT-039, TXT-043: the missing records a Spanish refusal names, in words; empty otherwise.
@@ -1526,9 +1644,11 @@ impl std::fmt::Debug for OptOutForm {
     }
 }
 
-/// CON-035, SEC-043, D-3753: after the fresh factor, lists the number at once through
-/// `messaging::api::suppress` with [`RevokeChannel::Owner`] (logged with its channel and time);
-/// confirmed on screen by the returned notice, never by text.
+/// CON-035, SEC-043, SEC-006, D-3753, D-4727: after the fresh factor, lists the number at once
+/// through `messaging::api::suppress_logged` with [`RevokeChannel::Owner`] (logged with its channel
+/// and time) and writes one [`OWNER_OPT_OUT_ACTION`] audit row naming the opt-out event's ID only
+/// (a repeat for a listed number too), in one transaction; confirmed on screen by the returned
+/// notice, never by text.
 ///
 /// # Errors
 ///
@@ -1549,12 +1669,36 @@ pub async fn owner_record_opt_out(
     )
     .await?;
     let how = (RevokeChannel::Owner, "owner_recorded");
-    match suppress(conn, vault, form.phone.trim(), how, now).await {
-        Ok(true) => Ok(SettingsNotice::OptOutListed),
-        Ok(false) => Ok(SettingsNotice::OptOutAlready),
-        Err(OutboxError::BadPhone) => Err(OwnerToolError::Refused),
-        Err(_) => Err(OwnerToolError::Database),
-    }
+    let mut tx = conn.begin().await.map_err(store)?;
+    let (event, added) = match suppress_logged(&mut tx, vault, form.phone.trim(), how, now).await {
+        Ok(done) => done,
+        Err(OutboxError::BadPhone) => return Err(OwnerToolError::Refused),
+        Err(_) => return Err(OwnerToolError::Database),
+    };
+    let row = (OWNER_OPT_OUT_ACTION, "messaging.optout_event", event);
+    owner_audit(&mut tx, principal, row).await?;
+    tx.commit().await.map_err(store)?;
+    Ok(if added {
+        SettingsNotice::OptOutListed
+    } else {
+        SettingsNotice::OptOutAlready
+    })
+}
+
+/// SEC-006, D-4727: one [`Actor::Owner`] audit row naming record `id` of `kind` only, in `tx`.
+async fn owner_audit(
+    tx: &mut PgConnection,
+    principal: &OwnerPrincipal,
+    (action, kind, id): (&'static str, &'static str, Uuid),
+) -> Result<(), OwnerToolError> {
+    let entry = AuditEntry {
+        actor: Actor::Owner(principal.owner()),
+        action,
+        subject_kind: kind,
+        subject_id: id,
+        change: Change::Action,
+    };
+    audit(tx, &entry).await.map(|_| ()).map_err(store)
 }
 
 /// The Stripe-answer filing's body: the answer's date (`YYYY-MM-DD`), the reference and `yes` or
@@ -1569,8 +1713,10 @@ pub struct StripeAnswerForm {
     pub allows: String,
 }
 
-/// PICK-048, SEC-043, D-2783, D-3753: after the fresh factor, files Stripe's written answer once
-/// through `quotes::api::file_stripe_answer` at `now`; the newest filing is the one in force.
+/// PICK-048, SEC-043, SEC-006, D-2783, D-3753, D-4727: after the fresh factor, files Stripe's
+/// written answer once through `quotes::api::file_stripe_answer` at `now` and writes one
+/// [`OWNER_STRIPE_ANSWER_ACTION`] audit row naming the new row's ID only, in one transaction; the
+/// newest filing is the one in force.
 ///
 /// # Errors
 ///
@@ -1591,9 +1737,133 @@ pub async fn owner_file_stripe_answer(
         "no" => false,
         _ => return Err(OwnerToolError::Refused),
     };
-    match file_stripe_answer(conn, (day, &form.reference, allows), now).await {
-        Ok(()) => Ok(SettingsNotice::StripeAnswerFiled),
-        Err(AutoConfirmError::BadField) => Err(OwnerToolError::Refused),
-        Err(_) => Err(OwnerToolError::Database),
+    let mut tx = conn.begin().await.map_err(store)?;
+    let filed = match file_stripe_answer(&mut tx, (day, &form.reference, allows), now).await {
+        Ok(id) => id,
+        Err(AutoConfirmError::BadField) => return Err(OwnerToolError::Refused),
+        Err(_) => return Err(OwnerToolError::Database),
+    };
+    let row = (
+        OWNER_STRIPE_ANSWER_ACTION,
+        "quotes.stripe_written_answer",
+        filed,
+    );
+    owner_audit(&mut tx, principal, row).await?;
+    tx.commit().await.map_err(store)?;
+    Ok(SettingsNotice::StripeAnswerFiled)
+}
+
+/// The field of a refused settings form (A11Y-030, CON-035, PICK-048, D-4727).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SettingsField {
+    /// The opt-out form's phone number.
+    OptOutPhone,
+    /// The Stripe answer's date.
+    StripeDate,
+    /// The Stripe answer's case or ticket number.
+    StripeReference,
+    /// The Stripe answer's yes or no.
+    StripeChoice,
+}
+
+impl SettingsField {
+    /// The HTML ID of the field's control on the settings page.
+    fn id(self) -> &'static str {
+        match self {
+            Self::OptOutPhone => "opt-out-phone",
+            Self::StripeDate => "stripe-date",
+            Self::StripeReference => "stripe-reference",
+            Self::StripeChoice => "stripe-yes",
+        }
+    }
+
+    /// The message shown in the summary and by the field: what to do.
+    fn line(self) -> &'static str {
+        match self {
+            Self::OptOutPhone => "Enter a US phone number with its area code, like 928 555 0123.",
+            Self::StripeDate => "Enter the date Stripe replied, like 2026-11-20.",
+            Self::StripeReference => "Enter Stripe's case or ticket number, up to 200 characters.",
+            Self::StripeChoice => {
+                "Choose yes or no: does Stripe allow charging a saved card when the business is not there?"
+            }
+        }
+    }
+}
+
+/// The typed values of a refused form, kept for the page again.
+#[derive(Clone)]
+enum Typed {
+    Phone(String),
+    Stripe(StripeAnswerForm),
+}
+
+/// A refused opt-out or Stripe-answer filing, for the settings page again (A11Y-030, CON-035,
+/// PICK-048, D-4727): the form's field at fault and every value typed. Its `Debug` prints the
+/// field only, never a typed value (PRIV-016); nothing here is logged.
+#[derive(Clone)]
+pub struct SettingsError {
+    field: SettingsField,
+    typed: Typed,
+}
+
+impl std::fmt::Debug for SettingsError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("SettingsError")
+            .field("field", &self.field)
+            .finish_non_exhaustive()
+    }
+}
+
+impl SettingsError {
+    /// CON-035: the refused opt-out `form`: its phone number, kept as typed.
+    #[must_use]
+    pub fn opt_out(form: &OptOutForm) -> Self {
+        Self {
+            field: SettingsField::OptOutPhone,
+            typed: Typed::Phone(form.phone.clone()),
+        }
+    }
+
+    /// PICK-048: the refused Stripe-answer `form`, naming its first bad field in the order
+    /// [`owner_file_stripe_answer`] checks them: the date, the choice, then the reference.
+    #[must_use]
+    pub fn stripe(form: &StripeAnswerForm) -> Self {
+        let field = if form
+            .answered_on
+            .trim()
+            .parse::<jiff::civil::Date>()
+            .is_err()
+        {
+            SettingsField::StripeDate
+        } else if !matches!(form.allows.as_str(), "yes" | "no") {
+            SettingsField::StripeChoice
+        } else {
+            SettingsField::StripeReference
+        };
+        Self {
+            field,
+            typed: Typed::Stripe(form.clone()),
+        }
+    }
+
+    /// The field at fault.
+    #[must_use]
+    pub fn field(&self) -> SettingsField {
+        self.field
+    }
+
+    fn kept(&self) -> Kept {
+        match &self.typed {
+            Typed::Phone(phone) => Kept {
+                phone: phone.clone(),
+                ..Kept::default()
+            },
+            Typed::Stripe(form) => Kept {
+                answered_on: form.answered_on.clone(),
+                reference: form.reference.clone(),
+                allows: form.allows.clone(),
+                ..Kept::default()
+            },
+        }
     }
 }
