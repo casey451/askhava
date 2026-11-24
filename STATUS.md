@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-24T04:56:44Z by runner 18fdb4a27186 (actions).
+Updated 2026-11-24T04:57:25Z by runner 18fdb4a27186 (actions).
 
 **Building: T779 in progress since 04:10Z; 650 of 779 done; week 89% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-24T04:56:44Z by runner 18fdb4a27186 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T779 claimed 04:10Z, lease until 07:10Z; lane 3: T728 claimed 04:01Z, lease until 07:01Z; lane 4: T676 claimed 02:45Z, lease until 05:45Z
 - **Week:** 89% used, 10.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:52Z, 4 min before this update
+- **Last run:** 04:57Z, 0 min before this update
 - **Keeper:** last ran 04:52Z, next wake 05:48Z
 
 ## Needs attention
@@ -81,7 +81,6 @@ Also: stand-in twilio fail fault answers 500 -> OutcomeUnknown, no retries (serv
 | T838 | portals, server and calls: the sign-in, quote-action and sig | done | 1 | 86 min | 06:07Z |  |
 | T834 | ci (harness): Twin and Ally skip their build when nothing th | done | 3 | 48 min | 05:51Z | After the fix round the reviewer (head f9e32434db512dbbf1f29deb2d94b5848d2e3874) still ends REVIEW-VERDICT: FINDINGS. Fi |
 | T803 | messaging (harness): an opted-out number gets no HELP reply; | done | 4 | 81 min | 05:08Z | Ci: failure; Checks: cancelled / Checks failed at step: Named mutants of the files this change touches (scripts/run_name |
-| T834 | ci (harness): Twin and Ally skip their build when nothing th | QUEUED | 2 | 85 min | 04:57Z |  |
 
 ### Plan and harness merges on main
 - 23:24Z Plan: token efficiency and phase-2 pre-flight (D-5676); smoke throughput harness task T843, T836 unblocked (D-5682) (#1412)
