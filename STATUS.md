@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-24T00:35:01Z by runner cc72b2c6067c (actions).
+Updated 2026-11-24T00:35:13Z by runner cc72b2c6067c (actions).
 
 **Building: T737 in progress since 22:49Z; 643 of 779 done; week 86% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 643 of 779 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T737 claimed 22:49Z, lease until 01:49Z; lane 2: T813 claimed 00:33Z, lease until 03:33Z; lane 3: T738 claimed 23:08Z, lease until 02:08Z; lane 4: T836 claimed 00:30Z, lease until 03:30Z
+- **Lane:** lane 1: T737 claimed 22:49Z, lease until 01:49Z; lane 2: T813 claimed 00:33Z, lease until 03:33Z; lane 4: T836 claimed 00:30Z, lease until 03:30Z
 - **Week:** 86% used, 17.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 00:34Z, 0 min before this update
 - **Keeper:** last ran 23:59Z, next wake 00:19Z
@@ -20,6 +20,7 @@ Updated 2026-11-24T00:35:01Z by runner cc72b2c6067c (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T738 | portals and server: owner settings refusals show an accessib | MERGE_PENDING | 1 | 85 min | 00:34Z |  |
 | T716 | intake: the dispatcher's trade questions at step 5: "Which f | done | 4 | 114 min | 23:57Z | PLAN GAP: outside ownership: app/intake/src/conversation.rs (purge_child, ~348-362), app/intake/src/models.rs (purge_req |
 | T649 | intake, site and server: after the code, the web chat's name | check_failed | 1 | 2 h 19 min | 22:52Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T819 | portals: her feedback words are scrubbed before they are sto | done | 3 | 85 min | 22:43Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
@@ -128,8 +129,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T737 (lease until 2026-11-24T01:49:24Z)
 - lane 2: T813 (lease until 2026-11-24T03:33:53Z)
-- lane 3: T738 (lease until 2026-11-24T02:08:57Z)
 - lane 4: T836 (lease until 2026-11-24T03:30:33Z)
 
 ## Last usage reading
-- {"task": "T716", "at": "2026-11-23T23:57:13Z", "output_tokens": 70348, "cache_creation_input_tokens": 266863, "cache_read_input_tokens": 10821675, "input_tokens": 207}
+- {"task": "T738", "at": "2026-11-24T00:34:31Z", "output_tokens": 86269, "cache_read_input_tokens": 18886675, "input_tokens": 267, "cache_creation_input_tokens": 291349}
