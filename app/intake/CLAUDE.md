@@ -32,6 +32,7 @@ The layer-7 crate that turns a homeowner's inbound text into a request (`docs/ar
 - `job_answers` never returns a contact answer and reads only its own job's; a close keeps every job in `jobs_of_contact`: `tests/integration/tests/job_answers_reader.rs` (T745).
 - Web chat after the code (T645, D-4292): an opt-out word or phrase lists the number (`web_chat`), texts nothing and changes no job; INT-038 stops the chat before and after the code, and under 13 the session row goes with the purge: `app/server/tests/web_chat_stops.rs` (TD-CON-36).
 - Trade questions (D-4441, D-4602, D-4777): "Which fits best?" at most twice and `trade_ask` at most twice, never INT-017's reply for want of a trade; no reply to either kept as words; the count reads the stored pairs, a licensed-only pair surviving read-back: `tests/integration/tests/intake_order_trade_questions.rs`, `intake_boundary_count.rs`.
+- A "<n> YES" picks only from her phone (an inbox row; web chat never) with no 911-list match, and after HELP still picks: `app/server/tests/text_pick_route.rs` (TD-PICK-71).
 
 ## Detail
 Everything else about this crate (what it owns, the code behind each requirement ID, change recipes, the tests that guard it, decisions and history) is in `app/intake/NOTES.md`, one entry per line, each starting with its requirement IDs. Grep it by requirement ID, file or word (`grep -n 'FEE-039' app/intake/NOTES.md`); never read it whole. Add your own entries at its end, one line each (`docs/code-docs.md` section 2).

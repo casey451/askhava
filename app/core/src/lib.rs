@@ -11,6 +11,7 @@ mod brand;
 mod clock;
 mod db;
 mod db_metrics;
+mod homeowner_terms;
 mod ids;
 mod logging;
 mod queue_health;
