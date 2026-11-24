@@ -18,6 +18,12 @@ on:
   push:
     branches: ["claude/**", "dependabot/**", "!claude/kit-state", "!claude/train/**", "!claude/wip/**"]
   workflow_call:
+# D-5554: a newer push to the same branch cancels its older run, freeing a shared runner; a push to main,
+# the nightly's workflow_call and any other event get a group of their own (the run id) and never cancel.
+# A literal prefix, never github.workflow (under workflow_call it names the caller, nightly-main.yml).
+concurrency:
+  group: ally-${{ github.event_name == 'push' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'push' && github.ref != 'refs/heads/main' }}
 permissions:
   contents: read
 env:

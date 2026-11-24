@@ -445,3 +445,51 @@ def test_ci_change_skips_set_the_flag_when_main_cannot_be_read(tmp_path: Path, j
     """D-5554: in ci.yml a failed fetch or merge-base reads as "everything changed", never as "nothing changed"."""
     output, _ = _run_changes(tmp_path, "ci.yml", job, "docs/notes.md", no_main="1", FETCH="fail")
     assert f"{flag}=true" in output and f"{flag}=false" not in output
+
+
+GATE_RUN = "${{ steps.tick.outputs.run || steps.wait.outputs.run || steps.check.outputs.run }}"
+GROUP_KEY = "${{ github.event_name == 'push' && github.ref || github.run_id }}"
+CANCEL = "${{ github.event_name == 'push' && github.ref != 'refs/heads/main' }}"
+CONCURRENT = [("ci.yml", "ci-"), ("twin.yml", "twin-"), ("a11y.yml", "ally-")]
+BRANCH = "refs/heads/claude/task/T001-fake"
+
+
+def gh_eval(expr: str, event: str, ref: str) -> Any:
+    """Evaluates the `${{ }}` subset the concurrency keys use (==, !=, &&, ||) for one event and ref."""
+    body = expr.removeprefix("${{").removesuffix("}}")
+    for key, value in (("github.event_name", event), ("github.ref", ref), ("github.run_id", "run-7")):
+        body = body.replace(key, repr(value))
+    return eval(body.replace("&&", " and ").replace("||", " or "), {"__builtins__": {}})
+
+
+def _gate() -> dict[str, Any]:
+    return _flow("backup-runner.yml")["jobs"]["gate"]
+
+
+def test_the_gates_run_output_reads_the_wait_step_between_tick_and_check() -> None:
+    """D-5554: a non-empty `run=false` from the wait step wins in `||`, so `backup` does not start."""
+    assert _gate()["outputs"]["run"] == GATE_RUN
+    assert _flow("backup-runner.yml")["jobs"]["backup"]["if"] == "needs.gate.outputs.run == 'true'"
+
+
+@pytest.mark.parametrize(("conclusion", "written"), [("cancelled", "run=false\n"), ("failure", "")])
+def test_the_wait_step_writes_run_false_only_for_a_cancelled_run(tmp_path: Path, conclusion: str, written: str) -> None:
+    step = next(s for s in _gate()["steps"] if s.get("id") == "wait")
+    out = tmp_path / "output"
+    out.touch()
+    done = subprocess.run([shutil.which("bash") or "bash", "-c", step["run"]], capture_output=True, text=True,
+                          env={"CONCLUSION": conclusion, "GITHUB_OUTPUT": str(out)}, check=False)
+    assert done.returncode == 0, done.stderr
+    assert out.read_text(encoding="utf-8") == written and f"checks {conclusion}" in done.stdout
+
+
+@pytest.mark.parametrize(("flow", "prefix"), CONCURRENT)
+def test_only_a_newer_push_to_the_same_branch_cancels_ci_twin_and_ally(flow: str, prefix: str) -> None:
+    """D-5554: a literal prefix, never github.workflow; main, the nightly's call and non-push runs never cancel."""
+    conc = _flow(flow)["concurrency"]
+    assert conc["group"] == prefix + GROUP_KEY and "github.workflow" not in conc["group"]
+    assert conc["cancel-in-progress"] == CANCEL
+    assert gh_eval(GROUP_KEY, "push", BRANCH) == BRANCH and gh_eval(CANCEL, "push", BRANCH) is True
+    for event, ref in (("push", "refs/heads/main"), ("schedule", "refs/heads/main"), ("workflow_dispatch", BRANCH)):
+        assert gh_eval(CANCEL, event, ref) is False
+        assert gh_eval(GROUP_KEY, event, ref) == (ref if event == "push" else "run-7")

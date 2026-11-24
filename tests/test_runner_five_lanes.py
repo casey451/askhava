@@ -19,6 +19,7 @@ import yaml
 
 import check_state as cs
 import pacing
+from test_ci_workflow import BRANCH, CANCEL, gh_eval
 from runner import cycle, lanes, state as st
 from test_failure_drills import MODELS, NOW, FakeEnv, config
 from test_runner_two_lanes import _pacing_config, _pick, _rejected, _workflow, by_head, handed_off, staged
@@ -173,6 +174,13 @@ def test_no_workflow_a_hand_in_starts_cancels_another_lanes_run_when_five_hand_i
     for name in names:
         doc = yaml.safe_load((ROOT / ".github" / "workflows" / f"{name}.yml").read_text(encoding="utf-8"))
         for where, conc in _jobs_with_concurrency(doc):
-            assert conc.get("cancel-in-progress") is False, f"{name}.yml {where} cancels in progress"
+            cancel = conc.get("cancel-in-progress")
+            if cancel is False:
+                continue
+            # D-5554, D-5682: ci, a11y and twin cancel only an older run of the same pushed non-main ref.
+            assert name in ("ci", "a11y", "twin") and cancel == CANCEL, f"{name}.yml {where} cancels in progress"
+            assert gh_eval(cancel, "push", "refs/heads/main") is False
+            assert all(gh_eval(cancel, event, BRANCH) is False for event in ("schedule", "workflow_dispatch", "workflow_call"))
+            assert gh_eval(conc["group"].split("-", 1)[1], "push", BRANCH) == BRANCH
     cancelling = [where for where, conc in _jobs_with_concurrency(_workflow()) if conc.get("cancel-in-progress") is not False]
     assert cancelling == ["keeper"]  # the one sleeper (D-1451), never a lane's run or a check
