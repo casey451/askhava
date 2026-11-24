@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-24T18:46:17Z by runner a5c0e45bc3c3 (actions).
+Updated 2026-11-24T18:56:12Z by runner 07dc57aa425a (actions).
 
 **Building: T815 in progress since 18:07Z; 667 of 780 done; week 95% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-24T18:46:17Z by runner a5c0e45bc3c3 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T815 claimed 18:07Z, lease until 21:07Z; lane 2: T846 claimed 18:45Z, lease until 21:45Z; lane 3: T839 claimed 18:41Z, lease until 21:41Z; lane 4: T820 claimed 18:38Z, lease until 21:38Z; lane 5: T826 claimed 18:12Z, lease until 21:12Z
 - **Week:** 95% used, 0.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:42Z, 3 min before this update
+- **Last run:** 18:46Z, 9 min before this update
 - **Keeper:** last ran 18:33Z, next wake 20:01Z
 
 ## Needs attention
@@ -23,7 +23,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 47% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 48% of the context window, over its 45% limit
-- Strict plan check red: 65 problem(s) on tasks still to run (+573 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 65 problem(s) on tasks still to run (+571 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
