@@ -9,7 +9,7 @@
 
 use std::sync::Arc;
 
-use askhava_businesses::api::{Acting, add_owner, create, record_step_up};
+use askhava_businesses::api::{Acting, add_owner, create, record_session_step_up};
 use askhava_core::api::{ManualClock, brand};
 use askhava_messaging::api::{NewNoticeLog, NoticeKind, Sending, record_notice};
 use askhava_picks::api::HoldAsk;
@@ -339,7 +339,8 @@ async fn td_sec_08_with_the_inbox_shared_quote_and_hold_still_work(pool: PgPool)
     let refused = set_inbox_shared(&mut db, &o.me, (true, &phone), start()).await;
     assert_eq!(refused, Err(SharedInboxError::NeedsCode));
     assert!(!inbox_shared(&mut db, o.by.member).await.expect("read"));
-    record_step_up(&mut db, o.by, start()).await.expect("code");
+    let code = record_session_step_up(&mut db, o.by, o.me.session(), start());
+    code.await.expect("code");
     set_inbox_shared(&mut db, &o.me, (true, &phone), later(1))
         .await
         .expect("shared");
