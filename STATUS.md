@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-24T07:32:50Z by runner 48417ba3bd67 (actions).
+Updated 2026-11-24T07:33:23Z by runner 48417ba3bd67 (actions).
 
 **Building: T804 in progress since 07:31Z; 654 of 779 done; week 90% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 654 of 779 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T804 claimed 07:31Z, lease until 10:31Z; lane 4: T410 claimed 05:58Z, lease until 08:58Z
+- **Lane:** lane 2: T804 claimed 07:31Z, lease until 10:31Z
 - **Week:** 90% used, 12.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 07:32Z, 0 min before this update
 - **Keeper:** last ran 07:14Z, next wake 07:34Z
@@ -30,6 +30,7 @@ Also: stand-in twilio fail fault answers 500 -> OutcomeUnknown, no retries (serv
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T410 | portals: every signed-in business page shows the Get help li | MERGE_PENDING | 1 | 93 min | 07:32Z |  |
 | T656 | site: a failed submit on the /request chat shows a focused e | MERGE_PENDING | 2 | 2 h 1 min | 07:12Z | Reviewer after the findings round still FINDINGS (head 18fdb4a27): app/site/templates/request.html lines 7-10: header co |
 | T804 | server and portals: a delete or copy request made in the por | check_failed | 1 | 69 min | 06:37Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T779 | ops, server and portals: alerts that do not push show in the | done | 1 | 83 min | 06:27Z |  |
@@ -137,7 +138,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T804 (lease until 2026-11-24T10:31:14Z)
-- lane 4: T410 (lease until 2026-11-24T08:58:38Z)
 
 ## Last usage reading
-- {"task": "T656", "at": "2026-11-24T07:12:14Z", "cache_read_input_tokens": 7203034, "cache_creation_input_tokens": 151696, "output_tokens": 48344, "input_tokens": 164}
+- {"task": "T410", "at": "2026-11-24T07:32:16Z", "output_tokens": 15694, "cache_read_input_tokens": 1780167, "cache_creation_input_tokens": 89030, "input_tokens": 80}
