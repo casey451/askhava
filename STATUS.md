@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T13:12:20Z by runner 26e9bbe3e395 (manual).
+Updated 2026-11-24T13:12:59Z by runner a7f2a247ae33 (actions).
 
-**Building: T733 in progress since 11:58Z; 659 of 780 done; week 92% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T802 in progress since 13:12Z; 659 of 780 done; week 92% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 659 of 780 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T733 claimed 11:58Z, lease until 14:58Z; lane 4: T410 claimed 11:51Z, lease until 14:51Z
-- **Week:** 92% used, 5.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:41Z, 31 min before this update
+- **Lane:** lane 2: T802 claimed 13:12Z, lease until 16:12Z; lane 3: T733 claimed 11:58Z, lease until 14:58Z; lane 4: T410 claimed 11:51Z, lease until 14:51Z
+- **Week:** 92% used, 6.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 13:12Z, 0 min before this update
 - **Keeper:** last ran 12:40Z, next wake 13:00Z
 
 ## Needs attention
@@ -20,10 +20,9 @@ Updated 2026-11-24T13:12:20Z by runner 26e9bbe3e395 (manual).
 Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and prehandin.sh green.
 - BLOCKED T801: plan gap reported: PLAN GAP: app/server/tests/web_chat_stops.rs:572 and :592 (owned by T645) assert a consent text queued to a chat-verified number that never texted in; fixing review finding (web_chat consent must never permit a text, CON-005/CON-025) requires changing them. Also app/server/tests/web_chat_after_code.rs:46,:319,:368 (T649) for the "We'll answer by text" wording. Smallest plan change: let T801 own web_chat_stops.rs (and web_chat_after_code.rs). Prepared fix patch at /tmp/T801-fix-round.patch. Reviewer confirmed the gap for web_chat_stops.rs. Proof: cargo test --workspace --exclude askhava-integra; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T801 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 47% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 48% of the context window, over its 45% limit
-- Strict plan check red: 60 problem(s) on tasks still to run (+558 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 59 problem(s) on tasks still to run (+558 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -115,7 +114,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-24T11:42:35Z (week)): week: 188.2M used, 5.8M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T22:34:19Z.
+- Pacing (session_reading 2026-11-24T12:40:07Z (week)): week: 187.1M used, 6.9M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T22:46:34Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -131,6 +130,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 2: T802 (lease until 2026-11-24T16:12:41Z)
 - lane 3: T733 (lease until 2026-11-24T14:58:11Z)
 - lane 4: T410 (lease until 2026-11-24T14:51:12Z)
 
