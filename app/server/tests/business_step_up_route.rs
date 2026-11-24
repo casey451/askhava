@@ -1,24 +1,24 @@
 //! TD-SEC-64 (T565, D-2636, D-4045, D-3890; SEC-038, SEC-014, SEC-019): the role change, the
 //! removal and the monthly limit served by the assembled router over PostgreSQL. Without a
 //! step-up each is a 303 to the step-up page and changes nothing; with one recorded within 5
-//! minutes (`businesses::api::record_step_up` directly) it changes once; one recorded 6 minutes
-//! ago asks again; a member without the role gets the not-found page. This crate may name no
-//! schema (TD-SEC-10) and `payments` has no limit reader, so the stored limit is checked in
-//! `tests/e2e/business_step_up_served.spec.ts`; here its answers are. People sign in through
-//! `portals`' emailed-link sign-in, as `business_step_up_code_route.rs` does. Every ID and address
-//! is fake.
+//! minutes (`businesses::api::record_session_step_up` directly, in that session) it changes
+//! once; one recorded 6 minutes ago asks again; a member without the role gets the not-found
+//! page. This crate may name no schema (TD-SEC-10) and `payments` has no limit reader, so the
+//! stored limit is checked in `tests/e2e/business_step_up_served.spec.ts`; here its answers are.
+//! People sign in through `portals`' emailed-link sign-in, as `business_step_up_code_route.rs`
+//! does. Every ID and address is fake.
 
 use std::net::SocketAddr;
 use std::sync::{Arc, Mutex, PoisonError};
 
 use askhava_businesses::api::{
-    Acting, Roles, TeamMember, add_member, add_owner, create, members, record_step_up,
+    Acting, Roles, TeamMember, add_member, add_owner, create, members, record_session_step_up,
 };
 use askhava_core::api::{MIGRATOR, SystemClock};
 use askhava_portals::api::{
     BILLING_ROUTE, CookieJar, FEE_LIMIT_ROUTE, PortalsError, SIGNIN_LINK_ROUTE, SIGNIN_ROUTE,
     SignIn, SignInAddress, SignInMail, TEAM_REMOVE_ROUTE, TEAM_ROLE_ROUTE, csrf_token,
-    ensure_pre_session, signin_post, signin_request,
+    current_session, ensure_pre_session, signin_post, signin_request,
 };
 use askhava_privacy::api::{Vault, mailbox_for};
 use askhava_server::{Hooks, RouterParts, build_router};
@@ -173,11 +173,21 @@ async fn team(pool: &PgPool) -> Team {
     }
 }
 
-/// Records a passed step-up for `member` `ago` before now.
-async fn stepped_up(pool: &PgPool, (business, member): (Uuid, Uuid), ago: SignedDuration) {
-    let mut db = pool.acquire().await.expect("db");
-    let at = Timestamp::now().checked_sub(ago).expect("time");
-    record_step_up(&mut db, Acting { business, member }, at)
+/// Records a passed step-up for `member` `ago` before now, in the session of `jar` (D-5314).
+async fn stepped_up(
+    pool: &PgPool,
+    (business, (member, jar)): (Uuid, &(Uuid, CookieJar)),
+    ago: SignedDuration,
+) {
+    let (mut db, now) = (pool.acquire().await.expect("db"), Timestamp::now());
+    let at = now.checked_sub(ago).expect("time");
+    let signed = current_session(&mut db, jar, now).await.expect("read");
+    let id = signed.expect("signed in").id();
+    let by = Acting {
+        business,
+        member: *member,
+    };
+    record_session_step_up(&mut db, by, id, at)
         .await
         .expect("step-up");
 }
@@ -221,7 +231,7 @@ async fn td_sec_64_a_role_change_needs_a_step_up_within_5_minutes(pool: PgPool) 
         "and nothing changed"
     );
 
-    stepped_up(&pool, (t.business, t.owner.0), FRESH).await;
+    stepped_up(&pool, (t.business, &t.owner), FRESH).await;
     for _ in 0..2 {
         let (status, to, _) = post_form(&app, change, &t.owner.1).await;
         assert_eq!((status, to.as_str()), (303, "/b"));
@@ -230,7 +240,7 @@ async fn td_sec_64_a_role_change_needs_a_step_up_within_5_minutes(pool: PgPool) 
     assert_eq!(after.len(), 2);
     assert_eq!(after[1].roles, Roles::BOTH, "the role changed, once");
 
-    stepped_up(&pool, (t.business, t.owner.0), STALE).await;
+    stepped_up(&pool, (t.business, &t.owner), STALE).await;
     let cards = format!("&member={}&cards_and_quotes=yes", t.member.0);
     let (status, to, _) = post_form(&app, (TEAM_ROLE_ROUTE, &cards), &t.owner.1).await;
     assert_eq!(
@@ -240,7 +250,7 @@ async fn td_sec_64_a_role_change_needs_a_step_up_within_5_minutes(pool: PgPool) 
     );
     assert_eq!(roster(&pool, t.business).await, after);
 
-    stepped_up(&pool, (t.business, t.member.0), FRESH).await;
+    stepped_up(&pool, (t.business, &t.member), FRESH).await;
     let owner_cards = format!("&member={}&cards_and_quotes=yes", t.owner.0);
     let (status, _, page) = post_form(&app, (TEAM_ROLE_ROUTE, &owner_cards), &t.member.1).await;
     assert!(status == 404 && page.contains(NOT_FOUND), "{status} {page}");
@@ -254,7 +264,7 @@ async fn td_sec_64_a_removal_needs_a_step_up_within_5_minutes(pool: PgPool) {
     let body = format!("&member={}", t.member.0);
     let change = (TEAM_REMOVE_ROUTE, body.as_str());
 
-    stepped_up(&pool, (t.business, t.member.0), FRESH).await;
+    stepped_up(&pool, (t.business, &t.member), FRESH).await;
     let owner = format!("&member={}", t.owner.0);
     let (status, _, page) = post_form(&app, (TEAM_REMOVE_ROUTE, &owner), &t.member.1).await;
     assert!(status == 404 && page.contains(NOT_FOUND), "{status} {page}");
@@ -265,12 +275,12 @@ async fn td_sec_64_a_removal_needs_a_step_up_within_5_minutes(pool: PgPool) {
         (303, ASKED),
         "no step-up: to the page"
     );
-    stepped_up(&pool, (t.business, t.owner.0), STALE).await;
+    stepped_up(&pool, (t.business, &t.owner), STALE).await;
     let (status, to, _) = post_form(&app, change, &t.owner.1).await;
     assert_eq!((status, to.as_str()), (303, ASKED), "6 minutes on: asked");
     assert_eq!(roster(&pool, t.business).await.len(), 2, "nothing changed");
 
-    stepped_up(&pool, (t.business, t.owner.0), FRESH).await;
+    stepped_up(&pool, (t.business, &t.owner), FRESH).await;
     let (status, to, _) = post_form(&app, change, &t.owner.1).await;
     assert_eq!((status, to.as_str()), (303, "/b"));
     assert_eq!(roster(&pool, t.business).await.len(), 1, "removed");
@@ -294,18 +304,18 @@ async fn td_sec_64_a_monthly_limit_needs_a_step_up_within_5_minutes(pool: PgPool
         "no step-up: to the page"
     );
 
-    stepped_up(&pool, (t.business, t.member.0), FRESH).await;
+    stepped_up(&pool, (t.business, &t.member), FRESH).await;
     let (status, _, page) = post_form(&app, change, &t.member.1).await;
     assert!(
         status == 404 && page.contains(NOT_FOUND),
         "no billing role: {status}"
     );
 
-    stepped_up(&pool, (t.business, t.owner.0), FRESH).await;
+    stepped_up(&pool, (t.business, &t.owner), FRESH).await;
     let (status, to, _) = post_form(&app, change, &t.owner.1).await;
     assert_eq!((status, to.as_str()), (303, BILLING_ROUTE));
 
-    stepped_up(&pool, (t.business, t.owner.0), STALE).await;
+    stepped_up(&pool, (t.business, &t.owner), STALE).await;
     let (status, to, _) = post_form(&app, (FEE_LIMIT_ROUTE, "&limit="), &t.owner.1).await;
     assert_eq!(
         (status, to.as_str()),
