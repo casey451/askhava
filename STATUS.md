@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-24T08:36:27Z by runner 4358e6b87820 (actions).
+Updated 2026-11-24T08:37:11Z by runner 10a688ebac37 (actions).
 
 **Building: T841 in progress since 08:11Z; 655 of 780 done; week 90% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-24T08:36:27Z by runner 4358e6b87820 (actions).
 - **Lane:** lane 1: T841 claimed 08:11Z, lease until 11:11Z; lane 5: T814 claimed 07:37Z, lease until 10:37Z
 - **Week:** 90% used, 10.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 08:36Z, 0 min before this update
-- **Keeper:** last ran 07:48Z, next wake 08:08Z
+- **Keeper:** last ran 08:37Z, next wake 08:57Z
 
 ## Needs attention
 - BLOCKED T222: Reviewer over 457819c6bc470ff6f69d271d7ab023fb3c0c25eb ended REVIEW-VERDICT: FINDINGS (hand_in_by too close for a fix round):
@@ -21,7 +21,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 47% of the context window, over its 45% limit
-- Strict plan check red: 67 problem(s) on tasks still to run (+562 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 60 problem(s) on tasks still to run (+558 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
