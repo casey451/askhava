@@ -43978,7 +43978,7 @@
     "T611",
     "T603"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -44016,7 +44016,8 @@
     "D-4246",
     "D-3292",
     "D-5657",
-    "D-5676"
+    "D-5676",
+    "D-5810"
    ],
    "cites": [
     "docs/design/DESIGN_SPEC.md:128",
@@ -45101,7 +45102,7 @@
     "T543",
     "T410"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -45136,7 +45137,8 @@
    "decisions": [
     "D-490",
     "D-4326",
-    "D-5670"
+    "D-5670",
+    "D-5810"
    ],
    "cites": [],
    "budget": {
@@ -54366,7 +54368,7 @@
    "deps": [
     "T759"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -54395,7 +54397,8 @@
     "D-5400",
     "D-5367",
     "D-5585",
-    "D-5657"
+    "D-5657",
+    "D-5810"
    ],
    "cites": [],
    "budget": {
