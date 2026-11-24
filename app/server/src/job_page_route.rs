@@ -20,6 +20,13 @@
 //! `NOT_A_FIT_ROUTE` with `{token}` filled by [`JOB_PAGE_TOKEN`] (that route authorises by the
 //! session and the card and never reads `{token}`; its thanks page then links back here). The
 //! page never holds a homeowner contact detail (PRIV-006). Every response is `no-store` (SEC-034).
+//!
+//! T732 (PICK-051, SEC-019, CARD-019; D-4727, D-5782 to D-5784): `POST` [`WITHDRAW_ROUTE`], the
+//! page's "Withdraw your quote" form, checks the CSRF token (`CsrfForm`), the signed-in person and
+//! the card by number before anything else (any other `{j}`, and a member without "Cards and
+//! quotes", is the same not-found answer), then calls `quotes::api::withdraw_quote`: withdrawn or
+//! already withdrawn is a 303 back to the page, which then offers "Send a new quote"; a closed job
+//! or no quote is a 409 with the page again and one line saying why, nothing changed.
 
 use std::net::IpAddr;
 use std::sync::Arc;
@@ -28,16 +35,16 @@ use askhava_core::api::{Clock, IdSecret, SystemClock};
 use askhava_jobs::api::job_number;
 use askhava_picks::api::accepted_pick;
 use askhava_portals::api::{
-    BUSINESS_HOME_ROUTE, BusinessPrincipal, CookieJar, JOB_RELEASE_ROUTE, JobPageLinks, Need,
-    NotAFitChoice, OwnQuote, QuoteControls, SESSION_COOKIE, SecurityEvent, SecurityEventKind,
-    WebSecurity, admit_security_event, business_principal, csrf_token, job_details_page_choice,
-    no_store, not_a_fit_action, record_security_event, refuse_cross_site, security_event_client,
-    signed_out,
+    BUSINESS_HOME_ROUTE, BusinessPrincipal, ButtonForm, CookieJar, CsrfForm, JOB_RELEASE_ROUTE,
+    JobPageLinks, Need, NotAFitChoice, OwnQuote, QuoteControls, SESSION_COOKIE, SecurityEvent,
+    SecurityEventKind, WebSecurity, admit_security_event, business_principal, csrf_token,
+    job_details_page_choice, no_store, not_a_fit_action, record_security_event, refuse_cross_site,
+    security_event_client, signed_out,
 };
 use askhava_privacy::api::{issue_link, photo_path};
 use askhava_quotes::api::{
-    JobPage, PageParts, QuoteStanding, carded_job, carded_job_id, job_page, quote_standing,
-    sent_card,
+    JobPage, PageParts, QuoteStanding, Withdrawal, carded_job, carded_job_id, job_page,
+    quote_standing, sent_card, withdraw_quote,
 };
 use axum::Router;
 use axum::extract::{Extension, FromRef, Path, Request, State};
@@ -45,7 +52,7 @@ use axum::http::StatusCode;
 use axum::http::header::LOCATION;
 use axum::middleware::{Next, from_fn, from_fn_with_state};
 use axum::response::{Html, IntoResponse, Response};
-use axum::routing::get;
+use axum::routing::{get, post};
 use jiff::Timestamp;
 use secrecy::SecretString;
 use sqlx::types::Uuid;
@@ -53,6 +60,17 @@ use sqlx::{PgConnection, PgPool};
 
 /// CARD-023, BIZ-038: the business job page of one job, by its number (or its UUID, D-5526).
 pub const JOB_PAGE_ROUTE: &str = "/b/jobs/{j}";
+
+/// PICK-051 (T732): the job page's "Withdraw your quote" form posts here, `{j}` the job number.
+pub const WITHDRAW_ROUTE: &str = "/b/jobs/{j}/withdraw";
+
+/// PICK-051 (T732): the line shown above the quote controls when the job has had a pick or has
+/// closed, so the withdrawal was refused.
+const CLOSED_LINE: &str = "The homeowner has already picked a quote, or the job has closed, so you \
+                           can't withdraw your quote now. We didn't change anything.";
+
+/// PICK-051 (T732): the line shown when the business has no quote on the job to withdraw.
+const NO_QUOTE_LINE: &str = "You haven't sent a quote on this job, so there's nothing to withdraw.";
 
 /// PICK-057, D-5387: the `{token}` this page's "Not a fit for us" form fills into
 /// `NOT_A_FIT_ROUTE`. It is not hex, so it can never be a real Quote-link token; the `POST` route
@@ -114,6 +132,7 @@ pub fn routes(pool: PgPool, id_secret: Option<&SecretString>) -> Router {
     };
     Router::new()
         .route(JOB_PAGE_ROUTE, get(page))
+        .route(WITHDRAW_ROUTE, post(withdraw))
         .route_layer(from_fn(note_site))
         .with_state(state)
         .layer(from_fn(no_store))
@@ -266,7 +285,7 @@ async fn page(
     let Some(csrf) = csrf_token(&jar) else {
         return failed("csrf token");
     };
-    match shown(&served, &mut db, (&who, job, number), &csrf).await {
+    match shown(&served, &mut db, (&who, job, number), (&csrf, None)).await {
         Ok(Some(answer)) => answer,
         Ok(None) => {
             drop(db);
@@ -278,17 +297,19 @@ async fn page(
 
 /// PICK-024, CARD-023, PICK-051: the 303 to the release view for a "Confirm and billing" person
 /// of the business holding the job's accepted pick, else the rendered page; `None` when the job
-/// has no sent card or no page for the business.
+/// has no sent card or no page for the business. With a refused withdrawal's `notice` there is
+/// no 303: the page itself is shown with that line (T732).
 async fn shown(
     served: &Served,
     db: &mut PgConnection,
     (who, job, number): (&BusinessPrincipal, Uuid, i64),
-    csrf: &str,
+    (csrf, notice): (&str, Option<&str>),
 ) -> Result<Option<Response>, &'static str> {
     let business = who.business();
     let accepted = accepted_pick(db, job).await.map_err(|_| "accepted pick")?;
     if let Some(a) = accepted.filter(|a| a.business == business)
         && who.may(business, Need::ConfirmAndBilling)
+        && notice.is_none()
     {
         let to = JOB_RELEASE_ROUTE.replace("{pick}", &a.pick.to_string());
         return Ok(Some(see_other(&to)));
@@ -313,7 +334,11 @@ async fn shown(
         own_quote(standing)
     };
     let links = photo_links(served, db, &page).await;
-    Ok(Some(render(&page, (job, number), &links, (state, csrf))?))
+    let html = render(&page, (job, number), &links, (state, csrf))?;
+    Ok(Some(match notice {
+        None => Html(html).into_response(),
+        Some(line) => (StatusCode::CONFLICT, Html(with_notice(&html, line))).into_response(),
+    }))
 }
 
 /// PICK-051: the portal's controls state for a [`QuoteStanding`].
@@ -354,16 +379,16 @@ async fn photo_links(
 /// CARD-023, CARD-019, PICK-051, PICK-057, D-5618, D-5387: the page with the business's quote
 /// controls and "Not a fit for us" bound to `job` and [`JOB_PAGE_TOKEN`]; the change link is the
 /// page itself until a signed-in quote form is served, and the withdraw form posts to
-/// `/b/jobs/<number>/withdraw` (T732).
+/// [`WITHDRAW_ROUTE`] (T732).
 fn render(
     page: &JobPage,
     (job, number): (Uuid, i64),
     (photos, concept): &(Vec<String>, Option<String>),
     (state, csrf): (OwnQuote, &str),
-) -> Result<Response, &'static str> {
+) -> Result<String, &'static str> {
     let job_number = number.to_string();
-    let here = format!("/b/jobs/{number}");
-    let withdraw = format!("{here}/withdraw");
+    let here = JOB_PAGE_ROUTE.replace("{j}", &job_number);
+    let withdraw = WITHDRAW_ROUTE.replace("{j}", &job_number);
     let links = JobPageLinks {
         job_number: &job_number,
         photos,
@@ -380,7 +405,65 @@ fn render(
         action: &action,
         csrf,
     };
-    let html =
-        job_details_page_choice(page, &links, Some(controls), choice).map_err(|_| "render")?;
-    Ok(Html(html).into_response())
+    job_details_page_choice(page, &links, Some(controls), choice).map_err(|_| "render")
+}
+
+/// PICK-051 (T732): `html` with `line` (fixed text, no markup) as a status line right under the
+/// "Your quote" heading, which the page always has, since it is always given its quote controls.
+fn with_notice(html: &str, line: &str) -> String {
+    let heading = "<h2>Your quote</h2>";
+    let shown = format!("{heading}\n<p id=\"quote-notice\" role=\"status\">{line}</p>");
+    html.replacen(heading, &shown, 1)
+}
+
+/// `POST` [`WITHDRAW_ROUTE`] (PICK-051, SEC-019, SEC-026, SEC-042; T732, D-4727): after the CSRF
+/// check, the signed-in person and the card by number come first; any other `{j}` (a UUID too)
+/// and a member without "Cards and quotes" are the one not-found answer. Then `withdraw_quote`
+/// for the person's business: withdrawn or already withdrawn is a 303 to the job page (a repeat
+/// is the same answer); a closed job or no quote shows the page again with the line saying why.
+async fn withdraw(
+    State(served): State<Served>,
+    Extension(site): Extension<Site>,
+    jar: CookieJar,
+    Path(j): Path<String>,
+    CsrfForm(_): CsrfForm<ButtonForm>,
+) -> Response {
+    let who = match signed_in(&served, site, &jar).await {
+        Ok(who) => who,
+        Err(answer) => return *answer,
+    };
+    let Ok(mut db) = served.pool.acquire().await else {
+        return failed("connection");
+    };
+    let found = match Asked::parse(&j) {
+        Some(asked @ Asked::Number(_)) => find(&mut db, asked, &who).await,
+        _ => Ok(Found::Nothing),
+    };
+    let (job, number) = match found {
+        Ok(Found::Job(job, number)) if who.may(who.business(), Need::CardsAndQuotes) => {
+            (job, number)
+        }
+        Ok(_) => {
+            drop(db);
+            return denied(&served, site, &who).await;
+        }
+        Err(what) => return failed(what),
+    };
+    let done = withdraw_quote(&mut db, (job, who.business()), served.clock.now()).await;
+    let line = match done {
+        Ok(Withdrawal::Withdrawn | Withdrawal::AlreadyWithdrawn) => {
+            return see_other(&JOB_PAGE_ROUTE.replace("{j}", &number.to_string()));
+        }
+        Ok(Withdrawal::EditClosed) => CLOSED_LINE,
+        Ok(Withdrawal::NoQuote) => NO_QUOTE_LINE,
+        Err(_) => return failed("withdraw"),
+    };
+    let Some(csrf) = csrf_token(&jar) else {
+        return failed("csrf token");
+    };
+    match shown(&served, &mut db, (&who, job, number), (&csrf, Some(line))).await {
+        Ok(Some(answer)) => answer,
+        Ok(None) => not_found(),
+        Err(what) => failed(what),
+    }
 }
