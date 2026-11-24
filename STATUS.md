@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-24T12:06:02Z by runner 73c28aee267a (actions).
+Updated 2026-11-24T12:06:41Z by runner 73c28aee267a (actions).
 
-**Building: T802 in progress since 10:10Z; 658 of 780 done; week 92% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T732 in progress since 11:13Z; 658 of 780 done; week 92% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 658 of 780 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T802 claimed 10:10Z, lease until 14:54Z; lane 2: T732 claimed 11:13Z, lease until 14:13Z; lane 3: T733 claimed 11:58Z, lease until 14:58Z; lane 4: T410 claimed 11:51Z, lease until 14:51Z; lane 5: T624 claimed 10:37Z, lease until 13:37Z
+- **Lane:** lane 2: T732 claimed 11:13Z, lease until 14:13Z; lane 3: T733 claimed 11:58Z, lease until 14:58Z; lane 4: T410 claimed 11:51Z, lease until 14:51Z; lane 5: T624 claimed 10:37Z, lease until 13:37Z
 - **Week:** 92% used, 5.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 11:58Z, 7 min before this update
 - **Keeper:** last ran 11:43Z, next wake 12:03Z
@@ -31,6 +31,7 @@ Owners T158 (scorecard.html) and T434 (intake_report.html, money_view.html); T30
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T802 | site (harness): the coverage page says texts work with US nu | MERGE_PENDING | 1 | 115 min | 12:06Z |  |
 | T305 | server and portals: the scorecard, the intake report, the mo | BLOCKED | 2 | 34 min | 11:41Z | PLAN GAP: outside ownership: app/portals/templates/scorecard.html, app/portals/templates/intake_report.html, app/portals |
 | T410 | portals: every signed-in business page shows the Get help li | check_failed | 2 | 101 min | 11:20Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T801 | intake and site (harness): with texting on, the web chat onl | BLOCKED | 1 | 2 h 10 min | 10:59Z | PLAN GAP: app/server/tests/web_chat_stops.rs:572 and :592 (owned by T645) assert a consent text queued to a chat-verifie |
@@ -132,11 +133,11 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T802 (lease until 2026-11-24T14:54:39Z)
+- nothing
 - lane 2: T732 (lease until 2026-11-24T14:13:21Z)
 - lane 3: T733 (lease until 2026-11-24T14:58:11Z)
 - lane 4: T410 (lease until 2026-11-24T14:51:12Z)
 - lane 5: T624 (lease until 2026-11-24T13:37:51Z)
 
 ## Last usage reading
-- {"task": "T305", "at": "2026-11-24T11:41:52Z", "cache_read_input_tokens": 1756803, "input_tokens": 75, "output_tokens": 13374, "cache_creation_input_tokens": 96826}
+- {"task": "T802", "at": "2026-11-24T12:06:01Z", "output_tokens": 9645, "cache_read_input_tokens": 729950, "input_tokens": 60, "cache_creation_input_tokens": 74335}
