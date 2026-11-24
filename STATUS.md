@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T04:02:03Z by runner 5bde4ee54e11 (actions).
+Updated 2026-11-24T04:10:54Z by runner 5bde4ee54e11 (actions).
 
-**Building: T728 in progress since 04:01Z; 649 of 779 done; week 89% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T779 in progress since 04:10Z; 649 of 779 done; week 89% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 649 of 779 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T728 claimed 04:01Z, lease until 07:01Z; lane 4: T676 claimed 02:45Z, lease until 05:45Z; lane 5: T544 claimed 03:08Z, lease until 06:08Z
-- **Week:** 89% used, 13.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:00Z, 1 min before this update
+- **Lane:** lane 1: T779 claimed 04:10Z, lease until 07:10Z; lane 3: T728 claimed 04:01Z, lease until 07:01Z; lane 4: T676 claimed 02:45Z, lease until 05:45Z; lane 5: T544 claimed 03:08Z, lease until 06:08Z
+- **Week:** 89% used, 12.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 04:02Z, 8 min before this update
 - **Keeper:** last ran 03:56Z, next wake 04:16Z
 
 ## Needs attention
@@ -89,7 +89,6 @@ Also: stand-in twilio fail fault answers 500 -> OutcomeUnknown, no retries (serv
 - 13:33Z Plan: Email-only quote updates and counts (T840), under-13 purge completeness (T839), T716 test precondition (D-5639) (#1399)
 - 10:11Z Plan: T716 purges held first-text words on an under-13 stop; T730 counts update emails (D-5617) (#1386)
 - 07:11Z Plan: T716 owns cards_out.rs so the card send uses the counted pairs (D-5606) (#1382)
-- 04:05Z Plan: T121 split into T838 (D-5574); Grok G3 fixes for claimable tasks (D-5585) (#1370)
 
 ## Progress (requirements verified)
 
@@ -122,7 +121,7 @@ Also: stand-in twilio fail fault answers 500 -> OutcomeUnknown, no retries (serv
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-24T03:55:22Z (week)): week: 180.1M used, 13.9M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T20:39:03Z.
+- Pacing (session_reading 2026-11-24T03:55:22Z (week)): week: 181.8M used, 12.2M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T20:48:24Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -137,7 +136,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T779 (lease until 2026-11-24T07:10:41Z)
 - lane 3: T728 (lease until 2026-11-24T07:01:21Z)
 - lane 4: T676 (lease until 2026-11-24T05:45:51Z)
 - lane 5: T544 (lease until 2026-11-24T06:08:02Z)
