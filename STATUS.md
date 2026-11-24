@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-24T17:28:13Z by runner d6071931d7b5 (actions).
+Updated 2026-11-24T17:28:46Z by runner d6071931d7b5 (actions).
 
-**Building: T590 in progress since 17:04Z; 665 of 780 done; week 94% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T820 in progress since 16:58Z; 665 of 780 done; week 94% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 665 of 780 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T590 claimed 17:04Z, lease until 20:04Z; lane 2: T820 claimed 16:58Z, lease until 19:58Z; lane 3: T741 claimed 16:40Z, lease until 19:40Z; lane 5: T815 claimed 15:39Z, lease until 18:39Z
+- **Lane:** lane 2: T820 claimed 16:58Z, lease until 19:58Z; lane 3: T741 claimed 16:40Z, lease until 19:40Z; lane 5: T815 claimed 15:39Z, lease until 18:39Z
 - **Week:** 94% used, 1.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 17:18Z, 10 min before this update
 - **Keeper:** last ran 17:04Z, next wake 18:42Z
@@ -27,7 +27,8 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T590 | calls, picks and server: the who's-calling and missed-call t | check_failed | 2 | 74 min | 16:23Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-24T |
+| T590 | calls, picks and server: the who's-calling and missed-call t | MERGE_PENDING | 3 | 23 min | 17:28Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-24T |
+| T590 | calls, picks and server: the who's-calling and missed-call t | check_failed | 2 | 74 min | 16:23Z |  |
 | T741 | server and intake: an opted-out homeowner's "<n> YES" picks  | check_failed | 1 | 78 min | 15:45Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-24T |
 | T802 | site (harness): the coverage page says texts work with US nu | done | 3 | 23 min | 15:26Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T732 | server: the business job page's "Withdraw your quote" posts  | done | 2 | 49 min | 15:13Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
@@ -130,10 +131,10 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T590 (lease until 2026-11-24T20:04:20Z)
+- nothing
 - lane 2: T820 (lease until 2026-11-24T19:58:44Z)
 - lane 3: T741 (lease until 2026-11-24T19:40:41Z)
 - lane 5: T815 (lease until 2026-11-24T18:39:51Z)
 
 ## Last usage reading
-- {"task": "T590", "at": "2026-11-24T16:23:29Z", "output_tokens": 15533, "cache_read_input_tokens": 1755310, "cache_creation_input_tokens": 99776, "input_tokens": 98}
+- {"task": "T590", "at": "2026-11-24T17:28:11Z", "cache_creation_input_tokens": 95239, "output_tokens": 10715, "cache_read_input_tokens": 1212155, "input_tokens": 61}
