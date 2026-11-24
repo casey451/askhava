@@ -10694,3 +10694,4 @@
 - 2026-11-24T04:59:30Z runner 498909db4318 (actions): {}
 - 2026-11-24T04:59:57Z runner 498909db4318 (actions): {}
 - 2026-11-24T05:03:57Z runner 498909db4318 (actions): {"T779": "IN_PROGRESS -> QUEUED"}
+- 2026-11-24T05:04:31Z runner 498909db4318 (actions): {"T779": "QUEUED -> IN_PROGRESS"}; T779 estimated 1.5M tokens (calibrated); week has 13.7M left (no five-hour budget, D-3056) after 2.3M still running in another lane (session_reading 2026-11-24T04:58:52Z (week)); claimed
