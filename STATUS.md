@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T06:46:07Z by runner 75ae5047db59 (actions).
+Updated 2026-11-24T06:59:54Z by runner 10a688ebac37 (actions).
 
-**Building: T656 in progress since 05:11Z; 653 of 779 done; week 90% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T656 in progress since 05:11Z; 654 of 779 done; week 90% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 653 of 779 build tasks (owner gates not counted)
+- **Tasks done:** 654 of 779 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T656 claimed 05:11Z, lease until 08:11Z; lane 4: T410 claimed 05:58Z, lease until 08:58Z
 - **Week:** 90% used, 10.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:45Z, 0 min before this update
+- **Last run:** 06:46Z, 13 min before this update
 - **Keeper:** last ran 06:46Z, next wake 07:06Z
 
 ## Needs attention
@@ -25,13 +25,13 @@ Also: stand-in twilio fail fault answers 500 -> OutcomeUnknown, no retries (serv
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 47% of the context window, over its 45% limit
-- Strict plan check red: 62 problem(s) on tasks still to run (+556 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 61 problem(s) on tasks still to run (+557 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T804 | server and portals: a delete or copy request made in the por | MERGE_PENDING | 1 | 69 min | 06:37Z |  |
-| T779 | ops, server and portals: alerts that do not push show in the | MERGE_PENDING | 1 | 83 min | 06:27Z |  |
+| T779 | ops, server and portals: alerts that do not push show in the | done | 1 | 83 min | 06:27Z |  |
 | T728 | intake: a homeowner's "<n> YES" text from her phone picks th | done | 1 | 91 min | 05:32Z |  |
 | T676 | tests (harness): J1 runs the real intake conversation instea | done | 1 | 2 h 44 min | 05:29Z |  |
 | T656 | site: a failed submit on the /request chat shows a focused e | QUEUED | 1 | 17 min | 04:56Z | Reviewer after the findings round still FINDINGS (head 18fdb4a27): app/site/templates/request.html lines 7-10: header co |
@@ -80,7 +80,6 @@ Also: stand-in twilio fail fault answers 500 -> OutcomeUnknown, no retries (serv
 | T730 | messaging: a homeowner who chose email gets each quote updat | QUEUED | 1 | 2 h 19 min | 08:20Z |  |
 | T716 | intake: the dispatcher's trade questions at step 5: "Which f | BLOCKED | 3 | 81 min | 08:17Z |  |
 | T835 | runner (harness): a cancelled run on a superseded head neith | done | 1 | 52 min | 07:24Z |  |
-| T716 | intake: the dispatcher's trade questions at step 5: "Which f | QUEUED | 2 | 2 h 6 min | 06:48Z |  |
 
 ### Plan and harness merges on main
 - 23:24Z Plan: token efficiency and phase-2 pre-flight (D-5676); smoke throughput harness task T843, T836 unblocked (D-5682) (#1412)
@@ -94,7 +93,7 @@ Also: stand-in twilio fail fault answers 500 -> OutcomeUnknown, no retries (serv
 ## Progress (requirements verified)
 
 **Requirements verified:** 434 of 735 (59.0%) · partial 289 · unstarted 12
-**Tasks merged (throughput only):** 653 of 779
+**Tasks merged (throughput only):** 654 of 779
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -130,7 +129,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 296 of 351 done
+- stage 5: 297 of 351 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
