@@ -6,6 +6,8 @@
 //! safe-mode acknowledgement T310 serves: an open pushed alert, other than a text-delivery alert
 //! (only the delivery path acknowledges those, OPS-025), is resolved with its `casey` ack row and
 //! an [`OWNER_ACK_ACTION`] audit row in one transaction, which ends safe mode's clock for it.
+//! [`waiting_alerts`] (T779, D-5081, OPS-029, OPS-052) reads the open alerts with no push row,
+//! which wait in the portal and the digest; the portal lists them with no acknowledgement.
 
 use jiff::Timestamp;
 use jiff_sqlx::ToSqlx;
@@ -77,6 +79,52 @@ pub async fn pushed_alerts(db: &mut PgConnection) -> Result<Vec<PushedAlert>, Op
             raised_at: r.raised_at.to_jiff(),
             pushed_at: r.pushed_at.to_jiff(),
             acknowledged_at: r.acknowledged_at.map(|t| t.to_jiff()),
+        })
+        .collect())
+}
+
+/// The most open unpushed alerts [`waiting_alerts`] returns (T779, D-5081).
+pub const WAITING_ALERTS_MAX: i64 = 50;
+
+/// One open alert that never pushed to Casey's phone (OPS-029): it waits in the owner portal.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct WaitingAlert {
+    /// The alert's ID.
+    pub id: Uuid,
+    /// Its kind, severity and subject.
+    pub subject: AlertSubject,
+    /// When it was raised.
+    pub raised_at: Timestamp,
+}
+
+/// OPS-029, OPS-052, D-5081: the open alerts with no `ops.alert_push` row, newest first, at most
+/// [`WAITING_ALERTS_MAX`]; IDs, code names and times only (PRIV-006).
+///
+/// # Errors
+///
+/// [`OpsError::Database`].
+pub async fn waiting_alerts(db: &mut PgConnection) -> Result<Vec<WaitingAlert>, OpsError> {
+    let rows = sqlx::query!(
+        "SELECT a.id, a.kind, a.severity, a.subject_kind, a.subject_id, a.raised_at \
+         FROM ops.alert a WHERE a.resolved_at IS NULL \
+           AND NOT EXISTS (SELECT 1 FROM ops.alert_push p WHERE p.alert_id = a.id) \
+         ORDER BY a.raised_at DESC, a.id LIMIT $1",
+        WAITING_ALERTS_MAX,
+    )
+    .fetch_all(db)
+    .await
+    .map_err(|_| OpsError::Database)?;
+    Ok(rows
+        .into_iter()
+        .map(|r| WaitingAlert {
+            id: r.id,
+            subject: AlertSubject {
+                kind: r.kind,
+                severity: r.severity,
+                subject_kind: r.subject_kind,
+                subject_id: r.subject_id,
+            },
+            raised_at: r.raised_at.to_jiff(),
         })
         .collect())
 }

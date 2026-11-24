@@ -1,7 +1,8 @@
 //! The owner portal's home and settings pages and the changes their forms post (T108; FEE-007,
 //! LIC-002, OPS-003, OPS-035, SEC-043, CON-024, BIZ-027; D-1843, D-1871, D-2128, D-3882, D-3890).
 //!
-//! [`owner_home_page`] shows the pushed alerts with the safe-mode acknowledgement, the pause
+//! [`owner_home_page`] shows the pushed alerts with the safe-mode acknowledgement, then the open
+//! alerts that never pushed, each by its plain name with no button (T779, D-5081, OPS-029), the pause
 //! switches (all, charging, texting and one per trade; no town has a record ID to scope one,
 //! D-3181), the fee mode read from `payments.fee_terms`, the homeowner line's texting switch,
 //! launch channel and number state (`messaging::api`), the status banner's off switch, each of the
@@ -73,9 +74,9 @@ use askhava_messaging::api::{
     spanish_template_versions, turn_spanish_off, turn_spanish_on,
 };
 use askhava_ops::api::{
-    Actor, AuditEntry, AuditRow, Change, DELIVERY_ALERT, Switch, acknowledge_pushed_alert,
-    alert_subject, audit, audit_once, banner_shown, clear_banner, export_audit, is_paused,
-    pushed_alerts, set_switch,
+    Actor, AuditEntry, AuditRow, Change, DELIVERY_ALERT, Switch, VOLUME_HIGH_ALERT,
+    VOLUME_LOW_ALERT, acknowledge_pushed_alert, alert_subject, audit, audit_once, banner_shown,
+    clear_banner, export_audit, is_paused, pushed_alerts, set_switch, waiting_alerts,
 };
 use askhava_payments::api::{
     DisputeView, FeeMode, MoneyEventError, OwnerSubmission, PickRefundState, RefundOutcome,
@@ -395,6 +396,16 @@ struct AlertRow {
     press: String,
 }
 
+/// One open alert that never pushed, as listed: its plain name, severity, subject and raised
+/// time (OPS-029, D-5081; IDs and code names only, PRIV-006).
+#[derive(Debug, Clone)]
+struct WaitingRow {
+    name: String,
+    severity: String,
+    subject: Option<String>,
+    raised: String,
+}
+
 /// One audience's week of opt-outs (CON-024).
 #[derive(Debug, Clone)]
 struct RateRow {
@@ -419,6 +430,7 @@ struct HomeView<'a> {
     brand: &'a str,
     routes: [&'static str; 8],
     alerts: Vec<AlertRow>,
+    waiting: Vec<WaitingRow>,
     pauses: Vec<SwitchRow>,
     flat: bool,
     texting_on: bool,
@@ -539,6 +551,40 @@ async fn alert_rows(conn: &mut PgConnection) -> Result<Vec<AlertRow>, OwnerToolE
         .collect())
 }
 
+/// The kind code of the off-database audit chain alert, raised by `server`'s nightly check.
+const CHAIN_ALERT: &str = "ops.audit_chain_broken";
+
+/// OPS-029, OPS-052, D-5081: an alert kind's plain name on the owner home; a kind without one
+/// shows its code name.
+fn alert_name(kind: String) -> String {
+    match kind.as_str() {
+        VOLUME_LOW_ALERT => "The database is over 70% full".to_owned(),
+        VOLUME_HIGH_ALERT => "The database is over 85% full".to_owned(),
+        CHAIN_ALERT => {
+            "The off-site copy of the audit log has a missing or changed entry".to_owned()
+        }
+        _ => kind,
+    }
+}
+
+/// OPS-029, OPS-052, D-5081: the open alerts that never pushed, newest first, with no button.
+async fn waiting_rows(conn: &mut PgConnection) -> Result<Vec<WaitingRow>, OwnerToolError> {
+    let alerts = waiting_alerts(conn).await.map_err(store)?;
+    Ok(alerts
+        .into_iter()
+        .map(|a| WaitingRow {
+            subject: a
+                .subject
+                .subject_kind
+                .zip(a.subject.subject_id)
+                .map(|(k, id)| format!("{k} {id}")),
+            name: alert_name(a.subject.kind),
+            severity: a.subject.severity,
+            raised: arizona(a.raised_at),
+        })
+        .collect())
+}
+
 /// OPS-003: the all, charging and texting switches, then one per switched-on trade.
 async fn pause_rows(conn: &mut PgConnection) -> Result<Vec<SwitchRow>, OwnerToolError> {
     let mut rows = Vec::new();
@@ -621,6 +667,7 @@ pub async fn owner_home_page(
         ],
         brand: brand().display_name(),
         alerts: alert_rows(conn).await?,
+        waiting: waiting_rows(conn).await?,
         pauses: pause_rows(conn).await?,
         flat: terms.mode() == FeeMode::Flat,
         texting_on: lines.homeowner.texting_on,
