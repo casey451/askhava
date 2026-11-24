@@ -14,6 +14,12 @@
 //! page says shown feedback is all the feedback received. No name, phone or address is read. The
 //! page is `noindex`, `no-store`, behind the cross-site refusal, and its form carries the
 //! pre-session CSRF token (SEC-042).
+//!
+//! Her words are checked as typed (empty, too long), then run through `privacy::api::scrub`
+//! (default common words, no vault name, a fresh name memory, as `help::scrubbed` does) and
+//! checked again for length on the scrubbed text, so `jobs.feedback.body` never keeps a phone
+//! number, email or street address she typed (PRIV-008, PRIV-001; D-5399, T819). The words go to
+//! `store` trimmed and scrubbed; a text that scrubs to only `[removed]` is stored as scrubbed.
 
 use std::sync::Arc;
 
@@ -22,6 +28,7 @@ use askhava_core::api::{Clock, LinkToken};
 use askhava_jobs::api::feedback::{MAX_CHARS, given, store};
 use askhava_jobs::api::quote_token::resolve;
 use askhava_jobs::api::{current, job_number};
+use askhava_privacy::api::{CommonWords, Known, NameMemory, scrub};
 use axum::Router;
 use axum::extract::{FromRef, Path, State};
 use axum::http::{HeaderValue, StatusCode};
@@ -185,6 +192,23 @@ pub(crate) fn check(body: &str) -> Option<Problem> {
     }
 }
 
+/// JOB-017, PRIV-008, PRIV-001 (D-5399): her `body` as it is stored: [`check`]ed as typed, then
+/// scrubbed with default common words, no vault name and a fresh name memory (the page holds no
+/// vault grant), then checked again for length on the scrubbed, trimmed text.
+pub(crate) fn scrubbed(body: &str) -> Result<String, Problem> {
+    if let Some(problem) = check(body) {
+        return Err(problem);
+    }
+    let common = CommonWords::default();
+    let known = Known {
+        common: &common,
+        vault_name: None,
+    };
+    let clean = scrub(body.trim(), &known, &mut NameMemory::default());
+    let words = clean.as_str().trim();
+    check(words).map_or_else(|| Ok(words.to_owned()), Err)
+}
+
 /// The feedback page's router over `pool`, timed by `clock` (JOB-017): `GET` and `POST`
 /// [`FEEDBACK_ROUTE`] and its stylesheet behind the cross-site refusal, `no-store` and `noindex`.
 /// `server::build_router` merges it.
@@ -313,10 +337,10 @@ async fn keep(
     })
 }
 
-/// `POST /f/{token}`: stores the words and the tick as sent, then shows the thanks (also for a
-/// repeat send, which stores nothing); a job that left Done after the page opened is a bare 404
-/// with nothing stored; an empty or too long send shows the form again with what was typed and the
-/// problem (JOB-017, A11Y-018).
+/// `POST /f/{token}`: stores the scrubbed words ([`scrubbed`]) and the tick as sent, then shows
+/// the thanks (also for a repeat send, which stores nothing); a job that left Done after the page
+/// opened is a bare 404 with nothing stored; an empty or too long send, as typed or scrubbed, shows
+/// the form again with what was typed and the problem (JOB-017, A11Y-018, PRIV-008).
 async fn send(
     State(page): State<FeedbackPage>,
     Path(raw): Path<String>,
@@ -330,19 +354,22 @@ async fn send(
     };
     let share = form.share.is_some();
     let csrf = csrf_token(&jar).unwrap_or_default();
-    if let Some(problem) = check(&form.body) {
-        let view = FeedbackView {
-            body: form.body,
-            share,
-            error: Some(problem.message()),
-            ..FeedbackView::form(request, raw.clone(), csrf)
-        };
-        return (StatusCode::UNPROCESSABLE_ENTITY, page_response(jar, &view)).into_response();
-    }
+    let words = match scrubbed(&form.body) {
+        Ok(words) => words,
+        Err(problem) => {
+            let view = FeedbackView {
+                body: form.body,
+                share,
+                error: Some(problem.message()),
+                ..FeedbackView::form(request, raw.clone(), csrf)
+            };
+            return (StatusCode::UNPROCESSABLE_ENTITY, page_response(jar, &view)).into_response();
+        }
+    };
     let Ok(mut db) = page.pool.acquire().await else {
         return StatusCode::INTERNAL_SERVER_ERROR.into_response();
     };
-    match keep(&mut db, job, (form.body.trim(), share), page.clock.now()).await {
+    match keep(&mut db, job, (&words, share), page.clock.now()).await {
         Ok(Kept::Stored | Kept::Already) => {}
         Ok(Kept::NotOpen) => return StatusCode::NOT_FOUND.into_response(),
         Err(status) => {
@@ -371,7 +398,7 @@ mod tests {
     use sqlx::PgConnection;
     use sqlx::types::Uuid;
 
-    use super::{FeedbackView, Kept, MAX_CHARS, Problem, check, keep, share_label};
+    use super::{FeedbackView, Kept, MAX_CHARS, Problem, check, keep, scrubbed, share_label};
 
     /// `text` with its English brand tokens filled from the brand file (WORD-001, D-1932).
     fn fill(text: &str) -> String {
@@ -456,6 +483,17 @@ mod tests {
             Problem::Empty.message(),
             "Please write something before you send."
         );
+    }
+
+    /// PRIV-008 (D-5399): the length check runs again on the scrubbed text, since `[removed]` can
+    /// be longer than the number it replaced; an empty send is refused before scrubbing.
+    #[test]
+    fn the_length_is_checked_again_after_scrubbing() {
+        let typed = format!("{} 5550142", "a".repeat(MAX_CHARS - 8));
+        assert_eq!(check(&typed), None);
+        assert_eq!(scrubbed(&typed), Err(Problem::TooLong));
+        assert_eq!(scrubbed("  "), Err(Problem::Empty));
+        assert_eq!(scrubbed(" call 5550142 "), Ok("call [removed]".to_owned()));
     }
 
     fn at(minute: i64) -> Timestamp {

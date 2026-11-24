@@ -209,6 +209,16 @@
     "segments": 1,
     "text": "{brand_short}: That's 2 jobs. We'll start with {trade}. Reply ALSO to start {business} too."
   },
+  "which_fits": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "{brand_short}: Which fits best? Text the number or a few words."
+  },
+  "trade_ask": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "{brand_short}: What do you need done? A few words is enough."
+  },
   "quote_update": {
     "audience": "homeowner",
     "segments": 2,

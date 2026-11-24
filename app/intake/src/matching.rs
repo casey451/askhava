@@ -54,26 +54,42 @@ const RULES: &[Rule] = &[
     rule(
         PLUMBING,
         Some("leak repair"),
-        &["leak", "leaking", "pipe"],
+        &["leak", "leaking", "pipe", "pipe burst", "tuberia rota"],
         true,
     ),
-    rule(PLUMBING, Some("toilet repair"), &["toilet"], true),
+    rule(
+        PLUMBING,
+        Some("toilet repair"),
+        &["toilet", "toilet keeps running"],
+        true,
+    ),
     rule(
         PLUMBING,
         Some("drain clearing"),
-        &["drain", "clog", "clogged"],
+        &["drain", "clog", "clogged", "drenaje tapado"],
         true,
     ),
     rule(PLUMBING, Some("faucet replacement"), &["faucet"], true),
-    rule(HVAC, None, &["hvac"], false),
+    rule(HVAC, None, &["hvac", "ductos del aire rotos"], false),
     rule(
         HVAC,
         Some("AC not cooling"),
-        &["ac", "air conditioner", "warm air", "not cooling"],
+        &[
+            "ac",
+            "air conditioner",
+            "warm air",
+            "not cooling",
+            "aire acondicionado no enfria",
+        ],
         true,
     ),
     rule(HVAC, Some("thermostat"), &["thermostat"], true),
-    rule(HVAC, Some("furnace repair"), &["furnace", "heater"], true),
+    rule(
+        HVAC,
+        Some("furnace repair"),
+        &["furnace", "heater", "calefaccion no prende"],
+        true,
+    ),
     rule(PLUMBING, None, &["water heater"], true),
     rule(POOL, None, &["pool heater", "spa heater"], true),
     rule(
@@ -82,7 +98,12 @@ const RULES: &[Rule] = &[
         &["swamp cooler", "evaporative cooler"],
         true,
     ),
-    rule(ELECTRICAL, None, &["electrician", "electrical"], false),
+    rule(
+        ELECTRICAL,
+        None,
+        &["electrician", "electrical", "detector de humo cableado"],
+        false,
+    ),
     rule(ELECTRICAL, Some("outlet repair"), &["outlet"], true),
     rule(ELECTRICAL, Some("breaker trips"), &["breaker"], true),
     rule(ELECTRICAL, Some("light fixture"), &["light fixture"], true),
@@ -94,9 +115,19 @@ const RULES: &[Rule] = &[
         true,
     ),
     rule(HANDYMAN, None, &["handyman", "small repair"], false),
-    rule(HANDYMAN, Some("door repair"), &["door"], false),
+    rule(
+        HANDYMAN,
+        Some("door repair"),
+        &["door", "door wont latch"],
+        false,
+    ),
     rule(HANDYMAN, Some("drywall patch"), &["drywall"], false),
-    rule(HANDYMAN, Some("shelves"), &["shelf", "shelves"], false),
+    rule(
+        HANDYMAN,
+        Some("shelves"),
+        &["shelf", "shelves", "instalar repisas"],
+        false,
+    ),
     rule(HANDYMAN, Some("fence repair"), &["fence"], false),
     rule(
         "local_moving",
@@ -134,6 +165,92 @@ const RULES: &[Rule] = &[
         ],
         false,
     ),
+    rule(
+        POOL,
+        None,
+        &["filtro de alberca roto", "fuga en la alberca"],
+        false,
+    ),
+    rule(
+        "pool_cleaning",
+        None,
+        &[
+            "pool guy every week",
+            "weekly pool cleaning",
+            "limpieza semanal de alberca",
+            "mantenimiento de piscina semanal",
+            "alberca verde",
+        ],
+        false,
+    ),
+    rule(
+        "landscape_maintenance",
+        None,
+        &["podar los arbustos", "limpieza general del jardin"],
+        false,
+    ),
+    rule(
+        "house_cleaning",
+        None,
+        &[
+            "maid service for home",
+            "weekly house cleaning",
+            "limpieza semanal de casa",
+            "limpieza profunda de casa",
+        ],
+        false,
+    ),
+    rule(
+        "pest_control",
+        None,
+        &[
+            "exterminator for bugs",
+            "plaga de cucarachas",
+            "scorpions in the house",
+            "alacranes en la casa",
+        ],
+        true,
+    ),
+    rule(
+        "dog_waste_pickup",
+        None,
+        &[
+            "dog poop in yard",
+            "pooper scooper service",
+            "weekly dog poop pickup",
+        ],
+        false,
+    ),
+    rule(
+        "trash_can_cleaning",
+        None,
+        &["dirty garbage bins", "trash bin sanitizing"],
+        false,
+    ),
+    rule(
+        "car_detailing",
+        None,
+        &[
+            "limpieza interior del carro",
+            "exterior car detailing",
+            "detallado exterior de auto",
+            "full car detailing",
+            "detallado completo de carro",
+            "detallado de casa rodante",
+        ],
+        false,
+    ),
+    rule(
+        "home_inspection",
+        None,
+        &[
+            "inspeccion para refinanciar casa",
+            "home inspection for refinancing",
+        ],
+        true,
+    ),
+    rule("insulation", None, &["blown in attic insulation"], true),
+    rule("local_moving", None, &["mudanza dentro de arizona"], false),
 ];
 
 /// Label words too generic to name one option ("just a small repair" must not pick appliance
@@ -180,6 +297,18 @@ pub fn job_types_of(trade: &str) -> Vec<&'static str> {
         .filter(|r| r.trade == trade)
         .filter_map(|r| r.job_type)
         .collect()
+}
+
+/// The labels a stored `job_type.<trade>` row may name, read back by folding each the same way
+/// (D-4618): [`job_types_of`] then the trade's licensed-only labels, so "water heater
+/// replacement" and "gas pool heater" survive read-back and CARD-001's license check still sees
+/// them (D-105, D-1003).
+#[must_use]
+pub fn stored_job_types_of(trade: &str) -> Vec<&'static str> {
+    let licensed = LICENSED_ONLY.iter().filter(|(t, _)| *t == trade);
+    let mut labels = job_types_of(trade);
+    labels.extend(licensed.map(|(_, j)| *j));
+    labels
 }
 
 /// One AI reading of the request (AI-011): a catalog category ID and, where read, a job type.
