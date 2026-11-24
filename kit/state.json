@@ -120980,7 +120980,7 @@
    "input_tokens": 203,
    "output_tokens": 38290
   },
-  "source": "session_reading 2026-11-24T20:35:01Z (week)",
+  "source": "session_reading 2026-11-24T20:41:13Z (week)",
   "by_task": {
    "FIX-MAIN": {
     "estimated_bytes": 3756447,
@@ -129153,7 +129153,7 @@
    }
   }
  },
- "updated_at": "2026-11-24T20:41:59Z",
+ "updated_at": "2026-11-24T20:42:59Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -129254,13 +129254,6 @@
  "runner_sha": "60b853b9b8e1787c79ad7743dc011827627c9bf7",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "a2750b12e4d834c8a0a1392bbf5c1d35451aff06",
-   "ok": true,
-   "at": "2026-11-24T17:04:20Z",
-   "why": "start routine (pre-session)",
-   "seconds": 1107
-  },
   {
    "sha": "e2c7ee730a9fcbf2ce8c45a24ceb6165c7b56dc4",
    "ok": true,
@@ -129410,12 +129403,20 @@
    "why": "start routine (ancestry reuse of 4b756acb549d, 2026-11-24T18:19:45Z)",
    "reused": "2026-11-24T18:19:45Z",
    "base": "4b756acb549d5d7549a83cdc5c018e333f8fb9b7"
+  },
+  {
+   "sha": "60b853b9b8e1787c79ad7743dc011827627c9bf7",
+   "ok": true,
+   "at": "2026-11-24T20:42:44Z",
+   "why": "start routine (ancestry reuse of 4b756acb549d, 2026-11-24T18:19:45Z)",
+   "reused": "2026-11-24T18:19:45Z",
+   "base": "4b756acb549d5d7549a83cdc5c018e333f8fb9b7"
   }
  ],
  "main_red": null,
  "pacing": {
-  "last": "T820 estimated 1.4M tokens (calibrated); week has 225k left (no five-hour budget, D-3056) after 1.8M still running in another lane (session_reading 2026-11-24T20:35:01Z (week)); waiting until 2026-11-26T17:00:00Z",
-  "at": "2026-11-24T20:40:14Z",
+  "last": "T820 estimated 1.4M tokens (calibrated); week has 225k left (no five-hour budget, D-3056) after 1.8M still running in another lane (session_reading 2026-11-24T20:41:13Z (week)); waiting until 2026-11-26T17:00:00Z",
+  "at": "2026-11-24T20:42:44Z",
   "decision": "wait",
   "waiting_until": "2026-11-26T17:00:00Z",
   "standing": {
@@ -129427,7 +129428,7 @@
    }
   },
   "remaining_estimate": 359376090,
-  "projected_finish": "2026-12-07T19:52:58Z"
+  "projected_finish": "2026-12-07T19:55:28Z"
  },
  "main_red_history": [
   {
