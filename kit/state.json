@@ -42880,7 +42880,7 @@
      }
     }
    ],
-   "reviewed_sha": "dd3f6ca2cfed863879ccb9bcf0c55e6e3b829374",
+   "reviewed_sha": "125ebc351f9b0532e1f69aa6f7f0d40c2d794ccd",
    "review_lease": {
     "task": "T305",
     "session": "actions-45362344613",
@@ -42900,10 +42900,21 @@
      "main": "8528082f6c06f27147f297b075f32836d4670f3a",
      "how": "hand-in",
      "at": "2026-11-24T10:28:26Z"
+    },
+    {
+     "from": "dd3f6ca2cfed863879ccb9bcf0c55e6e3b829374",
+     "to": "125ebc351f9b0532e1f69aa6f7f0d40c2d794ccd",
+     "main": "16fd7ee8aae9465dcb7bf75fd20984021425b001",
+     "how": "runner",
+     "checks": {
+      "Twin": "success"
+     },
+     "at": "2026-11-24T10:35:22Z"
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "merge_turn_since": "2026-11-24T10:35:22Z"
   },
   {
    "id": "T306",
@@ -115953,7 +115964,7 @@
    "deps": [
     "T813"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 0,
    "slug": "used-link-done-page",
    "type": "build",
@@ -115973,13 +115984,70 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 269,
      "head_sha": "f649127cd57d500c3dc2272d57d70c825f76db73",
-     "pr": null,
-     "checks": null,
+     "pr": 1438,
+     "checks": [
+      {
+       "name": "backup lane 5",
+       "conclusion": null
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-24T07:37:41Z",
      "ended_at": "2026-11-24T10:07:13Z",
-     "result": "MERGE_PENDING",
+     "result": "done",
      "usage": {
       "worker": {
        "tokens": 13151243,
@@ -116016,7 +116084,23 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "merge_turn_since": "2026-11-24T10:10:33Z"
+   "merge_turn_since": "2026-11-24T10:10:33Z",
+   "merged_sha": "16fd7ee8aae9465dcb7bf75fd20984021425b001",
+   "merged_at": "2026-11-24T10:32:11Z",
+   "files": [
+    ".sqlx/query-e556964f989b8f49c1de298fd115ab81d58a4d00d06fda1d30f6c9e106e0e7fb.json",
+    "app/portals/NOTES.md",
+    "app/portals/src/action_links.rs",
+    "app/portals/src/api.rs",
+    "app/portals/templates/action_done.html",
+    "app/server/NOTES.md",
+    "app/server/src/action_links.rs",
+    "app/server/tests/action_links_route.rs",
+    "app/server/tests/approve_link_route.rs",
+    "docs/architecture.md",
+    "docs/decisions.md",
+    "tests/e2e/action_done_served.spec.ts"
+   ]
   },
   {
    "id": "T815",
@@ -126789,7 +126873,7 @@
    }
   }
  },
- "updated_at": "2026-11-24T10:34:00Z",
+ "updated_at": "2026-11-24T10:35:32Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -126887,7 +126971,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "6f9c1243fb5d5de02872b01464d4f13d0bf6d34f",
+ "runner_sha": "16fd7ee8aae9465dcb7bf75fd20984021425b001",
  "starter": "actions",
  "smoke_runs": [
   {
@@ -129251,7 +129335,7 @@
    ]
   },
   "5": {
-   "count": 1,
+   "count": 0,
    "last": [
     {
      "at": "2026-11-17T10:29:48Z",

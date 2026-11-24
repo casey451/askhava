@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T10:34:00Z by runner 6f9c1243fb5d (actions).
+Updated 2026-11-24T10:35:32Z by runner 16fd7ee8aae9 (actions).
 
-**Building: T802 in progress since 10:10Z; 657 of 780 done; week 91% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T802 in progress since 10:10Z; 658 of 780 done; week 91% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 657 of 780 build tasks (owner gates not counted)
+- **Tasks done:** 658 of 780 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T802 claimed 10:10Z, lease until 13:10Z; lane 3: T410 claimed 09:38Z, lease until 12:38Z; lane 4: T801 claimed 08:49Z, lease until 13:34Z
 - **Week:** 91% used, 7.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:30Z, 3 min before this update
+- **Last run:** 10:34Z, 1 min before this update
 - **Keeper:** last ran 10:30Z, next wake 11:52Z
 
 ## Needs attention
@@ -21,13 +21,13 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 47% of the context window, over its 45% limit
-- Strict plan check red: 56 problem(s) on tasks still to run (+549 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 58 problem(s) on tasks still to run (+554 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T305 | server and portals: the scorecard, the intake report, the mo | MERGE_PENDING | 1 | 73 min | 10:28Z |  |
-| T814 | portals and server: a used action link pressed again shows i | MERGE_PENDING | 1 | 2 h 29 min | 10:07Z |  |
+| T814 | portals and server: a used action link pressed again shows i | done | 1 | 2 h 29 min | 10:07Z |  |
 | T841 | e2e: seedPick's new businesses hold the fixture licence ROC1 | done | 1 | 97 min | 09:48Z |  |
 | T804 | server and portals: a delete or copy request made in the por | done | 2 | 63 min | 08:35Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T410 | portals: every signed-in business page shows the Get help li | check_failed | 1 | 93 min | 07:32Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-24T |
@@ -85,7 +85,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 ## Progress (requirements verified)
 
 **Requirements verified:** 435 of 735 (59.2%) · partial 288 · unstarted 12
-**Tasks merged (throughput only):** 657 of 780
+**Tasks merged (throughput only):** 658 of 780
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -121,7 +121,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 300 of 352 done
+- stage 5: 301 of 352 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
