@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T18:56:12Z by runner 07dc57aa425a (actions).
+Updated 2026-11-24T18:56:48Z by runner 07dc57aa425a (actions).
 
 **Building: T815 in progress since 18:07Z; 667 of 780 done; week 95% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 667 of 780 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T815 claimed 18:07Z, lease until 21:07Z; lane 2: T846 claimed 18:45Z, lease until 21:45Z; lane 3: T839 claimed 18:41Z, lease until 21:41Z; lane 4: T820 claimed 18:38Z, lease until 21:38Z; lane 5: T826 claimed 18:12Z, lease until 21:12Z
+- **Lane:** lane 1: T815 claimed 18:07Z, lease until 21:07Z; lane 2: T846 claimed 18:45Z, lease until 21:45Z; lane 3: T839 claimed 18:41Z, lease until 21:41Z; lane 4: T820 claimed 18:38Z, lease until 21:38Z
 - **Week:** 95% used, 0.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:46Z, 9 min before this update
+- **Last run:** 18:46Z, 10 min before this update
 - **Keeper:** last ran 18:33Z, next wake 20:01Z
 
 ## Needs attention
@@ -28,6 +28,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T826 | site: Spanish page fixes (ranking line, launch offer, city l | MERGE_PENDING | 1 | 43 min | 18:56Z |  |
 | T799 | Templates and tests (harness): copy review fixes (refund att | BLOCKED | 1 | 9 min | 18:29Z | PLAN GAP: contradiction: D-5401 requires es.json text "dentro de 72 horas de recibir los datos del cliente" (5 keys), bu |
 | T741 | server and intake: an opted-out homeowner's "<n> YES" picks  | done | 2 | 73 min | 17:54Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-24T |
 | T590 | calls, picks and server: the who's-calling and missed-call t | done | 3 | 23 min | 17:28Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-24T |
@@ -137,7 +138,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T846 (lease until 2026-11-24T21:45:37Z)
 - lane 3: T839 (lease until 2026-11-24T21:41:20Z)
 - lane 4: T820 (lease until 2026-11-24T21:38:24Z)
-- lane 5: T826 (lease until 2026-11-24T21:12:27Z)
 
 ## Last usage reading
-- {"task": "T799", "at": "2026-11-24T18:29:43Z", "output_tokens": 12560, "input_tokens": 58, "cache_creation_input_tokens": 57402, "cache_read_input_tokens": 845669}
+- {"task": "T826", "at": "2026-11-24T18:56:10Z", "input_tokens": 52, "cache_read_input_tokens": 878980, "cache_creation_input_tokens": 75641, "output_tokens": 10832}
