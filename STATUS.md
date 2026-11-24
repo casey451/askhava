@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T15:00:09Z by runner 1fabda746ab1 (actions).
+Updated 2026-11-24T15:00:41Z by runner 1fabda746ab1 (actions).
 
 **Building: T741 in progress since 14:26Z; 661 of 780 done; week 93% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 661 of 780 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T741 claimed 14:26Z, lease until 17:26Z; lane 3: T732 claimed 14:23Z, lease until 17:23Z; lane 4: T122 claimed 13:45Z, lease until 16:45Z
+- **Lane:** lane 1: T741 claimed 14:26Z, lease until 17:26Z; lane 3: T732 claimed 14:23Z, lease until 17:23Z
 - **Week:** 93% used, 4.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:58Z, 1 min before this update
+- **Last run:** 14:58Z, 2 min before this update
 - **Keeper:** last ran 14:58Z, next wake 15:18Z
 
 ## Needs attention
@@ -27,6 +27,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T122 | docs/account-checklist.md: Part 1 test accounts, Part 2 busi | MERGE_PENDING | 2 | 74 min | 15:00Z | Reviewer after the findings round (head d65c4896894680459870359165740cf8b3a2bf57) still ended FINDINGS: / 1. tests/docs/ |
 | T305 | server and portals: the scorecard, the intake report, the mo | MERGE_PENDING | 3 | 102 min | 14:55Z | PLAN GAP: outside ownership: app/portals/templates/scorecard.html, app/portals/templates/intake_report.html, app/portals |
 | T802 | site (harness): the coverage page says texts work with US nu | check_failed | 2 | 75 min | 14:28Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T732 | server: the business job page's "Withdraw your quote" posts  | resync | 2 | 48 min | 14:04Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
@@ -131,7 +132,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T741 (lease until 2026-11-24T17:26:45Z)
 - lane 3: T732 (lease until 2026-11-24T17:23:32Z)
-- lane 4: T122 (lease until 2026-11-24T16:45:59Z)
 
 ## Last usage reading
-- {"task": "T305", "at": "2026-11-24T14:55:57Z", "cache_creation_input_tokens": 179456, "cache_read_input_tokens": 4360077, "output_tokens": 31317, "input_tokens": 196}
+- {"task": "T122", "at": "2026-11-24T15:00:05Z", "cache_creation_input_tokens": 204479, "cache_read_input_tokens": 3277393, "input_tokens": 143, "output_tokens": 34472}
