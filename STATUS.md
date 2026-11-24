@@ -1,19 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-24T00:30:42Z by runner 3bdc24aca9ac (actions).
+Updated 2026-11-24T00:31:15Z by runner 3bdc24aca9ac (actions).
 
 **Building: T737 in progress since 22:49Z; 643 of 779 done; week 86% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 643 of 779 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T737 claimed 22:49Z, lease until 01:49Z; lane 3: T738 claimed 23:08Z, lease until 02:08Z
-- **Week:** 86% used, 20.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:00Z, 30 min before this update
+- **Lane:** lane 1: T737 claimed 22:49Z, lease until 01:49Z; lane 3: T738 claimed 23:08Z, lease until 02:08Z; lane 4: T836 claimed 00:30Z, lease until 03:30Z
+- **Week:** 86% used, 18.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 00:00Z, 31 min before this update
 - **Keeper:** last ran 23:59Z, next wake 00:19Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
+- PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: dependency T716 is DONE but its owned file tests/integration/tests/intake_order_trade_questions.rs is not on main; T723: dependency T716 is DONE but its owned file tests/integration/tests/intake_boundary_count.rs is not on main
 - Strict plan check red: 40 problem(s) on tasks still to run (+533 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
 
 ## Last 24 hours
@@ -111,7 +112,7 @@ Updated 2026-11-24T00:30:42Z by runner 3bdc24aca9ac (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-23T23:01:09Z (week)): week: 173.6M used, 20.4M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-08T00:50:45Z.
+- Pacing (session_reading 2026-11-23T23:58:44Z (week)): week: 175.4M used, 18.6M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T20:25:44Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -128,6 +129,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T737 (lease until 2026-11-24T01:49:24Z)
 - lane 3: T738 (lease until 2026-11-24T02:08:57Z)
+- lane 4: T836 (lease until 2026-11-24T03:30:33Z)
 
 ## Last usage reading
 - {"task": "T716", "at": "2026-11-23T23:57:13Z", "output_tokens": 70348, "cache_creation_input_tokens": 266863, "cache_read_input_tokens": 10821675, "input_tokens": 207}
