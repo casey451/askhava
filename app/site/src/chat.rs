@@ -12,10 +12,8 @@
 //! the code with her vault name and stated names, T649, D-4294), else by [`Scrub`]
 //! (`privacy::api::scrub`, which `site` may not call); after the code her raw words go only to
 //! [`ChatKeys::turn`], so her name-and-address answer reaches the vault (INT-027). The typed number goes back
-//! only into this `no-store` page: the code form's hidden field (D-4044) and, after a refused
-//! number, the number field (A11Y-030, T656); it is never logged, stored here or put in a URL.
-//! A refusing or failing notice is a focused error summary first in `main`, linking to the field,
-//! with "Error: " in the title; a refused or failed message step puts her words back in the box. The code step is the composition's [`ChatKeys`] (T103's `send_code` and
+//! only into this `no-store` page, in the code form's hidden field (D-4044) and, after a refused number, in its field; it is never logged, stored here or put in a URL.
+//! A refusing notice is a focused error summary first in `main` linking to the field, and a refused message step refills her words (A11Y-030, T656). The code step is the composition's [`ChatKeys`] (T103's `send_code` and
 //! `check_code` over the vault and Verify, D-963, D-3144); without it (dev and `Ci`) the code step sends and stores nothing and
 //! says codes can't be sent right now, answering 200 (D-3744). A new request SEC-014's limit
 //! refuses opens nothing and the page says to try again later. The cross-site and CSRF checks are `server`'s layer, which hands the page its token as [`ChatCsrf`] (D-3882) and a `POST` its client IP as [`ChatClientIp`] (SEC-040, D-4292); [`carry`] takes the home request box's post (T593).
@@ -130,8 +128,7 @@ enum Ask {
     Code,
 }
 
-/// A line the page shows, and whether it refuses her answer or sends her back a step: an error
-/// is the focused summary first in `main`, a progress line sits in the status region (A11Y-030).
+/// A line the page shows, and whether it is an error: a focused summary first in `main` (A11Y-030).
 type Notice = (&'static str, bool);
 
 const NO_CODES: Notice = (
@@ -202,17 +199,6 @@ struct RequestPage {
     error: bool,
     message: String,
     words: String,
-}
-
-impl RequestPage {
-    /// A11Y-030: the id of the one field this page asks for, the error summary's link target.
-    fn field(&self) -> &'static str {
-        match self.ask {
-            Ask::Message => "chat-words",
-            Ask::Number => "chat-number",
-            Ask::Code => "chat-code",
-        }
-    }
 }
 
 /// What a page carries from one turn to the next.
@@ -584,6 +570,17 @@ impl<C: ChatKeys> Chat<C> {
                 tracing::error!(%error, "request page render failed");
                 StatusCode::INTERNAL_SERVER_ERROR.into_response()
             }
+        }
+    }
+}
+
+impl RequestPage {
+    /// A11Y-030: the id of the one field this page asks for, the error summary's link target.
+    fn field(&self) -> &'static str {
+        match self.ask {
+            Ask::Message => "chat-words",
+            Ask::Number => "chat-number",
+            Ask::Code => "chat-code",
         }
     }
 }
