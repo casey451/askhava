@@ -10740,3 +10740,4 @@
 - 2026-11-24T07:35:00Z runner 7d2bd0857902 (actions): {}
 - 2026-11-24T07:37:52Z runner 10a688ebac37 (actions): {"T814": "QUEUED -> IN_PROGRESS"}; T814 estimated 1.8M tokens (calibrated); week has 12.5M left (no five-hour budget, D-3056) after 1.5M still running in another lane (session_reading 2026-11-24T07:34:07Z (week)); claimed
 - 2026-11-24T07:38:18Z runner 10a688ebac37 (actions): {}
+- 2026-11-24T07:38:32Z runner 664b9e81172d (manual): {"T119": "BLOCKED -> QUEUED"}

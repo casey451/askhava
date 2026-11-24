@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T07:38:18Z by runner 10a688ebac37 (actions).
+Updated 2026-11-24T07:38:32Z by runner 664b9e81172d (manual).
 
-**Building: T804 in progress since 07:31Z; 654 of 779 done; week 90% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T804 in progress since 07:31Z; 654 of 780 done; week 90% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 654 of 779 build tasks (owner gates not counted)
+- **Tasks done:** 654 of 780 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T804 claimed 07:31Z, lease until 10:31Z; lane 5: T814 claimed 07:37Z, lease until 10:37Z
 - **Week:** 90% used, 12.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:35Z, 2 min before this update
+- **Last run:** 07:38Z, 0 min before this update
 - **Keeper:** last ran 07:35Z, next wake 07:55Z
 
 ## Needs attention
@@ -18,14 +18,10 @@ Updated 2026-11-24T07:38:18Z by runner 10a688ebac37 (actions).
 3. Worker's PLAN GAP (day-3 DONE / masked call) REFUTED by reviewer: app/server/src/main.rs and lib.rs are shared paths T222 may edit, and a masked-call driver can live in owned tests/e2e/j1_full.ts. Only the 600-line budget is a real limit, which the worker did not argue. D-5642 guesses at the cause.
 4. tests/e2e/j2_full.ts:4 cites D-5643, which does not exist in docs/decisions.md.
 Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and prehandin.sh green.
-- BLOCKED T119: plan gap reported: PLAN GAP: outside ownership: tests/e2e/webserver.ts
-keyedEnv (webserver.ts:143-177) sets no ASKHAVA_HOMEOWNER_NUMBER; homeowner_number (app/server/src/lib.rs:2345) returns None in CI, so homeowner outbox rows stay queued and J4 steps 1-2 cannot run By text (D-5657). appEnv drops inherited ASKHAVA_* vars, so no workaround. webserver.ts is owned by T536 and not owned/shared by T119. Smallest fix: add a fake +1 ASKHAVA_HOMEOWNER_NUMBER to keyedEnv (or make webserver.ts shared for T119).
-Also: stand-in twilio fail fault answers 500 -> OutcomeUnknown, no retries (service.rs refused()); docs/test-de; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T119 --plan-fix D-### --reason "..."` (D-2859)
-- PLAN GAP T119 (since 2026-11-24T02:36:07Z, no attempt used; a plan change fixes it): outside ownership: tests/e2e/webserver.ts
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 47% of the context window, over its 45% limit
-- Strict plan check red: 61 problem(s) on tasks still to run (+557 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 56 problem(s) on tasks still to run (+548 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -93,31 +89,31 @@ Also: stand-in twilio fail fault answers 500 -> OutcomeUnknown, no retries (serv
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 434 of 735 (59.0%) · partial 289 · unstarted 12
-**Tasks merged (throughput only):** 654 of 779
+**Requirements verified:** 328 of 735 (44.6%) · partial 395 · unstarted 12
+**Tasks merged (throughput only):** 654 of 780
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 27 | 8 | 0 | 35 |
+| accessibility | 20 | 15 | 0 | 35 |
 | ai | 8 | 18 | 3 | 29 |
-| businesses | 33 | 24 | 1 | 58 |
-| calls | 17 | 8 | 0 | 25 |
-| consent | 20 | 15 | 0 | 35 |
-| fees | 27 | 25 | 0 | 52 |
-| intake | 12 | 31 | 0 | 43 |
-| job-cards | 16 | 8 | 0 | 24 |
-| licensing | 40 | 8 | 0 | 48 |
-| lifecycle | 22 | 6 | 0 | 28 |
-| messaging | 25 | 20 | 0 | 45 |
-| ops-recovery | 20 | 29 | 5 | 54 |
-| privacy | 13 | 18 | 0 | 31 |
-| quiet-hours | 4 | 5 | 0 | 9 |
-| quotes-pick | 36 | 20 | 0 | 56 |
+| businesses | 25 | 32 | 1 | 58 |
+| calls | 14 | 11 | 0 | 25 |
+| consent | 15 | 20 | 0 | 35 |
+| fees | 22 | 30 | 0 | 52 |
+| intake | 8 | 35 | 0 | 43 |
+| job-cards | 11 | 13 | 0 | 24 |
+| licensing | 33 | 15 | 0 | 48 |
+| lifecycle | 16 | 12 | 0 | 28 |
+| messaging | 22 | 23 | 0 | 45 |
+| ops-recovery | 11 | 38 | 5 | 54 |
+| privacy | 8 | 23 | 0 | 31 |
+| quiet-hours | 3 | 6 | 0 | 9 |
+| quotes-pick | 28 | 28 | 0 | 56 |
 | recurring | 10 | 1 | 0 | 11 |
-| security | 20 | 32 | 3 | 55 |
-| terms | 30 | 5 | 0 | 35 |
-| website | 24 | 6 | 0 | 30 |
-| wording | 30 | 2 | 0 | 32 |
+| security | 10 | 42 | 3 | 55 |
+| terms | 26 | 9 | 0 | 35 |
+| website | 14 | 16 | 0 | 30 |
+| wording | 24 | 8 | 0 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
