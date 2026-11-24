@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT request_id FROM portals.data_request_link\n           WHERE used_at IS NULL AND sent_at > $1 ORDER BY request_id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "request_id",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "portals.data_request_link",
+            "name": "request_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "caffa30b12589f365bac747feb7b0647e28e99509b24e4710db38258e0418d6a"
+}

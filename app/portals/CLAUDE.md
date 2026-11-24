@@ -31,6 +31,7 @@ The layer-8 crate for the homeowner, business and owner portals (`docs/architect
 - BIZ-033, D-3081: `phone_approval_page` shows only a waiting phone's last 4 digits, never a whole number, and every form names the `number_set_at` shown: `phone_approval::tests`, `app/server/tests/phone_approval_route.rs`.
 - JOB-016, PRIV-006, D-4423: `owner_problem_reports.html` shows no homeowner contact and preselects no kind; a counted report has no form: `owner_complaint::page_tests`, `app/server/tests/owner_problem_route.rs`.
 - AI-008, SEC-043, D-5688: every `/owner/ai` change (both records and both switch directions) needs `OwnerAction::AiSwitch`'s fresh factor and records nothing without it: `app/server/tests/owner_ai_switch_route.rs` (TD-AI-32).
+- PRIV-031, SEC-026, D-5339: a data-request link's `GET` changes nothing, its `POST` acts once, a copy answers no data, and only a confirmed update address gets one: `tests/integration/tests/data_request_opted_out.rs` (TD-PRIV-32).
 
 ## Detail
 Everything else about this crate (what it owns, the code behind each requirement ID, change recipes, the tests that guard it, decisions and history) is in `app/portals/NOTES.md`, one entry per line, each starting with its requirement IDs. Grep it by requirement ID, file or word (`grep -n 'FEE-039' app/portals/NOTES.md`); never read it whole. Add your own entries at its end, one line each (`docs/code-docs.md` section 2).

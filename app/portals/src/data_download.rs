@@ -18,7 +18,10 @@
 //! confirmed audit row (R11). The masking also catches a bare domain and a phone number split
 //! across lines (T315, D-3265). Each request is due [`ANSWER_WITHIN`] (30 days)
 //! after its stored received time ([`DataRequest::due_at`]). The number on file comes only from a
-//! realm-checked vault read ([`OnFile`], SEC-046). Requests by email or the help form are T200's
+//! realm-checked vault read ([`OnFile`], SEC-046). For a number on the suppression list the
+//! portal request is stored with no code ([`open_link_request`]) and confirmed by an email link
+//! (`crate::data_request_link`, T804, D-5281, D-5339); both paths act through [`act_once`], so a
+//! code and a link together act once. Requests by email or the help form are T200's
 //! (D-493). The routes wait on homeowner sign-in being served (D-1934).
 
 use std::fmt;
@@ -137,9 +140,9 @@ pub enum Acted {
     Deleted(&'static str),
 }
 
-fn entry(on_file: &OnFile, action: &'static str, subject: (&'static str, Uuid)) -> AuditEntry {
+fn entry(contact: Uuid, action: &'static str, subject: (&'static str, Uuid)) -> AuditEntry {
     AuditEntry {
-        actor: Actor::Homeowner(on_file.contact()),
+        actor: Actor::Homeowner(contact),
         action,
         subject_kind: subject.0,
         subject_id: subject.1,
@@ -166,16 +169,29 @@ pub async fn open_request<V: VerifyAdapter>(
 ) -> Result<DataRequest, RequestError> {
     let request = {
         let mut db = pool.acquire().await.map_err(database)?;
-        let subject = (CONTACT_SUBJECT, on_file.contact());
-        let id = audit(&mut db, &entry(on_file, kind.actions().0, subject))
-            .await
-            .map_err(database)?;
-        stored(&mut db, on_file, id)
-            .await?
-            .ok_or(RequestError::Database)?
+        open_link_request(&mut db, on_file, kind).await?
     };
     send_request_code(pool, (verify, key), on_file, (request, now)).await?;
     Ok(request)
+}
+
+/// PRIV-031, D-5281, D-5339: the link path's sibling of [`open_request`]: stores `kind` as
+/// received on the caller's connection (its audit row, whose time is the received time) and sends
+/// no Verify code; `crate::data_request_link` emails the link that confirms it.
+///
+/// # Errors
+/// [`RequestError::Database`].
+pub(crate) async fn open_link_request(
+    db: &mut PgConnection,
+    on_file: &OnFile,
+    kind: DataRequestKind,
+) -> Result<DataRequest, RequestError> {
+    let subject = (CONTACT_SUBJECT, on_file.contact());
+    let row = entry(on_file.contact(), kind.actions().0, subject);
+    let id = audit(db, &row).await.map_err(database)?;
+    stored(db, on_file.contact(), id)
+        .await?
+        .ok_or(RequestError::Database)
 }
 
 /// PRIV-031, SEC-055: texts a new code for her open request `request_id` (hers, not past its due
@@ -204,7 +220,9 @@ fn challenge_of(request: &DataRequest) -> (Purpose, Uuid) {
     (purpose, request_subject(request.id))
 }
 
-fn request_subject(request_id: i64) -> Uuid {
+/// The request's subject UUID: its received row's ID, the confirmed row's subject and the link's
+/// object (PRIV-031, SEC-037).
+pub(crate) fn request_subject(request_id: i64) -> Uuid {
     Uuid::from_u128(request_id.unsigned_abs().into())
 }
 
@@ -244,36 +262,47 @@ async fn open_one(
     now: Timestamp,
 ) -> Result<DataRequest, RequestError> {
     let mut db = pool.acquire().await.map_err(database)?;
-    stored(&mut db, on_file, request_id)
+    stored(&mut db, on_file.contact(), request_id)
         .await?
         .filter(|request| now <= request.due_at())
         .ok_or(RequestError::NoRequest)
 }
 
-/// The stored request `id` when it is a received row made by and about `on_file`'s contact.
-async fn stored(
+/// The stored request `id` when it is a received row made by and about `contact`.
+pub(crate) async fn stored(
     db: &mut PgConnection,
-    on_file: &OnFile,
+    contact: Uuid,
     id: i64,
 ) -> Result<Option<DataRequest>, RequestError> {
+    Ok(received(db, id)
+        .await?
+        .filter(|(_, by)| *by == contact)
+        .map(|(request, _)| request))
+}
+
+/// The stored request `id` and the contact who made it, when it is a received row a homeowner
+/// made about her own contact (the link path, which has no session, reads her from it).
+pub(crate) async fn received(
+    db: &mut PgConnection,
+    id: i64,
+) -> Result<Option<(DataRequest, Uuid)>, RequestError> {
     let rows = export_audit(db, id.saturating_sub(1), 1)
         .await
         .map_err(database)?;
-    let hers = |row: &askhava_ops::api::AuditRow| {
+    let own = |row: &askhava_ops::api::AuditRow| {
         row.id == id
             && row.actor_kind == "homeowner"
-            && row.actor_id == Some(on_file.contact())
+            && row.actor_id == Some(row.subject_id)
             && row.subject_kind == CONTACT_SUBJECT
-            && row.subject_id == on_file.contact()
     };
-    Ok(rows.into_iter().find(hers).and_then(|row| {
+    Ok(rows.into_iter().find(own).and_then(|row| {
         let kind = DataRequestKind::from_received(&row.action)?;
-        let received_at = row.at;
-        Some(DataRequest {
+        let request = DataRequest {
             id,
             kind,
-            received_at,
-        })
+            received_at: row.at,
+        };
+        Some((request, row.subject_id))
     }))
 }
 
@@ -306,9 +335,8 @@ pub async fn confirm_request<V: VerifyAdapter>(
     }
 }
 
-/// SEC-055, R11: uses `challenge`, writes the confirmed row and, for a delete, deletes her data,
-/// in one transaction; a challenge or request already used rolls back as
-/// [`RequestError::NoRequest`].
+/// SEC-055, R11: uses `challenge` and acts ([`act_once`]) in one transaction; a challenge or
+/// request already used rolls back as [`RequestError::NoRequest`].
 async fn act(
     pool: &PgPool,
     on_file: &OnFile,
@@ -321,20 +349,36 @@ async fn act(
     {
         return Err(RequestError::NoRequest);
     }
-    let subject = (REQUEST_SUBJECT, request_subject(request.id));
-    let done = entry(on_file, request.kind.actions().1, subject);
-    if !audit_once(&mut tx, &done).await.map_err(database)? {
-        return Err(RequestError::NoRequest);
-    }
-    let acted = match request.kind {
-        DataRequestKind::Copy => Acted::Copy,
-        DataRequestKind::Delete => {
-            let deleted = delete_her_data(&mut tx, on_file.contact()).await;
-            Acted::Deleted(deleted.map_err(database)?)
-        }
-    };
+    let acted = act_once(&mut tx, on_file.contact(), request).await?;
+    let acted = acted.ok_or(RequestError::NoRequest)?;
     tx.commit().await.map_err(database)?;
     Ok(acted)
+}
+
+/// PRIV-031, PRIV-011, R11: the act both the code path and the link path call on the caller's
+/// transaction: the confirmed audit row of `request` (one per request, `audit_once`), then for a
+/// delete [`delete_her_data`] of `contact`. `None` when the request was already acted on, so a
+/// code and a link together act once.
+///
+/// # Errors
+/// [`RequestError::Database`].
+pub(crate) async fn act_once(
+    db: &mut PgConnection,
+    contact: Uuid,
+    request: DataRequest,
+) -> Result<Option<Acted>, RequestError> {
+    let subject = (REQUEST_SUBJECT, request_subject(request.id));
+    let done = entry(contact, request.kind.actions().1, subject);
+    if !audit_once(db, &done).await.map_err(database)? {
+        return Ok(None);
+    }
+    Ok(Some(match request.kind {
+        DataRequestKind::Copy => Acted::Copy,
+        DataRequestKind::Delete => {
+            let deleted = delete_her_data(db, contact).await;
+            Acted::Deleted(deleted.map_err(database)?)
+        }
+    }))
 }
 
 /// PRIV-011, PRIV-008, D-3189: "Delete my data" on the caller's transaction: the stored job text
