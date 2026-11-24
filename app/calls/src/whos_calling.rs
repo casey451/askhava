@@ -15,6 +15,15 @@
 //! text (TD-TXT-29). Both templates are important texts (`messaging`'s `IMPORTANT_TEMPLATES`),
 //! so failed sends are retried, then emailed (TXT-014, TXT-015). The outbox keys the text by its
 //! template, job, pick and recipient, so a repeated task never sends it twice.
+//!
+//! Her language (TXT-039, D-4052 item B22, T590): `calls` may not read `intake`, so the
+//! composition passes a [`JobLanguage`] to [`run_whos_calling_in`] (`server` gives it
+//! `intake::api::job_language`); the text and [`generic_name`] then follow her request's language.
+//! [`run_whos_calling`] and [`send_whos_calling`] read none and stay English, and a failed read
+//! sends English rather than holding a time-critical call text.
+
+use std::future::Future;
+use std::pin::Pin;
 
 use askhava_businesses::api::public_names;
 use askhava_core::api::{Claimed, HandlerError, NewTask, enqueue as enqueue_task};
@@ -42,6 +51,31 @@ pub const WHOS_CALLING_EMAIL_TEMPLATE: &str = "whos_calling_email";
 /// Claims the first task gets while it waits for a line `picks.line_retry` opens later: with the
 /// worker's backoff (30 seconds doubling to an hour) about 3 hours (D-3118).
 pub const LINE_WAIT_ATTEMPTS: i32 = 10;
+
+/// TXT-039, D-4052 (B22): reads the language of job `job`'s homeowner texts, Spanish only when her
+/// request is Spanish and Spanish conversations are on; `None` when the read fails (English is
+/// sent). Passed in by the composition because `calls` and `picks` may not call `intake`.
+pub type JobLanguage = for<'a> fn(
+    &'a mut PgConnection,
+    Uuid,
+) -> Pin<Box<dyn Future<Output = Option<Language>> + Send + 'a>>;
+
+/// TXT-039, D-4052 (B22): the `(language, spanish_on)` pair for `render` from `source`'s read of
+/// job `job`: English with no source or a failed read.
+pub async fn her_language(
+    db: &mut PgConnection,
+    source: Option<JobLanguage>,
+    job: Uuid,
+) -> (Language, bool) {
+    let read = match source {
+        Some(read) => read(db, job).await,
+        None => None,
+    };
+    match read {
+        Some(Language::Es) => (Language::Es, true),
+        Some(Language::En) | None => (Language::En, false),
+    }
+}
 
 /// One pick's who's-calling text: IDs, the request number and the emergency flag only (PRIV-002).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -141,15 +175,26 @@ pub async fn queue_whos_calling(
 }
 
 /// TXT-027, QH-001, QH-004, QH-006, PICK-018, D-1687: sends `call`'s who's-calling text (see the
-/// module docs): at once on an emergency job, else inside her window, else one task at the
-/// window's start. Reads her phone through `send_window`, so call it outside a transaction.
+/// module docs) in English: at once on an emergency job, else inside her window, else one task at
+/// the window's start. Reads her phone through `send_window`, so call it outside a transaction.
 ///
 /// # Errors
 /// [`CallsError::Database`] or [`CallsError::Messaging`] (the window, the template or the outbox).
 pub async fn send_whos_calling(
     db: &mut PgConnection,
+    keys: (&Vault, &SecretString),
+    call: &WhosCalling,
+    now: Timestamp,
+) -> Result<WhosCallingSent, CallsError> {
+    send_in(db, keys, call, (Language::En, false), now).await
+}
+
+/// TXT-027, TXT-039: [`send_whos_calling`] rendered in `language` (`(language, spanish_on)`).
+async fn send_in(
+    db: &mut PgConnection,
     (vault, secret): (&Vault, &SecretString),
     call: &WhosCalling,
+    language: (Language, bool),
     now: Timestamp,
 ) -> Result<WhosCallingSent, CallsError> {
     let whose = (call.job, call.business, call.homeowner);
@@ -173,7 +218,6 @@ pub async fn send_whos_calling(
         .into_iter()
         .next()
         .map(|(_, name)| name);
-    let language = (Language::En, false);
     let name = name.as_deref().unwrap_or(generic_name(language.0));
     let job = call.job_number.to_string();
     let values = [
@@ -216,14 +260,40 @@ async fn hold(
         .map(drop)
 }
 
-/// The [`WHOS_CALLING_KIND`] handler (TXT-027): [`send_whos_calling`] for the task's pick; a line
-/// not open yet fails the task so the worker runs it again after its backoff (D-3118).
+/// The [`WHOS_CALLING_KIND`] handler (TXT-027): [`send_whos_calling`] for the task's pick, in
+/// English; a line not open yet fails the task so the worker runs it again after its backoff
+/// (D-3118).
 ///
 /// # Errors
 /// [`HandlerError`] for a bad payload, a failed send or a line not open yet.
 pub async fn run_whos_calling(
     pool: PgPool,
-    (vault, secret): (&Vault, &SecretString),
+    keys: (&Vault, &SecretString),
+    task: Claimed,
+    now: Timestamp,
+) -> Result<(), HandlerError> {
+    run(pool, keys, None, task, now).await
+}
+
+/// TXT-027, TXT-039, D-4052 (B22): [`run_whos_calling`] with the text in her request's language,
+/// read through `language` (English when the read fails, never held).
+///
+/// # Errors
+/// [`HandlerError`] for a bad payload, a failed send or a line not open yet.
+pub async fn run_whos_calling_in(
+    pool: PgPool,
+    keys: (&Vault, &SecretString),
+    language: JobLanguage,
+    task: Claimed,
+    now: Timestamp,
+) -> Result<(), HandlerError> {
+    run(pool, keys, Some(language), task, now).await
+}
+
+async fn run(
+    pool: PgPool,
+    keys: (&Vault, &SecretString),
+    source: Option<JobLanguage>,
     task: Claimed,
     now: Timestamp,
 ) -> Result<(), HandlerError> {
@@ -233,7 +303,8 @@ pub async fn run_whos_calling(
         .acquire()
         .await
         .map_err(|_| HandlerError("who's-calling text failed"))?;
-    match send_whos_calling(&mut db, (vault, secret), &call, now).await {
+    let language = her_language(&mut db, source, call.job).await;
+    match send_in(&mut db, keys, &call, language, now).await {
         Ok(WhosCallingSent::NoLine) => Err(HandlerError("who's-calling line is not open yet")),
         Ok(_) => Ok(()),
         Err(_) => Err(HandlerError("who's-calling text failed")),

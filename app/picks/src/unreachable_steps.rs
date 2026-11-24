@@ -14,11 +14,15 @@
 //! only once it is queued. A refund still waiting runs the 96-hour step again an hour later
 //! ([`RERUN_AFTER`]); the missed-call text is queued only at its send time; a number that can't be
 //! texted gets the TXT-030 copy by email. [`run_fraud_warning`] runs `payments`' `picks.fraud_warning` task.
-//! Payloads and keys hold IDs only (PRIV-002).
+//! Payloads and keys hold IDs only (PRIV-002). Her language (TXT-039, D-4052 item B22, T590):
+//! [`run_unreachable_step_in`] reads it through a `calls::api::JobLanguage` the composition passes
+//! in (`picks` may not read `intake`), so the missed-call text, its email copy and the other
+//! `ReleasedPick` texts follow her request's language; [`run_unreachable_step`] reads none and
+//! stays English (D-3489), and a failed read is English.
 
 use askhava_adapters::api::PaymentsAdapter;
 use askhava_businesses::api::{NoticePurpose, notice_addresses, public_names};
-use askhava_calls::api::{call_log, job_line};
+use askhava_calls::api::{JobLanguage, call_log, her_language, job_line};
 use askhava_core::api::{Claimed, HandlerError, NewTask, enqueue};
 use askhava_jobs::api::{JobStatus, TEXT_KIND, current};
 use askhava_messaging::api::{
@@ -187,10 +191,12 @@ struct Gathered {
     emergency: bool,
     line: Option<String>,
     calls: Vec<CallRecord>,
+    /// Her `(language, spanish_on)`: English unless a [`JobLanguage`] read says Spanish (TXT-039).
+    language: (Language, bool),
 }
 
 impl Gathered {
-    /// Spanish is not chosen here: `picks` cannot read her request's language (D-3489).
+    /// TXT-039: in the language read for her (English without a source, D-3489, D-4052 B22).
     const fn case(&self) -> ReleasedPick<'_> {
         ReleasedPick {
             pick: self.pick,
@@ -199,7 +205,7 @@ impl Gathered {
             business: self.business,
             business_name: self.name.as_str(),
             homeowner: self.homeowner,
-            language: (Language::En, false),
+            language: self.language,
         }
     }
 }
@@ -242,6 +248,7 @@ async fn released(db: &mut PgConnection, pick: Uuid) -> Result<Option<Gathered>,
         emergency: job.emergency,
         line: None,
         calls: Vec::new(),
+        language: (Language::En, false),
     }))
 }
 
@@ -279,11 +286,36 @@ pub async fn run_unreachable_step<P: PaymentsAdapter>(
     task: Claimed,
     now: Timestamp,
 ) -> Result<(), HandlerError> {
+    run_step(pool, (&parts, None), task, now).await
+}
+
+/// TXT-030, TXT-039, D-4052 (B22): [`run_unreachable_step`] with her texts and the missed-call
+/// email copy in her request's language, read through `language` (English when the read fails).
+///
+/// # Errors
+/// A fixed sentence for a malformed payload, a missing setting or a failed step (retried).
+pub async fn run_unreachable_step_in<P: PaymentsAdapter>(
+    pool: PgPool,
+    parts: std::sync::Arc<StepParts<P>>,
+    language: JobLanguage,
+    task: Claimed,
+    now: Timestamp,
+) -> Result<(), HandlerError> {
+    run_step(pool, (&parts, Some(language)), task, now).await
+}
+
+async fn run_step<P: PaymentsAdapter>(
+    pool: PgPool,
+    (parts, source): (&StepParts<P>, Option<JobLanguage>),
+    task: Claimed,
+    now: Timestamp,
+) -> Result<(), HandlerError> {
     let (pick, step) = read_payload(&task.payload).ok_or(MALFORMED)?;
     let mut db = pool.acquire().await.map_err(|_| FAILED)?;
-    let Some(facts) = gather(&mut db, pick).await? else {
+    let Some(mut facts) = gather(&mut db, pick).await? else {
         return Ok(());
     };
+    facts.language = her_language(&mut db, source, facts.job).await;
     let refunded =
         refund_state(&mut db, pick).await.map_err(|_| FAILED)? == PickRefundState::Succeeded;
     let finishing = step == Step::NinetySix && refunded && refund_finishes(facts.status);
@@ -293,13 +325,13 @@ pub async fn run_unreachable_step<P: PaymentsAdapter>(
     match step {
         Step::Reminders => reminders(&mut db, &facts, now).await,
         Step::SeventyTwo => at_72(&mut db, &facts, now).await,
-        Step::BusinessCall => match missed_call(&mut db, &parts, &facts, now).await? {
+        Step::BusinessCall => match missed_call(&mut db, parts, &facts, now).await? {
             Missed::Held(until) => requeue(&mut db, facts.pick, Step::BusinessCall, until).await,
             Missed::Done(_) => Ok(()),
         },
         Step::EmailedAnswer(yes) => answered(&mut db, facts.pick, yes).await,
         Step::DayThreeNo => day_three_no(&mut db, &facts, now).await,
-        Step::NinetySix => at_96(&pool, &mut db, (&parts, &facts), refunded, now).await,
+        Step::NinetySix => at_96(&pool, &mut db, (parts, &facts), refunded, now).await,
     }
 }
 
@@ -542,11 +574,12 @@ async fn email_copy<P>(
         ("job", job.as_str()),
         ("number", number),
     ];
-    let body = render(MISSED_CALL_TEMPLATE, Language::En, false, &values).map_err(|_| FAILED)?;
+    let (language, spanish_on) = facts.language;
+    let body = render(MISSED_CALL_TEMPLATE, language, spanish_on, &values).map_err(|_| FAILED)?;
     let to = Recipient {
         id: facts.homeowner,
         audience: Audience::Homeowner,
-        language: Language::En,
+        language,
         manage_url,
     };
     let email = NewEmail {

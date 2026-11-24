@@ -89,10 +89,10 @@ use askhava_intake::api::rules::{
 };
 use askhava_intake::api::{
     Admission, Handled, IntakeError, LimitError, MAX_PICTURES, RawReply, Reply, SafetyCallAsk,
-    TextIn, admit_new_request, business_help, count_emergency_request, enqueue_safety_call,
-    list_ask, name_address_open, note_help, note_picture_text, on_opt_out, open_request_jobs,
-    pause_on_repeat_cancel, queue_picture_text, reads_as_address, receive_raw_reply,
-    restart_after_start,
+    TextIn, admit_new_request, answer_opted_out_pick, business_help, count_emergency_request,
+    enqueue_safety_call, list_ask, name_address_open, note_help, note_picture_text, on_opt_out,
+    open_request_jobs, pause_on_repeat_cancel, queue_picture_text, reads_as_address,
+    receive_raw_reply, restart_after_start,
 };
 use askhava_messaging::api::{
     APP_OPT_OUT_WORDS, Detected, EmergencyFacts, FollowUp, HelpSettings, InboundText, InboxError,
@@ -106,6 +106,7 @@ use askhava_ops::api::{
     Actor, AuditEntry, BannerBy, Change, NewAlert, OpsError, Severity, Switch, audit, is_paused,
     raise_alert, show_banner,
 };
+use askhava_picks::api::rules::read_text_pick;
 use askhava_privacy::api::{
     CommonWords, Inbound as Read, InboundWords, Known, NameMemory, NewContact, REMOVED,
     ScrubbedText, Vault, VaultError, find_by_phone, read_inbound, read_inbound_for, store_contact,
@@ -994,14 +995,7 @@ async fn screen(
                 .await
                 .map_err(settled)?;
             if msg.relation != Relation::Business && keyword(msg.text).is_none() {
-                let language = match wanted_language(msg.text, None) {
-                    Language::Es if h.intake.spanish_conversations_on => Language::Es,
-                    _ => Language::En,
-                };
-                let her = (msg.inbox_id, msg.contact, language);
-                queue_optout_followup(db, her, FollowUp::WroteAgain, now)
-                    .await
-                    .map_err(|e| settled(outbox_halt(e)))?;
+                wrote_again(h, db, msg, now).await?;
             }
             true
         }
@@ -1009,6 +1003,35 @@ async fn screen(
     };
     help(h, db, msg, (to, listed, now)).await?;
     Ok(outcome == Outcome::Resubscribed)
+}
+
+/// A listed homeowner's text that is not HELP (CON-016, CON-013, PICK-030, D-1612, D-4727, D-5670):
+/// the wrote-again follow-up (an email or the digest, never a text) is queued for every such text;
+/// one with no provider keyword and no 911-list match (the paused-emergency path is the caller's)
+/// that reads as "<number> YES" also goes to `intake::api::answer_opted_out_pick`, which may store
+/// a pick with channel `page` and queues no text (T741). A module error is `Halt::Settled`
+/// (D-2307); the delivery then ends as `suppressed`.
+async fn wrote_again(
+    h: &Ctx<'_>,
+    db: &mut PgConnection,
+    msg: &InboundText<'_>,
+    now: Timestamp,
+) -> Step<()> {
+    let language = match wanted_language(msg.text, None) {
+        Language::Es if h.intake.spanish_conversations_on => Language::Es,
+        _ => Language::En,
+    };
+    let her = (msg.inbox_id, msg.contact, language);
+    queue_optout_followup(db, her, FollowUp::WroteAgain, now)
+        .await
+        .map_err(|e| settled(outbox_halt(e)))?;
+    let plain = msg.provider == ProviderKeyword::None && !msg.emergency;
+    if plain && read_text_pick(msg.text).is_some() {
+        answer_opted_out_pick(db, msg.contact, msg.text, now)
+            .await
+            .map_err(|e| settled(intake_halt(e)))?;
+    }
+    Ok(())
 }
 
 /// A homeowner's opt-out (CON-028, CON-029, CON-030, D-1229, D-2629), in the delivery's
