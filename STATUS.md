@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T16:23:32Z by runner fc539d74e9de (actions).
+Updated 2026-11-24T16:24:06Z by runner fc539d74e9de (actions).
 
-**Building: T590 in progress since 15:08Z; 664 of 780 done; week 94% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T815 in progress since 15:39Z; 664 of 780 done; week 94% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 664 of 780 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 4: T590 claimed 15:08Z, lease until 18:08Z; lane 5: T815 claimed 15:39Z, lease until 18:39Z
+- **Lane:** lane 5: T815 claimed 15:39Z, lease until 18:39Z
 - **Week:** 94% used, 3.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:08Z, 14 min before this update
+- **Last run:** 16:08Z, 15 min before this update
 - **Keeper:** last ran 15:56Z, next wake 18:11Z
 
 ## Needs attention
@@ -27,6 +27,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T590 | calls, picks and server: the who's-calling and missed-call t | MERGE_PENDING | 2 | 74 min | 16:23Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T741 | server and intake: an opted-out homeowner's "<n> YES" picks  | MERGE_PENDING | 1 | 78 min | 15:45Z |  |
 | T802 | site (harness): the coverage page says texts work with US nu | MERGE_PENDING | 3 | 23 min | 15:26Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T732 | server: the business job page's "Withdraw your quote" posts  | done | 2 | 49 min | 15:13Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
@@ -132,8 +133,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 4: T590 (lease until 2026-11-24T18:08:45Z)
 - lane 5: T815 (lease until 2026-11-24T18:39:51Z)
 
 ## Last usage reading
-- {"task": "T741", "at": "2026-11-24T15:45:27Z", "cache_read_input_tokens": 3786448, "cache_creation_input_tokens": 165265, "output_tokens": 35451, "input_tokens": 135}
+- {"task": "T590", "at": "2026-11-24T16:23:29Z", "output_tokens": 15533, "cache_read_input_tokens": 1755310, "cache_creation_input_tokens": 99776, "input_tokens": 98}
