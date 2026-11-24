@@ -26795,7 +26795,15 @@
    "attempts": 0,
    "slug": "owner-guide",
    "type": "docs",
-   "stage": "5"
+   "stage": "5",
+   "plan_gap": {
+    "at": "2026-11-24T22:10:05Z",
+    "problems": [
+     "T123: dependency T815 is DONE but its owned file app/portals/src/owner_digest_page.rs is not on main",
+     "T123: dependency T815 is DONE but its owned file app/portals/templates/owner_digest.html is not on main",
+     "T123: dependency T815 is DONE but its owned file app/server/tests/owner_digest_route.rs is not on main"
+    ]
+   }
   },
   {
    "id": "T125",
@@ -129320,7 +129328,7 @@
    }
   }
  },
- "updated_at": "2026-11-24T21:52:20Z",
+ "updated_at": "2026-11-24T22:17:32Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -129418,7 +129426,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "0a7de0dfed068ce6f9ba8fc5b49b8fa89b018bb9",
+ "runner_sha": "7f1ca1d636bc36211b887845a1bcbed30f494e94",
  "starter": "actions",
  "smoke_runs": [
   {
