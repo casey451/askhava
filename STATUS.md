@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T07:12:17Z by runner 21a449b9591a (actions).
+Updated 2026-11-24T07:12:58Z by runner 21a449b9591a (actions).
 
-**Building: T656 in progress since 05:11Z; 654 of 779 done; week 90% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T410 in progress since 05:58Z; 654 of 779 done; week 90% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 654 of 779 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T656 claimed 05:11Z, lease until 08:11Z; lane 4: T410 claimed 05:58Z, lease until 08:58Z
+- **Lane:** lane 4: T410 claimed 05:58Z, lease until 08:58Z
 - **Week:** 90% used, 10.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:00Z, 11 min before this update
+- **Last run:** 07:00Z, 12 min before this update
 - **Keeper:** last ran 06:46Z, next wake 07:06Z
 
 ## Needs attention
@@ -30,11 +30,12 @@ Also: stand-in twilio fail fault answers 500 -> OutcomeUnknown, no retries (serv
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T656 | site: a failed submit on the /request chat shows a focused e | MERGE_PENDING | 2 | 2 h 1 min | 07:12Z | Reviewer after the findings round still FINDINGS (head 18fdb4a27): app/site/templates/request.html lines 7-10: header co |
 | T804 | server and portals: a delete or copy request made in the por | MERGE_PENDING | 1 | 69 min | 06:37Z |  |
 | T779 | ops, server and portals: alerts that do not push show in the | done | 1 | 83 min | 06:27Z |  |
 | T728 | intake: a homeowner's "<n> YES" text from her phone picks th | done | 1 | 91 min | 05:32Z |  |
 | T676 | tests (harness): J1 runs the real intake conversation instea | done | 1 | 2 h 44 min | 05:29Z |  |
-| T656 | site: a failed submit on the /request chat shows a focused e | QUEUED | 1 | 17 min | 04:56Z | Reviewer after the findings round still FINDINGS (head 18fdb4a27): app/site/templates/request.html lines 7-10: header co |
+| T656 | site: a failed submit on the /request chat shows a focused e | QUEUED | 1 | 17 min | 04:56Z |  |
 | T544 | portals and server: the business team page with its role-cha | done | 1 | 102 min | 04:50Z |  |
 | T757 | privacy and ops: "Delete my data" also deletes her kept mess | done | 1 | 43 min | 03:54Z |  |
 | T524 | portals and server: the weekly digest and the owner-portal f | done | 1 | 2 h 24 min | 03:35Z |  |
@@ -135,8 +136,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T656 (lease until 2026-11-24T08:11:14Z)
+- nothing
 - lane 4: T410 (lease until 2026-11-24T08:58:38Z)
 
 ## Last usage reading
-- {"task": "T804", "at": "2026-11-24T06:37:50Z", "output_tokens": 89127, "cache_read_input_tokens": 15865344, "input_tokens": 249, "cache_creation_input_tokens": 275542}
+- {"task": "T656", "at": "2026-11-24T07:12:14Z", "cache_read_input_tokens": 7203034, "cache_creation_input_tokens": 151696, "output_tokens": 48344, "input_tokens": 164}
