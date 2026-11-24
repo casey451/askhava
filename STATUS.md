@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-24T11:43:20Z by runner 16fd7ee8aae9 (actions).
+Updated 2026-11-24T11:51:15Z by runner 16fd7ee8aae9 (actions).
 
 **Building: T802 in progress since 10:10Z; 658 of 780 done; week 92% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-24T11:43:20Z by runner 16fd7ee8aae9 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T802 claimed 10:10Z, lease until 13:10Z; lane 2: T732 claimed 11:13Z, lease until 14:13Z; lane 5: T624 claimed 10:37Z, lease until 13:37Z
 - **Week:** 92% used, 7.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:43Z, 0 min before this update
+- **Last run:** 11:43Z, 7 min before this update
 - **Keeper:** last ran 11:43Z, next wake 12:03Z
 
 ## Needs attention
@@ -32,7 +32,7 @@ Owners T158 (scorecard.html) and T434 (intake_report.html, money_view.html); T30
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T305 | server and portals: the scorecard, the intake report, the mo | BLOCKED | 2 | 34 min | 11:41Z | PLAN GAP: outside ownership: app/portals/templates/scorecard.html, app/portals/templates/intake_report.html, app/portals |
-| T410 | portals: every signed-in business page shows the Get help li | MERGE_PENDING | 2 | 101 min | 11:20Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-24T |
+| T410 | portals: every signed-in business page shows the Get help li | check_failed | 2 | 101 min | 11:20Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T801 | intake and site (harness): with texting on, the web chat onl | BLOCKED | 1 | 2 h 10 min | 10:59Z | PLAN GAP: app/server/tests/web_chat_stops.rs:572 and :592 (owned by T645) assert a consent text queued to a chat-verifie |
 | T305 | server and portals: the scorecard, the intake report, the mo | check_failed | 1 | 73 min | 10:28Z |  |
 | T814 | portals and server: a used action link pressed again shows i | done | 1 | 2 h 29 min | 10:07Z |  |
