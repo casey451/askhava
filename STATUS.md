@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T15:26:14Z by runner 0c90dd186a43 (actions).
+Updated 2026-11-24T15:26:47Z by runner 0c90dd186a43 (actions).
 
 **Building: T741 in progress since 14:26Z; 662 of 780 done; week 93% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 662 of 780 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T741 claimed 14:26Z, lease until 17:26Z; lane 2: T802 claimed 15:02Z, lease until 18:02Z; lane 4: T590 claimed 15:08Z, lease until 18:08Z
+- **Lane:** lane 1: T741 claimed 14:26Z, lease until 17:26Z; lane 4: T590 claimed 15:08Z, lease until 18:08Z
 - **Week:** 93% used, 4.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:21Z, 4 min before this update
+- **Last run:** 15:21Z, 5 min before this update
 - **Keeper:** last ran 15:21Z, next wake 17:29Z
 
 ## Needs attention
@@ -27,10 +27,11 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T802 | site (harness): the coverage page says texts work with US nu | MERGE_PENDING | 3 | 23 min | 15:26Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T732 | server: the business job page's "Withdraw your quote" posts  | MERGE_PENDING | 2 | 49 min | 15:13Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
 | T122 | docs/account-checklist.md: Part 1 test accounts, Part 2 busi | done | 2 | 74 min | 15:00Z | Reviewer after the findings round (head d65c4896894680459870359165740cf8b3a2bf57) still ended FINDINGS: / 1. tests/docs/ |
 | T305 | server and portals: the scorecard, the intake report, the mo | MERGE_PENDING | 3 | 102 min | 14:55Z | PLAN GAP: outside ownership: app/portals/templates/scorecard.html, app/portals/templates/intake_report.html, app/portals |
-| T802 | site (harness): the coverage page says texts work with US nu | check_failed | 2 | 75 min | 14:28Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
+| T802 | site (harness): the coverage page says texts work with US nu | check_failed | 2 | 75 min | 14:28Z |  |
 | T732 | server: the business job page's "Withdraw your quote" posts  | resync | 2 | 48 min | 14:04Z |  |
 | T733 | server: the business portal serves the service-area settings | done | 1 | 91 min | 13:29Z |  |
 | T410 | portals: every signed-in business page shows the Get help li | done | 3 | 85 min | 13:17Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
@@ -132,8 +133,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T741 (lease until 2026-11-24T17:26:45Z)
-- lane 2: T802 (lease until 2026-11-24T18:02:40Z)
 - lane 4: T590 (lease until 2026-11-24T18:08:45Z)
 
 ## Last usage reading
-- {"task": "T732", "at": "2026-11-24T15:13:17Z", "input_tokens": 63, "cache_creation_input_tokens": 78813, "output_tokens": 10618, "cache_read_input_tokens": 932029}
+- {"task": "T802", "at": "2026-11-24T15:26:13Z", "cache_creation_input_tokens": 47283, "output_tokens": 6326, "input_tokens": 40, "cache_read_input_tokens": 554097}

@@ -115404,7 +115404,7 @@
     "T115",
     "T075"
    ],
-   "status": "IN_PROGRESS",
+   "status": "MERGE_PENDING",
    "attempts": 2,
    "slug": "coverage-us-numbers",
    "type": "harness",
@@ -115553,6 +115553,29 @@
        "turns": 11
       }
      }
+    },
+    {
+     "attempt": 3,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 20,
+     "head_sha": "0c90dd186a43bbaa979e32985884f6b9fc45bab0",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": true,
+     "started_at": "2026-11-24T15:02:40Z",
+     "ended_at": "2026-11-24T15:26:13Z",
+     "result": "MERGE_PENDING",
+     "usage": {
+      "worker": {
+       "tokens": 354629,
+       "turns": 11
+      },
+      "reviewer": {
+       "tokens": 253117,
+       "turns": 10
+      }
+     }
     }
    ],
    "reviewed_sha": "40636c375f32670840b654deaf9f29f56acd6cf9",
@@ -115565,8 +115588,8 @@
    "branch": "claude/task/T802-coverage-us-numbers",
    "auto_merge": {
     "enabled": true,
-    "why": "auto-merge on #1451 (gh pr merge)",
-    "head": "0c90dd186a43bbaa979e32985884f6b9fc45bab0"
+    "why": "auto-merge on #1455 (gh pr merge)",
+    "head": "40636c375f32670840b654deaf9f29f56acd6cf9"
    },
    "last_failure": "Ci: failure; Checks: failure\nChecks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS, D-3142)\ntest td_sec_80_a_shared_inbox_code_keeps_the_live_session ... ok\ntest td_sec_80_a_text_token_elsewhere_or_appended_is_not_found ... ok\ntest td_sec_80_an_emailed_confirm_session_still_answers_at_29_days ... ok\ntest td_sec_80_only_a_text_minted_grant_is_text_started ... ok\ntest td_sec_80_only_confirm_is_minted_by_text ... ok\nfailures:\n---- td_sec_44_the_quote_form_acts_once_and_bounces_a_phone_number stdout ----\nthread 'td_sec_44_the_quote_form_acts_once_and_bounces_a_phone_number' (40203) panicked at app/server/tests/action_links_route.rs:546:5:\nthe second price is not stored\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\n    td_sec_44_the_quote_form_acts_once_and_bounces_a_phone_number\ntest result: FAILED. 30 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 7.53s\nerror: test failed, to rerun pass `-p askhava-server --test action_links_route`\n##[error]Process completed with exit code 101.\nCi failed at step: All five jobs passed\nChecks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
    "lane": "2",
@@ -115574,11 +115597,6 @@
     1443,
     1451
    ],
-   "wip_claim": {
-    "attempt": 3,
-    "remote_sha": "0c90dd186a43bbaa979e32985884f6b9fc45bab0"
-   },
-   "head_check_since": null,
    "update_merges": [
     {
      "from": "0c90dd186a43bbaa979e32985884f6b9fc45bab0",
@@ -119827,12 +119845,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T732",
-   "at": "2026-11-24T15:13:17Z",
-   "input_tokens": 63,
-   "cache_creation_input_tokens": 78813,
-   "output_tokens": 10618,
-   "cache_read_input_tokens": 932029
+   "task": "T802",
+   "at": "2026-11-24T15:26:13Z",
+   "cache_creation_input_tokens": 47283,
+   "output_tokens": 6326,
+   "input_tokens": 40,
+   "cache_read_input_tokens": 554097
   },
   "source": "session_reading 2026-11-24T15:04:21Z (week)",
   "by_task": {
@@ -127848,14 +127866,14 @@
     "estimated_bytes": 166389,
     "estimated_tokens": 195215,
     "usage_counting": "message_id",
-    "output_tokens": 19720,
-    "cache_read_input_tokens": 1637362,
-    "input_tokens": 129,
-    "cache_creation_input_tokens": 152198,
-    "worker_tokens": 1211294,
-    "worker_turns": 43,
-    "reviewer_tokens": 598115,
-    "reviewer_turns": 22,
+    "output_tokens": 26046,
+    "cache_read_input_tokens": 2191459,
+    "input_tokens": 169,
+    "cache_creation_input_tokens": 199481,
+    "worker_tokens": 1565923,
+    "worker_turns": 54,
+    "reviewer_tokens": 851232,
+    "reviewer_turns": 32,
     "last_model": "claude-opus-5-5"
    },
    "T732": {
@@ -127894,11 +127912,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-24T14:04:36Z",
-    "tokens": 1894434
+    "tokens": 2003492
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 265758789
+    "tokens": 265867847
    }
   },
   "session_reading": {
@@ -127909,7 +127927,7 @@
    }
   }
  },
- "updated_at": "2026-11-24T15:26:14Z",
+ "updated_at": "2026-11-24T15:26:47Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
