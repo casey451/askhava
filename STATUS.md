@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T05:26:20Z by runner f0ef780f139e (actions).
+Updated 2026-11-24T05:28:34Z by runner f0ef780f139e (actions).
 
 **Building: T656 in progress since 05:11Z; 651 of 779 done; week 89% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 651 of 779 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T656 claimed 05:11Z, lease until 08:11Z; lane 2: T779 claimed 05:03Z, lease until 08:03Z; lane 3: T728 claimed 04:01Z, lease until 07:01Z; lane 4: T676 claimed 02:45Z, lease until 08:18Z
-- **Week:** 89% used, 12.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:20Z, 6 min before this update
+- **Lane:** lane 1: T656 claimed 05:11Z, lease until 08:11Z; lane 2: T779 claimed 05:03Z, lease until 08:03Z; lane 3: T728 claimed 04:01Z, lease until 07:01Z; lane 4: T676 claimed 02:45Z, lease until 08:18Z; lane 5: T804 claimed 05:28Z, lease until 08:28Z
+- **Week:** 89% used, 11.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 05:26Z, 1 min before this update
 - **Keeper:** last ran 04:59Z, next wake 05:19Z
 
 ## Needs attention
@@ -121,7 +121,7 @@ Also: stand-in twilio fail fault answers 500 -> OutcomeUnknown, no retries (serv
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-24T04:58:52Z (week)): week: 181.8M used, 12.2M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T21:41:11Z.
+- Pacing (session_reading 2026-11-24T04:58:52Z (week)): week: 182.4M used, 11.6M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T20:42:55Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -140,6 +140,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T779 (lease until 2026-11-24T08:03:55Z)
 - lane 3: T728 (lease until 2026-11-24T07:01:21Z)
 - lane 4: T676 (lease until 2026-11-24T08:18:44Z)
+- lane 5: T804 (lease until 2026-11-24T08:28:23Z)
 
 ## Last usage reading
 - {"task": "T656", "at": "2026-11-24T04:56:38Z", "cache_creation_input_tokens": 141474, "input_tokens": 104, "output_tokens": 29928, "cache_read_input_tokens": 1805478}
