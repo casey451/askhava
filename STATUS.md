@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-24T16:41:34Z by runner b77234335e64 (actions).
+Updated 2026-11-24T16:58:49Z by runner b77234335e64 (actions).
 
 **Building: T741 in progress since 16:40Z; 665 of 780 done; week 94% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-24T16:41:34Z by runner b77234335e64 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T741 claimed 16:40Z, lease until 19:40Z; lane 5: T815 claimed 15:39Z, lease until 18:39Z
 - **Week:** 94% used, 4.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:29Z, 12 min before this update
+- **Last run:** 16:41Z, 17 min before this update
 - **Keeper:** last ran 16:25Z, next wake 16:45Z
 
 ## Needs attention
@@ -27,7 +27,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T590 | calls, picks and server: the who's-calling and missed-call t | MERGE_PENDING | 2 | 74 min | 16:23Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
+| T590 | calls, picks and server: the who's-calling and missed-call t | check_failed | 2 | 74 min | 16:23Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-24T |
 | T741 | server and intake: an opted-out homeowner's "<n> YES" picks  | check_failed | 1 | 78 min | 15:45Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-24T |
 | T802 | site (harness): the coverage page says texts work with US nu | done | 3 | 23 min | 15:26Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T732 | server: the business job page's "Withdraw your quote" posts  | done | 2 | 49 min | 15:13Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
@@ -75,8 +75,6 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 | T812 | businesses and portals: a passed step-up records the session | done | 1 | 89 min | 19:31Z |  |
 | T730 | messaging: a homeowner who chose email gets each quote updat | done | 4 | 76 min | 19:13Z | PLAN GAP: outside ownership: app/messaging/src/quote_text_sent.rs / Evidence: last_quote_text (quote_text_sent.rs:45-52) |
 | T222 | Journeys J1 and J2, the full variants: web chat, photos, que | QUEUED | 2 | 97 min | 17:54Z |  |
-| T782 | server: the released job's page shows its real job number | done | 1 | 97 min | 16:56Z |  |
-| T121 | Startup key checks, control router absent in live, supply-ch | done | 4 | 100 min | 16:52Z | PLAN GAP: outside ownership: app/portals/src/update_channel.rs / T729 (owner) merged UpdatesForm/ConfirmForm without den |
 
 ### Plan and harness merges on main
 - 13:12Z Plan: T305 owns its three owner-report templates for Ally; PF-T801 review filed (D-5792) (#1446)
@@ -84,7 +82,6 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 - 23:24Z Plan: token efficiency and phase-2 pre-flight (D-5676); smoke throughput harness task T843, T836 unblocked (D-5682) (#1412)
 - 20:12Z Plan: outside pre-flight fixes for 22 queued tasks, template a11y line, four test-design rows (D-5670) (#1410)
 - 19:49Z Plan: pre-flight fixes for ten claimable tasks, J3 licence fixture T841 (D-5657); baseline audit gate deferred (D-5663); outside pre-flight fixes T744/T6
-- 16:44Z Plan: T840 update-email entry point and first-quote resend (D-5640); six-task pre-flight fixes (D-5646) (#1402)
 
 ## Progress (requirements verified)
 

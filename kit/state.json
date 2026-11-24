@@ -87245,8 +87245,8 @@
    "deps": [
     "T589"
    ],
-   "status": "MERGE_PENDING",
-   "attempts": 1,
+   "status": "QUEUED",
+   "attempts": 2,
    "slug": "call-texts-in-her-language",
    "type": "build",
    "stage": "5",
@@ -87333,13 +87333,58 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 40,
      "head_sha": "fc539d74e9de91b07894e018bd6659eff83d33b7",
-     "pr": null,
-     "checks": null,
+     "pr": 1457,
+     "checks": [
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-24T15:08:45Z",
      "ended_at": "2026-11-24T16:23:29Z",
-     "result": "MERGE_PENDING",
+     "result": "check_failed",
      "usage": {
       "worker": {
        "tokens": 821169,
@@ -87365,7 +87410,7 @@
     "why": "auto-merge on #1457 (gh pr merge)",
     "head": "9e24249713a284713417783ce1201b634147cfe2"
    },
-   "last_failure": "Ci: failure; Coverage: failure\nCoverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)\ntest td_ops_11_the_eleventh_of_a_day_waits_for_the_push ... ok\ntest td_ops_22_open_requests_with_due_dates ... ok\ntest td_priv_11_a_help_email_body_stays_in_privacy ... ok\ntest td_ops_11_two_at_once_open_one_request ... ok\nfailures:\n---- td_ops_11_td_ops_20_one_scrubbed_email_at_once stdout ----\nthread 'td_ops_11_td_ops_20_one_scrubbed_email_at_once' (21203) panicked at tests/integration/tests/help_requests.rs:152:9:\nleaked 555\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\n    td_ops_11_td_ops_20_one_scrubbed_email_at_once\ntest result: FAILED. 10 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.25s\nerror: test failed, to rerun pass `-p askhava-integration --test help_requests`\nerror: process didn't exit successfully: `/home/runner/.rustup/toolchains/nightly-2026-10-15-x86_64-unknown-linux-gnu/bin/cargo test --tests --manifest-path /home/runner/work/askhava/askhava/Cargo.tom\n##[error]Process completed with exit code 101.\nCi failed at step: All five jobs passed\nChecks: success, Lint and slow tests: success, Python: success, Coverage: failure, E2e: success\n##[error]Process completed with exit code 1.",
+   "last_failure": "Ci: failure; E2e: failure\nE2e failed at step: The journeys (npx playwright test tests/e2e)\n{\"timestamp\":\"2026-11-24T16:38:43.742024Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":3393,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-24T16:38:43.743105Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":3394,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-24T16:38:43.744336Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":3395,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-24T16:38:43.744691Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":3396,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-24T16:38:43.746061Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":3397,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-24T16:38:43.746199Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":3398,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n  \u2718  132 [late] \u203a tests/e2e/j3_operator.spec.ts:24:1 \u203a J3 TD-TXT-15: sign-in, pause, refund, fee mode, safe mode, audit log, with the closing checks, launch channel web-and-email (3.5m)\n##[error]  1) [late] \u203a tests/e2e/j3_operator.spec.ts:24:1 \u203a J3 TD-TXT-15: sign-in, pause, refund, fee mode, safe mode, audit log, with the closing checks, launch channel web-and-email \u203a 5. High alert,\nCi",
    "runner_closed_prs": [
     1364
    ],
@@ -128316,7 +128361,7 @@
    }
   }
  },
- "updated_at": "2026-11-24T16:41:34Z",
+ "updated_at": "2026-11-24T16:58:49Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
