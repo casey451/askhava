@@ -121139,7 +121139,14 @@
    "attempts": 0,
    "slug": "j3-refused-pick-app-clock",
    "type": "harness",
-   "stage": "5"
+   "stage": "5",
+   "plan_gap": {
+    "at": "2026-11-24T22:18:58Z",
+    "problems": [
+     "T847: prompt kit/prompts/T847.md is missing; run scripts/gen_prompts.py",
+     "T847: branch claude/task/T847-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet"
+    ]
+   }
   }
  ],
  "owner_waits": [],
@@ -129347,7 +129354,7 @@
    }
   }
  },
- "updated_at": "2026-11-24T22:19:04Z",
+ "updated_at": "2026-11-24T22:26:25Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
