@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T03:56:06Z by runner c074d35d77b1 (actions).
+Updated 2026-11-24T03:59:39Z by runner 5bde4ee54e11 (actions).
 
-**Building: T676 in progress since 02:45Z; 648 of 779 done; week 89% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T676 in progress since 02:45Z; 649 of 779 done; week 89% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 648 of 779 build tasks (owner gates not counted)
+- **Tasks done:** 649 of 779 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 4: T676 claimed 02:45Z, lease until 05:45Z; lane 5: T544 claimed 03:08Z, lease until 06:08Z
 - **Week:** 89% used, 14.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:55Z, 0 min before this update
+- **Last run:** 03:56Z, 3 min before this update
 - **Keeper:** last ran 03:56Z, next wake 04:16Z
 
 ## Needs attention
@@ -25,13 +25,13 @@ Also: stand-in twilio fail fault answers 500 -> OutcomeUnknown, no retries (serv
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 47% of the context window, over its 45% limit
-- Strict plan check red: 52 problem(s) on tasks still to run (+541 on DONE tasks); first: T518: stored context_pct 17% but it measures 21%; regenerate
+- Strict plan check red: 55 problem(s) on tasks still to run (+545 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T757 | privacy and ops: "Delete my data" also deletes her kept mess | MERGE_PENDING | 1 | 43 min | 03:54Z |  |
-| T524 | portals and server: the weekly digest and the owner-portal f | MERGE_PENDING | 1 | 2 h 24 min | 03:35Z |  |
+| T524 | portals and server: the weekly digest and the owner-portal f | done | 1 | 2 h 24 min | 03:35Z |  |
 | T222 | Journeys J1 and J2, the full variants: web chat, photos, que | BLOCKED | 3 | 2 h 22 min | 03:00Z | Reviewer after the fix round still ended REVIEW-VERDICT: FINDINGS over 0aedbd3769e83a983d24d694c7abe05f8773a57a: / 1. do |
 | T649 | intake, site and server: after the code, the web chat's name | done | 2 | 62 min | 02:40Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T119 | Journey J4 (vendor outage), with closing checks | BLOCKED | 1 | 36 min | 02:36Z | PLAN GAP: outside ownership: tests/e2e/webserver.ts / keyedEnv (webserver.ts:143-177) sets no ASKHAVA_HOMEOWNER_NUMBER;  |
@@ -93,23 +93,23 @@ Also: stand-in twilio fail fault answers 500 -> OutcomeUnknown, no retries (serv
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 428 of 735 (58.2%) · partial 294 · unstarted 13
-**Tasks merged (throughput only):** 648 of 779
+**Requirements verified:** 434 of 735 (59.0%) · partial 289 · unstarted 12
+**Tasks merged (throughput only):** 649 of 779
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 27 | 8 | 0 | 35 |
 | ai | 8 | 18 | 3 | 29 |
-| businesses | 32 | 25 | 1 | 58 |
+| businesses | 33 | 24 | 1 | 58 |
 | calls | 17 | 8 | 0 | 25 |
-| consent | 19 | 16 | 0 | 35 |
+| consent | 20 | 15 | 0 | 35 |
 | fees | 27 | 25 | 0 | 52 |
 | intake | 12 | 31 | 0 | 43 |
 | job-cards | 16 | 8 | 0 | 24 |
-| licensing | 39 | 9 | 0 | 48 |
+| licensing | 40 | 8 | 0 | 48 |
 | lifecycle | 22 | 6 | 0 | 28 |
 | messaging | 25 | 20 | 0 | 45 |
-| ops-recovery | 17 | 31 | 6 | 54 |
+| ops-recovery | 20 | 29 | 5 | 54 |
 | privacy | 13 | 18 | 0 | 31 |
 | quiet-hours | 4 | 5 | 0 | 9 |
 | quotes-pick | 36 | 20 | 0 | 56 |
@@ -130,7 +130,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 291 of 351 done
+- stage 5: 292 of 351 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
