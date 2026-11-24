@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-24T12:18:08Z by runner 50678fa16de9 (actions).
+Updated 2026-11-24T12:18:45Z by runner 16fd7ee8aae9 (actions).
 
 **Building: T733 in progress since 11:58Z; 658 of 780 done; week 92% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-24T12:18:08Z by runner 50678fa16de9 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T733 claimed 11:58Z, lease until 14:58Z; lane 4: T410 claimed 11:51Z, lease until 14:51Z
 - **Week:** 92% used, 5.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:17Z, 0 min before this update
-- **Keeper:** last ran 12:16Z, next wake 14:16Z
+- **Last run:** 12:18Z, 0 min before this update
+- **Keeper:** last ran 12:18Z, next wake 14:53Z
 
 ## Needs attention
 - BLOCKED T222: Reviewer over 457819c6bc470ff6f69d271d7ab023fb3c0c25eb ended REVIEW-VERDICT: FINDINGS (hand_in_by too close for a fix round):
@@ -26,7 +26,7 @@ Owners T158 (scorecard.html) and T434 (intake_report.html, money_view.html); T30
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 47% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 48% of the context window, over its 45% limit
-- Strict plan check red: 59 problem(s) on tasks still to run (+554 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 58 problem(s) on tasks still to run (+554 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
