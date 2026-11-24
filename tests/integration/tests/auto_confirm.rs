@@ -15,7 +15,7 @@ use std::sync::Mutex;
 use askhava_adapters::api::{
     AdapterError, Charge, IdempotencyKey, IntentMetadata, PaymentIntent, PaymentsAdapter,
 };
-use askhava_businesses::api::{Acting, add_owner, create, record_step_up};
+use askhava_businesses::api::{Acting, add_owner, create, record_session_step_up};
 use askhava_jobs::api::record_job_facts;
 use askhava_ops::api::Actor;
 use askhava_payments::api::{
@@ -636,7 +636,8 @@ async fn td_sec_17_ticking_needs_a_fresh_code(pool: PgPool) {
     .await
     .expect("events");
     assert_eq!(logged, 1, "the refusal is logged");
-    record_step_up(&mut db, w.who, at(110)).await.expect("code");
+    let code = record_session_step_up(&mut db, w.who, w.principal.session(), at(110));
+    code.await.expect("code");
     let late = set_auto_confirm(&mut db, &w.principal, tick(true), at(411)).await;
     assert_eq!(late, Err(AutoConfirmBoxError::NeedsCode), "5:01 refused");
     let fresh = set_auto_confirm(&mut db, &w.principal, tick(true), at(350)).await;
