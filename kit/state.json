@@ -42845,7 +42845,7 @@
     "T348",
     "T530"
    ],
-   "status": "IN_PROGRESS",
+   "status": "MERGE_PENDING",
    "attempts": 2,
    "slug": "owner-reports-served",
    "type": "build",
@@ -42950,6 +42950,29 @@
        "turns": 10
       }
      }
+    },
+    {
+     "attempt": 3,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 85,
+     "head_sha": "ae74ebd628b99de2cfee805f04aa5e9690c2b8e5",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": true,
+     "started_at": "2026-11-24T13:13:43Z",
+     "ended_at": "2026-11-24T14:55:57Z",
+     "result": "MERGE_PENDING",
+     "usage": {
+      "worker": {
+       "tokens": 2304263,
+       "turns": 52
+      },
+      "reviewer": {
+       "tokens": 2266783,
+       "turns": 49
+      }
+     }
     }
    ],
    "reviewed_sha": "17c3ad4bd8dfd0f1af7d310c2bd4259eb23c8777",
@@ -42962,8 +42985,8 @@
    "branch": "claude/task/T305-owner-reports-served",
    "auto_merge": {
     "enabled": true,
-    "why": "auto-merge on #1439 (gh pr merge)",
-    "head": "dd3f6ca2cfed863879ccb9bcf0c55e6e3b829374"
+    "why": "auto-merge on #1452 (gh pr merge)",
+    "head": "17c3ad4bd8dfd0f1af7d310c2bd4259eb23c8777"
    },
    "last_failure": "PLAN GAP: outside ownership: app/portals/templates/scorecard.html, app/portals/templates/intake_report.html, app/portals/templates/money_view.html\nOwners T158 (scorecard.html) and T434 (intake_report.html, money_view.html); T305 owns none. Ally A11Y-008/009 fails once T305 serves these pages: bare tables not in a labelled focusable region (scorecard.html:17, money_view.html:33, intake_report.html:21; pattern business_billing.html:16) and label/hint/input on one line (intake_report.html:8-11, money_view.html:8-11 and :48-61, scorecard.html:48-52; pattern address_change.html:25-28). Reviewer confirmed; page_states.ts cannot fix it. Smallest plan change: T305 (or a small fix task) also owns these three templates.\nre-queued after plan fix D-5792: D-5792 merged (#1446, 26e9bbe3): T305 owns its three owner-report templates for A11Y-008/009/028 (overseer)",
    "runner_closed_prs": [
@@ -42985,11 +43008,6 @@
      "plan_now": "c4b52fc0cf6bc4af7b46fe3453cb7496e5bbce46ef7ba5dc799a067ed65dabb7"
     }
    ],
-   "wip_claim": {
-    "attempt": 3,
-    "remote_sha": "125ebc351f9b0532e1f69aa6f7f0d40c2d794ccd"
-   },
-   "head_check_since": null,
    "update_merges": [
     {
      "from": "ae74ebd628b99de2cfee805f04aa5e9690c2b8e5",
@@ -119668,12 +119686,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T802",
-   "at": "2026-11-24T14:28:39Z",
-   "cache_read_input_tokens": 907412,
-   "cache_creation_input_tokens": 77863,
-   "output_tokens": 10075,
-   "input_tokens": 69
+   "task": "T305",
+   "at": "2026-11-24T14:55:57Z",
+   "cache_creation_input_tokens": 179456,
+   "cache_read_input_tokens": 4360077,
+   "output_tokens": 31317,
+   "input_tokens": 196
   },
   "source": "session_reading 2026-11-24T14:12:34Z (week)",
   "by_task": {
@@ -127675,14 +127693,14 @@
     "estimated_bytes": 486938,
     "estimated_tokens": 1424667,
     "usage_counting": "message_id",
-    "input_tokens": 263,
-    "cache_creation_input_tokens": 320728,
-    "cache_read_input_tokens": 11496928,
-    "output_tokens": 66153,
-    "worker_tokens": 10500824,
-    "worker_turns": 104,
-    "reviewer_tokens": 1383248,
-    "reviewer_turns": 30,
+    "input_tokens": 459,
+    "cache_creation_input_tokens": 500184,
+    "cache_read_input_tokens": 15857005,
+    "output_tokens": 97470,
+    "worker_tokens": 12805087,
+    "worker_turns": 156,
+    "reviewer_tokens": 3650031,
+    "reviewer_turns": 79,
     "last_model": "claude-opus-5-5"
    },
    "T802": {
@@ -127735,11 +127753,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-24T14:04:36Z",
-    "tokens": 497929
+    "tokens": 1144905
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 264362284
+    "tokens": 265009260
    }
   },
   "session_reading": {
@@ -127750,7 +127768,7 @@
    }
   }
  },
- "updated_at": "2026-11-24T14:56:01Z",
+ "updated_at": "2026-11-24T14:56:38Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
