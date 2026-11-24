@@ -163,7 +163,11 @@ export async function step1SignIn(j: J3): Promise<void> {
   expect(await ownerDoor(j.page)).toBe(200);
 }
 
-/** TD-TXT-15 (TXT-021): the launch channel to web-and-email; homeowner texting goes off with it. */
+/**
+ * TD-TXT-15 (TXT-021): the launch channel to web-and-email; homeowner texting goes off with it.
+ * Once no homeowner text is left `sending` (one claimed before the switch can still reach the
+ * carrier), the run's text count starts again, so the zero-text check counts only later texts (D-5716).
+ */
 export async function webAndEmail(j: J3): Promise<void> {
   await stepUp(j);
   await j.page.goto(`${keyedUrl()}/owner/home`);
@@ -171,6 +175,9 @@ export async function webAndEmail(j: J3): Promise<void> {
   await submit(j, "Save launch channel");
   await expect(j.page.locator("#homeowner-texting")).toContainText("Texting to homeowners is off.");
   expect(modeState()).toMatch(/^false\|web_and_email\|/);
+  await expect.poll(() => psql(`SELECT count(*) FROM messaging.outbox WHERE recipient_kind = 'homeowner' AND status = 'sending'`),
+    { timeout: 30_000 }).toBe("0");
+  j.textsFrom = (await j.control.sentTexts()).length;
 }
 
 /** The plumbing trade's row on the owner home. */
@@ -362,6 +369,8 @@ export async function step5SafeMode(j: J3): Promise<void> {
   await untilTasks(j, `SELECT "on" FROM ops.safe_mode`, "f");
   await untilTasks(j, `SELECT count(*) FROM picks.release WHERE pick_id = '${held.pick}'`, "1");
   await confirm.reload();
+  expect(psql(`SELECT status FROM licensing.license_check WHERE business_id = '${refused.business}'
+    ORDER BY checked_at DESC LIMIT 1`), "PICK-020, D-5657: the latest licence check before the press").toBe("active");
   await j.drive.press(confirm.getByRole("button", { name: "Confirm and pay $25" }));
   await expect(confirm.locator("#confirm-status")).toHaveText(WAITING);
   expect(await standInCharges(j.page.request, refused.pick)).toEqual([2500]);
