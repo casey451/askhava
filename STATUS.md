@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T03:08:51Z by runner 15a972ec6a46 (actions).
+Updated 2026-11-24T03:10:48Z by runner c074d35d77b1 (actions).
 
 **Building: T524 in progress since 01:11Z; 647 of 779 done; week 88% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 647 of 779 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T524 claimed 01:11Z, lease until 04:11Z; lane 4: T676 claimed 02:45Z, lease until 05:45Z; lane 5: T544 claimed 03:08Z, lease until 06:08Z
-- **Week:** 88% used, 15.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:05Z, 3 min before this update
+- **Lane:** lane 1: T524 claimed 01:11Z, lease until 04:11Z; lane 2: T757 claimed 03:10Z, lease until 06:10Z; lane 4: T676 claimed 02:45Z, lease until 05:45Z; lane 5: T544 claimed 03:08Z, lease until 06:08Z
+- **Week:** 88% used, 14.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 03:08Z, 1 min before this update
 - **Keeper:** last ran 03:01Z, next wake 03:21Z
 
 ## Needs attention
@@ -122,7 +122,7 @@ Also: stand-in twilio fail fault answers 500 -> OutcomeUnknown, no retries (serv
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-24T03:00:49Z (week)): week: 178.1M used, 15.9M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T21:10:35Z.
+- Pacing (session_reading 2026-11-24T03:00:49Z (week)): week: 179.6M used, 14.4M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T21:16:36Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -138,6 +138,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T524 (lease until 2026-11-24T04:11:37Z)
+- lane 2: T757 (lease until 2026-11-24T06:10:31Z)
 - lane 4: T676 (lease until 2026-11-24T05:45:51Z)
 - lane 5: T544 (lease until 2026-11-24T06:08:02Z)
 
