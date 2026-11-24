@@ -629,6 +629,13 @@ const OWNER_HELP_STATES: readonly PageState[] = [
   ["owner help requests", "No open requests", "Nothing was sent", OWNER_SESSION_SQL],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: OWNER_HELP_ROUTE, name, shows, hides, sql, statusRegions: ["help-status"] }));
 
+const OWNER_DIGEST_ROUTE = "/owner/digest";
+
+/** The owner digest page (T815; OPS-030, OPS-033): a fresh database, so nothing is flagged. */
+const OWNER_DIGEST_STATES: readonly PageState[] = [
+  ["owner weekly digest", "For your monthly review", "Sign in as the owner", OWNER_SESSION_SQL],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: OWNER_DIGEST_ROUTE, name, shows, hides, sql, statusRegions: [] }));
+
 const OWNER_SCORECARD_ROUTE = "/owner/scorecard";
 const OWNER_INTAKE_REPORT_ROUTE = "/owner/intake-report";
 const OWNER_MONEY_ROUTE = "/owner/money";
@@ -974,6 +981,7 @@ export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: OWNER_SETTINGS_ROUTE, seed: portalSeed(false), states: OWNER_SETTINGS_STATES },
   { route: OWNER_RELEASE_ROUTE, seed: portalSeed(false), states: OWNER_RELEASE_STATES },
   { route: OWNER_HELP_ROUTE, seed: portalSeed(false), states: OWNER_HELP_STATES },
+  { route: OWNER_DIGEST_ROUTE, seed: portalSeed(false), states: OWNER_DIGEST_STATES },
   { route: OWNER_PROBLEM_REPORTS_ROUTE, seed: portalSeed(false), states: OWNER_PROBLEM_STATES },
   { route: OWNER_SCORECARD_ROUTE, seed: portalSeed(false), states: OWNER_REPORTS_STATES.filter((s) => s.route === OWNER_SCORECARD_ROUTE) },
   { route: OWNER_INTAKE_REPORT_ROUTE, seed: portalSeed(false), states: OWNER_REPORTS_STATES.filter((s) => s.route === OWNER_INTAKE_REPORT_ROUTE) },

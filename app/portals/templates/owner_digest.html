@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{#- The owner digest page (T815; OPS-030, OPS-033, PRIV-006, D-5318, D-5319). The last week's
+    digest as counts and job or business numbers, the monthly-review flags, the help requests due
+    in the next 4 days and the week's PROBLEM reply words, as T524's view gives them. No homeowner
+    contact detail. -#}
+{% block title %}Weekly digest{% endblock %}
+{% block main %}<h1>Weekly digest</h1>
+<p>Week {{ week }}</p>
+<h2>Last week</h2>
+<ul id="digest-lines">
+{% for l in lines %}<li>{{ l.item }}: {{ l.count }}{% if !l.refs.is_empty() %} ({{ l.refs }}){% endif %}</li>
+{% endfor %}</ul>
+<h2>Due in the next 4 days</h2>
+{% if due_soon.is_empty() %}<p>Nothing is due in the next 4 days.</p>
+{% else %}<ul id="due-soon">
+{% for d in due_soon %}<li>Help request, reply by {{ d }}</li>
+{% endfor %}</ul>{% endif %}
+<h2>PROBLEM replies</h2>
+{% if problems.is_empty() %}<p>No PROBLEM replies last week.</p>
+{% else %}<ul id="problem-words">
+{% for (number, words) in problems %}<li><p>Job {{ number }}</p><p>{{ words }}</p></li>
+{% endfor %}</ul>{% endif %}
+<h2>For your monthly review</h2>
+{% if flags.is_empty() %}<p>Nothing is flagged.</p>
+{% else %}<ul id="owner-flags">
+{% for f in flags %}<li>{{ f }}</li>
+{% endfor %}</ul>{% endif %}
+<p>These lists only show what happened. Nothing here changes a business or a job.</p>
+{% endblock %}
