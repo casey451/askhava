@@ -252,7 +252,8 @@ async fn the_local_stand_in_maps_only_a_missing_file_to_not_found() {
 }
 
 /// OPS-029, OPS-035, D-5081: the owner home lists the open unpushed Low volume alert by its plain
-/// name with no button, and the pushed alert still with its button.
+/// name with no button, the pushed alert still with its button and only above, and never a
+/// resolved alert.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn the_owner_home_lists_alerts_that_did_not_push(pool: PgPool) {
     let mut db = pool.acquire().await.expect("db");
@@ -267,6 +268,17 @@ async fn the_owner_home_lists_alerts_that_did_not_push(pool: PgPool) {
     record_push(&mut db, id, Timestamp::now())
         .await
         .expect("push");
+    let closed = NewAlert {
+        kind: "storage.backup_missed",
+        severity: Severity::High,
+        subject: None,
+    };
+    let closed_id = raise_alert(&mut db, &closed).await.expect("alert");
+    sqlx::query("UPDATE ops.alert SET resolved_at = now() WHERE id = $1")
+        .bind(closed_id)
+        .execute(&mut *db)
+        .await
+        .expect("resolve");
     let page = owner_home_page(&mut db, "fake-csrf", 4, Timestamp::now())
         .await
         .expect("page");
@@ -281,6 +293,10 @@ async fn the_owner_home_lists_alerts_that_did_not_push(pool: PgPool) {
     );
     assert!(
         !waiting.contains("<form") && !waiting.contains("<button"),
+        "{waiting}"
+    );
+    assert!(
+        !waiting.contains("payments.ledger_mismatch") && !waiting.contains("storage.backup_missed"),
         "{waiting}"
     );
 }
