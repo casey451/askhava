@@ -26795,15 +26795,7 @@
    "attempts": 0,
    "slug": "owner-guide",
    "type": "docs",
-   "stage": "5",
-   "plan_gap": {
-    "at": "2026-11-24T22:10:05Z",
-    "problems": [
-     "T123: dependency T815 is DONE but its owned file app/portals/src/owner_digest_page.rs is not on main",
-     "T123: dependency T815 is DONE but its owned file app/portals/templates/owner_digest.html is not on main",
-     "T123: dependency T815 is DONE but its owned file app/server/tests/owner_digest_route.rs is not on main"
-    ]
-   }
+   "stage": "5"
   },
   {
    "id": "T125",
@@ -105526,7 +105518,7 @@
    "plan_gap": {
     "at": "2026-11-24T00:30:33Z",
     "problems": [
-     "T723: measures 47% of the context window, over its 45% limit"
+     "T723: measures 48% of the context window, over its 45% limit"
     ]
    }
   },
@@ -129354,7 +129346,7 @@
    }
   }
  },
- "updated_at": "2026-11-24T22:26:25Z",
+ "updated_at": "2026-11-24T22:35:06Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -129452,17 +129444,9 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "7f1ca1d636bc36211b887845a1bcbed30f494e94",
+ "runner_sha": "0a7de0dfed068ce6f9ba8fc5b49b8fa89b018bb9",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "a5c0e45bc3c3fa6b8c17d7774e13ef97fb9babb6",
-   "ok": true,
-   "at": "2026-11-24T18:41:20Z",
-   "why": "start routine (ancestry reuse of 4b756acb549d, 2026-11-24T18:19:45Z)",
-   "reused": "2026-11-24T18:19:45Z",
-   "base": "4b756acb549d5d7549a83cdc5c018e333f8fb9b7"
-  },
   {
    "sha": "a5c0e45bc3c3fa6b8c17d7774e13ef97fb9babb6",
    "ok": true,
@@ -129612,6 +129596,14 @@
    "ok": false,
    "at": "2026-11-24T21:25:43Z",
    "why": "start routine (background)",
+   "seconds": 1500,
+   "timed_out": true
+  },
+  {
+   "sha": "0a7de0dfed068ce6f9ba8fc5b49b8fa89b018bb9",
+   "ok": false,
+   "at": "2026-11-24T22:34:24Z",
+   "why": "start routine (pre-session, ancestor of 7992274bcd88)",
    "seconds": 1500,
    "timed_out": true
   }
