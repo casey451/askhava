@@ -1,45 +1,46 @@
 /// <reference types="node" />
-// Journey J1, the homeowner, stage-4 slice (T098; docs/test-design.md section 5, J1, with its
-// closing checks; A11Y-021; D-491, D-493, D-1739; the slice and its gaps are D-2029 to D-2032).
+// Journey J1, the homeowner, stage-5 slice (T098, T676; docs/test-design.md section 5, J1, with its
+// closing checks; A11Y-021; TD-INT-50; D-491, D-493, D-1739, D-4360, D-5550, D-5657).
 //
-// The suite's web binary (tests/e2e/webserver.ts) runs in `ci` with no public base URL and no
-// vault keys, so it serves no Twilio route and no page pick (D-1311, D-1516). This file starts a
-// second web binary from the same build on its own port, with every adapter on its stand-in and
-// fake keys made at run time: the public base URL, the Twilio token, the Verify service, one masked
-// number, the ID secret and both vault keys. Inbound texts are posted to it signed as Twilio signs
-// them (SEC-016). Nothing yet sends the messaging outbox to the carrier (no sender task, D-2030),
-// so the texts the app queued are read from `messaging.outbox` through psql on DATABASE_URL, not
-// from the stand-in's sent log. The conversation runs to the ZIP question after the consent text (D-4360;
-// the later steps are T672's to T676's), so steps 2 to 4 are seeded: a job linked to her request, two
-// diagnostic-visit quotes and a quote-page token (D-2029). Step 6 runs the real page pick with the
-// Verify stand-in's code. The closing checks read the database. Fake data only: the 555-01xx
-// numbers are fictional and every key is random per run.
-import { type ChildProcess, spawn, spawnSync } from "node:child_process";
-import { createHash, createHmac, randomBytes } from "node:crypto";
-import { mkdtempSync, readFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+// The conversation runs through the served Twilio route of the keyed web binary (`keyedUrl()` in
+// tests/e2e/keyed.ts, with `keyedSecrets()` for the token and the public base URL), not a binary of
+// this file's own: the suite's worker, which writes the cards and the first-quote text, shares its ID
+// secret and vault keys (D-5657). Inbound texts are posted signed as Twilio signs them (SEC-016).
+// This harness sets no homeowner number (`ASKHAVA_HOMEOWNER_NUMBER`), so no homeowner text is ever
+// sent: each reply's texts are the rows the app queued in `messaging.outbox`, body and all, read
+// per reply and compared as a set, never ordered by `created_at` or `template_id` (one reply queues
+// its texts in one transaction). Steps 2 to 4 are the real conversation of INT-043's "Intake order"
+// table: her ZIP, the coverage line counting two fake active HVAC businesses seeded in her town as
+// fixture rows, "How soon?", the trade questions, "No photo", her fake name and address, the card
+// and SEND; the job's cards are then recorded. The two quotes come in through each business's
+// served Quote link (a `portals.login_link` row for the real job and business, as
+// tests/e2e/action_links_served.spec.ts seeds one) and the quote form, so the job reaches Quotes
+// ready by the real path. Step 6 runs the real page pick with the Verify stand-in's code. The
+// closing checks read the database; the keyed binary's log is not readable from here, so the
+// sentinel is checked in the database only (D-5657). Fake data only: the 555-01xx numbers are
+// fictional and every key is random per run.
+import { createHash, randomBytes, randomUUID } from "node:crypto";
+import { spawnSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { test, expect } from "./fixtures";
-import { webPort } from "./webserver";
+import { test, expect, type Control } from "./fixtures";
+import type { Page } from "@playwright/test";
+import { keyedUrl } from "./keyed";
+import { TWILIO_SMS_PATH, twilioSignature } from "./twilio_signature";
 
 const ROOT = join(import.meta.dirname, "..", "..");
-const PORT = webPort() + 17;
-const BASE = `http://127.0.0.1:${String(PORT)}`;
-const PUBLIC_BASE = "https://j1.example.test";
+const BASE = keyedUrl();
 const TWILIO_SID = `AC${"0".repeat(32)}`;
-const TWILIO_TOKEN = randomBytes(20).toString("hex");
 const HOMEOWNER = "+19285550142";
 /** The brand file the app embeds (app/core/data/brand.json, D-1932): expected brand words come from it. */
 const BRAND = JSON.parse(readFileSync(join(ROOT, "app", "core", "data", "brand.json"), "utf8")) as {
   short_name: string;
 };
 const CON_031_START = `${BRAND.short_name}: Got it. Next, a few quick questions.`;
+/** Her replies of a regular HVAC repair request from her ZIP to SEND (INT-043 steps 4 to 12). */
+const REPLIES = ["86403", "2", "1", "1", "1", "2", "Nothing else", "No photo", "Pat Sample, 12 Sample Street", "SEND"];
 
-test.describe.configure({ mode: "serial" });
-
-let web: ChildProcess | undefined;
-/** Everything the J1 web binary logged, for the closing sentinel check (PRIV-016). */
-const logs: string[] = [];
+test.describe.configure({ mode: "serial", timeout: 120_000 });
 
 /** Rows of `sql` from psql on DATABASE_URL, each a list of column values. */
 function rows(sql: string): string[][] {
@@ -48,65 +49,12 @@ function rows(sql: string): string[][] {
   return done.stdout.split("\n").filter((line) => line !== "").map((line) => line.split("\t"));
 }
 
-function fullEnv(): NodeJS.ProcessEnv {
-  const database = process.env.DATABASE_URL ?? "";
-  const key = (): string => `1:${randomBytes(32).toString("base64")}`;
-  const inherited = Object.fromEntries(Object.entries(process.env).filter(([name]) => !name.startsWith("ASKHAVA_")));
-  const scratch = mkdtempSync(join(tmpdir(), "askhava-j1-"));
-  return {
-    ...inherited,
-    PORT: String(PORT),
-    ASKHAVA_APP_ENV: "ci",
-    ASKHAVA_DATABASE_URL: database,
-    ASKHAVA_MIGRATION_DATABASE_URL: database,
-    ASKHAVA_PUBLIC_BASE_URL: PUBLIC_BASE,
-    ASKHAVA_ADAPTER_MODE_TWILIO: "stand_in",
-    ASKHAVA_TWILIO_BASE_URL: "http://127.0.0.1:4010/twilio",
-    ASKHAVA_TWILIO_VERIFY_BASE_URL: "http://127.0.0.1:4010/twilio",
-    ASKHAVA_TWILIO_ACCOUNT_SID: TWILIO_SID,
-    ASKHAVA_TWILIO_AUTH_TOKEN: TWILIO_TOKEN,
-    ASKHAVA_TWILIO_VERIFY_SERVICE_SID: `VA${"e".repeat(32)}`,
-    ASKHAVA_MASKED_POOL_SIZE: "1",
-    ASKHAVA_MASKED_NUMBERS: "+15005550100",
-    ASKHAVA_ID_SECRET: randomBytes(24).toString("hex"),
-    ASKHAVA_STORAGE_BASE_URL: `file://${join(scratch, "storage")}`,
-    ASKHAVA_TEST_CONTROL_SECRET: randomBytes(24).toString("hex"),
-    ASKHAVA_TEST_CONTROL_CLOCK_FILE: join(scratch, "clock"),
-    VAULT_KEY: key(),
-    VAULT_INDEX_KEY: key(),
-  };
-}
-
-async function waitForWeb(): Promise<void> {
-  const deadline = Date.now() + 30_000;
-  while (Date.now() < deadline) {
-    const up = await fetch(`${BASE}/terms`).then(() => true, () => false);
-    if (up) return;
-    await new Promise((r) => setTimeout(r, 200));
-  }
-  throw new Error("the J1 web binary did not answer within 30 seconds");
-}
-
-test.beforeAll(async () => {
-  web = spawn(join(ROOT, "target", "debug", "server"), [], { cwd: ROOT, env: fullEnv(), stdio: ["ignore", "pipe", "pipe"] });
-  web.stdout?.on("data", (chunk: Buffer) => logs.push(chunk.toString()));
-  web.stderr?.on("data", (chunk: Buffer) => logs.push(chunk.toString()));
-  await waitForWeb();
-});
-
-test.afterAll(() => {
-  web?.kill("SIGTERM");
-});
-
 /** Posts one inbound text signed as Twilio signs it (SEC-016); returns the HTTP status. */
 async function textIn(from: string, body: string, sid = `SM${randomBytes(16).toString("hex")}`): Promise<number> {
   const form: Record<string, string> = { AccountSid: TWILIO_SID, Body: body, From: from, MessageSid: sid, NumMedia: "0", To: "+15005550006" };
-  const path = "/webhooks/twilio/sms";
-  const signed = PUBLIC_BASE + path + Object.keys(form).sort().map((name) => name + (form[name] ?? "")).join("");
-  const signature = createHmac("sha1", TWILIO_TOKEN).update(signed).digest("base64");
-  const reply = await fetch(BASE + path, {
+  const reply = await fetch(BASE + TWILIO_SMS_PATH, {
     method: "POST",
-    headers: { "content-type": "application/x-www-form-urlencoded", "x-twilio-signature": signature },
+    headers: { "content-type": "application/x-www-form-urlencoded", "x-twilio-signature": twilioSignature(TWILIO_SMS_PATH, form) },
     body: new URLSearchParams(form).toString(),
   });
   return reply.status;
@@ -130,27 +78,140 @@ function now(): string {
   return rows("SELECT clock_timestamp()")[0]?.[0] ?? "";
 }
 
-/** Steps 2 to 4 as they would leave the request (D-2029): an hvac job of hers in Quotes ready, two diagnostic-visit quotes, a link token. */
-function seedQuotes(conversation: string): { path: string; job: string } {
+/** One text the app queued for her; this harness sets no homeowner number, so none is sent and the outbox keeps its body. */
+interface Queued { id: string; template: string; body: string }
+
+/** A request's texts read per reply: `seen` holds the outbox rows an earlier reply already showed. */
+interface Chat { from: string; contact: string; seen: Set<string> }
+
+function queuedFor(contact: string): Queued[] {
+  const json = rows(`SELECT coalesce(json_agg(json_build_object('id', id, 'template', template_id, 'body', body) ORDER BY created_at), '[]')
+    FROM messaging.outbox WHERE recipient_id = '${contact}'`)[0]?.[0] ?? "[]";
+  return JSON.parse(json) as Queued[];
+}
+
+/** The texts one inbound text of hers made the app queue; one reply queues them in one transaction, so their order is not read. */
+async function say(chat: Chat, body: string): Promise<Queued[]> {
+  expect(await textIn(chat.from, body)).toBe(200);
+  const fresh = queuedFor(chat.contact).filter((t) => !chat.seen.has(t.id));
+  fresh.forEach((t) => chat.seen.add(t.id));
+  return fresh;
+}
+
+const templates = (got: Queued[]): string[] => got.map((t) => t.template).sort();
+
+/** Starts a request of `from` with `first`; its first texts count as seen. */
+async function open(from: string, first: string): Promise<{ chat: Chat; conversation: string }> {
+  const since = now();
+  expect(await textIn(from, first)).toBe(200);
+  const { conversation, contact } = requestSince(since);
+  const chat: Chat = { from, contact, seen: new Set() };
+  queuedFor(contact).forEach((t) => chat.seen.add(t.id));
+  return { chat, conversation };
+}
+
+/** The app clock's date in Arizona (UTC-7 all year): the date of a ROC list made when none exists (the licence classes come from the latest list, D-2743). */
+async function arizonaDay(control: Control): Promise<string> {
+  return new Date(new Date(await control.now()).getTime() - 7 * 3_600_000).toISOString().slice(0, 10);
+}
+
+/** Retires the earlier fixture businesses, then makes two active HVAC businesses in her town, licensed R-39 on the latest ROC list (INT-016, INT-017). */
+function seedHvacBusinesses(day: string): void {
+  rows(`UPDATE businesses.business SET status = 'removed', status_changed_at = now()
+    WHERE status <> 'removed' AND id IN (SELECT business_id FROM businesses.business_name WHERE business_name LIKE 'Sample E2E Cooling %')`);
+  rows(`INSERT INTO licensing.list_import (source, list_date, rows_recorded, rows_skipped)
+    SELECT 'roc', '${day}'::date, 0, 0 WHERE NOT EXISTS (SELECT 1 FROM licensing.list_import WHERE source = 'roc')`);
+  for (const n of [1, 2]) {
+    const license = `ROC${String(100_000 + Math.floor(Math.random() * 899_999))}`;
+    rows(`WITH b AS (INSERT INTO businesses.business (id, status, created_at, status_changed_at)
+        VALUES ('${randomUUID()}', 'active', now(), now()) RETURNING id),
+      m AS (INSERT INTO businesses.team_member (business_id, mailbox_id, is_owner, cards_and_quotes, confirm_and_billing, added_at)
+        SELECT id, gen_random_uuid(), true, true, true, now() FROM b),
+      w AS (INSERT INTO businesses.welcome (business_id, requested_at, sent_at) SELECT id, now(), now() FROM b),
+      nm AS (INSERT INTO businesses.business_name (business_id, business_name, changed_at)
+        SELECT id, 'Sample E2E Cooling ${String(n)} ${randomBytes(3).toString("hex")} LLC', now() FROM b),
+      t AS (INSERT INTO businesses.town (business_id, town) SELECT id, 'lake_havasu_city' FROM b),
+      c AS (INSERT INTO businesses.job_type_choice (business_id, category, job_type) SELECT id, 'hvac_repair', 'AC not cooling' FROM b),
+      li AS (SELECT id, list_date FROM licensing.list_import WHERE source = 'roc' ORDER BY list_date DESC LIMIT 1),
+      ar AS (INSERT INTO licensing.agency_record (import_id, source, list_date, license_number, class_code, status)
+        SELECT li.id, 'roc', li.list_date, '${license}', 'R-39', 'active' FROM li)
+      INSERT INTO licensing.license_check (business_id, source, license_number, list_date, status, checked_at)
+        SELECT b.id, 'roc', '${license}', li.list_date, 'active', now() FROM b, li`);
+  }
+}
+
+/** Waits until the job's two cards are recorded (the worker's task writes them, INT-041); returns their businesses. */
+async function cardsRecorded(job: string): Promise<string[]> {
+  const deadline = Date.now() + 20_000;
+  while (Date.now() < deadline) {
+    const businesses = rows(`SELECT business_id FROM quotes.job_card WHERE job_id = '${job}' ORDER BY business_id`).map((r) => r[0] ?? "");
+    if (businesses.length === 2) return businesses;
+    await new Promise((r) => setTimeout(r, 300));
+  }
+  throw new Error("the job's cards were not recorded");
+}
+
+/** One business's quote through its served Quote link (a login link row for the real job and business) and the quote form. */
+async function quoteFrom(page: Page, control: Control, job: string, business: string, n: number): Promise<void> {
+  const now = await control.now();
   const token = randomBytes(32).toString("hex");
-  const hash = createHash("sha256").update(token).digest("hex");
-  const job = rows(`WITH j AS (INSERT INTO jobs.job (status, emergency, created_at, status_at, timer_from)
-      VALUES ('quotes_ready', false, now(), now(), now()) RETURNING id),
-    n AS (UPDATE jobs.job_number_next SET next = next + 1 RETURNING next - 1 AS n),
-    num AS (INSERT INTO jobs.job_number (number, job_id, issued_at) SELECT n.n, j.id, now() FROM n, j),
-    f AS (INSERT INTO jobs.job_facts (job_id, seq, category, job_types, set_at)
-      SELECT id, 1, 'hvac_repair', ARRAY['AC not cooling'], now() FROM j),
-    a AS (INSERT INTO intake.intake_answer (conversation_id, question_id, choice, answered_at)
-      SELECT '${conversation}', 'job.hvac.home', replace(j.id::text, '-', ''), now() FROM j),
-    t AS (INSERT INTO jobs.quote_token (job_id, salt, key_version, token_hash, issued_at)
-      SELECT id, decode(md5(random()::text), 'hex'), 1, decode('${hash}', 'hex'), now() FROM j),
-    q AS (INSERT INTO quotes.quote (job_id, business_id, format, amount_cents, confirm_on_site, notes,
-      original, ai_read, confirmed, received_at)
-    SELECT j.id, gen_random_uuid(), 'diagnostic_visit', 8900, false, '',
-      'Diagnostic visit, sample wording ' || g.n, false, true, now() + g.n * interval '1 minute'
-    FROM j, generate_series(1, 2) AS g(n))
-    SELECT id FROM j`)[0]?.[0] ?? "";
-  return { path: `/q/${token}`, job };
+  const hash = createHash("sha256").update(`action:quote:${job}:${token}`).digest("hex");
+  rows(`INSERT INTO portals.login_link (token_sha256, member_id, business_id, created_at, expires_at)
+    SELECT decode('${hash}', 'hex'), id, business_id, '${now}'::timestamptz - interval '1 day', '${now}'::timestamptz + interval '2 hours'
+    FROM businesses.team_member WHERE business_id = '${business}' AND is_owner`);
+  await page.goto(`${BASE}/b/a/quote/${job}/${token}`);
+  await page.getByLabel("Visit fee ($)").fill("89");
+  await page.getByLabel(/^Note for the homeowner/).fill(`Diagnostic visit, sample wording ${String(n)}`);
+  for (const [name, value] of [["trip_fee", "none"], ["parts", "on_site"], ["permit", "not_needed"], ["may_change", "no"], ["visit_part", "morning"], ["spanish", "no"]] as const) {
+    await page.locator(`input[name="${name}"][value="${value}"]`).check();
+  }
+  await page.getByLabel("Date", { exact: true }).fill(new Date(Date.now() + 86_400_000).toISOString().slice(0, 10));
+  await page.getByRole("button", { name: /^Send quote for job \d+$/ }).click();
+  await expect(page.getByRole("heading", { level: 1 })).not.toHaveText("Your quote wasn't sent");
+}
+
+/**
+ * Her live quote page path: the link of the newest text that carries one, since each text that
+ * names her page mints a token and revokes the last (first quote, then an update for the second).
+ * `""` when none is queued yet.
+ */
+function quotePath(chat: Chat): string {
+  const linked = queuedFor(chat.contact).map((t) => /\/q\/[0-9a-f]+/.exec(t.body)?.[0] ?? "").filter((path) => path !== "");
+  return linked.at(-1) ?? "";
+}
+
+/**
+ * The first-quote text is no reply, so quiet hours (8 p.m. to 8 a.m. in Arizona, QH-001) hold it:
+ * outside them the worker queues it within seconds; inside them the shared app clock moves once to
+ * 8:30 a.m., the one forward move this file makes (a later spec that seeds a short-lived link
+ * after it at night is the hazard; D-5717, D-5720). The path is read once no newer text names her page.
+ */
+async function quoteTextQueued(control: Control, chat: Chat): Promise<string> {
+  for (let tries = 0; tries < 2; tries += 1) {
+    const deadline = Date.now() + 8_000;
+    while (Date.now() < deadline && quotePath(chat) === "") await new Promise((r) => setTimeout(r, 300));
+    if (quotePath(chat) !== "") {
+      let path = "";
+      while (path !== quotePath(chat)) {
+        path = quotePath(chat);
+        await new Promise((r) => setTimeout(r, 2_000));
+      }
+      return path;
+    }
+    const at = new Date(await control.now());
+    const arizona = ((at.getUTCHours() + 17) % 24) * 60 + at.getUTCMinutes();
+    if (arizona >= 8 * 60 && arizona < 20 * 60) break;
+    await control.advanceClock(((8 * 60 + 30 - arizona + 1440) % 1440) * 60 + 5);
+  }
+  throw new Error("no text carried her quote page link");
+}
+
+/** Both carded businesses quote in turn; the job reaches Quotes ready by the real path (JOB-005); returns her quote page path, read from the queued first-quote text. */
+async function quotesIn(page: Page, control: Control, [chat, job]: [Chat, string]): Promise<string> {
+  const businesses = await cardsRecorded(job);
+  for (const [i, business] of businesses.entries()) await quoteFrom(page, control, job, business, i + 1);
+  expect(rows(`SELECT status FROM jobs.job WHERE id = '${job}'`)).toEqual([["quotes_ready"]]);
+  return quoteTextQueued(control, chat);
 }
 
 /** The code the Verify stand-in sent to `phone`, from its test hook standing in for her phone. */
@@ -159,14 +220,17 @@ async function verifyCode(phone: string): Promise<string> {
   return ((await reply.json()) as { code: string }).code;
 }
 
-const state = { since: "", conversation: "", contact: "", path: "", job: "" };
+const state = { since: "", conversation: "", contact: "", path: "", job: "", chat: { from: HOMEOWNER, contact: "", seen: new Set<string>() } satisfies Chat };
 
-test("J1 step 1 CON-005 CON-031 INT-002 D-419: the first text is the consent; the consent text is queued once, no 911 text, no reply asked", async () => {
+test("J1 step 1 CON-005 CON-031 INT-002 D-419: the first text is the consent; the consent text is queued once, no 911 text, no reply asked", async ({ control }) => {
+  seedHvacBusinesses(await arizonaDay(control));
   state.since = now();
   const sid = `SM${randomBytes(16).toString("hex")}`;
   expect(await textIn(HOMEOWNER, "AC blowing warm air", sid)).toBe(200);
   expect(await textIn(HOMEOWNER, "AC blowing warm air", sid), "the same delivery again").toBe(200);
   Object.assign(state, requestSince(state.since));
+  state.chat.contact = state.contact;
+  queuedFor(state.contact).forEach((t) => state.chat.seen.add(t.id));
   // CON-031, INT-043 (D-4360): the ZIP question follows the consent text as its own text.
   expect(textsTo(state.contact)).toEqual(["consent", "zip_question"]);
   const body = rows(`SELECT body FROM messaging.outbox WHERE recipient_id = '${state.contact}' AND template_id = 'consent'`)[0]?.[0] ?? "";
@@ -176,8 +240,39 @@ test("J1 step 1 CON-005 CON-031 INT-002 D-419: the first text is the consent; th
   expect(rows(`SELECT count(*) FROM intake.emergency_event WHERE conversation_id = '${state.conversation}'`)).toEqual([["0"]]);
 });
 
+test("J1 step 2 TD-INT-50 INT-043 INT-049 INT-016 INT-017 D-460: her ZIP gets the coverage line naming the 2 businesses in her town, then \"How soon?\"", async () => {
+  const got = await say(state.chat, "86403");
+  expect(templates(got), "steps 4 and 5, then step 6").toEqual(["coverage_count_many", "how_soon"]);
+  expect(got.find((t) => t.template === "coverage_count_many")?.body).toMatch(new RegExp(`^${BRAND.short_name}: Got it\\. We'll send this to the 2 `));
+  expect(got.find((t) => t.template === "how_soon")?.body).toContain("How soon do you need this?");
+});
+
+test("J1 step 3 TD-INT-50 INT-043 INT-030 INT-039 INT-044: \"In the next few days\" gets the trade questions one at a time, then the photo ask, then the name-and-address question", async () => {
+  const asks = [/What kind of system is it\?/, /What's happening\?/, /About how old is the system\?/, /Is an error code or flashing light showing\?/, /Anything else\?/];
+  for (const [i, answer] of ["2", "1", "1", "1", "2"].entries()) {
+    const got = await say(state.chat, answer);
+    expect(templates(got), "step 8").toEqual(["trade_question"]);
+    expect(got[0]?.body).toMatch(asks[i] ?? /^$/);
+  }
+  expect(templates(await say(state.chat, "Nothing else")), "step 9").toEqual(["photo_ask"]);
+  const last = await say(state.chat, "No photo");
+  expect(templates(last), "step 11").toEqual(["name_address"]);
+  expect(last[0]?.body).toContain("What is your first name and street address?");
+});
+
+test("J1 step 4 TD-INT-50 INT-041 INT-043: her fake name and address get the card; SEND sends it at once and the job's cards are recorded", async ({ page, control }) => {
+  const card = await say(state.chat, "Pat Sample, 12 Sample Street");
+  expect(templates(card), "step 12").toHaveLength(1);
+  expect(["card_shown", "card_link"]).toContain(card[0]?.template);
+  expect(card[0]?.body).toMatch(/It goes out in 30 minutes\. Reply EDIT to change it, or SEND to send it now\.$/);
+  expect(await say(state.chat, "SEND"), "SEND sends it at once with no text of its own").toEqual([]);
+  state.job = rows(`SELECT job_id FROM intake.conversation WHERE id = '${state.conversation}'`)[0]?.[0] ?? "";
+  expect(state.job).not.toBe("");
+  state.path = await quotesIn(page, control, [state.chat, state.job]);
+  expect(rows(`SELECT count(*) FROM quotes.quote WHERE job_id = '${state.job}'`)).toEqual([["2"]]);
+});
+
 test("J1 step 5 WORD-005 A11Y-014: both diagnostic-visit quotes in arrival order, the WORD-005 line, a status region present at load", async ({ page }) => {
-  Object.assign(state, seedQuotes(state.conversation));
   await page.goto(BASE + state.path);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(/^Your quotes for request \d+$/);
   await expect(page.locator("main")).toContainText("Every eligible quote shown, in the order received.");
@@ -211,18 +306,17 @@ test("J1 step 6 PICK-016 PICK-013 PICK-017 PICK-018: review, Go back, pick again
   expect(rows(`SELECT channel FROM intake.terms_acceptance WHERE conversation_id = '${state.conversation}'`)).toEqual([["quote_page"]]);
 });
 
-test("J1 variant CON-009 CON-012 CON-028: STOP after quotes arrive; the one confirmation, then no further text; the job and its quote page go on", async ({ page }) => {
-  const from = "+19285550146";
-  const since = now();
-  expect(await textIn(from, "Water heater leaking")).toBe(200);
-  const request = requestSince(since);
-  const seeded = seedQuotes(request.conversation);
-  expect(await textIn(from, "STOP")).toBe(200);
-  expect(await textIn(from, "Is anyone coming today?")).toBe(200);
-  // CON-031, INT-043 (D-4360): the ZIP question follows the consent text as its own text.
-  expect(textsTo(request.contact)).toEqual(["consent", "zip_question", "opt_out_confirmation"]);
-  expect(rows(`SELECT status FROM jobs.job WHERE id = '${seeded.job}'`)).toEqual([["quotes_ready"]]);
-  await page.goto(BASE + seeded.path);
+test("J1 variant CON-009 CON-012 CON-028: STOP after quotes arrive; the one confirmation, then no further text; the job and its quote page go on", async ({ page, control }) => {
+  seedHvacBusinesses(await arizonaDay(control));
+  const { chat, conversation } = await open("+19285550146", "AC blowing warm air");
+  for (const reply of REPLIES) await say(chat, reply);
+  const job = rows(`SELECT job_id FROM intake.conversation WHERE id = '${conversation}'`)[0]?.[0] ?? "";
+  const path = await quotesIn(page, control, [chat, job]);
+  queuedFor(chat.contact).forEach((t) => chat.seen.add(t.id));
+  expect(templates(await say(chat, "STOP")), "the one confirmation").toEqual(["opt_out_confirmation"]);
+  expect(await say(chat, "Is anyone coming today?"), "no further text").toEqual([]);
+  expect(rows(`SELECT status FROM jobs.job WHERE id = '${job}'`)).toEqual([["quotes_ready"]]);
+  await page.goto(BASE + path);
   await expect(page.locator("#quotes > li h2")).toHaveText(["Quote #1", "Quote #2"]);
 });
 
@@ -263,15 +357,14 @@ test("J1 closing checks TD-PRIV-02 OPS-017 JOB-005: no duplicate text or charge,
   const moves = rows(`SELECT from_status, to_status FROM jobs.status_history WHERE job_id = '${state.job}' ORDER BY id`);
   const audited = rows(`SELECT from_status, to_status FROM ops.audit_log WHERE subject_kind = 'jobs.job'
     AND subject_id = '${state.job}' AND action = 'status_changed' ORDER BY id`);
-  expect(moves).toEqual([["quotes_ready", "awaiting_confirm"]]);
+  // D-5550: the real path records every move: Intake to Open (cards out), Open to Quotes ready (first quote), then the pick.
+  expect(moves).toEqual([["intake", "open"], ["open", "quotes_ready"], ["quotes_ready", "awaiting_confirm"]]);
   expect(audited, "one audit row per status change").toEqual(moves);
   expect(rows(`SELECT count(*) FROM ops.audit_log WHERE action = 'picks.picked' AND subject_id IN
     (SELECT id FROM picks.pick WHERE job_id = '${state.job}')`)).toEqual([["1"]]);
   const dump = spawnSync("pg_dump", [process.env.DATABASE_URL ?? "", "--data-only"], { encoding: "utf8", maxBuffer: 1 << 28 });
   expect(dump.status).toBe(0);
-  expect(logs.join("")).toContain("/webhooks/twilio/sms");
   for (const sentinel of ["9285550142", "928-555-0142", "(928) 555-0142", "928 555 0142"]) {
     expect(dump.stdout.includes(sentinel), `the database outside the sealed vault holds ${sentinel}`).toBe(false);
-    expect(logs.join("").includes(sentinel), `the web log holds ${sentinel}`).toBe(false);
   }
 });
