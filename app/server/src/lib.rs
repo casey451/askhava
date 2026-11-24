@@ -169,6 +169,7 @@ struct BusinessParts {
     confirm_codes: Option<askhava_portals::api::PressCodes>,
     homeowner: Option<homeowner_portal::HomeownerVerify>,
     photos: Option<homeowner_portal::PhotoParts>,
+    data_link_postal: Option<askhava_messaging::api::PostalAddress>,
     business_number: Option<askhava_messaging::api::SendingNumber>,
     report: owner_tools::SecretReport,
 }
@@ -221,6 +222,17 @@ impl RouterParts {
     #[must_use]
     pub fn with_photos(mut self, photos: Option<homeowner_portal::PhotoParts>) -> Self {
         self.business.photos = photos;
+        self
+    }
+
+    /// Adds the data-request link email's footer postal line (T804; [`data_link_postal`]);
+    /// without it a listed number's portal request gets no link and is told nothing was sent.
+    #[must_use]
+    pub fn with_data_link_postal(
+        mut self,
+        postal: Option<askhava_messaging::api::PostalAddress>,
+    ) -> Self {
+        self.business.data_link_postal = postal;
         self
     }
 
@@ -476,7 +488,12 @@ fn business_pages(
     let cant_take = cant_take_route::routes(pool.clone());
     let links = webhooks.filter(|_| parts.photos.is_some());
     let job_page = job_page_route::routes(pool.clone(), links.map(|hooks| &hooks.id_secret));
-    let homeowner = homeowner_portal::routes(pool.clone(), webhooks, parts.homeowner, parts.photos);
+    let homeowner = homeowner_portal::routes(
+        pool.clone(),
+        webhooks,
+        (parts.homeowner, parts.data_link_postal),
+        parts.photos,
+    );
     let step_up = business_step_up::routes(pool.clone(), parts.step_up, parts.vault.clone())
         .merge(business_guarded_changes::routes(pool.clone()))
         .merge(address_changes::routes(pool.clone(), parts.address))
@@ -2595,17 +2612,35 @@ pub fn set_update_footer_from<I>(settings: &Settings, pairs: I) -> io::Result<bo
 where
     I: IntoIterator<Item = (String, String)>,
 {
+    let postal = data_link_postal(settings, pairs)?;
+    Ok(postal.is_some_and(askhava_messaging::api::set_update_footer))
+}
+
+/// PRIV-031, SEC-028 (T804, D-5339): the footer postal line of the data-request link email, the
+/// update emails' own ([`set_update_footer_from`]'s rule); `None` while those stay text, and
+/// then a listed number's portal request gets no link.
+///
+/// # Errors
+///
+/// A bad email provider or vault setting, named, never its value.
+pub fn data_link_postal<I>(
+    settings: &Settings,
+    pairs: I,
+) -> io::Result<Option<askhava_messaging::api::PostalAddress>>
+where
+    I: IntoIterator<Item = (String, String)>,
+{
     let pairs: Vec<(String, String)> = pairs.into_iter().collect();
     let Some(provider) = email_provider::email_provider(settings, pairs.clone())? else {
-        return Ok(false);
+        return Ok(None);
     };
     if vault_from(settings, pairs)?.is_none() {
-        return Ok(false);
+        return Ok(None);
     }
     let (postal, kind) = provider.postal();
     let postal =
         askhava_messaging::api::PostalAddress::new(postal, kind).map_err(io::Error::other)?;
-    Ok(askhava_messaging::api::set_update_footer(postal))
+    Ok(Some(postal))
 }
 
 /// An account mailer over provider `p`'s client, email key, postal line and shared daily limit,

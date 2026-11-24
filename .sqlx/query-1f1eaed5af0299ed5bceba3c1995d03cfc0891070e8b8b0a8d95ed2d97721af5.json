@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE portals.data_request_link SET used_at = $2\n           WHERE request_id = $1 AND used_at IS NULL AND sent_at > $3",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "1f1eaed5af0299ed5bceba3c1995d03cfc0891070e8b8b0a8d95ed2d97721af5"
+}

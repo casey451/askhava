@@ -8,7 +8,7 @@
 // `fixtures.ts`, owner-only, so nothing here can narrow what is checked. Fake data only.
 import { createHash, createHmac, randomBytes, randomUUID } from "node:crypto";
 import { spawnSync } from "node:child_process";
-import { keyedIdSecret, keyedUrl, seal } from "../e2e/keyed";
+import { keyedIdSecret, keyedUrl, psql, seal } from "../e2e/keyed";
 
 /** One seeded state of a page. */
 export interface PageState {
@@ -858,6 +858,37 @@ const NOT_FOUND_STATES: readonly PageState[] = [
   { route: NOT_FOUND_ROUTE, name: "unknown path, 404 page", statusRegions: [], shows: "We can't find that page.", hides: "Para propietarios", sql: "", status: 404 },
 ];
 
+/** The data-request link page's route (T804, PRIV-031, SEC-026, D-5332). */
+const DATA_LINK_ROUTE = "/help/my-data/{object}/{token}";
+
+/**
+ * Seeds a fake homeowner's delete request (its received audit row) and its link with a random salt,
+ * sent `sentAgo` ago, and opens the link on the keyed binary with the token made from its ID secret
+ * (`confirmToken`); `{object}` is the request's subject UUID, the audit row's ID as a UUID.
+ */
+function dataLinkSeed(state: PageState): Seeded {
+  const contact = randomUUID();
+  const salt = randomBytes(16);
+  const id = psql(state.sql.replaceAll(":contact", contact).replace(":salt", salt.toString("hex")));
+  const hex = BigInt(id).toString(16).padStart(32, "0");
+  const object = `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+  return `${keyedUrl()}/help/my-data/${object}/${confirmToken(object, salt)}`;
+}
+
+/** A fake delete request and its link, sent `ago` ago; returns the request's ID. */
+function dataLinkSql(ago: string): string {
+  return `WITH a AS (INSERT INTO ops.audit_log (actor_kind, actor_id, action, subject_kind, subject_id)
+      VALUES ('homeowner', ':contact', 'portals.data_delete_requested', 'privacy.contact', ':contact') RETURNING id)
+    INSERT INTO portals.data_request_link (request_id, salt, sent_at)
+      SELECT id, decode(':salt', 'hex'), now() - interval '${ago}' FROM a RETURNING request_id`;
+}
+
+/** The link page's states: a live link's confirm page and the generic page of an expired one. */
+const DATA_LINK_STATES: readonly PageState[] = [
+  { route: DATA_LINK_ROUTE, name: "live link, confirm page", statusRegions: [], shows: "You asked us to delete your data.", hides: "This link has expired", sql: dataLinkSql("0 minutes") },
+  { route: DATA_LINK_ROUTE, name: "expired link, generic page", statusRegions: [], shows: "This link has expired or was already used.", hides: "You asked us to delete", sql: dataLinkSql("1 hour") },
+];
+
 /** Every page's entry: its route, its states and its seed function. Append a new page's entry. */
 export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: QUOTE_ROUTE, seed: quoteSeed, states: QUOTE_STATES },
@@ -922,6 +953,7 @@ export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: PHONES_ROUTE, seed: portalSeed(false), states: PHONES_STATES },
   { route: OWNER_AI_ROUTE, seed: portalSeed(false), states: OWNER_AI_STATES },
   { route: TEAM_ROUTE, seed: portalSeed(false), states: TEAM_STATES },
+  { route: DATA_LINK_ROUTE, seed: dataLinkSeed, states: DATA_LINK_STATES },
 ];
 
 /** Every state of every page, in entry order. */

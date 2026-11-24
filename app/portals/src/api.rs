@@ -126,6 +126,10 @@ pub use crate::data_download::{
     DataRequestKind, DeleteError, HeldItem, RequestError, Section, confirm_request,
     delete_her_data, download_file, open_request, resend_request_code,
 };
+pub use crate::data_request_link::{
+    DATA_LINK_LIFE, DATA_LINK_ROUTE, LinkPage, LinkScreen, LinkSent, confirm_data_link,
+    data_link_page, number_listed, open_data_link, send_request_link,
+};
 pub use crate::digest_flags::{
     CrowdedTrade, DIGEST_WEEK, DUE_AHEAD, Digest, DigestError, DigestInputs, DigestLine,
     OWNER_DIGEST_ROUTE, OwnerDigestView, OwnerFlags, ProblemReply, is_crowded, is_no_or_other,
