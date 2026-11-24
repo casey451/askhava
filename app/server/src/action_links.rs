@@ -17,8 +17,11 @@
 //! above the business's largest job (`largest_job_warning`, D-2710), checks the quote with
 //! `parse_quote` and stores it with `submit_quote_with_facts`; any problem rolls back and shows
 //! the form again, so the link stays unused; the form shown again with a parsed price carries
-//! its introduction fee by job size lines (PICK-039, D-3672). A used link's repeat `POST` is the
-//! 404, an open gap (D-3673). Pause, Resume and Ask about a charge act once with a business
+//! its introduction fee by job size lines (PICK-039, D-3672). A used link's repeat `POST` shows
+//! its result (T814, SEC-026, D-5316, D-5320): after the refused use rolled back, [`replay`] asks
+//! `used_action_link` on a bare connection; a Quote link shows its job page again with the quote
+//! as stored, a Confirm link the 303 to its Confirm page, every other kind `action_done_page`
+//! (a session kind only for the link's own signed-in person), storing and sending nothing. Pause, Resume and Ask about a charge act once with a business
 //! session (T455, D-3839): signed out is a 401 linking to sign-in before any token read; then
 //! `use_action_link` in the action's transaction, the link's person must be the signed-in one and
 //! `session_may` must allow the kind; Pause and Resume (object: the business) call `pause_self`
@@ -47,8 +50,8 @@
 //! a value outside that range shows the page again with `BUSY_DAYS_ERROR` by the field (422,
 //! A11Y-030), a business that is not active is refused with the reason (409), both rolled back
 //! so the link stays unused; the answer is `busy_until_line`. Every kind's `POST` now has its
-//! own handler (D-3675). A wrong kind, object, person, an ended, used or
-//! unknown token, a removed member's token and a job with no sent card or no rules all get the
+//! own handler (D-3675). A wrong kind, object, person, an ended or unknown token, a
+//! removed or role-less member's used token and a job with no sent card or no rules all get the
 //! same bare 404. Every response is `no-store`. After a stored quote the job page carries
 //! "Not a fit for us" (`job_details_page_choice`, PICK-057), posting to `NOT_A_FIT_ROUTE`, which
 //! `business_portal` serves behind the business session (T306, D-4551). Confirm (object: the
@@ -88,7 +91,7 @@ use askhava_picks::api::{
     HoldAsk, PicksError, TimeRefusal, WindowRules, away_for, hold_allowed, hold_ask, hold_pick,
 };
 use askhava_portals::api::{
-    ACTION_ROUTE, ActionFacts, ActionGrant, ActionKind, ActionLinkError, AwayForm,
+    ACTION_ROUTE, ActionFacts, ActionGrant, ActionKind, ActionLinkError, ActionTarget, AwayForm,
     BUSINESS_STEP_UP_ROUTE, ChargeAsked, CookieJar, CsrfField, CsrfForm, FactsForm, LargestWarning,
     NotAFitChoice, PriceForm, QuoteFormFacts, SIGNIN_ROUTE, UseBy, WHY_CHARGED_ROUTE, WebSecurity,
     action_page, admit_quote, ask_about_charge, away_hours, away_page, business_principal,
@@ -104,6 +107,7 @@ use askhava_portals::api::{
 };
 use askhava_portals::api::{JobPageLinks, no_store};
 use askhava_portals::api::{SensitiveChange, StepUpError};
+use askhava_portals::api::{action_done_page, used_action_link};
 use askhava_privacy::api::{BusinessPurpose, Vault, read_staff_phone};
 use askhava_quotes::api::{
     Bounce, NoteProblem, PageParts, Price, PriceFields, PriceProblem, QuoteForm, QuoteRules,
@@ -536,7 +540,9 @@ impl Posted {
 /// `POST /b/a/{kind}/{object}/{token}`: after the cross-site and CSRF checks, a Quote link acts
 /// by the link alone, Pause, Resume and Ask about a charge with a business session (D-3839),
 /// Approve with the owner's session and a fresh step-up (T399), Hold by the link alone (T456),
-/// Away and Busy with a business session (T543, T463), Confirm by [`confirm_post`] (T457); every other kind is the one not-found answer before any token read (D-3675).
+/// Away and Busy with a business session (T543, T463), Confirm by [`confirm_post`] (T457). A
+/// press refused as not found, its transaction gone, asks [`replay`] whether the link was used
+/// already, so a double tap shows its result (SEC-026, T814, D-5316).
 async fn act(
     State(links): State<Links>,
     Extension(Client(ip)): Extension<Client>,
@@ -548,37 +554,104 @@ async fn act(
         Ok(found) => found,
         Err(stop) => return stop.into_response(),
     };
+    let link = (kind, object, token.as_str());
+    let acted = match act_kind(&links, link, ip, &posted, jar.clone()).await {
+        Err(Stop::NotFound) => replay(&links, link, jar).await,
+        acted => acted,
+    };
+    acted.unwrap_or_else(IntoResponse::into_response)
+}
+
+/// The `POST` of one `kind`, by its own handler (D-3675).
+async fn act_kind(
+    links: &Links,
+    (kind, object, token): (ActionKind, Uuid, &str),
+    ip: IpAddr,
+    posted: &Posted,
+    jar: CookieJar,
+) -> Result<Response, Stop> {
     match kind {
-        ActionKind::Quote => quote_post(&links, (object, &token), ip, &posted, jar).await,
+        ActionKind::Quote => quote_post(links, (object, token), ip, posted, jar).await,
         ActionKind::Pause | ActionKind::Resume | ActionKind::AskCharge => {
-            let acted = session_post(&links, (kind, object, &token), &jar).await;
-            acted.unwrap_or_else(IntoResponse::into_response)
+            session_post(links, (kind, object, token), &jar).await
         }
-        ActionKind::Approve => {
-            let acted = approve_post(&links, (object, &token), &jar).await;
-            acted.unwrap_or_else(IntoResponse::into_response)
-        }
-        ActionKind::Hold => {
-            let acted = hold_post(&links, (object, &token)).await;
-            acted.unwrap_or_else(IntoResponse::into_response)
-        }
-        ActionKind::Away => {
-            let acted = away_post(&links, (object, &token), &jar, &posted.hours).await;
-            acted.unwrap_or_else(IntoResponse::into_response)
-        }
-        ActionKind::Busy => {
-            let acted = busy_post(&links, (object, &token), &jar, &posted.days).await;
-            acted.unwrap_or_else(IntoResponse::into_response)
-        }
-        ActionKind::LinkPhone => {
-            let acted = link_phone_post(&links, (object, &token), &jar).await;
-            acted.unwrap_or_else(IntoResponse::into_response)
-        }
+        ActionKind::Approve => approve_post(links, (object, token), &jar).await,
+        ActionKind::Hold => hold_post(links, (object, token)).await,
+        ActionKind::Away => away_post(links, (object, token), &jar, &posted.hours).await,
+        ActionKind::Busy => busy_post(links, (object, token), &jar, &posted.days).await,
+        ActionKind::LinkPhone => link_phone_post(links, (object, token), &jar).await,
         ActionKind::Confirm => {
             let code = posted.code.as_deref();
-            let acted = confirm_post(&links, (object, &token), ip, jar, code).await;
-            acted.unwrap_or_else(IntoResponse::into_response)
+            confirm_post(links, (object, token), ip, jar, code).await
         }
+    }
+}
+
+/// SEC-026, SEC-025, BIZ-038, D-5316, D-5320: a refused press of a link already used, on a bare
+/// connection after the refused use rolled back; it stores, sends and logs nothing. Only a link
+/// `used_action_link` names (used, in its window, its member still allowed, its business not
+/// left, D-5758) gets an answer: a
+/// Quote link its job's page again with the quote as stored ([`quote_again`]), a Confirm link
+/// the same 303 to its Confirm page, a session kind the "already used" page only for its own
+/// signed-in person, a Hold link that page alone; anything else is the one not-found answer.
+async fn replay(
+    links: &Links,
+    (kind, object, token): (ActionKind, Uuid, &str),
+    jar: CookieJar,
+) -> Result<Response, Stop> {
+    let now = links.clock.now();
+    let mut db = links.pool.acquire().await.map_err(failed)?;
+    let used = used_action_link(&mut db, (kind, object), token, now).await;
+    let used = used.map_err(link_stop)?;
+    match kind.use_by() {
+        UseBy::LinkAndCode => Ok(Redirect::to(&confirm_path(object)).into_response()),
+        UseBy::LinkAlone if kind == ActionKind::Quote => {
+            quote_again(&mut db, used, token, jar).await
+        }
+        UseBy::LinkAlone => Ok(page(jar, action_done_page().ok())),
+        UseBy::Session => {
+            let principal = business_principal(&mut db, &jar, now).await;
+            let own = principal
+                .map_err(failed)?
+                .is_some_and(|p| p.member() == used.member && p.business() == used.business);
+            if !own {
+                return Err(Stop::NotFound);
+            }
+            Ok(page(jar, action_done_page().ok()))
+        }
+    }
+}
+
+/// PICK-040, CARD-023, SEC-026, D-5316: a used Quote link's job page again, read now (the quote as
+/// stored, "Not a fit for us" as after the first press), when the job still passes the unused
+/// link's checks ([`read_form`]: open to this business, its card sent, its page there); else the
+/// "already used" page.
+async fn quote_again(
+    db: &mut PgConnection,
+    used: ActionTarget,
+    token: &str,
+    jar: CookieJar,
+) -> Result<Response, Stop> {
+    let link = JobLink {
+        job: used.object,
+        business: used.business,
+    };
+    let csrf = csrf_token(&jar).unwrap_or_default();
+    let shown = match read_form(db, link, false).await {
+        Ok(form) => {
+            let action = not_a_fit_action(link.job, token);
+            let choice = NotAFitChoice {
+                action: &action,
+                csrf: &csrf,
+            };
+            done_page(db, link, &form, choice).await
+        }
+        Err(stop) => Err(stop),
+    };
+    match shown {
+        Ok(html) => Ok(page(jar, html)),
+        Err(Stop::NotFound) => Ok(page(jar, action_done_page().ok())),
+        Err(Stop::Failed) => Err(Stop::Failed),
     }
 }
 
@@ -590,13 +663,12 @@ async fn quote_post(
     ip: IpAddr,
     posted: &Posted,
     jar: CookieJar,
-) -> Response {
+) -> Result<Response, Stop> {
     let csrf = csrf_token(&jar).unwrap_or_default();
     let sent = send_quote(links, (job, token), ip, posted, &csrf).await;
-    match sent {
-        Ok(Sent::Page(html)) => page(jar, html),
-        Ok(Sent::TryLater) => (StatusCode::TOO_MANY_REQUESTS, Html(TRY_LATER)).into_response(),
-        Err(stop) => stop.into_response(),
+    match sent? {
+        Sent::Page(html) => Ok(page(jar, html)),
+        Sent::TryLater => Ok((StatusCode::TOO_MANY_REQUESTS, Html(TRY_LATER)).into_response()),
     }
 }
 
