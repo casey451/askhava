@@ -66,6 +66,7 @@ mod notice_settings;
 mod owner_ai_switch;
 mod owner_auth;
 mod owner_complaint;
+mod owner_digest_page;
 mod owner_help;
 mod owner_portal;
 mod owner_release;
