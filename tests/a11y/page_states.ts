@@ -533,7 +533,7 @@ const SITE_PAGE_STATES: readonly PageState[] = [
   ["/business-data", "business data page", "A log of each email we send you", "Para propietarios"],
   ["/es/business-data", "business data page in Spanish", "Su registro de avisos", "Homeowners"],
   ["/services", "services, licensed trades", "Get quotes from licensed plumbers.", "Para propietarios"],
-  ["/coverage", "what we cover now", "may charge roaming fees.", "Para propietarios"],
+  ["/coverage", "what we cover now", "are not confirmed yet.", "Para propietarios"],
   ["/help", "help page", "Messages are not watched around the clock.", "Para propietarios"],
   ["/help/roc-complaint", "ROC complaint page", "File a complaint on the ROC website", "Para propietarios"],
   ["/accessibility", "accessibility statement", "If you use a relay service, you can reach us by text or email.", "Para propietarios"],
