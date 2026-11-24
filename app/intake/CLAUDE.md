@@ -32,6 +32,7 @@ The layer-7 crate that turns a homeowner's inbound text into a request (`docs/ar
 - `job_answers` never returns a contact answer: `tests/integration/tests/job_answers_reader.rs` (T745). More: `(never 40)` in NOTES.md.
 - Web chat after the code (T645): an opt-out lists the number and texts nothing; INT-038 stops the chat: `app/server/tests/web_chat_stops.rs` (TD-CON-36). More: `(never 41)` in NOTES.md.
 - Trade questions: "Which fits best?" and `trade_ask` at most twice each: `tests/integration/tests/intake_order_trade_questions.rs`, `intake_boundary_count.rs`. More: `(never 42)` in NOTES.md.
+- An under-13 purge leaves none of her kept words and queues her Twilio body deletes at once: `tests/integration/tests/under_13_purge_complete.rs` (T839, D-5821).
 
 ## Detail
 Everything else about this crate (what it owns, the code behind each requirement ID, change recipes, the tests that guard it, decisions and history) is in `app/intake/NOTES.md`, one entry per line, each starting with its requirement IDs. Grep it by requirement ID, file or word (`grep -n 'FEE-039' app/intake/NOTES.md`); never read it whole. Add your own entries at its end, one line each (`docs/code-docs.md` section 2).
