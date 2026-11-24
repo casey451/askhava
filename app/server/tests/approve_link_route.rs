@@ -272,7 +272,8 @@ async fn approve(w: &World, path: &str) -> (u16, String) {
 }
 
 /// TD-SEC-66: opening the link changes nothing however often; the owner's press with a fresh
-/// step-up approves once and uses the link; a used link approves no more.
+/// step-up approves once and uses the link; a used link approves no more and shows the "already
+/// used" page (T814, D-5316).
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_sec_66_the_owner_approves_once_with_a_fresh_step_up(pool: PgPool) {
     let w = world(&pool).await;
@@ -289,8 +290,17 @@ async fn td_sec_66_the_owner_approves_once_with_a_fresh_step_up(pool: PgPool) {
     assert_eq!(status, 200, "{text}");
     assert_eq!(found(&w, "928-555-0150").await, Some(w.team.owner.business));
     assert!(!unused(&w, &path).await, "the approval used the link");
-    let (again, _) = approve(&w, &path).await;
-    assert_eq!(again, 404, "a used link approves no more");
+    let (again, text) = approve(&w, &path).await;
+    assert_eq!(
+        again, 200,
+        "a used link shows its result (SEC-026, D-5316): {text}"
+    );
+    assert!(text.contains("This link was already used"), "{text}");
+    assert_eq!(
+        found(&w, "928-555-0150").await,
+        Some(w.team.owner.business),
+        "approved once"
+    );
 }
 
 /// TD-SEC-66: signed out is sent to sign in, the owner without a fresh step-up to the step-up
