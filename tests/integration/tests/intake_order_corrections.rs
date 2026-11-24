@@ -5,7 +5,7 @@
 //! never a ZIP answer and go to the open step, which asks the ZIP question's text again with no
 //! `zip` row, so the one re-ask (INT-049) is neither used nor renewed; nothing after STOP
 //! (CON-009); a two-word first text (INT-007) opens its one job on the ZIP's turn keyed with her
-//! new property; a request whose words named no trade gets nothing at step 5 (no INT-016 reply,
+//! new property; a request naming no trade gets only `trade_ask` at step 5 (no INT-016 reply,
 //! no close, no step 11); a trade answer opens its job through `open_job`, never `begin_job`
 //! (INT-009), the coverage line following (CON-031's first question stays the ZIP). PostgreSQL,
 //! fake data and 555 numbers only (no phone number appears here at all).
@@ -21,8 +21,8 @@ use askhava_intake::api::rules::{
     CONSENT_TEMPLATE, Inbound, NAME_ADDRESS_TEMPLATE, SAFETY_TEMPLATE, Settings, UNDER_18_TEMPLATE,
 };
 use askhava_intake::api::{
-    BEEP_TEMPLATE, COUNT_MANY_TEMPLATE, Handled, NOT_COVERED_TEMPLATE, RawReply, Reply, TextIn,
-    ZIP_AGAIN_TEMPLATE, ZIP_QUESTION_TEMPLATE, receive_raw_reply,
+    BEEP_TEMPLATE, COUNT_MANY_TEMPLATE, Handled, NOT_COVERED_TEMPLATE, RawReply, Reply,
+    TRADE_ASK_TEMPLATE, TextIn, ZIP_AGAIN_TEMPLATE, ZIP_QUESTION_TEMPLATE, receive_raw_reply,
 };
 use askhava_integration::set_app_role;
 use askhava_licensing::api::import_city_list;
@@ -399,9 +399,9 @@ async fn routed(
     templates(reply.expect("reply"))
 }
 
-/// TD-INT-52 (INT-007, INT-009, D-4602): a two-word first text naming a trade opens no job and
-/// keeps no words; the ZIP's turn opens exactly one job, keyed with her new property. The text
-/// that turn sends is TD-INT-53's and is not asserted here.
+/// TD-INT-52 (INT-007, INT-009, D-4602, D-5400): a two-word first text naming a trade opens no
+/// job; the ZIP's turn opens exactly one job, keyed with her new property, and the words are kept
+/// on the ZIP's turn. The text that turn sends is TD-INT-53's and is not asserted here.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_int_52_a_two_word_trade_opens_its_job_on_the_zip_turn(mut db: Db) {
     setup(&mut db).await;
@@ -414,18 +414,23 @@ async fn td_int_52_a_two_word_trade_opens_its_job_on_the_zip_turn(mut db: Db) {
     let link = keyed_link(&mut db, id, "handyman").await;
     assert_eq!(strings(&mut db, SEEN, id).await, [link], "exactly one job");
     assert!(first_job(&mut db, id).await.is_some(), "her one job");
-    assert_eq!(count(&mut db, KEPT, id).await, 0, "no words kept");
+    assert_eq!(
+        count(&mut db, KEPT, id).await,
+        1,
+        "the first text's words, kept on the ZIP's turn"
+    );
 }
 
-/// TD-INT-52 (INT-016, INT-043, D-4441 (5)): a request whose words named no trade gets, on its
-/// ZIP's turn, no job, no INT-016 reply, no close and no name-and-address question.
+/// TD-INT-52 (INT-016, INT-043, D-4441 (5), D-5550): a request whose words named no trade gets, on
+/// its ZIP's turn, only the `trade_ask` question: no job, no INT-016 reply, no close and no
+/// name-and-address question.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_int_52_no_trade_gets_nothing_at_step_5(mut db: Db) {
     setup(&mut db).await;
     sent(&mut db, 0x0555_0211, NO_TRADE, 0).await;
     let id = request(&mut db, 0x0555_0211).await;
     let got = sent(&mut db, 0x0555_0211, HOME_ZIP, 1).await;
-    assert!(got.is_empty(), "{got:?}");
+    assert_eq!(got, [TRADE_ASK_TEMPLATE], "{got:?}");
     assert!(!got.contains(&NOT_COVERED_TEMPLATE));
     assert!(!got.contains(&NAME_ADDRESS_TEMPLATE));
     assert_eq!(count(&mut db, PROPERTIES, id).await, 1, "her ZIP stored");

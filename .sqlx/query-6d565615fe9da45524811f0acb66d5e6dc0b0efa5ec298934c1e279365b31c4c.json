@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT first_inbox_id FROM intake.conversation WHERE id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "first_inbox_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "intake.conversation",
+            "name": "first_inbox_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "6d565615fe9da45524811f0acb66d5e6dc0b0efa5ec298934c1e279365b31c4c"
+}
