@@ -79,7 +79,8 @@ function quoteFields(): Record<string, string> {
 /** Puts `fields` into the page's form (text values, ticked radios) and returns nothing. */
 async function fill(page: Page, fields: Record<string, string>): Promise<void> {
   await page.evaluate((values) => {
-    const form = document.querySelector("form[method='post']") as HTMLFormElement;
+    const form = document.querySelector<HTMLFormElement>("form[method='post']");
+    if (form === null) throw new Error("the page has no post form");
     for (const [name, value] of Object.entries(values)) {
       for (const field of Array.from(form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>(`[name='${name}']`))) {
         if (field instanceof HTMLInputElement && field.type === "radio") field.checked = field.value === value;
@@ -92,7 +93,8 @@ async function fill(page: Page, fields: Record<string, string>): Promise<void> {
 /** The first press: the page's form posted by a same-origin fetch; its status and body. */
 async function press(page: Page): Promise<{ status: number; text: string }> {
   return page.evaluate(async () => {
-    const form = document.querySelector("form[method='post']") as HTMLFormElement;
+    const form = document.querySelector<HTMLFormElement>("form[method='post']");
+    if (form === null) throw new Error("the page has no post form");
     const body = new URLSearchParams(new FormData(form) as unknown as Record<string, string>);
     const reply = await fetch(location.pathname, { method: "POST", body });
     return { status: reply.status, text: await reply.text() };
