@@ -28,6 +28,13 @@
 //! 911 check) and after `receive_text` (`conversation::stop_if_under_18`; under 13 the session row
 //! goes in the same transaction). The first message's language code is kept on the session and
 //! decides the consent text's language, and TXT-041's line, in [`check_code`].
+//!
+//! T649 (INT-027, PRIV-005, PRIV-008, AI-003, AI-020, D-4294): [`chat_raw_message`], the
+//! composition's entry, also holds the raw words, the vault and the LIST's names; while her
+//! name-and-address question is open the turn goes to `replies::receive_raw_reply`, so her answer
+//! lands on her vault contact and never in the kept description. [`chat_contact`] gives the
+//! composition the verified session's contact for its vault-name scrub, and [`chat_opt_out`] is
+//! the turn after a vault read that failed (D-2088).
 
 use std::net::IpAddr;
 
@@ -48,12 +55,14 @@ use sqlx::{Connection, PgConnection};
 use thiserror::Error;
 
 use crate::conversation::{
-    BUSINESS_SIGNUP_TEMPLATE, queue_text, shows_business_intent, stop_if_under_18,
+    BUSINESS_SIGNUP_TEMPLATE, name_address_open, queue_text, shows_business_intent,
+    stop_if_under_18,
 };
 use crate::emergency::{Check, check};
 use crate::limits::{Admission, admit_new_request};
 use crate::models::{self, IntakeError};
 use crate::order::{Path, SPANISH_NOT_YET_TEMPLATE, Step, keep_words, order};
+use crate::replies::{RawReply, Reply, receive_raw_reply};
 use crate::rules::{
     AgeStop, Inbound, SAFETY_TEMPLATE, Settings, UNDER_18_TEMPLATE, age_stop, consent_language,
     consent_template, language_code, language_from_code, wanted_language,
@@ -129,7 +138,15 @@ pub enum ChatAnswer {
     AskNumber,
     /// After the code: the text path's answer.
     Texted(Handled),
+    /// After the code, while her name-and-address question is open: the reply path's answer
+    /// (INT-027, D-4294), as on a text.
+    Replied(Reply),
 }
+
+/// The raw words of one chat message, the vault its name-and-address answer goes to and the
+/// public names a LIST reads (INT-027, TXT-031, D-4294); held only while
+/// [`chat_raw_message`] runs. No `Debug`: it holds the raw text.
+pub type ChatRaw<'a> = (RawReply<'a>, &'a [(Uuid, String)]);
 
 /// What [`check_code`] did.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -275,6 +292,36 @@ pub async fn chat_message(
     msg: &ChatIn<'_>,
     settings: Settings,
 ) -> Result<ChatAnswer, ChatError> {
+    chat_turn(db, (secret, key), (msg, None), settings).await
+}
+
+/// INT-027, PRIV-001, PRIV-005, D-4294, D-5387: [`chat_message`] with her raw words, the vault
+/// and the LIST's public names. After the code, while her name-and-address question is open
+/// (`name_address_open`), the turn goes to `replies::receive_raw_reply` as a text would (LIST
+/// and CLOSE keep their paths; `reads_as_address` decides the screen): the answer lands on her
+/// own vault contact and its words are never kept as the job description. The opt-out check
+/// stays first and INT-038's stop runs once, inside the reply path; under 13 the session row
+/// goes in the same transaction. Otherwise exactly [`chat_message`].
+///
+/// # Errors
+///
+/// As [`chat_message`], and `receive_raw_reply`'s; nothing is kept on an error.
+pub async fn chat_raw_message(
+    db: &mut PgConnection,
+    (secret, key): (&SecretString, &SecretString),
+    (msg, raw): (&ChatIn<'_>, ChatRaw<'_>),
+    settings: Settings,
+) -> Result<ChatAnswer, ChatError> {
+    chat_turn(db, (secret, key), (msg, Some(raw)), settings).await
+}
+
+/// The one body of [`chat_message`] and [`chat_raw_message`].
+async fn chat_turn(
+    db: &mut PgConnection,
+    (secret, key): (&SecretString, &SecretString),
+    (msg, raw): (&ChatIn<'_>, Option<ChatRaw<'_>>),
+    settings: Settings,
+) -> Result<ChatAnswer, ChatError> {
     let s = session(db, key).await?;
     let (Some(contact), Some(request)) = (s.contact, s.conversation) else {
         first_message(db, s.id, msg).await?;
@@ -288,9 +335,110 @@ pub async fn chat_message(
         return screen(msg.words, settings).map_err(ChatError::from);
     }
     let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
-    let answer = text_turn(&mut tx, secret, (&s, contact, request), msg, settings).await?;
+    let answer = match raw {
+        Some(raw) if name_address_open(&mut tx, contact).await? => {
+            raw_turn(&mut tx, (secret, s.id, contact), (msg, raw), settings).await?
+        }
+        _ => text_turn(&mut tx, secret, (&s, contact, request), msg, settings).await?,
+    };
     tx.commit().await.map_err(|_| IntakeError::Database)?;
     Ok(answer)
+}
+
+/// D-2088, CON-008, D-4294: the turn of a message whose vault read failed (a value that will not
+/// open, a contact not found): after the code an opt-out word or phrase still lists the
+/// session's number ([`ChatAnswer::Shown`] with CON-009's words); anything else is `None` and
+/// stops before the text path and the AI, keeping nothing.
+///
+/// # Errors
+///
+/// [`ChatError::UnknownSession`], [`ChatError::Vault`] or a database error.
+pub async fn chat_opt_out(
+    db: &mut PgConnection,
+    key: &SecretString,
+    msg: &ChatIn<'_>,
+) -> Result<Option<ChatAnswer>, ChatError> {
+    let s = session(db, key).await?;
+    let (Some(contact), Some(_), Some(how)) =
+        (s.contact, s.conversation, detect_opt_out(msg.words))
+    else {
+        return Ok(None);
+    };
+    opt_out(db, (contact, &s), how, msg.received_at)
+        .await
+        .map(Some)
+}
+
+/// AI-003, AI-020, D-4294: the vault contact of the session of `key` once its code was checked
+/// (a request opened), whose vault name and stated names the composition scrubs the chat's words
+/// with; `None` before the code or for no session.
+///
+/// # Errors
+///
+/// [`IntakeError::Database`].
+pub async fn chat_contact(
+    db: &mut PgConnection,
+    key: &SecretString,
+) -> Result<Option<Uuid>, IntakeError> {
+    match session(db, key).await {
+        Ok(s) => Ok(s.contact.filter(|_| s.conversation.is_some())),
+        Err(ChatError::UnknownSession) => Ok(None),
+        Err(_) => Err(IntakeError::Database),
+    }
+}
+
+/// The chat message as the text path's inbound text from `contact`: opt-out and HELP are false,
+/// since T645's opt-out check ran first (D-4292, D-4294).
+fn text_in<'a>(contact: Uuid, msg: &ChatIn<'a>) -> TextIn<'a> {
+    let inbound = Inbound {
+        words: msg.words,
+        opt_out: false,
+        help: false,
+        emergency: false,
+        ai_spanish: None,
+    };
+    TextIn {
+        inbox_id: msg.message_id,
+        contact,
+        inbound,
+        received_at: msg.received_at,
+    }
+}
+
+/// INT-027, INT-038, PRIV-005, PRIV-007, PRIV-008, D-4294: the turn while her name-and-address
+/// question is open: `receive_raw_reply` with the raw text and the vault, nothing kept as the
+/// job description. An INT-038 stop (its `Reply::UnderAge`, or its text last in `Handled`)
+/// shows INT-038's reply; under 13 the session row goes in this transaction too.
+async fn raw_turn(
+    tx: &mut PgConnection,
+    (secret, session, contact): (&SecretString, Uuid, Uuid),
+    (msg, (raw, names)): (&ChatIn<'_>, ChatRaw<'_>),
+    settings: Settings,
+) -> Result<ChatAnswer, ChatError> {
+    let text = text_in(contact, msg);
+    let reply = receive_raw_reply(tx, secret, (&text, raw), (settings, names)).await?;
+    let stop = match &reply {
+        Reply::UnderAge(stop, _) => Some(*stop),
+        Reply::Handled(h)
+            if h.texts
+                .last()
+                .is_some_and(|q| q.template == UNDER_18_TEMPLATE) =>
+        {
+            age_stop(msg.words)
+        }
+        _ => None,
+    };
+    let Some(stop) = stop else {
+        return Ok(ChatAnswer::Replied(reply));
+    };
+    if stop == AgeStop::Under13 {
+        forget_session(tx, session).await?;
+    }
+    let (language, spanish_on) = (
+        wanted_language(msg.words, None),
+        settings.spanish_conversations_on,
+    );
+    shown(UNDER_18_TEMPLATE, language, spanish_on).map_err(ChatError::from)
 }
 
 /// After the code (INT-002, INT-038, PRIV-008, D-4142, D-4292): the text path, then INT-038's
@@ -304,19 +452,7 @@ async fn text_turn(
     msg: &ChatIn<'_>,
     settings: Settings,
 ) -> Result<ChatAnswer, ChatError> {
-    let inbound = Inbound {
-        words: msg.words,
-        opt_out: false,
-        help: false,
-        emergency: false,
-        ai_spanish: None,
-    };
-    let text = TextIn {
-        inbox_id: msg.message_id,
-        contact,
-        inbound,
-        received_at: msg.received_at,
-    };
+    let text = text_in(contact, msg);
     let handled = receive_text(tx, secret, &text, settings).await?;
     let spanish_on = settings.spanish_conversations_on;
     if let Some(conversation) = handled.conversation

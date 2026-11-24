@@ -220,6 +220,15 @@ const KEYS: &[&str] = &[
     // The throwaway PostgreSQL service's admin URL, read only by the worker's monthly test
     // restore (T648, OPS-013, OPS-051, SEC-052, D-4293).
     RESTORE_ADMIN_URL,
+    // The owner portal's monthly-review flags (OPS-027, OPS-031, OPS-034; T524, D-3880, D-3882),
+    // each a whole number above 0, read through [`Settings::owner_flag_limits`].
+    "ASKHAVA_FLAG_CROWDED_BUSINESSES",
+    "ASKHAVA_FLAG_CROWDED_MEDIAN_QUOTES",
+    "ASKHAVA_FLAG_NO_OR_OTHER_PERCENT",
+    "ASKHAVA_FLAG_NO_OR_OTHER_MONTHS",
+    "ASKHAVA_FLAG_LAPSED_PICKS",
+    "ASKHAVA_FLAG_REPEAT_REQUESTS",
+    "ASKHAVA_FLAG_WINDOW_DAYS",
 ];
 
 /// Key prefixes that only a live vendor account issues (SEC-002).
@@ -455,6 +464,41 @@ pub struct Settings {
     owner_phone: Option<SecretString>,
     /// The export recipient and the backup role's URL (T109).
     export: (Option<String>, Option<SecretString>),
+    owner_flags: OwnerFlagLimits,
+}
+
+/// The owner portal's monthly-review flag numbers (OPS-027, OPS-031, OPS-034; D-284, D-464,
+/// D-251; T524); a flag changes nothing. Each `ASKHAVA_FLAG_*` key's default is its field's.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct OwnerFlagLimits {
+    /// OPS-027: the active businesses a crowded trade has at least (5).
+    pub crowded_businesses: u32,
+    /// OPS-027: the median quotes per job a crowded trade reaches in a month (4).
+    pub crowded_median_quotes: u32,
+    /// OPS-031: the share of connected jobs ending NO or OTHER at day 3 a trade passes (30%).
+    pub no_or_other_percent: u32,
+    /// OPS-031: the consecutive calendar months it passes that share in (2).
+    pub no_or_other_months: u32,
+    /// OPS-034: the lapsed picks a flagged business has at least in the window (3).
+    pub lapsed_picks: u32,
+    /// OPS-034: the requests with no pick a flagged homeowner made at least in the window (3).
+    pub repeat_requests: u32,
+    /// OPS-034: the window in days (30).
+    pub window_days: u32,
+}
+
+impl Default for OwnerFlagLimits {
+    fn default() -> Self {
+        Self {
+            crowded_businesses: 5,
+            crowded_median_quotes: 4,
+            no_or_other_percent: 30,
+            no_or_other_months: 2,
+            lapsed_picks: 3,
+            repeat_requests: 3,
+            window_days: 30,
+        }
+    }
 }
 
 impl Settings {
@@ -516,6 +560,7 @@ impl Settings {
             db_volume_bytes: volume_bytes(raw.remove(DB_VOLUME_BYTES))?,
             owner_phone: e164(raw.remove(OWNER_PHONE), OWNER_PHONE)?.map(SecretString::from),
             export: export_keys(&mut raw)?,
+            owner_flags: owner_flags(&mut raw)?,
         })
     }
 
@@ -721,6 +766,12 @@ impl Settings {
     #[must_use]
     pub fn home_numbers_min_jobs(&self) -> u32 {
         self.home_numbers_min_jobs
+    }
+
+    /// OPS-027, OPS-031, OPS-034: the owner flags' numbers (`ASKHAVA_FLAG_*`, T524).
+    #[must_use]
+    pub fn owner_flag_limits(&self) -> OwnerFlagLimits {
+        self.owner_flags
     }
 
     /// OPS-009's spot-check cadence (`ASKHAVA_SPOT_CHECK_EVERY_DAYS`, a whole number of days above
@@ -1113,6 +1164,29 @@ fn owner_reports(raw: &mut HashMap<&'static str, String>) -> Result<(u32, u32), 
         n @ 1..=100 => Ok((days, n)),
         _ => Err(SettingsError::Invalid(GOLDEN_TARGET)),
     }
+}
+
+/// OPS-027, OPS-031, OPS-034 (T524): each flag number above 0, its default when unset; the
+/// percent is at most 100.
+fn owner_flags(raw: &mut HashMap<&'static str, String>) -> Result<OwnerFlagLimits, SettingsError> {
+    let d = OwnerFlagLimits::default();
+    let mut key = |k: &'static str, default: u32| above_zero(raw, k, default);
+    let limits = OwnerFlagLimits {
+        crowded_businesses: key("ASKHAVA_FLAG_CROWDED_BUSINESSES", d.crowded_businesses)?,
+        crowded_median_quotes: key(
+            "ASKHAVA_FLAG_CROWDED_MEDIAN_QUOTES",
+            d.crowded_median_quotes,
+        )?,
+        no_or_other_percent: key("ASKHAVA_FLAG_NO_OR_OTHER_PERCENT", d.no_or_other_percent)?,
+        no_or_other_months: key("ASKHAVA_FLAG_NO_OR_OTHER_MONTHS", d.no_or_other_months)?,
+        lapsed_picks: key("ASKHAVA_FLAG_LAPSED_PICKS", d.lapsed_picks)?,
+        repeat_requests: key("ASKHAVA_FLAG_REPEAT_REQUESTS", d.repeat_requests)?,
+        window_days: key("ASKHAVA_FLAG_WINDOW_DAYS", d.window_days)?,
+    };
+    if limits.no_or_other_percent > 100 {
+        return Err(SettingsError::Invalid("ASKHAVA_FLAG_NO_OR_OTHER_PERCENT"));
+    }
+    Ok(limits)
 }
 
 /// WEB-028, D-468 (the home page's threshold) and OPS-009, D-4625 (the spot-check cadence): a
