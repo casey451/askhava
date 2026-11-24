@@ -752,7 +752,7 @@ Every HTTP route the `web` process serves or a queued task's goal says it will s
 | POST | /q/{token}/updates | portals | yes |
 | POST | /q/{token}/updates/confirm | portals | yes |
 | POST | /b/quote/{job}/auto-confirm | portals | T731 |
-| POST | /b/jobs/{j}/withdraw | portals | T732 |
+| POST | /b/jobs/{j}/withdraw | portals | yes |
 | GET | /b/settings/service-area | portals | T733 |
 | POST | /b/settings/service-area | portals | T733 |
 | POST | /b/shared-inbox | portals | T733 |
