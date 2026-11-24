@@ -652,6 +652,9 @@ a.card { display: block; color: var(--ink); text-decoration: none; }
 .status-line:empty { display: none; }
 .quote-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 20px; }
 .quote-list li { max-width: none; }
+/* A "#quote-N" address (pick_review.html's "Go back") focuses its card (tabindex="-1", D-5715); the jump
+   stops 8 px short of the card's top, so its 3 px :focus-visible ring is drawn inside the viewport (A11Y-005). */
+#quotes > li { scroll-margin-top: 8px; }
 .after-list { padding-block: 24px 48px; }
 
 /* Footer: band with a line top edge; every link a 44 px row */
