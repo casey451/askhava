@@ -92041,7 +92041,7 @@
     "T204",
     "T366"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 1,
    "slug": "health-check-alert",
    "type": "build",
@@ -92190,13 +92190,70 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 65,
      "head_sha": "7308435f9b30eb53a7e4d8f4fae07609fa4ff653",
-     "pr": null,
-     "checks": null,
+     "pr": 1444,
+     "checks": [
+      {
+       "name": "backup lane 5",
+       "conclusion": null
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-24T10:37:51Z",
      "ended_at": "2026-11-24T12:13:02Z",
-     "result": "MERGE_PENDING",
+     "result": "done",
      "usage": {
       "worker": {
        "tokens": 1337134,
@@ -92236,7 +92293,18 @@
      "at": "2026-11-18T16:47:17Z"
     }
    ],
-   "last_failure": "Ci: failure; Python: failure\nPython failed at step: Unit, contract and drill tests (pytest)\nT705: about 21877 tokens, 11% of the window\nT711: about 54466 tokens, 28% of the window\nT715: about 55680 tokens, 28% of the window\nT717: about 50274 tokens, 26% of the window\nT716: about 39820 tokens, 20% of the window\nT718: about 64046 tokens, 33% of the window\nT719: about 66789 tokens, 34% of the window\nERROR T702: stale, differs from the template output\nchecked 662 prompts, 1 problems\n=========================== short test summary info ============================\nFAILED tests/test_gen_prompts.py::test_real_prompts_are_current - AssertionError: assert 1 == 0\n +  where 1 = <function main at 0x7ccbfd0b6340>(['--root', '/home/runner/work/askhava/askhava', '--check'])\n +    where <function main at 0x7ccbfd0b6340> = gp.main\n1 failed, 4027 passed, 11 skipped in 223.80s (0:03:43)\n##[error]Process completed with exit code 1.\nCi failed at step: All five jobs passed\nChecks: success, Lint and slow tests: success, Python: failure, Coverage: success, E2e: success\n##[error]Process completed with exit code 1."
+   "last_failure": "Ci: failure; Python: failure\nPython failed at step: Unit, contract and drill tests (pytest)\nT705: about 21877 tokens, 11% of the window\nT711: about 54466 tokens, 28% of the window\nT715: about 55680 tokens, 28% of the window\nT717: about 50274 tokens, 26% of the window\nT716: about 39820 tokens, 20% of the window\nT718: about 64046 tokens, 33% of the window\nT719: about 66789 tokens, 34% of the window\nERROR T702: stale, differs from the template output\nchecked 662 prompts, 1 problems\n=========================== short test summary info ============================\nFAILED tests/test_gen_prompts.py::test_real_prompts_are_current - AssertionError: assert 1 == 0\n +  where 1 = <function main at 0x7ccbfd0b6340>(['--root', '/home/runner/work/askhava/askhava', '--check'])\n +    where <function main at 0x7ccbfd0b6340> = gp.main\n1 failed, 4027 passed, 11 skipped in 223.80s (0:03:43)\n##[error]Process completed with exit code 1.\nCi failed at step: All five jobs passed\nChecks: success, Lint and slow tests: success, Python: failure, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
+   "merged_sha": "a7f2a247ae3385b07afb64abb60ef55f2fc5a9ae",
+   "merged_at": "2026-11-24T12:37:44Z",
+   "files": [
+    "app/server/NOTES.md",
+    "app/server/src/bin/worker.rs",
+    "app/server/src/health_watch.rs",
+    "app/server/src/lib.rs",
+    "docs/architecture.md",
+    "docs/decisions.md",
+    "tests/integration/tests/health_watch.rs"
+   ]
   },
   {
    "id": "T619",
@@ -107030,8 +107098,8 @@
    "deps": [
     "T668"
    ],
-   "status": "MERGE_PENDING",
-   "attempts": 0,
+   "status": "QUEUED",
+   "attempts": 1,
    "slug": "quote-withdraw-served",
    "type": "build",
    "stage": "5",
@@ -107050,13 +107118,54 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 75,
      "head_sha": "50678fa16de9b7cc98ad0b513f1ff15269256203",
-     "pr": null,
-     "checks": null,
+     "pr": 1445,
+     "checks": [
+      {
+       "name": "Ci",
+       "conclusion": "failure"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-24T11:13:21Z",
      "ended_at": "2026-11-24T12:16:59Z",
-     "result": "MERGE_PENDING",
+     "result": "check_failed",
      "usage": {
       "worker": {
        "tokens": 3243613,
@@ -107081,7 +107190,8 @@
     "enabled": true,
     "why": "auto-merge on #1445 (gh pr merge)",
     "head": "50678fa16de9b7cc98ad0b513f1ff15269256203"
-   }
+   },
+   "last_failure": "Ci: failure; Coverage: failure\nCoverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)\ntest td_call_24_another_business_lines_pin_is_refused ... ok\ntest td_call_24_the_main_phones_link_reply_links_the_blocked_phone ... ok\nfailures:\n---- td_call_24_no_row_or_log_line_holds_the_number_or_the_pin stdout ----\nthread 'td_call_24_no_row_or_log_line_holds_the_number_or_the_pin' (24624) panicked at tests/integration/tests/link_reply.rs:595:13:\nassertion `left == right` failed: businesses.staff_phone\n  left: 1\n right: 0\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\n    td_call_24_no_row_or_log_line_holds_the_number_or_the_pin\ntest result: FAILED. 10 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.98s\nerror: test failed, to rerun pass `-p askhava-integration --test link_reply`\nerror: process didn't exit successfully: `/home/runner/.rustup/toolchains/nightly-2026-10-15-x86_64-unknown-linux-gnu/bin/cargo test --tests --manifest-path /home/runner/work/askhava/askhava/Cargo.tom\n##[error]Process completed with exit code 101.\nCi failed at step: All five jobs passed\nChecks: success, Lint and slow tests: success, Python: success, Coverage: failure, E2e: success\n##[error]Process completed with exit code 1."
   },
   {
    "id": "T733",
@@ -114816,8 +114926,8 @@
     "T115",
     "T075"
    ],
-   "status": "MERGE_PENDING",
-   "attempts": 0,
+   "status": "QUEUED",
+   "attempts": 1,
    "slug": "coverage-us-numbers",
    "type": "harness",
    "stage": "5",
@@ -114835,13 +114945,58 @@
      "model": "claude-sonnet-5-5",
      "model_evidence_count": 32,
      "head_sha": "73c28aee267af9c8e6fff4793084b56426680d11",
-     "pr": null,
-     "checks": null,
+     "pr": 1443,
+     "checks": [
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "failure"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "failure"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-24T10:10:33Z",
      "ended_at": "2026-11-24T12:06:01Z",
-     "result": "MERGE_PENDING",
+     "result": "check_failed",
      "usage": {
       "worker": {
        "tokens": 520617,
@@ -114877,7 +115032,8 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "merge_turn_since": "2026-11-24T12:15:03Z"
+   "merge_turn_since": "2026-11-24T12:15:03Z",
+   "last_failure": "Ci: failure; Checks: failure\nChecks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS, D-3142)\n        \"More\",\n    ],\n), tail = [\n    0,\n    0,\n], second = false\n\tsuccesses: 151\n\tlocal rejects: 0\n\tglobal rejects: 0\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\n    tests::prop_card_no_contact::td_card_01_card_holds_no_contact\ntest result: FAILED. 66 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.45s\nerror: test failed, to rerun pass `-p askhava-quotes --lib`\n##[error]Process completed with exit code 101.\nCi failed at step: All five jobs passed\nChecks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1."
   },
   {
    "id": "T803",
@@ -127183,7 +127339,7 @@
    }
   }
  },
- "updated_at": "2026-11-24T12:24:55Z",
+ "updated_at": "2026-11-24T12:39:27Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

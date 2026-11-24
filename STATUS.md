@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T12:24:55Z by runner 16fd7ee8aae9 (actions).
+Updated 2026-11-24T12:39:27Z by runner 16fd7ee8aae9 (actions).
 
-**Building: T733 in progress since 11:58Z; 658 of 780 done; week 92% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T733 in progress since 11:58Z; 659 of 780 done; week 92% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 658 of 780 build tasks (owner gates not counted)
+- **Tasks done:** 659 of 780 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T733 claimed 11:58Z, lease until 14:58Z; lane 4: T410 claimed 11:51Z, lease until 14:51Z
 - **Week:** 92% used, 5.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:24Z, 0 min before this update
+- **Last run:** 12:25Z, 14 min before this update
 - **Keeper:** last ran 12:24Z, next wake 14:53Z
 
 ## Needs attention
@@ -26,14 +26,14 @@ Owners T158 (scorecard.html) and T434 (intake_report.html, money_view.html); T30
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 47% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 48% of the context window, over its 45% limit
-- Strict plan check red: 58 problem(s) on tasks still to run (+554 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 57 problem(s) on tasks still to run (+555 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T732 | server: the business job page's "Withdraw your quote" posts  | MERGE_PENDING | 1 | 63 min | 12:16Z |  |
-| T624 | server: two failed in-process health checks in a row raise o | MERGE_PENDING | 2 | 95 min | 12:13Z | Ci: failure; Python: failure / Python failed at step: Unit, contract and drill tests (pytest) / T705: about 21877 tokens |
-| T802 | site (harness): the coverage page says texts work with US nu | MERGE_PENDING | 1 | 115 min | 12:06Z |  |
+| T732 | server: the business job page's "Withdraw your quote" posts  | check_failed | 1 | 63 min | 12:16Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
+| T624 | server: two failed in-process health checks in a row raise o | done | 2 | 95 min | 12:13Z | Ci: failure; Python: failure / Python failed at step: Unit, contract and drill tests (pytest) / T705: about 21877 tokens |
+| T802 | site (harness): the coverage page says texts work with US nu | check_failed | 1 | 115 min | 12:06Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T305 | server and portals: the scorecard, the intake report, the mo | BLOCKED | 2 | 34 min | 11:41Z | PLAN GAP: outside ownership: app/portals/templates/scorecard.html, app/portals/templates/intake_report.html, app/portals |
 | T410 | portals: every signed-in business page shows the Get help li | check_failed | 2 | 101 min | 11:20Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T801 | intake and site (harness): with texting on, the web chat onl | BLOCKED | 1 | 2 h 10 min | 10:59Z | PLAN GAP: app/server/tests/web_chat_stops.rs:572 and :592 (owned by T645) assert a consent text queued to a chat-verifie |
@@ -79,7 +79,6 @@ Owners T158 (scorecard.html) and T434 (intake_report.html, money_view.html); T30
 | T730 | messaging: a homeowner who chose email gets each quote updat | check_failed | 3 | 2 h 46 min | 13:19Z |  |
 | T714 | portals: a Confirm link sent by text is marked text-started  | BLOCKED | 3 | 36 min | 13:10Z |  |
 | T653 | licensing and server (harness): a typed BTR number is stored | done | 2 | 65 min | 13:02Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
-| T714 | portals: a Confirm link sent by text is marked text-started  | check_failed | 2 | 47 min | 12:27Z |  |
 
 ### Plan and harness merges on main
 - 07:37Z Plan: per-turn token trims, PF-P1d pre-flight fixes, J1 keyboard flake task T846, T119 unblock, hand-offs (D-5693, D-5709, D-5715, D-5716) (#1419)
@@ -91,8 +90,8 @@ Owners T158 (scorecard.html) and T434 (intake_report.html, money_view.html); T30
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 435 of 735 (59.2%) · partial 288 · unstarted 12
-**Tasks merged (throughput only):** 658 of 780
+**Requirements verified:** 437 of 735 (59.5%) · partial 286 · unstarted 12
+**Tasks merged (throughput only):** 659 of 780
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -101,13 +100,13 @@ Owners T158 (scorecard.html) and T434 (intake_report.html, money_view.html); T30
 | businesses | 33 | 24 | 1 | 58 |
 | calls | 17 | 8 | 0 | 25 |
 | consent | 20 | 15 | 0 | 35 |
-| fees | 27 | 25 | 0 | 52 |
+| fees | 28 | 24 | 0 | 52 |
 | intake | 12 | 31 | 0 | 43 |
 | job-cards | 16 | 8 | 0 | 24 |
 | licensing | 40 | 8 | 0 | 48 |
 | lifecycle | 22 | 6 | 0 | 28 |
 | messaging | 25 | 20 | 0 | 45 |
-| ops-recovery | 20 | 29 | 5 | 54 |
+| ops-recovery | 21 | 28 | 5 | 54 |
 | privacy | 13 | 18 | 0 | 31 |
 | quiet-hours | 4 | 5 | 0 | 9 |
 | quotes-pick | 36 | 20 | 0 | 56 |
@@ -128,7 +127,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 301 of 352 done
+- stage 5: 302 of 352 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
