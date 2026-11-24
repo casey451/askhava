@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-24T02:41:14Z by runner 1af1a0e608e0 (actions).
+Updated 2026-11-24T02:41:28Z by runner 1af1a0e608e0 (actions).
 
 **Building: T524 in progress since 01:11Z; 646 of 779 done; week 88% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 646 of 779 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T524 claimed 01:11Z, lease until 04:11Z; lane 3: T649 claimed 01:38Z, lease until 04:38Z; lane 5: T222 claimed 00:37Z, lease until 03:37Z
+- **Lane:** lane 1: T524 claimed 01:11Z, lease until 04:11Z; lane 5: T222 claimed 00:37Z, lease until 03:37Z
 - **Week:** 88% used, 14.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 02:40Z, 0 min before this update
 - **Keeper:** last ran 02:38Z, next wake 02:58Z
@@ -24,13 +24,14 @@ Also: stand-in twilio fail fault answers 500 -> OutcomeUnknown, no retries (serv
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T649 | intake, site and server: after the code, the web chat's name | MERGE_PENDING | 2 | 62 min | 02:40Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T119 | Journey J4 (vendor outage), with closing checks | BLOCKED | 1 | 36 min | 02:36Z | PLAN GAP: outside ownership: tests/e2e/webserver.ts / keyedEnv (webserver.ts:143-177) sets no ASKHAVA_HOMEOWNER_NUMBER;  |
 | T813 | businesses and portals (harness): a step-up counts only in t | MERGE_PENDING | 1 | 59 min | 02:35Z |  |
 | T836 | ci and runner workflow (harness): the backup-runner gate ski | done | 2 | 25 min | 00:55Z | PLAN GAP: tests/test_runner_five_lanes.py:176 (test_no_workflow_a_hand_in_starts_cancels_another_lanes_run_when_five_han |
 | T737 | portals, ai and server: the owner records the AI provider's  | done | 2 | 112 min | 00:42Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T738 | portals and server: owner settings refusals show an accessib | done | 1 | 85 min | 00:34Z |  |
 | T716 | intake: the dispatcher's trade questions at step 5: "Which f | done | 4 | 114 min | 23:57Z | PLAN GAP: outside ownership: app/intake/src/conversation.rs (purge_child, ~348-362), app/intake/src/models.rs (purge_req |
-| T649 | intake, site and server: after the code, the web chat's name | check_failed | 1 | 2 h 19 min | 22:52Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
+| T649 | intake, site and server: after the code, the web chat's name | check_failed | 1 | 2 h 19 min | 22:52Z |  |
 | T819 | portals: her feedback words are scrubbed before they are sto | done | 3 | 85 min | 22:43Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T816 | messaging: the data-request confirm link goes by email to th | done | 1 | 112 min | 22:39Z |  |
 | T737 | portals, ai and server: the owner records the AI provider's  | check_failed | 1 | 65 min | 21:59Z |  |
@@ -130,8 +131,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T524 (lease until 2026-11-24T04:11:37Z)
-- lane 3: T649 (lease until 2026-11-24T04:38:03Z)
 - lane 5: T222 (lease until 2026-11-24T03:37:12Z)
 
 ## Last usage reading
-- {"task": "T119", "at": "2026-11-24T02:36:07Z", "cache_read_input_tokens": 8170391, "cache_creation_input_tokens": 200863, "input_tokens": 170, "output_tokens": 34095}
+- {"task": "T649", "at": "2026-11-24T02:40:39Z", "cache_read_input_tokens": 1612799, "input_tokens": 79, "cache_creation_input_tokens": 97047, "output_tokens": 13989}

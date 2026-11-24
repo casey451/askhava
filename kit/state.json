@@ -94646,7 +94646,7 @@
     "T645",
     "T646"
    ],
-   "status": "IN_PROGRESS",
+   "status": "MERGE_PENDING",
    "attempts": 1,
    "slug": "web-chat-name-address-scrub",
    "type": "build",
@@ -94736,6 +94736,29 @@
        "turns": 19
       }
      }
+    },
+    {
+     "attempt": 2,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 41,
+     "head_sha": "1af1a0e608e0af4552596e74bec219eaecab4732",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": true,
+     "started_at": "2026-11-24T01:38:03Z",
+     "ended_at": "2026-11-24T02:40:39Z",
+     "result": "MERGE_PENDING",
+     "usage": {
+      "worker": {
+       "tokens": 996446,
+       "turns": 25
+      },
+      "reviewer": {
+       "tokens": 727468,
+       "turns": 15
+      }
+     }
     }
    ],
    "reviewed_sha": "bd49c69ef381df0c5a9ce1701192b695265993fe",
@@ -94748,18 +94771,13 @@
    "branch": "claude/task/T649-web-chat-name-address-scrub",
    "auto_merge": {
     "enabled": true,
-    "why": "auto-merge on #1418 (gh pr merge)",
-    "head": "2daa216d84154a2c1ffdab5ae856129976a329af"
+    "why": "auto-merge on #1426 (gh pr merge)",
+    "head": "bd49c69ef381df0c5a9ce1701192b695265993fe"
    },
    "last_failure": "Ally: failure\nAlly failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing)\n      88 |   const at = await where(page);\n    > 89 |   expect(at.index, `Tab from \"${before.name}\" reaches the next control in source order`).toBe(before.next);\n         |                                                                                          ^\n      90 |   expect(at.problems).toEqual([]);\n      91 |   return at;\n      92 | }\n        at tab (/home/runner/work/askhava/askhava/tests/a11y/j1_keyboard.spec.ts:89:90)\n        at tabTo (/home/runner/work/askhava/askhava/tests/a11y/j1_keyboard.spec.ts:97:20)\n        at /home/runner/work/askhava/askhava/tests/a11y/j1_keyboard.spec.ts:163:5\n    Error Context: test-results/a11y/j1_keyboard-A11Y-005-A11Y--f2164--Pick-code-step-axe-on-each-main/error-context.md\n  1 failed\n    [main] \u203a tests/a11y/j1_keyboard.spec.ts:150:3 \u203a A11Y-005 A11Y-021 J1 steps 5 and 6 keyboard-only at 1280 px: quote page, Pick #2, Go back, Pick #2 again, final Pick, code step; axe on each \n  1 did not run\n  1330 passed (7.6m)\n##[error]Process completed with exit code 1.",
-   "wip_claim": {
-    "attempt": 2,
-    "remote_sha": "b80c6a5900c86b9803aa05eef739262716d969d2"
-   },
    "runner_closed_prs": [
     1418
    ],
-   "head_check_since": null,
    "update_merges": [
     {
      "from": "1af1a0e608e0af4552596e74bec219eaecab4732",
@@ -116970,12 +116988,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T119",
-   "at": "2026-11-24T02:36:07Z",
-   "cache_read_input_tokens": 8170391,
-   "cache_creation_input_tokens": 200863,
-   "input_tokens": 170,
-   "output_tokens": 34095
+   "task": "T649",
+   "at": "2026-11-24T02:40:39Z",
+   "cache_read_input_tokens": 1612799,
+   "input_tokens": 79,
+   "cache_creation_input_tokens": 97047,
+   "output_tokens": 13989
   },
   "source": "session_reading 2026-11-24T01:36:42Z (week)",
   "by_task": {
@@ -124683,14 +124701,14 @@
     "estimated_bytes": 608438,
     "estimated_tokens": 1786145,
     "usage_counting": "message_id",
-    "output_tokens": 85056,
-    "input_tokens": 258,
-    "cache_creation_input_tokens": 256403,
-    "cache_read_input_tokens": 17279929,
-    "worker_tokens": 16542132,
-    "worker_turns": 114,
-    "reviewer_tokens": 1079514,
-    "reviewer_turns": 19,
+    "output_tokens": 99045,
+    "input_tokens": 337,
+    "cache_creation_input_tokens": 353450,
+    "cache_read_input_tokens": 18892728,
+    "worker_tokens": 17538578,
+    "worker_turns": 139,
+    "reviewer_tokens": 1806982,
+    "reviewer_turns": 34,
     "last_model": "claude-opus-5-5"
    },
    "T812": {
@@ -124813,11 +124831,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-24T02:36:07Z",
-    "tokens": 1052167
+    "tokens": 1324561
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 235182657
+    "tokens": 235455051
    }
   },
   "session_reading": {
@@ -124828,7 +124846,7 @@
    }
   }
  },
- "updated_at": "2026-11-24T02:41:14Z",
+ "updated_at": "2026-11-24T02:41:28Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
