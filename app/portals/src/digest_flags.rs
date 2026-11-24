@@ -29,6 +29,8 @@ pub const DIGEST_WEEK: SignedDuration = SignedDuration::from_hours(7 * 24);
 pub const DUE_AHEAD: SignedDuration = SignedDuration::from_hours(4 * 24);
 /// The subject kind of a PROBLEM alert: the inbox row its words are kept for (JOB-016).
 const INBOX: &str = "messaging.inbox";
+/// The subject kind of a complaint alert: the `businesses.complaint` row (OPS-005).
+const COMPLAINT: &str = "businesses.complaint";
 
 /// The digest could not read an input; nothing is sent or shown.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, thiserror::Error)]
@@ -204,14 +206,38 @@ fn answer(by: AskedBy, choice: Option<LeaveReason>) -> String {
     format!("{by}: {choice}")
 }
 
-/// OPS-030: self-acknowledged alerts, complaints and PROBLEM replies (with their job numbers
-/// from the check-in answer rows), disputes, unknown charges and the volume alerts.
+/// OPS-030, D-219, D-5706: each complaint alert's job number and whether its business replied
+/// (`replied` or `no reply`), read through `businesses::api::for_casey`; never the reply's words.
+async fn complaint_refs(
+    conn: &mut PgConnection,
+    raised: &[DigestAlert],
+) -> Result<Vec<String>, DigestError> {
+    let mut out = Vec::with_capacity(raised.len());
+    for a in raised {
+        let Some((COMPLAINT, id)) = a.subject.as_ref().map(|(k, id)| (k.as_str(), *id)) else {
+            continue;
+        };
+        let view = read(askhava_businesses::api::for_casey(conn, id).await)?;
+        let replied = if view.reply.is_some() {
+            "replied"
+        } else {
+            "no reply"
+        };
+        let number = read(job_number(conn, view.job).await)?;
+        out.push(format!("#{number} {replied}"));
+    }
+    Ok(out)
+}
+
+/// OPS-030: self-acknowledged alerts (health, vendor, ledger and text-delivery alerts the system
+/// acknowledged, OPS-023), complaints with their replies and PROBLEM replies (with their job
+/// numbers from the check-in answer rows), disputes, unknown charges and the volume alerts.
 async fn alert_lines(
     conn: &mut PgConnection,
     window: (Timestamp, Timestamp),
 ) -> Result<Vec<DigestLine>, DigestError> {
-    use askhava_ops::api::{HEALTH_ALERT, LEDGER_ALERT, VENDOR_ALERT};
-    let cleared = [HEALTH_ALERT, VENDOR_ALERT, LEDGER_ALERT];
+    use askhava_ops::api::{DELIVERY_ALERT, HEALTH_ALERT, LEDGER_ALERT, VENDOR_ALERT};
+    let cleared = [HEALTH_ALERT, VENDOR_ALERT, LEDGER_ALERT, DELIVERY_ALERT];
     let acked = alerts(conn, &cleared, window, |a| a.self_acknowledged).await?;
     let from = window.0;
     let raised = |a: &DigestAlert| a.raised_at >= from;
@@ -219,7 +245,8 @@ async fn alert_lines(
         askhava_businesses::api::DIGEST_ALERT,
         askhava_businesses::api::SAFETY_ALERT,
     ];
-    let complaints = alerts(conn, &complaints, window, raised).await?.len();
+    let complaints = alerts(conn, &complaints, window, raised).await?;
+    let replies = complaint_refs(conn, &complaints).await?;
     let problems = [PROBLEM_ALERT, PROBLEM_SAFETY_ALERT];
     let problems = alerts(conn, &problems, window, raised).await?.len();
     let answered = read(audit_subjects(conn, CHECK_IN_ANSWER, window.0, window.1).await)?;
@@ -238,7 +265,7 @@ async fn alert_lines(
     let volume = alerts(conn, &[VOLUME_LOW_ALERT, VOLUME_HIGH_ALERT], window, raised).await?;
     Ok(vec![
         line("Self-acknowledged alerts", acked.len(), Vec::new()),
-        line("Complaints", complaints, Vec::new()),
+        line("Complaints", complaints.len(), replies),
         line("PROBLEM replies", problems, jobs),
         line("Dispute filings", disputes, Vec::new()),
         line("Unknown charges refunded", unknown, Vec::new()),
