@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-24T22:59:49Z by runner 60b853b9b8e1 (actions).
+Updated 2026-11-24T23:01:23Z by runner 7f1ca1d636bc (actions).
 
 **Waiting for tokens until 17:00Z; 670 of 781 done; week 96% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-24T22:59:49Z by runner 60b853b9b8e1 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** idle since 22:57Z (no task in progress)
 - **Week:** 96% used, 0.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:59Z, 0 min before this update
+- **Last run:** 23:00Z, 0 min before this update
 - **Keeper:** last ran 22:59Z, next wake 04:39Z
 
 ## Needs attention
@@ -25,7 +25,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 47% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 48% of the context window, over its 45% limit
 - PLAN GAP T847 (since 2026-11-24T22:18:58Z, no attempt used; a plan change fixes it): T847: prompt kit/prompts/T847.md is missing; run scripts/gen_prompts.py; T847: branch claude/task/T847-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
-- Strict plan check red: 64 problem(s) on tasks still to run (+574 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 64 problem(s) on tasks still to run (+575 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
