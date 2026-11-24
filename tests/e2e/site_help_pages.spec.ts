@@ -56,7 +56,8 @@ test("TD-WEB-01 WEB-023: the coverage page lists open and not-yet trades and the
   const enabled = catalog().filter((c) => c.enabled).map((c) => c.name);
   for (const name of enabled) expect(open, name).toContain(name);
   expect(open.some((name) => /pest/i.test(name))).toBe(enabled.some((name) => /pest/i.test(name)));
-  await expect(page.locator("main")).toContainText("Canadian numbers work. Your phone company may charge roaming fees.");
+  await expect(page.locator("main h2", { hasText: "Texting from other countries" })).toBeVisible();
+  await expect(page.locator("main")).toContainText("Texts work with US mobile numbers. Canadian numbers are not confirmed yet.");
 });
 
 test("TD-WEB-01 TD-WORD-02 TD-WORD-03 TD-WEB-07 TD-TERMS-04 WEB-008 WORD-009 AI-018: the help page's answers", async ({ page }) => {
