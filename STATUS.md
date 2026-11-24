@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-24T19:42:36Z by runner a5c0e45bc3c3 (actions).
+Updated 2026-11-24T19:49:25Z by runner 81aee9d2fa3a (actions).
 
 **Building: T839 in progress since 18:41Z; 667 of 780 done; week 96% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-24T19:42:36Z by runner a5c0e45bc3c3 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T839 claimed 18:41Z, lease until 21:41Z; lane 4: T820 claimed 18:38Z, lease until 21:38Z
 - **Week:** 96% used, 0.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:42Z, 0 min before this update
+- **Last run:** 19:43Z, 6 min before this update
 - **Keeper:** last ran 19:42Z, next wake 21:40Z
 
 ## Needs attention
@@ -23,7 +23,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 47% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 48% of the context window, over its 45% limit
-- Strict plan check red: 65 problem(s) on tasks still to run (+573 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 69 problem(s) on tasks still to run (+574 on DONE tasks); first: T402: stored context_pct 29% but it measures 34%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -86,7 +86,6 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 - 07:37Z Plan: per-turn token trims, PF-P1d pre-flight fixes, J1 keyboard flake task T846, T119 unblock, hand-offs (D-5693, D-5709, D-5715, D-5716) (#1419)
 - 23:24Z Plan: token efficiency and phase-2 pre-flight (D-5676); smoke throughput harness task T843, T836 unblocked (D-5682) (#1412)
 - 20:12Z Plan: outside pre-flight fixes for 22 queued tasks, template a11y line, four test-design rows (D-5670) (#1410)
-- 19:49Z Plan: pre-flight fixes for ten claimable tasks, J3 licence fixture T841 (D-5657); baseline audit gate deferred (D-5663); outside pre-flight fixes T744/T6
 
 ## Progress (requirements verified)
 
