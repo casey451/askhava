@@ -576,6 +576,12 @@ const OWNER_SETTINGS_ROUTE = "/owner/settings";
 /** The owner home (T310; OPS-003, FEE-007, BIZ-027): the switches, fee mode, rates and sign-ups. */
 const OWNER_HOME_STATES: readonly PageState[] = [
   ["owner home", "Pause or resume", "Each change needs a code from your authenticator app", OWNER_SESSION_SQL],
+  [
+    "owner home, an alert not sent to the phone",
+    "The database is over 70% full",
+    "No other alerts.",
+    `${OWNER_SESSION_SQL}; INSERT INTO ops.alert (kind, severity) VALUES ('ops.volume_low', 'normal')`,
+  ],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: OWNER_HOME_ROUTE, name, shows, hides, sql, statusRegions: [] }));
 
 /** The owner settings (T310; LIC-002, CON-035, PICK-048): the category switches and both forms. */

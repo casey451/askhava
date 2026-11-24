@@ -236,12 +236,22 @@ impl StorageAdapter for LocalStorage {
     async fn read_object(&self, name: &str) -> Result<Vec<u8>, AdapterError> {
         let path = self.path(name)?;
         let read = tokio::task::spawn_blocking(move || std::fs::read(path)).await;
-        let missing = AdapterError::Vendor {
+        read.map_err(|_| AdapterError::OutcomeUnknown)?
+            .map_err(read_error)
+    }
+}
+
+/// PRIV-029, D-5081: only a missing file reads as the bucket's not-found answer (`Vendor` 404);
+/// any other file-system error is [`AdapterError::OutcomeUnknown`], so a storage fault is never
+/// taken for a missing object.
+fn read_error(error: std::io::Error) -> AdapterError {
+    if error.kind() == std::io::ErrorKind::NotFound {
+        AdapterError::Vendor {
             status: 404,
             code: None,
-        };
-        read.map_err(|_| AdapterError::OutcomeUnknown)?
-            .map_err(|_| missing)
+        }
+    } else {
+        AdapterError::OutcomeUnknown
     }
 }
 
