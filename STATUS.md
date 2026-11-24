@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-24T12:17:00Z by runner 50678fa16de9 (actions).
+Updated 2026-11-24T12:17:33Z by runner 50678fa16de9 (actions).
 
-**Building: T732 in progress since 11:13Z; 658 of 780 done; week 92% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T733 in progress since 11:58Z; 658 of 780 done; week 92% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 658 of 780 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T732 claimed 11:13Z, lease until 14:13Z; lane 3: T733 claimed 11:58Z, lease until 14:58Z; lane 4: T410 claimed 11:51Z, lease until 14:51Z
+- **Lane:** lane 3: T733 claimed 11:58Z, lease until 14:58Z; lane 4: T410 claimed 11:51Z, lease until 14:51Z
 - **Week:** 92% used, 5.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 12:16Z, 0 min before this update
 - **Keeper:** last ran 12:16Z, next wake 14:16Z
@@ -31,6 +31,7 @@ Owners T158 (scorecard.html) and T434 (intake_report.html, money_view.html); T30
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T732 | server: the business job page's "Withdraw your quote" posts  | MERGE_PENDING | 1 | 63 min | 12:16Z |  |
 | T624 | server: two failed in-process health checks in a row raise o | MERGE_PENDING | 2 | 95 min | 12:13Z | Ci: failure; Python: failure / Python failed at step: Unit, contract and drill tests (pytest) / T705: about 21877 tokens |
 | T802 | site (harness): the coverage page says texts work with US nu | MERGE_PENDING | 1 | 115 min | 12:06Z |  |
 | T305 | server and portals: the scorecard, the intake report, the mo | BLOCKED | 2 | 34 min | 11:41Z | PLAN GAP: outside ownership: app/portals/templates/scorecard.html, app/portals/templates/intake_report.html, app/portals |
@@ -135,9 +136,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T732 (lease until 2026-11-24T14:13:21Z)
 - lane 3: T733 (lease until 2026-11-24T14:58:11Z)
 - lane 4: T410 (lease until 2026-11-24T14:51:12Z)
 
 ## Last usage reading
-- {"task": "T624", "at": "2026-11-24T12:13:02Z", "input_tokens": 124, "output_tokens": 21415, "cache_creation_input_tokens": 143422, "cache_read_input_tokens": 1844504}
+- {"task": "T732", "at": "2026-11-24T12:16:59Z", "cache_creation_input_tokens": 131055, "input_tokens": 108, "output_tokens": 34544, "cache_read_input_tokens": 3453554}
