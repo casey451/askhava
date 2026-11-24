@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-24T17:54:13Z by runner 9e9ae8e1c373 (actions).
+Updated 2026-11-24T17:54:47Z by runner 9e9ae8e1c373 (actions).
 
 **Building: T820 in progress since 16:58Z; 665 of 780 done; week 95% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 665 of 780 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T820 claimed 16:58Z, lease until 19:58Z; lane 3: T741 claimed 16:40Z, lease until 19:40Z
+- **Lane:** lane 2: T820 claimed 16:58Z, lease until 19:58Z
 - **Week:** 95% used, 1.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 17:48Z, 5 min before this update
 - **Keeper:** last ran 17:30Z, next wake 17:50Z
@@ -27,9 +27,10 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T741 | server and intake: an opted-out homeowner's "<n> YES" picks  | MERGE_PENDING | 2 | 73 min | 17:54Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-24T |
 | T590 | calls, picks and server: the who's-calling and missed-call t | MERGE_PENDING | 3 | 23 min | 17:28Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-24T |
 | T590 | calls, picks and server: the who's-calling and missed-call t | check_failed | 2 | 74 min | 16:23Z |  |
-| T741 | server and intake: an opted-out homeowner's "<n> YES" picks  | check_failed | 1 | 78 min | 15:45Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-24T |
+| T741 | server and intake: an opted-out homeowner's "<n> YES" picks  | check_failed | 1 | 78 min | 15:45Z |  |
 | T802 | site (harness): the coverage page says texts work with US nu | done | 3 | 23 min | 15:26Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T732 | server: the business job page's "Withdraw your quote" posts  | done | 2 | 49 min | 15:13Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
 | T122 | docs/account-checklist.md: Part 1 test accounts, Part 2 busi | done | 2 | 74 min | 15:00Z | Reviewer after the findings round (head d65c4896894680459870359165740cf8b3a2bf57) still ended FINDINGS: / 1. tests/docs/ |
@@ -75,7 +76,6 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 | T668 | server: the business job page at /b/jobs/{j} offers "Not a f | done | 1 | 56 min | 20:07Z |  |
 | T812 | businesses and portals: a passed step-up records the session | done | 1 | 89 min | 19:31Z |  |
 | T730 | messaging: a homeowner who chose email gets each quote updat | done | 4 | 76 min | 19:13Z | PLAN GAP: outside ownership: app/messaging/src/quote_text_sent.rs / Evidence: last_quote_text (quote_text_sent.rs:45-52) |
-| T222 | Journeys J1 and J2, the full variants: web chat, photos, que | QUEUED | 2 | 97 min | 17:54Z |  |
 
 ### Plan and harness merges on main
 - 17:12Z Plan: PF-Q1 pre-flight fixes for T817 and T843; PF-Q1, PF-T222, PF-T801b, PF-CLK reports and Fable's scope decision filed (D-5793) (#1448)
@@ -133,7 +133,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T820 (lease until 2026-11-24T19:58:44Z)
-- lane 3: T741 (lease until 2026-11-24T19:40:41Z)
 
 ## Last usage reading
-- {"task": "T590", "at": "2026-11-24T17:28:11Z", "cache_creation_input_tokens": 95239, "output_tokens": 10715, "cache_read_input_tokens": 1212155, "input_tokens": 61}
+- {"task": "T741", "at": "2026-11-24T17:54:11Z", "output_tokens": 19268, "cache_read_input_tokens": 1957144, "cache_creation_input_tokens": 118838, "input_tokens": 111}
