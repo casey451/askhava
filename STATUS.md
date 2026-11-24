@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T15:36:01Z by runner 341761ad7dc0 (actions).
+Updated 2026-11-24T15:40:16Z by runner 668bcac6a67e (actions).
 
 **Building: T741 in progress since 14:26Z; 663 of 780 done; week 94% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 663 of 780 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T741 claimed 14:26Z, lease until 17:26Z; lane 4: T590 claimed 15:08Z, lease until 18:08Z
-- **Week:** 94% used, 4.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:35Z, 0 min before this update
+- **Lane:** lane 1: T741 claimed 14:26Z, lease until 17:26Z; lane 4: T590 claimed 15:08Z, lease until 18:08Z; lane 5: T815 claimed 15:39Z, lease until 18:39Z
+- **Week:** 94% used, 3.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 15:36Z, 3 min before this update
 - **Keeper:** last ran 15:36Z, next wake 15:56Z
 
 ## Needs attention
@@ -22,7 +22,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 47% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 48% of the context window, over its 45% limit
-- Strict plan check red: 61 problem(s) on tasks still to run (+563 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 65 problem(s) on tasks still to run (+567 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -76,7 +76,6 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 | T782 | server: the released job's page shows its real job number | done | 1 | 97 min | 16:56Z |  |
 | T121 | Startup key checks, control router absent in live, supply-ch | done | 4 | 100 min | 16:52Z | PLAN GAP: outside ownership: app/portals/src/update_channel.rs / T729 (owner) merged UpdatesForm/ConfirmForm without den |
 | T714 | portals: a Confirm link sent by text is marked text-started  | done | 4 | 88 min | 15:49Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
-| T222 | Journeys J1 and J2, the full variants: web chat, photos, que | QUEUED | 1 | 67 min | 15:38Z |  |
 
 ### Plan and harness merges on main
 - 13:12Z Plan: T305 owns its three owner-report templates for Ally; PF-T801 review filed (D-5792) (#1446)
@@ -117,7 +116,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-24T15:04:21Z (week)): week: 189.4M used, 4.6M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T20:54:02Z.
+- Pacing (session_reading 2026-11-24T15:35:17Z (week)): week: 191.0M used, 3.0M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T20:57:41Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -134,6 +133,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T741 (lease until 2026-11-24T17:26:45Z)
 - lane 4: T590 (lease until 2026-11-24T18:08:45Z)
+- lane 5: T815 (lease until 2026-11-24T18:39:51Z)
 
 ## Last usage reading
 - {"task": "T802", "at": "2026-11-24T15:26:13Z", "cache_creation_input_tokens": 47283, "output_tokens": 6326, "input_tokens": 40, "cache_read_input_tokens": 554097}
