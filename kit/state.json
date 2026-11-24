@@ -42960,7 +42960,14 @@
    "update_waiting_since": null,
    "update_push_failures": null,
    "merge_turn_since": "2026-11-24T10:35:22Z",
-   "last_failure": "Ally: failure\nAlly failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing)\n    [main] \u203a tests/a11y/reflow_spacing.spec.ts:120:7 \u203a text spacing \u203a A11Y-009: /owner/scorecard (owner pilot scorecard) takes the text-spacing override at 1280px \n    [main] \u203a tests/a11y/reflow_spacing.spec.ts:120:7 \u203a text spacing \u203a A11Y-009: /owner/intake-report (owner intake report) takes the text-spacing override at 320px \n    [main] \u203a tests/a11y/reflow_spacing.spec.ts:120:7 \u203a text spacing \u203a A11Y-009: /owner/intake-report (owner intake report) takes the text-spacing override at 768px \n    [main] \u203a tests/a11y/reflow_spacing.spec.ts:120:7 \u203a text spacing \u203a A11Y-009: /owner/intake-report (owner intake report) takes the text-spacing override at 1280px \n    [main] \u203a tests/a11y/reflow_spacing.spec.ts:120:7 \u203a text spacing \u203a A11Y-009: /owner/money (owner money view, an expense) takes the text-spacing override at 320px \n    [main] \u203a tests/a11y/reflow_spacing.spec.ts:120:7 \u203a text spacing \u203a A11Y-009: /owner/money (owner money view, an expense) takes the text-spacing override at 768px \n    [main] \u203a tests/a11y/reflow_spacing.spec.ts:120:7 \u203a text spacing \u203a A11Y-009: /owner/money (owner money view, an expense) takes the text-spacing override at 1280px \n  1 did not run\n  1446 passed (8.8m)\n##[error]Process completed with exit code 1."
+   "last_failure": "Ally: failure\nAlly failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing)\n    [main] \u203a tests/a11y/reflow_spacing.spec.ts:120:7 \u203a text spacing \u203a A11Y-009: /owner/scorecard (owner pilot scorecard) takes the text-spacing override at 1280px \n    [main] \u203a tests/a11y/reflow_spacing.spec.ts:120:7 \u203a text spacing \u203a A11Y-009: /owner/intake-report (owner intake report) takes the text-spacing override at 320px \n    [main] \u203a tests/a11y/reflow_spacing.spec.ts:120:7 \u203a text spacing \u203a A11Y-009: /owner/intake-report (owner intake report) takes the text-spacing override at 768px \n    [main] \u203a tests/a11y/reflow_spacing.spec.ts:120:7 \u203a text spacing \u203a A11Y-009: /owner/intake-report (owner intake report) takes the text-spacing override at 1280px \n    [main] \u203a tests/a11y/reflow_spacing.spec.ts:120:7 \u203a text spacing \u203a A11Y-009: /owner/money (owner money view, an expense) takes the text-spacing override at 320px \n    [main] \u203a tests/a11y/reflow_spacing.spec.ts:120:7 \u203a text spacing \u203a A11Y-009: /owner/money (owner money view, an expense) takes the text-spacing override at 768px \n    [main] \u203a tests/a11y/reflow_spacing.spec.ts:120:7 \u203a text spacing \u203a A11Y-009: /owner/money (owner money view, an expense) takes the text-spacing override at 1280px \n  1 did not run\n  1446 passed (8.8m)\n##[error]Process completed with exit code 1.",
+   "wip_claim": {
+    "attempt": 2,
+    "remote_sha": "125ebc351f9b0532e1f69aa6f7f0d40c2d794ccd"
+   },
+   "runner_closed_prs": [
+    1439
+   ]
   },
   {
    "id": "T306",
@@ -126959,7 +126966,7 @@
    }
   }
  },
- "updated_at": "2026-11-24T11:08:13Z",
+ "updated_at": "2026-11-24T11:08:38Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
