@@ -13,13 +13,13 @@
 <p><a href="{{ statement_route }}">Download this statement as a spreadsheet (CSV file)</a></p>
 <h2>Charges, refunds and credits</h2>
 {% if rows.is_empty() %}<p>Nothing on this statement yet.</p>
-{% else %}<table>
+{% else %}<div role="region" tabindex="0" aria-label="Charges, refunds and credits"><table>
 <caption>Oldest first. Dates are Arizona time. A minus sign means money back to you.</caption>
 <thead><tr><th scope="col">Date</th><th scope="col">What</th><th scope="col">Amount</th></tr></thead>
 <tbody>
 {% for (date, what, amount) in rows %}<tr><td>{{ date }}</td><td>{{ what }}</td><td>{{ amount }}</td></tr>
 {% endfor %}</tbody>
-</table>
+</table></div>
 {% endif %}<h2>Payment methods</h2>
 {% if methods.is_empty() %}<p>No card saved.</p>
 {% else %}<ul>{% for m in methods %}<li>{{ m.0 }} card ending in {{ m.1 }}</li>{% endfor %}</ul>
@@ -27,4 +27,5 @@
 {% if let Some(l) = limit %}<p>Your monthly limit is {{ l }}.</p>
 {% else %}<p>You haven't set a monthly limit.</p>
 {% endif %}<p>To change your card or monthly limit, you need a code from us first. We send it by text, or by email if you get no texts. It works for 5 minutes.</p>
+<p><a href="{{ crate::api::TEAM_ROUTE }}">See your team or change your monthly limit</a></p>
 {% endblock %}
