@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-24T11:20:11Z by runner 7a9faa3c0585 (actions).
+Updated 2026-11-24T11:20:56Z by runner 7a9faa3c0585 (actions).
 
 **Building: T802 in progress since 10:10Z; 658 of 780 done; week 91% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 658 of 780 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T802 claimed 10:10Z, lease until 13:10Z; lane 2: T732 claimed 11:13Z, lease until 14:13Z; lane 3: T410 claimed 09:38Z, lease until 12:38Z; lane 4: T305 claimed 11:07Z, lease until 14:07Z; lane 5: T624 claimed 10:37Z, lease until 13:37Z
+- **Lane:** lane 1: T802 claimed 10:10Z, lease until 13:10Z; lane 2: T732 claimed 11:13Z, lease until 14:13Z; lane 4: T305 claimed 11:07Z, lease until 14:07Z; lane 5: T624 claimed 10:37Z, lease until 13:37Z
 - **Week:** 91% used, 7.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 11:14Z, 6 min before this update
 - **Keeper:** last ran 11:01Z, next wake 11:21Z
@@ -28,12 +28,13 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T410 | portals: every signed-in business page shows the Get help li | MERGE_PENDING | 2 | 101 min | 11:20Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-24T |
 | T801 | intake and site (harness): with texting on, the web chat onl | BLOCKED | 1 | 2 h 10 min | 10:59Z | PLAN GAP: app/server/tests/web_chat_stops.rs:572 and :592 (owned by T645) assert a consent text queued to a chat-verifie |
 | T305 | server and portals: the scorecard, the intake report, the mo | check_failed | 1 | 73 min | 10:28Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T814 | portals and server: a used action link pressed again shows i | done | 1 | 2 h 29 min | 10:07Z |  |
 | T841 | e2e: seedPick's new businesses hold the fixture licence ROC1 | done | 1 | 97 min | 09:48Z |  |
 | T804 | server and portals: a delete or copy request made in the por | done | 2 | 63 min | 08:35Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
-| T410 | portals: every signed-in business page shows the Get help li | check_failed | 1 | 93 min | 07:32Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-24T |
+| T410 | portals: every signed-in business page shows the Get help li | check_failed | 1 | 93 min | 07:32Z |  |
 | T656 | site: a failed submit on the /request chat shows a focused e | done | 2 | 2 h 1 min | 07:12Z | Reviewer after the findings round still FINDINGS (head 18fdb4a27): app/site/templates/request.html lines 7-10: header co |
 | T804 | server and portals: a delete or copy request made in the por | check_failed | 1 | 69 min | 06:37Z |  |
 | T779 | ops, server and portals: alerts that do not push show in the | done | 1 | 83 min | 06:27Z |  |
@@ -131,9 +132,8 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T802 (lease until 2026-11-24T13:10:33Z)
 - lane 2: T732 (lease until 2026-11-24T14:13:21Z)
-- lane 3: T410 (lease until 2026-11-24T12:38:39Z)
 - lane 4: T305 (lease until 2026-11-24T14:07:32Z)
 - lane 5: T624 (lease until 2026-11-24T13:37:51Z)
 
 ## Last usage reading
-- {"task": "T801", "at": "2026-11-24T10:59:50Z", "cache_creation_input_tokens": 361299, "cache_read_input_tokens": 21803005, "output_tokens": 112243, "input_tokens": 426}
+- {"task": "T410", "at": "2026-11-24T11:20:08Z", "input_tokens": 70, "output_tokens": 12614, "cache_creation_input_tokens": 110525, "cache_read_input_tokens": 1253964}
