@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T13:38:09Z by runner 26e9bbe3e395 (actions).
+Updated 2026-11-24T13:43:44Z by runner 017788d7635b (actions).
 
-**Building: T732 in progress since 13:16Z; 659 of 780 done; week 93% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T732 in progress since 13:16Z; 660 of 780 done; week 93% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 659 of 780 build tasks (owner gates not counted)
+- **Tasks done:** 660 of 780 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T732 claimed 13:16Z, lease until 16:16Z; lane 2: T802 claimed 13:12Z, lease until 16:12Z; lane 5: T305 claimed 13:13Z, lease until 16:13Z
 - **Week:** 93% used, 5.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:37Z, 0 min before this update
+- **Last run:** 13:38Z, 5 min before this update
 - **Keeper:** last ran 13:38Z, next wake 16:15Z
 
 ## Needs attention
@@ -28,7 +28,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T733 | server: the business portal serves the service-area settings | MERGE_PENDING | 1 | 91 min | 13:29Z |  |
-| T410 | portals: every signed-in business page shows the Get help li | MERGE_PENDING | 3 | 85 min | 13:17Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
+| T410 | portals: every signed-in business page shows the Get help li | done | 3 | 85 min | 13:17Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T732 | server: the business job page's "Withdraw your quote" posts  | check_failed | 1 | 63 min | 12:16Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T624 | server: two failed in-process health checks in a row raise o | done | 2 | 95 min | 12:13Z | Ci: failure; Python: failure / Python failed at step: Unit, contract and drill tests (pytest) / T705: about 21877 tokens |
 | T802 | site (harness): the coverage page says texts work with US nu | check_failed | 1 | 115 min | 12:06Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
@@ -73,7 +73,6 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 | T222 | Journeys J1 and J2, the full variants: web chat, photos, que | QUEUED | 1 | 67 min | 15:38Z |  |
 | T666 | jobs, quotes and server: GET /b/jobs/{j} serves the business | done | 2 | 67 min | 14:25Z | Reviewer after the findings round (head bf41c81b22bdbd874d7d53cb8ba64ca6bb0737cf): app/server/tests/job_page_route.rs (w |
 | T819 | portals: her feedback words are scrubbed before they are sto | check_failed | 2 | 68 min | 13:45Z |  |
-| T646 | site and server: the web chat's new-request limit counts the | done | 3 | 99 min | 13:40Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
 
 ### Plan and harness merges on main
 - 13:12Z Plan: T305 owns its three owner-report templates for Ally; PF-T801 review filed (D-5792) (#1446)
@@ -85,14 +84,14 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 437 of 735 (59.5%) · partial 286 · unstarted 12
-**Tasks merged (throughput only):** 659 of 780
+**Requirements verified:** 439 of 735 (59.7%) · partial 284 · unstarted 12
+**Tasks merged (throughput only):** 660 of 780
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 27 | 8 | 0 | 35 |
 | ai | 8 | 18 | 3 | 29 |
-| businesses | 33 | 24 | 1 | 58 |
+| businesses | 34 | 23 | 1 | 58 |
 | calls | 17 | 8 | 0 | 25 |
 | consent | 20 | 15 | 0 | 35 |
 | fees | 28 | 24 | 0 | 52 |
@@ -100,7 +99,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 | job-cards | 16 | 8 | 0 | 24 |
 | licensing | 40 | 8 | 0 | 48 |
 | lifecycle | 22 | 6 | 0 | 28 |
-| messaging | 25 | 20 | 0 | 45 |
+| messaging | 26 | 19 | 0 | 45 |
 | ops-recovery | 21 | 28 | 5 | 54 |
 | privacy | 13 | 18 | 0 | 31 |
 | quiet-hours | 4 | 5 | 0 | 9 |
@@ -122,7 +121,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 302 of 352 done
+- stage 5: 303 of 352 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
