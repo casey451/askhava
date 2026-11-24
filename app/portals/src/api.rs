@@ -189,6 +189,10 @@ pub use crate::notice_settings::{
     ChannelChangeError, ChannelFacts, NOTICE_SETTINGS_ROUTE, NoticeAddress, change_channel,
     channel_choices, notice_settings_page,
 };
+pub use crate::owner_ai_switch::{
+    AiChange, AiShown, OWNER_AI_POLICY_ROUTE, OWNER_AI_ROUTE, OWNER_AI_SWITCH_ROUTE,
+    OWNER_AI_TERMS_ROUTE, PolicyForm, TermsForm, owner_ai_change, owner_ai_page,
+};
 pub use crate::owner_auth::{
     BOOTSTRAP_TOKEN_VAR, MAX_LIVE_SIGN_IN_CHALLENGES, MIN_OWNER_FACTORS, MIN_OWNER_PASSWORD_CHARS,
     OWNER_IDLE_LIMIT, OWNER_PASSKEY_ROUTE, OWNER_SESSION_LIFE, OWNER_SIGNIN_ROUTE,

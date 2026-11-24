@@ -11,6 +11,7 @@
 <h1>Owner home</h1>
 <p><a href="{{ routes[5] }}">Category settings</a></p>
 <p><a href="{{ crate::owner_complaint::OWNER_PROBLEM_REPORTS_ROUTE }}">Problem reports</a></p>
+<p><a href="{{ crate::owner_ai_switch::OWNER_AI_ROUTE }}">AI switch</a></p>
 <h2>Alerts sent to your phone</h2>
 {% if alerts.is_empty() %}<p id="no-alerts">No alert has been sent to your phone.</p>
 {% else %}<ul id="pushed-alerts">
