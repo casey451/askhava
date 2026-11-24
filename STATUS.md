@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T23:01:23Z by runner 7f1ca1d636bc (actions).
+Updated 2026-11-24T23:01:52Z by runner 7f1ca1d636bc (actions).
 
-**Waiting for tokens until 17:00Z; 670 of 781 done; week 96% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T820 in progress since 23:01Z; 670 of 781 done; week 96% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 670 of 781 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** idle since 22:57Z (no task in progress)
-- **Week:** 96% used, 0.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:00Z, 0 min before this update
+- **Lane:** lane 3: T820 claimed 23:01Z, lease until 02:01Z
+- **Week:** 96% used, 2.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 23:00Z, 1 min before this update
 - **Keeper:** last ran 22:59Z, next wake 04:39Z
 
 ## Needs attention
@@ -117,7 +117,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-24T20:43:58Z (week)): week: 193.8M used, 225k left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T20:46:20Z; waiting until 2026-11-26T17:00:00Z.
+- Pacing (session_reading 2026-11-24T22:58:59Z (week)): week: 192.0M used, 2.0M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T20:29:49Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -133,6 +133,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 3: T820 (lease until 2026-11-25T02:01:19Z)
 
 ## Last usage reading
 - {"task": "T826", "at": "2026-11-24T22:57:25Z", "input_tokens": 99, "cache_creation_input_tokens": 92372, "output_tokens": 16731, "cache_read_input_tokens": 1445825}
