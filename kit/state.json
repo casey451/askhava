@@ -115479,7 +115479,8 @@
    "last_failure": "Ci: failure; Checks: failure\nChecks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS, D-3142)\ntest td_sec_80_a_shared_inbox_code_keeps_the_live_session ... ok\ntest td_sec_80_a_text_token_elsewhere_or_appended_is_not_found ... ok\ntest td_sec_80_an_emailed_confirm_session_still_answers_at_29_days ... ok\ntest td_sec_80_only_a_text_minted_grant_is_text_started ... ok\ntest td_sec_80_only_confirm_is_minted_by_text ... ok\nfailures:\n---- td_sec_44_the_quote_form_acts_once_and_bounces_a_phone_number stdout ----\nthread 'td_sec_44_the_quote_form_acts_once_and_bounces_a_phone_number' (40203) panicked at app/server/tests/action_links_route.rs:546:5:\nthe second price is not stored\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\n    td_sec_44_the_quote_form_acts_once_and_bounces_a_phone_number\ntest result: FAILED. 30 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 7.53s\nerror: test failed, to rerun pass `-p askhava-server --test action_links_route`\n##[error]Process completed with exit code 101.\nCi failed at step: All five jobs passed\nChecks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
    "lane": "2",
    "runner_closed_prs": [
-    1443
+    1443,
+    1451
    ],
    "update_merges": [
     {
@@ -115492,7 +115493,11 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "merge_turn_since": "2026-11-24T14:36:46Z"
+   "merge_turn_since": "2026-11-24T14:36:46Z",
+   "wip_claim": {
+    "attempt": 3,
+    "remote_sha": "0c90dd186a43bbaa979e32985884f6b9fc45bab0"
+   }
   },
   {
    "id": "T803",
@@ -127812,7 +127817,7 @@
    }
   }
  },
- "updated_at": "2026-11-24T15:02:55Z",
+ "updated_at": "2026-11-24T15:03:02Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
