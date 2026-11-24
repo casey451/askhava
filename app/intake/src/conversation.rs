@@ -339,7 +339,8 @@ pub async fn stop_if_under_18(
 /// INT-038, PRIV-007, PRIV-008, D-4142, D-4294: under 13, each of `jobs` (the request's jobs,
 /// read before `models::close_request` deletes the `job.*` links, D-4377) loses its photo rows
 /// (`purge_photos`, each sealed object's delete queued) and its kept words and cards
-/// (`purge_job_text`), then the request's data (`models::purge_request`), then the sender's vault
+/// (`purge_job_text`), then the words a short first text held under the request's own ID before
+/// its job opened (`purge_job_text` of the request, D-5617), then the request's data (`models::purge_request`), then the sender's vault
 /// contact (`purge_contact`, a savepoint), so a failure of any keeps nothing.
 /// The caller took the homeowner row first, so the contact row comes after it, as in the
 /// retention lock order (D-1839).
@@ -359,6 +360,9 @@ async fn purge_child(
             .await
             .map_err(|_| IntakeError::Quotes)?;
     }
+    askhava_quotes::api::purge_job_text(tx, conversation)
+        .await
+        .map_err(|_| IntakeError::Quotes)?;
     models::purge_request(tx, conversation, homeowner).await?;
     purge_contact(tx, contact)
         .await
