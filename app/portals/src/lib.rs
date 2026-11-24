@@ -81,6 +81,7 @@ mod security;
 mod session;
 mod status;
 mod step_up_page;
+mod team_page;
 #[cfg(test)]
 mod tests;
 mod update_channel;

@@ -439,7 +439,8 @@ fn owner_pages(
 /// take it" page and button ([`cant_take_route`], T472), always; the business job page
 /// ([`job_page_route`], T666, with photo links only with the photo parts and the webhooks' ID
 /// secret), always; the business step-up page
-/// ([`business_step_up`], T364), always, sending codes only with its part, and the role, removal
+/// ([`business_step_up`], T364), always, sending codes only with its part, with the team page
+/// (T544, the portal's vault), and the role, removal
 /// and monthly-limit changes behind it ([`business_guarded_changes`], T565), and the notice and
 /// backup address changes ([`address_changes`], T542, changing only with their part), and the
 /// owner's waiting-phones page ([`phone_approval`], T397, with the portal's vault), always; and the
@@ -475,7 +476,7 @@ fn business_pages(
     let links = webhooks.filter(|_| parts.photos.is_some());
     let job_page = job_page_route::routes(pool.clone(), links.map(|hooks| &hooks.id_secret));
     let homeowner = homeowner_portal::routes(pool.clone(), webhooks, parts.homeowner, parts.photos);
-    let step_up = business_step_up::routes(pool.clone(), parts.step_up)
+    let step_up = business_step_up::routes(pool.clone(), parts.step_up, parts.vault.clone())
         .merge(business_guarded_changes::routes(pool.clone()))
         .merge(address_changes::routes(pool.clone(), parts.address))
         .merge(phone_approval::routes(
