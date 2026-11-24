@@ -14,30 +14,37 @@
 //! mints and sends nothing and the page says codes can't be sent (below 500).
 //! [`MemberStepUpAddress`] sends the code to the member's own first texting line, else the
 //! member's own sign-in address, opened under `BusinessPurpose::SignInCode`.
+//! It also serves `GET` [`TEAM_ROUTE`] (T544, D-3890, D-5567; BIZ-023, FEE-041, SEC-019): the
+//! team page for the owner or a "Confirm and billing" member (`may_see_team`), anyone else the
+//! one not-found answer; each member's sign-in address is read with the portal's vault under
+//! `BusinessPurpose::AccountEmail`, as the notice settings page reads them; no vault: none shown.
 
 use std::io;
 use std::net::IpAddr;
 use std::sync::Arc;
 
 use askhava_adapters::api::{TwilioConfig, twilio_clients};
-use askhava_businesses::api::sign_in_lines;
+use askhava_businesses::api::{members, sign_in_lines};
 use askhava_core::api::{Clock, Environment, Settings, SystemClock};
 use askhava_intake::api::Admission;
 use askhava_portals::api::{
-    BUSINESS_STEP_UP_CHECK_ROUTE, BUSINESS_STEP_UP_ROUTE, BUSINESS_STEP_UP_SEND_ROUTE,
-    BusinessPrincipal, BusinessStepUpScreen, CodeAddress, CodeFuture, CodeTo, CookieJar, CsrfField,
-    CsrfForm, PortalsError, ReturnPath, StepUpCodes, VERIFY_DAILY_THRESHOLD, WebSecurity,
-    admit_code_send, admit_code_try, business_principal, business_step_up_page, check_step_up_code,
-    csrf_token, no_store, refuse_cross_site, security_event_client, send_step_up_code, signed_out,
+    BUSINESS_HOME_ROUTE, BUSINESS_STEP_UP_CHECK_ROUTE, BUSINESS_STEP_UP_ROUTE,
+    BUSINESS_STEP_UP_SEND_ROUTE, BusinessPrincipal, BusinessStepUpScreen, CodeAddress, CodeFuture,
+    CodeTo, CookieJar, CsrfField, CsrfForm, PortalsError, ReturnPath, ShownMember, StepUpCodes,
+    TEAM_ROUTE, VERIFY_DAILY_THRESHOLD, WebSecurity, admit_code_send, admit_code_try,
+    business_principal, business_step_up_page, check_step_up_code, csrf_token, may_see_team,
+    no_store, refuse_cross_site, security_event_client, send_step_up_code, signed_out, team_page,
 };
-use askhava_privacy::api::{BusinessPurpose, Vault, read_business_mailbox, read_staff_phone};
+use askhava_privacy::api::{
+    BusinessContactError, BusinessPurpose, Vault, read_business_mailbox, read_staff_phone,
+};
 use axum::Router;
 use axum::extract::{Extension, FromRef, Query, Request, State};
 use axum::http::StatusCode;
 use axum::middleware::{Next, from_fn, from_fn_with_state};
 use axum::response::{Html, IntoResponse, Response};
 use axum::routing::{get, post};
-use secrecy::SecretString;
+use secrecy::{ExposeSecret, SecretString};
 use sqlx::PgPool;
 use sqlx::types::Uuid;
 
@@ -48,6 +55,7 @@ struct StepUp {
     clock: Arc<dyn Clock>,
     security: WebSecurity,
     codes: Option<Arc<StepUpCodes>>,
+    vault: Option<Arc<Vault>>,
 }
 
 impl FromRef<StepUp> for WebSecurity {
@@ -60,8 +68,9 @@ impl FromRef<StepUp> for WebSecurity {
 #[derive(Clone, Copy)]
 struct ClientIp(IpAddr);
 
-/// The three step-up routes over `pool`, sending codes through `codes` when given (SEC-038).
-pub fn routes(pool: PgPool, codes: Option<StepUpCodes>) -> Router {
+/// The three step-up routes over `pool`, sending codes through `codes` when given (SEC-038), and
+/// the team page, showing addresses read with `vault` when given (BIZ-023).
+pub fn routes(pool: PgPool, codes: Option<StepUpCodes>, vault: Option<Arc<Vault>>) -> Router {
     let clock: Arc<dyn Clock> = Arc::new(SystemClock);
     let security = WebSecurity::new(pool.clone(), Arc::clone(&clock));
     let state = StepUp {
@@ -69,11 +78,13 @@ pub fn routes(pool: PgPool, codes: Option<StepUpCodes>) -> Router {
         clock,
         security: security.clone(),
         codes: codes.map(Arc::new),
+        vault,
     };
     Router::new()
         .route(BUSINESS_STEP_UP_ROUTE, get(page))
         .route(BUSINESS_STEP_UP_SEND_ROUTE, post(send))
         .route(BUSINESS_STEP_UP_CHECK_ROUTE, post(check))
+        .route(TEAM_ROUTE, get(team))
         .route_layer(from_fn(note_client))
         .with_state(state)
         .layer(from_fn(no_store))
@@ -262,6 +273,62 @@ async fn check(
     match check_step_up_code(&state.pool, codes, &who, &form.code, now).await {
         Ok(screen) => shown(&jar, screen, &back),
         Err(_) => failed("step-up check"),
+    }
+}
+
+/// SEC-019: the business portal's one not-found answer; it never says why.
+fn not_found() -> Response {
+    let page = format!(
+        "<!doctype html><html lang=\"en\"><head><title>Page not found</title></head><body><main>\
+         <h1>We can't find that page</h1><p>The link may be old, or it may be for a different \
+         business account. <a href=\"{BUSINESS_HOME_ROUTE}\">Go to your business home</a>.</p>\
+         </main></body></html>"
+    );
+    (StatusCode::NOT_FOUND, Html(page)).into_response()
+}
+
+/// BIZ-023: the business's current members, owner first, each with their sign-in address read
+/// under `AccountEmail`; `None` with no vault or an address the vault no longer holds.
+async fn team_members(state: &StepUp, business: Uuid) -> Result<Vec<ShownMember>, ()> {
+    let mut db = state.pool.acquire().await.map_err(|_| ())?;
+    let team = members(&mut db, business).await.map_err(|_| ())?;
+    let mut shown = Vec::with_capacity(team.len());
+    for member in team {
+        let address = match state.vault.as_deref() {
+            None => None,
+            Some(vault) => {
+                let purpose = BusinessPurpose::AccountEmail;
+                match read_business_mailbox(&mut db, vault, purpose, member.mailbox).await {
+                    Ok(address) => Some(address.expose_secret().to_owned()),
+                    Err(BusinessContactError::NotFound) => None,
+                    Err(_) => return Err(()),
+                }
+            }
+        };
+        shown.push(ShownMember { member, address });
+    }
+    Ok(shown)
+}
+
+/// `GET` [`TEAM_ROUTE`] (BIZ-023, FEE-041, SEC-019, D-5567): the team page for the owner or a
+/// "Confirm and billing" member; anyone else gets the one not-found answer. Changes nothing.
+async fn team(State(state): State<StepUp>, jar: CookieJar) -> Response {
+    let who = match signed_in(&state, &jar).await {
+        Ok(who) => who,
+        Err(answer) => return *answer,
+    };
+    if !may_see_team(&who) {
+        return not_found();
+    }
+    let Some(csrf) = csrf_token(&jar) else {
+        return failed("csrf token");
+    };
+    let Ok(shown) = team_members(&state, who.business()).await else {
+        return failed("team members");
+    };
+    match team_page(&shown, &who, &csrf) {
+        Ok(html) => Html(html).into_response(),
+        Err(_) => failed("team page"),
     }
 }
 
