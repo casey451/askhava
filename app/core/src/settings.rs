@@ -48,6 +48,7 @@ const OWNER_PHONE: &str = "ASKHAVA_OWNER_PHONE";
 const EXPORT_RECIPIENT: &str = "ASKHAVA_EXPORT_RECIPIENT";
 const BACKUP_DATABASE_URL: &str = "ASKHAVA_BACKUP_DATABASE_URL";
 const RESTORE_ADMIN_URL: &str = "ASKHAVA_RESTORE_ADMIN_URL";
+const PILOT_PUSHED_TRADES: &str = "ASKHAVA_PILOT_PUSHED_TRADES";
 
 /// Every key the parser accepts; any other `ASKHAVA_*` key stops startup (D-493).
 const KEYS: &[&str] = &[
@@ -98,6 +99,8 @@ const KEYS: &[&str] = &[
     // Casey's own phone for the owner calls, optional here; `server`'s owner-call registration
     // requires it in `test` and `live` (T484, OPS-028, OPS-035, D-3890).
     OWNER_PHONE,
+    // The pilot's pushed trades for OPS-047's scorecard figures, optional (T305, D-5318).
+    PILOT_PUSHED_TRADES,
     // T106 (OPS-007, OPS-049, D-3144, D-4044): parsed by `server`'s `liveness` and `healthz`: how
     // long a failed liveness check may last before the process exits, and how long due work may
     // wait before `/healthz` reports the worker down.
@@ -461,6 +464,7 @@ pub struct Settings {
     city_guide: [Option<String>; 3],
     scorecard: [u32; SCORECARD_DEFAULTS.len()],
     db_volume_bytes: Option<u64>,
+    pilot_pushed: Vec<String>,
     owner_phone: Option<SecretString>,
     /// The export recipient and the backup role's URL (T109).
     export: (Option<String>, Option<SecretString>),
@@ -558,6 +562,7 @@ impl Settings {
                 .map(|key| raw.remove(key).map(|v| v.trim().to_owned())),
             scorecard: scorecard(&mut raw)?,
             db_volume_bytes: volume_bytes(raw.remove(DB_VOLUME_BYTES))?,
+            pilot_pushed: code_names(raw.remove(PILOT_PUSHED_TRADES)),
             owner_phone: e164(raw.remove(OWNER_PHONE), OWNER_PHONE)?.map(SecretString::from),
             export: export_keys(&mut raw)?,
             owner_flags: owner_flags(&mut raw)?,
@@ -797,6 +802,23 @@ impl Settings {
             .map(|((key, _), value)| (*key, value))
     }
 
+    /// OPS-039's defaults for a caller with no `Settings` (T305, D-3890): every go and stop line
+    /// and ladder rung as [`Self::scorecard_lines`] gives them when no key is set.
+    pub fn default_scorecard_lines() -> impl Iterator<Item = (&'static str, u32)> {
+        SCORECARD_DEFAULTS.iter().copied()
+    }
+
+    /// FEE-046's default set-aside in basis points (860), for a caller with no `Settings` (T305).
+    pub const DEFAULT_SET_ASIDE_BASIS_POINTS: u16 = DEFAULT_SET_ASIDE_BASIS_POINTS;
+
+    /// OPS-047's pushed trades (`ASKHAVA_PILOT_PUSHED_TRADES`, comma-separated category code
+    /// names, each trimmed, empty ones dropped; default none), outside the `ASKHAVA_SCORECARD_*`
+    /// family (T305, D-5318, D-5319).
+    #[must_use]
+    pub fn pilot_pushed_trades(&self) -> &[String] {
+        &self.pilot_pushed
+    }
+
     /// WEB-021, WEB-022: the link to the LLC's public record on the Arizona Corporation Commission
     /// site (`ASKHAVA_LLC_RECORD_URL`, trimmed); `None` while unset, and the "Who runs" block
     /// leaves it out (D-3890).
@@ -1022,6 +1044,16 @@ fn check_accounts(
         accounts.insert(vendor, id.trim().to_owned());
     }
     Ok(accounts)
+}
+
+/// Comma-separated code names, each trimmed, empty ones dropped (OPS-047, D-5318).
+fn code_names(raw: Option<String>) -> Vec<String> {
+    raw.unwrap_or_default()
+        .split(',')
+        .map(str::trim)
+        .filter(|name| !name.is_empty())
+        .map(str::to_owned)
+        .collect()
 }
 
 fn optional_list(
