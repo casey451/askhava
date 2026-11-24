@@ -162,6 +162,7 @@ pub use crate::summary_step::{
     show_card,
 };
 pub use crate::text_failed_urgency::contact_urgent;
+pub use crate::text_pick_reply::answer_opted_out_pick;
 pub use crate::web_chat::{
     ChatAnswer, ChatError, ChatIn, ChatSettings, ChatStep, Checked, CodeStep, MAX_CODE_TRIES,
     chat_message, check_code, request_source, send_code, start_chat, web_chat_consent_text,
