@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T07:35:00Z by runner 7d2bd0857902 (actions).
+Updated 2026-11-24T07:37:52Z by runner 10a688ebac37 (actions).
 
 **Building: T804 in progress since 07:31Z; 654 of 779 done; week 90% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 654 of 779 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T804 claimed 07:31Z, lease until 10:31Z
-- **Week:** 90% used, 12.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:34Z, 0 min before this update
+- **Lane:** lane 2: T804 claimed 07:31Z, lease until 10:31Z; lane 5: T814 claimed 07:37Z, lease until 10:37Z
+- **Week:** 90% used, 12.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 07:35Z, 2 min before this update
 - **Keeper:** last ran 07:35Z, next wake 07:55Z
 
 ## Needs attention
@@ -25,7 +25,7 @@ Also: stand-in twilio fail fault answers 500 -> OutcomeUnknown, no retries (serv
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 47% of the context window, over its 45% limit
-- Strict plan check red: 59 problem(s) on tasks still to run (+553 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 61 problem(s) on tasks still to run (+557 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -83,6 +83,7 @@ Also: stand-in twilio fail fault answers 500 -> OutcomeUnknown, no retries (serv
 | T716 | intake: the dispatcher's trade questions at step 5: "Which f | BLOCKED | 3 | 81 min | 08:17Z |  |
 
 ### Plan and harness merges on main
+- 07:37Z Plan: per-turn token trims, PF-P1d pre-flight fixes, J1 keyboard flake task T846, T119 unblock, hand-offs (D-5693, D-5709, D-5715, D-5716) (#1419)
 - 23:24Z Plan: token efficiency and phase-2 pre-flight (D-5676); smoke throughput harness task T843, T836 unblocked (D-5682) (#1412)
 - 20:12Z Plan: outside pre-flight fixes for 22 queued tasks, template a11y line, four test-design rows (D-5670) (#1410)
 - 19:49Z Plan: pre-flight fixes for ten claimable tasks, J3 licence fixture T841 (D-5657); baseline audit gate deferred (D-5663); outside pre-flight fixes T744/T6
@@ -121,7 +122,7 @@ Also: stand-in twilio fail fault answers 500 -> OutcomeUnknown, no retries (serv
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-24T07:13:48Z (week)): week: 181.4M used, 12.6M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T20:22:46Z.
+- Pacing (session_reading 2026-11-24T07:34:07Z (week)): week: 181.5M used, 12.5M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T20:29:13Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -138,6 +139,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T804 (lease until 2026-11-24T10:31:14Z)
+- lane 5: T814 (lease until 2026-11-24T10:37:41Z)
 
 ## Last usage reading
 - {"task": "T410", "at": "2026-11-24T07:32:16Z", "output_tokens": 15694, "cache_read_input_tokens": 1780167, "cache_creation_input_tokens": 89030, "input_tokens": 80}
