@@ -10592,3 +10592,4 @@
 - 2026-11-24T00:30:42Z runner 3bdc24aca9ac (actions): {"T649": "MERGE_PENDING -> QUEUED", "T716": "MERGE_PENDING -> DONE"}
 - 2026-11-24T00:31:15Z runner 3bdc24aca9ac (actions): {"T836": "QUEUED -> IN_PROGRESS"}; T836 estimated 653k tokens (calibrated); week has 18.6M left (no five-hour budget, D-3056) after 3.4M still running in another lane (session_reading 2026-11-23T23:58:44Z (week)); claimed
 - 2026-11-24T00:31:36Z runner 3bdc24aca9ac (actions): {}
+- 2026-11-24T00:34:05Z runner 3bdc24aca9ac (actions): {"T813": "QUEUED -> IN_PROGRESS"}; T813 estimated 1.2M tokens (calibrated); week has 17.9M left (no five-hour budget, D-3056) after 4.1M still running in another lane (session_reading 2026-11-23T23:58:44Z (week)); claimed
