@@ -10627,3 +10627,4 @@
 - 2026-11-24T01:36:08Z runner ead721be92bb (actions): {"T813": "QUEUED -> IN_PROGRESS"}; T813 estimated 1.2M tokens (calibrated); week has 17.3M left (no five-hour budget, D-3056) after 2.7M still running in another lane (session_reading 2026-11-24T01:30:14Z (week)); claimed
 - 2026-11-24T01:37:06Z runner ead721be92bb (actions): {}
 - 2026-11-24T01:37:24Z runner ead721be92bb (actions): {}
+- 2026-11-24T01:38:21Z runner 82aea08351d9 (actions): {"T649": "QUEUED -> IN_PROGRESS"}; T649 estimated 1.8M tokens (calibrated); week has 16.1M left (no five-hour budget, D-3056) after 3.9M still running in another lane (session_reading 2026-11-24T01:36:42Z (week)); claimed

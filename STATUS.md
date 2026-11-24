@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-24T01:37:24Z by runner ead721be92bb (actions).
+Updated 2026-11-24T01:38:21Z by runner 82aea08351d9 (actions).
 
 **Building: T524 in progress since 01:11Z; 645 of 779 done; week 87% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 645 of 779 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T524 claimed 01:11Z, lease until 04:11Z; lane 2: T813 claimed 01:35Z, lease until 04:35Z; lane 5: T222 claimed 00:37Z, lease until 03:37Z
-- **Week:** 87% used, 17.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 1: T524 claimed 01:11Z, lease until 04:11Z; lane 2: T813 claimed 01:35Z, lease until 04:35Z; lane 3: T649 claimed 01:38Z, lease until 04:38Z; lane 5: T222 claimed 00:37Z, lease until 03:37Z
+- **Week:** 87% used, 16.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 01:37Z, 0 min before this update
 - **Keeper:** last ran 01:37Z, next wake 01:57Z
 
@@ -15,8 +15,7 @@ Updated 2026-11-24T01:37:24Z by runner ead721be92bb (actions).
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 47% of the context window, over its 45% limit
-- PLAN GAP T779 (since 2026-11-24T01:35:56Z, no attempt used; a plan change fixes it): T779: dependency T738 is DONE but its owned file app/server/tests/owner_settings_errors.rs is not on main; T779: dependency T738 is DONE but its owned file tests/integration/tests/start_rekey_race.rs is not on main
-- Strict plan check red: 52 problem(s) on tasks still to run (+538 on DONE tasks); first: T518: stored context_pct 17% but it measures 21%; regenerate
+- Strict plan check red: 52 problem(s) on tasks still to run (+539 on DONE tasks); first: T518: stored context_pct 17% but it measures 21%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -113,7 +112,7 @@ Updated 2026-11-24T01:37:24Z by runner ead721be92bb (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-24T01:30:14Z (week)): week: 176.7M used, 17.3M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T21:23:01Z.
+- Pacing (session_reading 2026-11-24T01:36:42Z (week)): week: 177.9M used, 16.1M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T21:56:33Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -130,6 +129,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T524 (lease until 2026-11-24T04:11:37Z)
 - lane 2: T813 (lease until 2026-11-24T04:35:56Z)
+- lane 3: T649 (lease until 2026-11-24T04:38:03Z)
 - lane 5: T222 (lease until 2026-11-24T03:37:12Z)
 
 ## Last usage reading
