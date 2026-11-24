@@ -8,11 +8,11 @@
 // pick (no vault keys in `ci`, D-1516), so its final Pick shows "Nothing was picked", and the code
 // step is reached by switching the review form's address to /code, as pick_forms.spec.ts does; the
 // real code check runs in tests/e2e/j1_homeowner.spec.ts. At every stop the focused element must be
-// the next control in source order (after a "#quote-2" address, the first one from that card), show
+// the next control in source order (after a "#quote-2" address, which focuses that card, D-5715, the first one inside it), show
 // a focus indicator, lie inside the viewport and not under any other element (A11Y-005); a radio
 // group is one stop (its checked radio, else its first), as browsers tab; tabbing
 // past the last control leaves the page and Shift+Tab comes back, so nothing traps focus. The 3 px
-// `focus` token ring is not checked yet: no stylesheet defines it until T101 and T166 (D-2031).
+// ring is checked on the card "Go back" focuses (D-5826); on the other stops only some indicator is.
 // axe runs on every page at 320, 768 and 1280 px, with focus already on the control about to be
 // used, since a scan moves the browser's Tab starting point. The quote page is seeded through
 // fixtures.ts's psql seeding. Fake data only.
@@ -64,7 +64,8 @@ function focusReport(targets: string): Focus {
     return { index: -1, next: tabbable.length > 0 ? from : -1, name: "", problems: [] };
   }
   const index = tabbable.indexOf(el);
-  const next = tabbable.findIndex((t) => (el.compareDocumentPosition(t) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0 && !el.contains(t));
+  const isTarget = location.hash !== "" && el.id === location.hash.slice(1);
+  const next = tabbable.findIndex((t) => (el.compareDocumentPosition(t) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0 && (isTarget || !el.contains(t)));
   const name = (el.getAttribute("aria-label") ?? el.textContent).trim() || el.id;
   const problems: string[] = [];
   const style = getComputedStyle(el);
@@ -132,6 +133,16 @@ async function axeClean(page: Page, step: string): Promise<void> {
   expect((await where(page)).index, "the scan left focus where it was").toBe(before.index);
 }
 
+/** The card a "#quote-2" address focused shows the 3 px ring, its top at least 6 px inside the viewport (A11Y-005, D-5715). */
+async function cardRing(page: Page): Promise<void> {
+  const ring = await page.locator("#quote-2").evaluate((card) => {
+    const style = getComputedStyle(card);
+    return { outline: `${style.outlineWidth} ${style.outlineStyle}`, top: card.getBoundingClientRect().top };
+  });
+  expect(ring.outline, "the focused card's outline").toBe("3px solid");
+  expect(ring.top, "the focused card's top, ring included, inside the viewport").toBeGreaterThanOrEqual(6);
+}
+
 /** From the review step's "Nothing was picked" answer to the code step, its form's address switched to /code (D-1264). */
 async function toCodeStep(page: Page): Promise<void> {
   await page.locator("#final-pick").evaluate((button) => {
@@ -160,6 +171,8 @@ for (const width of WIDTHS) {
     await page.keyboard.press("Enter");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(/^Your quotes for request \d+$/);
     await page.waitForLoadState("load");
+    await expect(page.locator("#quote-2")).toBeFocused();
+    await cardRing(page);
     await tabTo(page, /^Pick #2$/);
     await page.keyboard.press("Space");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Check your pick: quote #2");
