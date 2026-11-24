@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-24T08:35:08Z by runner 4358e6b87820 (actions).
+Updated 2026-11-24T08:35:42Z by runner 4358e6b87820 (actions).
 
 **Building: T841 in progress since 08:11Z; 655 of 780 done; week 90% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 655 of 780 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T841 claimed 08:11Z, lease until 11:11Z; lane 2: T804 claimed 07:31Z, lease until 10:31Z; lane 5: T814 claimed 07:37Z, lease until 10:37Z
+- **Lane:** lane 1: T841 claimed 08:11Z, lease until 11:11Z; lane 5: T814 claimed 07:37Z, lease until 10:37Z
 - **Week:** 90% used, 10.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 08:12Z, 23 min before this update
 - **Keeper:** last ran 07:48Z, next wake 08:08Z
@@ -26,9 +26,10 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T804 | server and portals: a delete or copy request made in the por | MERGE_PENDING | 2 | 63 min | 08:35Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T410 | portals: every signed-in business page shows the Get help li | MERGE_PENDING | 1 | 93 min | 07:32Z |  |
 | T656 | site: a failed submit on the /request chat shows a focused e | done | 2 | 2 h 1 min | 07:12Z | Reviewer after the findings round still FINDINGS (head 18fdb4a27): app/site/templates/request.html lines 7-10: header co |
-| T804 | server and portals: a delete or copy request made in the por | check_failed | 1 | 69 min | 06:37Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
+| T804 | server and portals: a delete or copy request made in the por | check_failed | 1 | 69 min | 06:37Z |  |
 | T779 | ops, server and portals: alerts that do not push show in the | done | 1 | 83 min | 06:27Z |  |
 | T728 | intake: a homeowner's "<n> YES" text from her phone picks th | done | 1 | 91 min | 05:32Z |  |
 | T676 | tests (harness): J1 runs the real intake conversation instea | done | 1 | 2 h 44 min | 05:29Z |  |
@@ -131,8 +132,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T841 (lease until 2026-11-24T11:11:14Z)
-- lane 2: T804 (lease until 2026-11-24T10:31:14Z)
 - lane 5: T814 (lease until 2026-11-24T10:37:41Z)
 
 ## Last usage reading
-- {"task": "T410", "at": "2026-11-24T07:32:16Z", "output_tokens": 15694, "cache_read_input_tokens": 1780167, "cache_creation_input_tokens": 89030, "input_tokens": 80}
+- {"task": "T804", "at": "2026-11-24T08:35:06Z", "input_tokens": 83, "cache_creation_input_tokens": 105363, "cache_read_input_tokens": 1907766, "output_tokens": 15144}
