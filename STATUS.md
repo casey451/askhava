@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-24T10:59:56Z by runner 6f9c1243fb5d (actions).
+Updated 2026-11-24T11:01:10Z by runner 6f9c1243fb5d (actions).
 
 **Building: T802 in progress since 10:10Z; 658 of 780 done; week 91% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-24T10:59:56Z by runner 6f9c1243fb5d (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T802 claimed 10:10Z, lease until 13:10Z; lane 3: T410 claimed 09:38Z, lease until 12:38Z; lane 5: T624 claimed 10:37Z, lease until 13:37Z
 - **Week:** 91% used, 8.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:38Z, 21 min before this update
+- **Last run:** 11:00Z, 0 min before this update
 - **Keeper:** last ran 10:30Z, next wake 11:52Z
 
 ## Needs attention
@@ -75,7 +75,6 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 | T819 | portals: her feedback words are scrubbed before they are sto | check_failed | 1 | 54 min | 11:57Z |  |
 | T646 | site and server: the web chat's new-request limit counts the | check_failed | 2 | 54 min | 11:30Z |  |
 | T653 | licensing and server (harness): a typed BTR number is stored | check_failed | 1 | 117 min | 11:19Z |  |
-| T714 | portals: a Confirm link sent by text is marked text-started  | check_failed | 1 | 95 min | 11:00Z |  |
 
 ### Plan and harness merges on main
 - 07:37Z Plan: per-turn token trims, PF-P1d pre-flight fixes, J1 keyboard flake task T846, T119 unblock, hand-offs (D-5693, D-5709, D-5715, D-5716) (#1419)
