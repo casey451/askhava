@@ -41,6 +41,7 @@ pub mod address_changes;
 pub mod business_contacts;
 pub mod business_guarded_changes;
 pub mod business_portal;
+pub mod business_settings_routes;
 pub mod business_signin;
 pub mod business_signup;
 pub mod business_step_up;
@@ -468,7 +469,9 @@ fn owner_pages(
 /// secret), always; the business step-up page
 /// ([`business_step_up`], T364), always, sending codes only with its part, with the team page
 /// (T544, the portal's vault), and the role, removal
-/// and monthly-limit changes behind it ([`business_guarded_changes`], T565), and the notice and
+/// and monthly-limit changes behind it ([`business_guarded_changes`], T565), the service-area
+/// settings, shared-inbox switch and contact card ([`business_settings_routes`], T733, the card
+/// with the voice hooks' pool numbers), and the notice and
 /// backup address changes ([`address_changes`], T542, changing only with their part), and the
 /// owner's waiting-phones page ([`phone_approval`], T397, with the portal's vault), always; and the
 /// owner's sign-in, step-up and sign-out routes ([`owner_signin`], T303) and home, settings and
@@ -515,7 +518,8 @@ fn business_pages(
             pool.clone(),
             parts.vault.clone(),
             webhooks,
-        ));
+        ))
+        .merge(business_settings_routes::served(pool.clone(), voice));
     let portal_parts = (parts.vault, parts.business_number);
     let portal = business_portal::served(pool, portal_parts, (webhooks, voice))
         .merge(confirm)

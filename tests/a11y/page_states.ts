@@ -804,6 +804,12 @@ const TEAM_STATES: readonly PageState[] = [
   ["business team, owner with one member", "Remove from your team", "There is a problem", businessSql(TEAM_MEMBER_SQL)],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: TEAM_ROUTE, name, shows, hides, sql, statusRegions: [] }));
 
+/** The service-area settings (T733; BIZ-010, BIZ-058): the owner signed in, nothing stored yet. */
+const SERVICE_AREA_SETTINGS_ROUTE = "/b/settings/service-area";
+const SERVICE_AREA_SETTINGS_STATES: readonly PageState[] = [
+  ["service area settings, nothing stored", "Save service area", "Fix these to save", businessSql("")],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: SERVICE_AREA_SETTINGS_ROUTE, name, shows, hides, sql, statusRegions: ["area-saved"] }));
+
 /** The homeowner sign-in form (T307, SEC-008): no seed, the plain path. */
 const HOMEOWNER_SIGNIN_ROUTE = "/h/sign-in";
 const HOMEOWNER_SIGNIN_STATES: readonly PageState[] = [
@@ -985,6 +991,7 @@ export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: OWNER_AI_ROUTE, seed: portalSeed(false), states: OWNER_AI_STATES },
   { route: TEAM_ROUTE, seed: portalSeed(false), states: TEAM_STATES },
   { route: DATA_LINK_ROUTE, seed: dataLinkSeed, states: DATA_LINK_STATES },
+  { route: SERVICE_AREA_SETTINGS_ROUTE, seed: portalSeed(false), states: SERVICE_AREA_SETTINGS_STATES },
 ];
 
 /** Every state of every page, in entry order. */
