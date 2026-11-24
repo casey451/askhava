@@ -434,6 +434,7 @@ struct EsHomePage {
     banner_shown: bool,
     who: WhoRuns,
     fees: Fees,
+    market: HomeMarket,
     texting: Option<String>,
 }
 
@@ -669,16 +670,18 @@ async fn es_home_html(pool: &PgPool, pages: &SitePages) -> Result<String, askama
 ///
 /// # Errors
 ///
-/// The template's error.
+/// The template's error, or `askama::Error::Custom` when the market values are missing (D-1515).
 pub(crate) fn es_home_page(
     pages: &SitePages,
     banner_shown: bool,
     texting: Option<String>,
 ) -> Result<String, askama::Error> {
+    let market = home_market().map_err(|e| askama::Error::Custom(Box::new(e)))?;
     EsHomePage {
         banner_shown,
         who: pages.who.clone(),
         fees: Fees::from_tiers(),
+        market,
         texting,
     }
     .render()
@@ -1405,6 +1408,7 @@ mod tests {
             banner_shown: false,
             who: WhoRuns::default(),
             fees: Fees::from_tiers(),
+            market: home_market().expect("market"),
             texting: None,
         }
         .render()
