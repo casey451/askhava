@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "business_layout.html" %}
 {#- The released job's page (T085; PICK-024, BIZ-013, BIZ-035, TD-PICK-39). The details line
     prints the homeowner's first name once and ends with the PICK-024 tip; her phone is never
     here. An email release shows the D-295 line and the email. The call log has no number. -#}
@@ -12,10 +12,12 @@
 {% endmatch %}{% when None %}<p id="release-details">We removed the homeowner's details, as our privacy rules require.</p>
 {% endmatch %}<h2>Your calls on this job</h2>
 {% if rows.is_empty() %}<p>No calls yet.</p>
-{% else %}<table>
+{% else %}<div role="region" tabindex="0" aria-label="Your calls on this job">
+<table>
 <thead><tr><th scope="col">Time (Arizona)</th><th scope="col">In calling hours (8 a.m. to 8 p.m.)</th><th scope="col">Answered</th><th scope="col">Text or email after a missed call</th></tr></thead>
 <tbody>
 {% for r in rows %}<tr><td>{{ r.at }}</td><td>{{ r.in_window }}</td><td>{{ r.answered }}</td><td>{{ r.text }}</td></tr>
 {% endfor %}</tbody>
 </table>
+</div>
 {% endif %}{% endblock %}
