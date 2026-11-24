@@ -1,25 +1,30 @@
 # Ask Hava build status
 
-Updated 2026-11-24T02:36:05Z by runner 0132724841eb (actions).
+Updated 2026-11-24T02:36:36Z by runner 15a972ec6a46 (actions).
 
 **Building: T524 in progress since 01:11Z; 646 of 779 done; week 87% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 646 of 779 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T524 claimed 01:11Z, lease until 04:11Z; lane 3: T649 claimed 01:38Z, lease until 04:38Z; lane 4: T119 claimed 01:59Z, lease until 04:59Z; lane 5: T222 claimed 00:37Z, lease until 03:37Z
+- **Lane:** lane 1: T524 claimed 01:11Z, lease until 04:11Z; lane 3: T649 claimed 01:38Z, lease until 04:38Z; lane 5: T222 claimed 00:37Z, lease until 03:37Z
 - **Week:** 87% used, 14.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:31Z, 4 min before this update
+- **Last run:** 02:36Z, 0 min before this update
 - **Keeper:** last ran 01:37Z, next wake 01:57Z
 
 ## Needs attention
+- BLOCKED T119: plan gap reported: PLAN GAP: outside ownership: tests/e2e/webserver.ts
+keyedEnv (webserver.ts:143-177) sets no ASKHAVA_HOMEOWNER_NUMBER; homeowner_number (app/server/src/lib.rs:2345) returns None in CI, so homeowner outbox rows stay queued and J4 steps 1-2 cannot run By text (D-5657). appEnv drops inherited ASKHAVA_* vars, so no workaround. webserver.ts is owned by T536 and not owned/shared by T119. Smallest fix: add a fake +1 ASKHAVA_HOMEOWNER_NUMBER to keyedEnv (or make webserver.ts shared for T119).
+Also: stand-in twilio fail fault answers 500 -> OutcomeUnknown, no retries (service.rs refused()); docs/test-de; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T119 --plan-fix D-### --reason "..."` (D-2859)
+- PLAN GAP T119 (since 2026-11-24T02:36:07Z, no attempt used; a plan change fixes it): outside ownership: tests/e2e/webserver.ts
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 47% of the context window, over its 45% limit
-- Strict plan check red: 52 problem(s) on tasks still to run (+539 on DONE tasks); first: T518: stored context_pct 17% but it measures 21%; regenerate
+- Strict plan check red: 52 problem(s) on tasks still to run (+541 on DONE tasks); first: T518: stored context_pct 17% but it measures 21%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T119 | Journey J4 (vendor outage), with closing checks | BLOCKED | 1 | 36 min | 02:36Z | PLAN GAP: outside ownership: tests/e2e/webserver.ts / keyedEnv (webserver.ts:143-177) sets no ASKHAVA_HOMEOWNER_NUMBER;  |
 | T813 | businesses and portals (harness): a step-up counts only in t | MERGE_PENDING | 1 | 59 min | 02:35Z |  |
 | T836 | ci and runner workflow (harness): the backup-runner gate ski | done | 2 | 25 min | 00:55Z | PLAN GAP: tests/test_runner_five_lanes.py:176 (test_no_workflow_a_hand_in_starts_cancels_another_lanes_run_when_five_han |
 | T737 | portals, ai and server: the owner records the AI provider's  | done | 2 | 112 min | 00:42Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
@@ -127,8 +132,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T524 (lease until 2026-11-24T04:11:37Z)
 - lane 3: T649 (lease until 2026-11-24T04:38:03Z)
-- lane 4: T119 (lease until 2026-11-24T04:59:33Z)
 - lane 5: T222 (lease until 2026-11-24T03:37:12Z)
 
 ## Last usage reading
-- {"task": "T813", "at": "2026-11-24T02:35:29Z", "input_tokens": 196, "cache_creation_input_tokens": 205793, "output_tokens": 44097, "cache_read_input_tokens": 4994627}
+- {"task": "T119", "at": "2026-11-24T02:36:07Z", "cache_read_input_tokens": 8170391, "cache_creation_input_tokens": 200863, "input_tokens": 170, "output_tokens": 34095}

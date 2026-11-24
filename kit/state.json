@@ -26177,8 +26177,8 @@
     "T536",
     "T561"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "BLOCKED",
+   "attempts": 1,
    "slug": "e2e-j4-outage",
    "type": "build",
    "stage": "5",
@@ -26191,10 +26191,42 @@
     5713,
     5714
    ],
-   "wip_claim": {
-    "attempt": 1,
-    "remote_sha": ""
-   }
+   "reason": "plan gap reported: PLAN GAP: outside ownership: tests/e2e/webserver.ts\nkeyedEnv (webserver.ts:143-177) sets no ASKHAVA_HOMEOWNER_NUMBER; homeowner_number (app/server/src/lib.rs:2345) returns None in CI, so homeowner outbox rows stay queued and J4 steps 1-2 cannot run By text (D-5657). appEnv drops inherited ASKHAVA_* vars, so no workaround. webserver.ts is owned by T536 and not owned/shared by T119. Smallest fix: add a fake +1 ASKHAVA_HOMEOWNER_NUMBER to keyedEnv (or make webserver.ts shared for T119).\nAlso: stand-in twilio fail fault answers 500 -> OutcomeUnknown, no retries (service.rs refused()); docs/test-de; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T119 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: outside ownership: tests/e2e/webserver.ts\nkeyedEnv (webserver.ts:143-177) sets no ASKHAVA_HOMEOWNER_NUMBER; homeowner_number (app/server/src/lib.rs:2345) returns None in CI, so homeowner outbox rows stay queued and J4 steps 1-2 cannot run By text (D-5657). appEnv drops inherited ASKHAVA_* vars, so no workaround. webserver.ts is owned by T536 and not owned/shared by T119. Smallest fix: add a fake +1 ASKHAVA_HOMEOWNER_NUMBER to keyedEnv (or make webserver.ts shared for T119).\nAlso: stand-in twilio fail fault answers 500 -> OutcomeUnknown, no retries (service.rs refused()); docs/test-design.md J4 step 1 expects 3 retries. T119 can use the 4xx suspended fault (21606) instead; log in decisions.\nReviewer acb751b34eb830299 confirmed: PLAN-GAP: CONFIRMED.",
+   "plan_gap": {
+    "at": "2026-11-24T02:36:07Z",
+    "problems": [
+     "outside ownership: tests/e2e/webserver.ts"
+    ],
+    "paths": [
+     "tests/e2e/webserver.ts"
+    ]
+   },
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-sonnet-5-5",
+     "model_evidence_count": 138,
+     "head_sha": "15a972ec6a465d02eb5997e8dda6acce28e09807",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-24T01:59:33Z",
+     "ended_at": "2026-11-24T02:36:07Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 7907172,
+       "turns": 73
+      },
+      "reviewer": {
+       "tokens": 498347,
+       "turns": 14
+      }
+     }
+    }
+   ]
   },
   {
    "id": "T120",
@@ -116950,12 +116982,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T813",
-   "at": "2026-11-24T02:35:29Z",
-   "input_tokens": 196,
-   "cache_creation_input_tokens": 205793,
-   "output_tokens": 44097,
-   "cache_read_input_tokens": 4994627
+   "task": "T119",
+   "at": "2026-11-24T02:36:07Z",
+   "cache_read_input_tokens": 8170391,
+   "cache_creation_input_tokens": 200863,
+   "input_tokens": 170,
+   "output_tokens": 34095
   },
   "source": "session_reading 2026-11-24T01:36:42Z (week)",
   "by_task": {
@@ -124777,17 +124809,27 @@
    },
    "T119": {
     "estimated_bytes": 382147,
-    "estimated_tokens": 446390
+    "estimated_tokens": 446390,
+    "usage_counting": "message_id",
+    "cache_read_input_tokens": 8170391,
+    "cache_creation_input_tokens": 200863,
+    "input_tokens": 170,
+    "output_tokens": 34095,
+    "worker_tokens": 7907172,
+    "worker_turns": 73,
+    "reviewer_tokens": 498347,
+    "reviewer_turns": 14,
+    "last_model": "claude-sonnet-5-5"
    }
   },
   "windows": {
    "five_hour": {
-    "start": "2026-11-24T02:35:29Z",
-    "tokens": 749548
+    "start": "2026-11-24T02:36:07Z",
+    "tokens": 1052167
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 234130490
+    "tokens": 235182657
    }
   },
   "session_reading": {
@@ -124798,7 +124840,7 @@
    }
   }
  },
- "updated_at": "2026-11-24T02:36:05Z",
+ "updated_at": "2026-11-24T02:36:36Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -124896,7 +124938,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "0132724841eb63d314c80b6a4a696f0f0ffcc3b0",
+ "runner_sha": "15a972ec6a465d02eb5997e8dda6acce28e09807",
  "starter": "actions",
  "smoke_runs": [
   {
