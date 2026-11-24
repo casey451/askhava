@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-24T19:30:32Z by runner e2c7ee730a9f (actions).
+Updated 2026-11-24T19:31:40Z by runner a5c0e45bc3c3 (actions).
 
 **Building: T839 in progress since 18:41Z; 667 of 780 done; week 96% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 667 of 780 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T839 claimed 18:41Z, lease until 21:41Z; lane 4: T820 claimed 18:38Z, lease until 21:38Z
-- **Week:** 96% used, 0.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Week:** 96% used, 0.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 19:30Z, 0 min before this update
 - **Keeper:** last ran 19:30Z, next wake 19:50Z
 
@@ -23,7 +23,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 47% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 48% of the context window, over its 45% limit
-- Strict plan check red: 62 problem(s) on tasks still to run (+570 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 65 problem(s) on tasks still to run (+573 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -79,7 +79,6 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 | T745 | intake: a reader for a job's intake answers through `intake: | done | 1 | 2 h 19 min | 21:22Z |  |
 | T836 | ci and runner workflow (harness): the backup-runner gate ski | BLOCKED | 1 | 11 min | 20:40Z |  |
 | T668 | server: the business job page at /b/jobs/{j} offers "Not a f | done | 1 | 56 min | 20:07Z |  |
-| T812 | businesses and portals: a passed step-up records the session | done | 1 | 89 min | 19:31Z |  |
 
 ### Plan and harness merges on main
 - 17:12Z Plan: PF-Q1 pre-flight fixes for T817 and T843; PF-Q1, PF-T222, PF-T801b, PF-CLK reports and Fable's scope decision filed (D-5793) (#1448)
@@ -120,7 +119,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-24T18:32:43Z (week)): week: 193.6M used, 415k left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T18:55:18Z.
+- Pacing (session_reading 2026-11-24T19:29:44Z (week)): week: 193.8M used, 194k left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T19:41:03Z; waiting until 2026-11-26T17:00:00Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
