@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-24T11:01:34Z by runner 9c95956462af (actions).
+Updated 2026-11-24T11:07:35Z by runner 16fd7ee8aae9 (actions).
 
 **Building: T802 in progress since 10:10Z; 658 of 780 done; week 91% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-24T11:01:34Z by runner 9c95956462af (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T802 claimed 10:10Z, lease until 13:10Z; lane 3: T410 claimed 09:38Z, lease until 12:38Z; lane 5: T624 claimed 10:37Z, lease until 13:37Z
 - **Week:** 91% used, 8.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:01Z, 0 min before this update
+- **Last run:** 11:02Z, 5 min before this update
 - **Keeper:** last ran 11:01Z, next wake 11:21Z
 
 ## Needs attention
@@ -23,13 +23,13 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 47% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 48% of the context window, over its 45% limit
-- Strict plan check red: 54 problem(s) on tasks still to run (+550 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 58 problem(s) on tasks still to run (+554 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T801 | intake and site (harness): with texting on, the web chat onl | BLOCKED | 1 | 2 h 10 min | 10:59Z | PLAN GAP: app/server/tests/web_chat_stops.rs:572 and :592 (owned by T645) assert a consent text queued to a chat-verifie |
-| T305 | server and portals: the scorecard, the intake report, the mo | MERGE_PENDING | 1 | 73 min | 10:28Z |  |
+| T305 | server and portals: the scorecard, the intake report, the mo | check_failed | 1 | 73 min | 10:28Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T814 | portals and server: a used action link pressed again shows i | done | 1 | 2 h 29 min | 10:07Z |  |
 | T841 | e2e: seedPick's new businesses hold the fixture licence ROC1 | done | 1 | 97 min | 09:48Z |  |
 | T804 | server and portals: a delete or copy request made in the por | done | 2 | 63 min | 08:35Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
