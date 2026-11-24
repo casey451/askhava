@@ -35,7 +35,9 @@ test("TD-SEC-48, TD-OPS-15: the owner saves minutes, adds an expense and tries a
   const vendor = `Sample Vendor ${randomBytes(4).toString("hex")}`;
   const money = await page.goto("/owner/money");
   expect(money?.headers()["cache-control"]).toContain("no-store");
-  await page.getByLabel("Date").fill(new Date().toISOString().slice(0, 10));
+  // The server refuses a date after today's Arizona date, so fill the Phoenix date, not UTC's.
+  const today = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Phoenix" }).format(new Date());
+  await page.getByLabel("Date").fill(today);
   await page.getByLabel("Paid to").fill(vendor);
   await page.getByLabel("Amount in dollars").fill("12.50");
   await page.getByLabel("Category").fill("Software");
