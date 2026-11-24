@@ -20,7 +20,8 @@ use askhava_adapters::api::{
     PaymentIntent, PaymentsAdapter, SetUpIntent,
 };
 use askhava_businesses::api::{
-    Acting, Checks, Event, SignUpForm, add_owner, apply, record_step_up, sign_up,
+    Acting, Checks, EmailCheckError, Event, SignUpForm, add_owner, apply, record_session_step_up,
+    sign_up,
 };
 use askhava_core::api::{ClientIpPolicy, Guarded, MIGRATOR, ManualClock, SystemClock};
 use askhava_intake::api::rules::{Inbound, Settings as IntakeSettings};
@@ -40,7 +41,8 @@ use askhava_picks::api::{PagePick, page_pick};
 use askhava_portals::api::{
     Answer, ApprovalSecret, ConfirmRoute, ConfirmSettings, CookieJar, PortalsError,
     SAVE_CODE_LABEL, SIGNIN_LINK_ROUTE, SIGNIN_ROUTE, SecretAnswer, SignIn, SignInAddress,
-    SignInMail, confirm_routes, csrf_token, ensure_pre_session, signin_post, signin_request,
+    SignInMail, confirm_routes, csrf_token, current_session, ensure_pre_session, signin_post,
+    signin_request,
 };
 use askhava_privacy::api::{NewContact, Vault, store_contact};
 use askhava_quotes::api::{
@@ -516,6 +518,17 @@ async fn quoted(pool: &PgPool, business: Uuid) -> Uuid {
     job
 }
 
+/// SEC-038, D-5314: records that `by` passed a Verify code at `at` in the session of `jar`.
+async fn stepped_up(
+    db: &mut PgConnection,
+    (by, jar): (Acting, &CookieJar),
+    at: Timestamp,
+) -> Result<(), EmailCheckError> {
+    let signed = current_session(db, jar, now()).await.expect("read");
+    let id = signed.expect("signed in").id();
+    record_session_step_up(db, by, id, at).await
+}
+
 /// A business, its owner signed in and her pick of its quote, the authorization accepted.
 struct Picked {
     business: Uuid,
@@ -700,7 +713,7 @@ async fn td_sec_70_a_saved_card_changes_only_with_a_fresh_code(pool: PgPool) {
     };
     let mut db = pool.acquire().await.expect("db");
     let stale = now() - SignedDuration::from_secs(301);
-    record_step_up(&mut db, by, stale)
+    stepped_up(&mut db, (by, &p.jar), stale)
         .await
         .expect("old step-up");
     let s = served(&pool, paid_launch(), CARD);
@@ -718,9 +731,13 @@ async fn td_sec_70_a_saved_card_changes_only_with_a_fresh_code(pool: PgPool) {
         business: q.business,
         member: q.owner,
     };
-    record_step_up(&mut db, by, now() - SignedDuration::from_secs(120))
-        .await
-        .expect("step-up");
+    stepped_up(
+        &mut db,
+        (by, &q.jar),
+        now() - SignedDuration::from_secs(120),
+    )
+    .await
+    .expect("step-up");
     let logs = log_capture::start();
     let (_, reply) = press(&s.app, &q, &ticked(POSTED)).await;
     no_method_logged(&logs);
