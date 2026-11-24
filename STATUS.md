@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T15:04:58Z by runner 234ae7f8fe8e (actions).
+Updated 2026-11-24T15:08:58Z by runner 234ae7f8fe8e (actions).
 
-**Building: T741 in progress since 14:26Z; 661 of 780 done; week 93% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T741 in progress since 14:26Z; 662 of 780 done; week 93% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 661 of 780 build tasks (owner gates not counted)
+- **Tasks done:** 662 of 780 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T741 claimed 14:26Z, lease until 17:26Z; lane 2: T802 claimed 15:02Z, lease until 18:02Z; lane 3: T732 claimed 14:23Z, lease until 17:23Z
 - **Week:** 93% used, 4.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:04Z, 0 min before this update
+- **Last run:** 15:05Z, 3 min before this update
 - **Keeper:** last ran 15:04Z, next wake 17:25Z
 
 ## Needs attention
@@ -27,7 +27,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T122 | docs/account-checklist.md: Part 1 test accounts, Part 2 busi | MERGE_PENDING | 2 | 74 min | 15:00Z | Reviewer after the findings round (head d65c4896894680459870359165740cf8b3a2bf57) still ended FINDINGS: / 1. tests/docs/ |
+| T122 | docs/account-checklist.md: Part 1 test accounts, Part 2 busi | done | 2 | 74 min | 15:00Z | Reviewer after the findings round (head d65c4896894680459870359165740cf8b3a2bf57) still ended FINDINGS: / 1. tests/docs/ |
 | T305 | server and portals: the scorecard, the intake report, the mo | MERGE_PENDING | 3 | 102 min | 14:55Z | PLAN GAP: outside ownership: app/portals/templates/scorecard.html, app/portals/templates/intake_report.html, app/portals |
 | T802 | site (harness): the coverage page says texts work with US nu | check_failed | 2 | 75 min | 14:28Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T732 | server: the business job page's "Withdraw your quote" posts  | resync | 2 | 48 min | 14:04Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
@@ -86,8 +86,8 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 439 of 735 (59.7%) · partial 284 · unstarted 12
-**Tasks merged (throughput only):** 661 of 780
+**Requirements verified:** 445 of 735 (60.5%) · partial 282 · unstarted 8
+**Tasks merged (throughput only):** 662 of 780
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -102,13 +102,13 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 | licensing | 40 | 8 | 0 | 48 |
 | lifecycle | 22 | 6 | 0 | 28 |
 | messaging | 26 | 19 | 0 | 45 |
-| ops-recovery | 21 | 28 | 5 | 54 |
+| ops-recovery | 24 | 29 | 1 | 54 |
 | privacy | 13 | 18 | 0 | 31 |
 | quiet-hours | 4 | 5 | 0 | 9 |
 | quotes-pick | 36 | 20 | 0 | 56 |
 | recurring | 10 | 1 | 0 | 11 |
-| security | 21 | 31 | 3 | 55 |
-| terms | 30 | 5 | 0 | 35 |
+| security | 22 | 30 | 3 | 55 |
+| terms | 32 | 3 | 0 | 35 |
 | website | 24 | 6 | 0 | 30 |
 | wording | 30 | 2 | 0 | 32 |
 
@@ -123,7 +123,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 304 of 352 done
+- stage 5: 305 of 352 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
