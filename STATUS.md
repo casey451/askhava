@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-24T16:58:49Z by runner b77234335e64 (actions).
+Updated 2026-11-24T16:59:25Z by runner b77234335e64 (actions).
 
-**Building: T741 in progress since 16:40Z; 665 of 780 done; week 94% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T820 in progress since 16:58Z; 665 of 780 done; week 94% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 665 of 780 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T741 claimed 16:40Z, lease until 19:40Z; lane 5: T815 claimed 15:39Z, lease until 18:39Z
-- **Week:** 94% used, 4.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 2: T820 claimed 16:58Z, lease until 19:58Z; lane 3: T741 claimed 16:40Z, lease until 19:40Z; lane 5: T815 claimed 15:39Z, lease until 18:39Z
+- **Week:** 94% used, 3.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 16:41Z, 17 min before this update
 - **Keeper:** last ran 16:25Z, next wake 16:45Z
 
@@ -114,7 +114,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-24T16:24:46Z (week)): week: 189.2M used, 4.8M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T20:48:58Z.
+- Pacing (session_reading 2026-11-24T16:24:46Z (week)): week: 190.9M used, 3.1M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T21:07:01Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -130,6 +130,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 2: T820 (lease until 2026-11-24T19:58:44Z)
 - lane 3: T741 (lease until 2026-11-24T19:40:41Z)
 - lane 5: T815 (lease until 2026-11-24T18:39:51Z)
 
