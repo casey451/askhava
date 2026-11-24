@@ -1,20 +1,20 @@
 //! The one suppression list and the opt-out flow (CON-008 to CON-011, CON-013 to CON-017, CON-030,
 //! CON-035, CON-036).
 //!
-//! [`on_inbound_text`] runs the rules' detector on an inbound text (its scrubbed words) with the
+//! [`on_inbound_text`] runs the rules' detector on an inbound text's scrubbed words and the
 //! provider's `OptOutType`: an opt-out puts the number on `messaging.suppression` at once and logs
-//! the event with its channel, how it was detected, the inbox row that carried it (kept after the
-//! body is cut, CON-036) and when (a repeat is logged too); the app
-//! queues the one CON-009 confirmation only for words the provider did not answer, only on the
-//! first opt-out, and never
-//! while texting is paused (the caller emails it instead, CON-030). The provider's START or UNSTOP
-//! (`OptOutType=START`) takes the number off (CON-015); anything else from a listed number sends
-//! nothing, and an emergency in it, or in the opt-out itself, raises a critical alert (CON-016,
-//! CON-017). [`suppress`] is the entry for every other channel
-//! (email, email reply, help form, portal switch, owner-recorded). [`send_checked`] is the one way
-//! a queued text goes out: it refuses a listed number except the confirmation within 5 minutes and
-//! the HELP reply (CON-013), and a 21610 refusal lists the number and blocks the row, which is
-//! never retried (CON-014). The number is only ever held as blind-index digests (PRIV-002).
+//! the event with its channel, how it was detected, its inbox row (kept after the body is cut,
+//! CON-036) and when (a repeat too); the app queues the one CON-009 confirmation only for words the
+//! provider did not answer, only on the first opt-out, and never while texting is paused (the
+//! caller emails it instead, CON-030). The provider's START or UNSTOP (`OptOutType=START`) takes
+//! the number off (CON-015) under its opt-out lock, so a START during a re-key lifts every row
+//! (D-5228); anything else from a listed number sends nothing, and an emergency in it or in the
+//! opt-out raises a critical alert (CON-016, CON-017). [`suppress`] is the entry for every other
+//! channel (email, email reply, help form, portal switch; owner-recorded via [`suppress_logged`]).
+//! [`send_checked`] is the one way a queued text goes out: it refuses a listed number except the
+//! confirmation within 5 minutes and the HELP reply (CON-013), and a 21610 refusal lists the number
+//! and blocks the row, which is never retried (CON-014). Numbers are held only as blind-index
+//! digests (PRIV-002).
 //! CON-032's pre-Gate C docs test maps the FCC order's items to the tests that prove this file:
 //! TD-CON-04 (`tests::optout_words`), TD-CON-05, TD-CON-13 and TD-CON-20
 //! (`tests/integration/tests/optout_flow.rs`).
@@ -22,9 +22,8 @@
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 
-use askhava_core::api::{Claimed, HandlerError, NewTask, enqueue as enqueue_task};
-
 use askhava_adapters::api::{AdapterError, IdempotencyKey, SentText, SmsAdapter};
+use askhava_core::api::{Claimed, HandlerError, NewTask, enqueue as enqueue_task};
 use askhava_ops::api::{NewAlert, Severity, Switch, is_paused, raise_alert};
 use askhava_privacy::api::{IndexPurpose, Vault, normalize_phone};
 use jiff::Timestamp;
@@ -188,6 +187,7 @@ pub async fn on_inbound_text(
                 digest: digests[0],
                 at: now,
             };
+            lock_number(&mut tx, &digests).await?;
             models::insert_optout_event(&mut tx, &event).await?;
             models::lift_suppression(&mut tx, &digests).await?;
             Outcome::Resubscribed
@@ -340,12 +340,44 @@ pub async fn suppress_indexed(
     (channel, how): (RevokeChannel, &str),
     now: Timestamp,
 ) -> Result<bool, OutboxError> {
+    listed_event(tx, digests, (channel, how), now)
+        .await
+        .map(|(_, added)| added)
+}
+
+/// [`suppress`] inside the caller's transaction `tx`, for a caller that audit-logs the change in
+/// that transaction (SEC-006, CON-035, CON-022, D-4727): lists `phone` at `now` and returns the
+/// opt-out event's ID (a repeat of a listed number logs its own event) with whether the number was
+/// newly listed. The owner portal's recorded opt-out.
+///
+/// # Errors
+///
+/// [`OutboxError::BadPhone`] or [`OutboxError::Database`].
+pub async fn suppress_logged(
+    tx: &mut PgConnection,
+    vault: &Vault,
+    phone: &str,
+    (channel, how): (RevokeChannel, &str),
+    now: Timestamp,
+) -> Result<(Uuid, bool), OutboxError> {
+    let digests = digests(vault, phone)?;
+    listed_event(tx, &digests, (channel, how), now).await
+}
+
+/// The shared body of [`suppress_indexed`] and [`suppress_logged`]: the event's ID and whether the
+/// number was newly listed; empty `digests` are a [`OutboxError::BadPhone`] (CON-035, D-4473).
+async fn listed_event(
+    tx: &mut PgConnection,
+    digests: &[(u16, [u8; 32])],
+    (channel, how): (RevokeChannel, &str),
+    now: Timestamp,
+) -> Result<(Uuid, bool), OutboxError> {
     if digests.is_empty() {
         return Err(OutboxError::BadPhone);
     }
     let listed = models::listing(&mut *tx, digests).await?.is_some();
-    let (_, added) = record(tx, digests, (channel, how, None), now).await?;
-    Ok(added && !listed)
+    let (event, added) = record(tx, digests, (channel, how, None), now).await?;
+    Ok((event, added && !listed))
 }
 
 /// Logs an opt-out by `channel`, detected as `how`, with the inbound text `inbox` that carried it
@@ -375,8 +407,8 @@ async fn record(
 }
 
 /// Sends outbox row `id` as `service::send` does, after checking the suppression list at `now`
-/// (CON-013, CON-035): a listed number gets only the HELP reply and the confirmation of its current
-/// listing within 5 minutes of it (`rules::may_send_to`), whatever the provider has blocked. A
+/// (CON-013, CON-035): a listed number gets only the confirmation of its current listing within 5
+/// minutes of it (`rules::may_send_to`), whatever the provider has blocked. A
 /// carrier refusal with 21610 lists the number and blocks the row, which is never retried
 /// (CON-014). The claim is stamped at `now`, so `outbox_sender`'s 5-minute sweep counts from the
 /// sender's clock (D-2628). The number read for the list check is handed on to the claim, so the
