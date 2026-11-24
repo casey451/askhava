@@ -107190,7 +107190,14 @@
     "why": "auto-merge on #1445 (gh pr merge)",
     "head": "50678fa16de9b7cc98ad0b513f1ff15269256203"
    },
-   "last_failure": "Ci: failure; Coverage: failure\nCoverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)\ntest td_call_24_another_business_lines_pin_is_refused ... ok\ntest td_call_24_the_main_phones_link_reply_links_the_blocked_phone ... ok\nfailures:\n---- td_call_24_no_row_or_log_line_holds_the_number_or_the_pin stdout ----\nthread 'td_call_24_no_row_or_log_line_holds_the_number_or_the_pin' (24624) panicked at tests/integration/tests/link_reply.rs:595:13:\nassertion `left == right` failed: businesses.staff_phone\n  left: 1\n right: 0\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\n    td_call_24_no_row_or_log_line_holds_the_number_or_the_pin\ntest result: FAILED. 10 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.98s\nerror: test failed, to rerun pass `-p askhava-integration --test link_reply`\nerror: process didn't exit successfully: `/home/runner/.rustup/toolchains/nightly-2026-10-15-x86_64-unknown-linux-gnu/bin/cargo test --tests --manifest-path /home/runner/work/askhava/askhava/Cargo.tom\n##[error]Process completed with exit code 101.\nCi failed at step: All five jobs passed\nChecks: success, Lint and slow tests: success, Python: success, Coverage: failure, E2e: success\n##[error]Process completed with exit code 1."
+   "last_failure": "Ci: failure; Coverage: failure\nCoverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)\ntest td_call_24_another_business_lines_pin_is_refused ... ok\ntest td_call_24_the_main_phones_link_reply_links_the_blocked_phone ... ok\nfailures:\n---- td_call_24_no_row_or_log_line_holds_the_number_or_the_pin stdout ----\nthread 'td_call_24_no_row_or_log_line_holds_the_number_or_the_pin' (24624) panicked at tests/integration/tests/link_reply.rs:595:13:\nassertion `left == right` failed: businesses.staff_phone\n  left: 1\n right: 0\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\n    td_call_24_no_row_or_log_line_holds_the_number_or_the_pin\ntest result: FAILED. 10 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.98s\nerror: test failed, to rerun pass `-p askhava-integration --test link_reply`\nerror: process didn't exit successfully: `/home/runner/.rustup/toolchains/nightly-2026-10-15-x86_64-unknown-linux-gnu/bin/cargo test --tests --manifest-path /home/runner/work/askhava/askhava/Cargo.tom\n##[error]Process completed with exit code 101.\nCi failed at step: All five jobs passed\nChecks: success, Lint and slow tests: success, Python: success, Coverage: failure, E2e: success\n##[error]Process completed with exit code 1.",
+   "wip_claim": {
+    "attempt": 2,
+    "remote_sha": "50678fa16de9b7cc98ad0b513f1ff15269256203"
+   },
+   "runner_closed_prs": [
+    1445
+   ]
   },
   {
    "id": "T733",
@@ -127346,7 +127353,7 @@
    }
   }
  },
- "updated_at": "2026-11-24T13:16:30Z",
+ "updated_at": "2026-11-24T13:17:01Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
