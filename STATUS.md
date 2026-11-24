@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T23:02:23Z by runner 7f1ca1d636bc (actions).
+Updated 2026-11-24T23:07:28Z by runner 7992274bcd88 (actions).
 
 **Building: T820 in progress since 23:01Z; 670 of 781 done; week 96% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 670 of 781 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T820 claimed 23:01Z, lease until 02:01Z
-- **Week:** 96% used, 2.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:00Z, 1 min before this update
+- **Lane:** lane 3: T820 claimed 23:01Z, lease until 02:01Z; lane 5: T123 claimed 23:07Z, lease until 02:07Z
+- **Week:** 96% used, 0.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 23:02Z, 4 min before this update
 - **Keeper:** last ran 22:59Z, next wake 04:39Z
 
 ## Needs attention
@@ -20,12 +20,10 @@ Updated 2026-11-24T23:02:23Z by runner 7f1ca1d636bc (actions).
 Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and prehandin.sh green.
 - BLOCKED T801: plan gap reported: PLAN GAP: app/server/tests/web_chat_stops.rs:572 and :592 (owned by T645) assert a consent text queued to a chat-verified number that never texted in; fixing review finding (web_chat consent must never permit a text, CON-005/CON-025) requires changing them. Also app/server/tests/web_chat_after_code.rs:46,:319,:368 (T649) for the "We'll answer by text" wording. Smallest plan change: let T801 own web_chat_stops.rs (and web_chat_after_code.rs). Prepared fix patch at /tmp/T801-fix-round.patch. Reviewer confirmed the gap for web_chat_stops.rs. Proof: cargo test --workspace --exclude askhava-integra; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T801 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T799: plan gap reported: PLAN GAP: contradiction: D-5401 requires es.json text "dentro de 72 horas de recibir los datos del cliente" (5 keys), but tests/docs/test_introduction_fee_wording.py:60 forbids the pattern `\bdatos de(l)? clientes?\b` (WORD-026); test_td_word_10[app/messaging/templates/es.json] fails with 4 hits (the negated use in unreachable_no_attempts is allowed). That test is protected and not owned by T799. Reviewer (a4e70d1f2bbf42da0) confirmed on head a34a900bb2a5. Fix: change the Spanish phrase (e.g. "datos del propietario", recount segments) or add an exemption via a harness task. All other changes m; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T799 --plan-fix D-### --reason "..."` (D-2859)
-- PLAN GAP T123 (since 2026-11-24T22:41:57Z, no attempt used; a plan change fixes it): T123: dependency T815 is DONE but its owned file app/portals/src/owner_digest_page.rs is not on main; T123: dependency T815 is DONE but its owned file app/portals/templates/owner_digest.html is not on main; T123: dependency T815 is DONE but its owned file app/server/tests/owner_digest_route.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 47% of the context window, over its 45% limit
+- PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 48% of the context window, over its 45% limit
-- PLAN GAP T847 (since 2026-11-24T22:18:58Z, no attempt used; a plan change fixes it): T847: prompt kit/prompts/T847.md is missing; run scripts/gen_prompts.py; T847: branch claude/task/T847-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
-- Strict plan check red: 64 problem(s) on tasks still to run (+575 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 68 problem(s) on tasks still to run (+575 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -89,7 +87,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 ## Progress (requirements verified)
 
 **Requirements verified:** 483 of 735 (65.7%) · partial 244 · unstarted 8
-**Tasks merged (throughput only):** 670 of 780
+**Tasks merged (throughput only):** 670 of 781
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -117,7 +115,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-24T22:58:59Z (week)): week: 192.0M used, 2.0M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T20:29:49Z.
+- Pacing (session_reading 2026-11-24T22:58:59Z (week)): week: 193.4M used, 551k left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T21:23:05Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -134,6 +132,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 3: T820 (lease until 2026-11-25T02:01:19Z)
+- lane 5: T123 (lease until 2026-11-25T02:07:20Z)
 
 ## Last usage reading
 - {"task": "T826", "at": "2026-11-24T22:57:25Z", "input_tokens": 99, "cache_creation_input_tokens": 92372, "output_tokens": 16731, "cache_read_input_tokens": 1445825}

@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "phase": "kit",
- "current": "T820",
+ "current": "T123",
  "backup_runner": "on",
  "ruleset_verified": true,
  "lease": null,
@@ -26791,19 +26791,20 @@
     "T779",
     "T815"
    ],
-   "status": "QUEUED",
+   "status": "IN_PROGRESS",
    "attempts": 0,
    "slug": "owner-guide",
    "type": "docs",
    "stage": "5",
-   "plan_gap": {
-    "at": "2026-11-24T22:41:57Z",
-    "problems": [
-     "T123: dependency T815 is DONE but its owned file app/portals/src/owner_digest_page.rs is not on main",
-     "T123: dependency T815 is DONE but its owned file app/portals/templates/owner_digest.html is not on main",
-     "T123: dependency T815 is DONE but its owned file app/server/tests/owner_digest_route.rs is not on main"
-    ]
-   }
+   "attempt_started_at": "2026-11-24T23:07:20Z",
+   "lane": "5",
+   "decision_ids": [
+    5831,
+    5832,
+    5833,
+    5834,
+    5835
+   ]
   },
   {
    "id": "T125",
@@ -105526,7 +105527,7 @@
    "plan_gap": {
     "at": "2026-11-24T00:30:33Z",
     "problems": [
-     "T723: measures 47% of the context window, over its 45% limit"
+     "T723: measures 48% of the context window, over its 45% limit"
     ]
    }
   },
@@ -121164,14 +121165,7 @@
    "attempts": 0,
    "slug": "j3-refused-pick-app-clock",
    "type": "harness",
-   "stage": "5",
-   "plan_gap": {
-    "at": "2026-11-24T22:18:58Z",
-    "problems": [
-     "T847: prompt kit/prompts/T847.md is missing; run scripts/gen_prompts.py",
-     "T847: branch claude/task/T847-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet"
-    ]
-   }
+   "stage": "5"
   }
  ],
  "owner_waits": [],
@@ -129359,6 +129353,10 @@
    "T612": {
     "estimated_bytes": 549969,
     "estimated_tokens": 1584731
+   },
+   "T123": {
+    "estimated_bytes": 441147,
+    "estimated_tokens": 517573
    }
   },
   "windows": {
@@ -129379,7 +129377,7 @@
    }
   }
  },
- "updated_at": "2026-11-24T23:02:23Z",
+ "updated_at": "2026-11-24T23:07:28Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -129477,17 +129475,9 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "7f1ca1d636bc36211b887845a1bcbed30f494e94",
+ "runner_sha": "7992274bcd8830421e01881d83380e182a60aaf7",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "a5c0e45bc3c3fa6b8c17d7774e13ef97fb9babb6",
-   "ok": true,
-   "at": "2026-11-24T19:31:21Z",
-   "why": "start routine (ancestry reuse of 4b756acb549d, 2026-11-24T18:19:45Z)",
-   "reused": "2026-11-24T18:19:45Z",
-   "base": "4b756acb549d5d7549a83cdc5c018e333f8fb9b7"
-  },
   {
    "sha": "a5c0e45bc3c3fa6b8c17d7774e13ef97fb9babb6",
    "ok": true,
@@ -129638,24 +129628,31 @@
    "at": "2026-11-24T23:01:19Z",
    "why": "start routine (background)",
    "seconds": 1479
+  },
+  {
+   "sha": "7992274bcd8830421e01881d83380e182a60aaf7",
+   "ok": true,
+   "at": "2026-11-24T23:07:20Z",
+   "why": "start routine (reused 2026-11-24T23:01:19Z)",
+   "reused": "2026-11-24T23:01:19Z"
   }
  ],
  "main_red": null,
  "pacing": {
-  "last": "T820 estimated 1.4M tokens (calibrated); week has 2.0M left (no five-hour budget, D-3056) (session_reading 2026-11-24T22:58:59Z (week)); claimed",
-  "at": "2026-11-24T23:01:19Z",
+  "last": "T123 estimated 518k tokens (calibrated); week has 551k left (no five-hour budget, D-3056) after 1.4M still running in another lane (session_reading 2026-11-24T22:58:59Z (week)); claimed",
+  "at": "2026-11-24T23:07:20Z",
   "decision": "claim",
   "waiting_until": null,
   "standing": {
    "week": {
-    "used": 192000000,
+    "used": 193449491,
     "budget": 194000000,
-    "left": 2000000,
+    "left": 550509,
     "resets_at": "2026-11-26T17:00:00Z"
    }
   },
-  "remaining_estimate": 357370148,
-  "projected_finish": "2026-12-07T20:29:49Z"
+  "remaining_estimate": 358279319,
+  "projected_finish": "2026-12-07T21:23:05Z"
  },
  "main_red_history": [
   {
@@ -129773,7 +129770,7 @@
    "why": "smoke red while Ci, Twin and Ally were green on the head"
   }
  ],
- "next_decision": 5831,
+ "next_decision": 5836,
  "stage_proofs": {
   "1": {
    "evidence": "Recorded by the runner (D-551): nightly-main green (Ci, Twin, Ally) on main 5d45d8ef0bee8d8e290462e58aa81c580bf57c1e, which contains every stage-1 merge (T002 739f29a31cec, T003 7161be09784c, T004 36b13e66ddf4, T172 189cfe54c716, T005 f55fa02095c0, T006 1e9c2dbb261b, T007 d57693ea8e79, T008 d57693ea8e79, T170 1cdbd960f712, T154 b4f7265f01d2, T167 5d45d8ef0bee); the exit row's tests ran in it (tests/twin/test_gate.py, tests/test_check_catalog.py, tests/test_matching_examples.py, tests/contract/test_stand_in_server.py); every requirement owned only by tasks of stage 1 or earlier is verified (OPS-053).",
