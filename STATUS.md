@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T02:35:31Z by runner 0132724841eb (actions).
+Updated 2026-11-24T02:36:05Z by runner 0132724841eb (actions).
 
 **Building: T524 in progress since 01:11Z; 646 of 779 done; week 87% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 646 of 779 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T524 claimed 01:11Z, lease until 04:11Z; lane 2: T813 claimed 01:35Z, lease until 04:35Z; lane 3: T649 claimed 01:38Z, lease until 04:38Z; lane 4: T119 claimed 01:59Z, lease until 04:59Z; lane 5: T222 claimed 00:37Z, lease until 03:37Z
+- **Lane:** lane 1: T524 claimed 01:11Z, lease until 04:11Z; lane 3: T649 claimed 01:38Z, lease until 04:38Z; lane 4: T119 claimed 01:59Z, lease until 04:59Z; lane 5: T222 claimed 00:37Z, lease until 03:37Z
 - **Week:** 87% used, 14.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:31Z, 3 min before this update
+- **Last run:** 02:31Z, 4 min before this update
 - **Keeper:** last ran 01:37Z, next wake 01:57Z
 
 ## Needs attention
@@ -20,6 +20,7 @@ Updated 2026-11-24T02:35:31Z by runner 0132724841eb (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T813 | businesses and portals (harness): a step-up counts only in t | MERGE_PENDING | 1 | 59 min | 02:35Z |  |
 | T836 | ci and runner workflow (harness): the backup-runner gate ski | done | 2 | 25 min | 00:55Z | PLAN GAP: tests/test_runner_five_lanes.py:176 (test_no_workflow_a_hand_in_starts_cancels_another_lanes_run_when_five_han |
 | T737 | portals, ai and server: the owner records the AI provider's  | done | 2 | 112 min | 00:42Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T738 | portals and server: owner settings refusals show an accessib | done | 1 | 85 min | 00:34Z |  |
@@ -125,10 +126,9 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T524 (lease until 2026-11-24T04:11:37Z)
-- lane 2: T813 (lease until 2026-11-24T04:35:56Z)
 - lane 3: T649 (lease until 2026-11-24T04:38:03Z)
 - lane 4: T119 (lease until 2026-11-24T04:59:33Z)
 - lane 5: T222 (lease until 2026-11-24T03:37:12Z)
 
 ## Last usage reading
-- {"task": "T836", "at": "2026-11-24T00:55:53Z", "input_tokens": 63, "cache_creation_input_tokens": 75759, "output_tokens": 19999, "cache_read_input_tokens": 1165526}
+- {"task": "T813", "at": "2026-11-24T02:35:29Z", "input_tokens": 196, "cache_creation_input_tokens": 205793, "output_tokens": 44097, "cache_read_input_tokens": 4994627}
