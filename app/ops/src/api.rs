@@ -47,6 +47,7 @@ pub use crate::owner_alerts::{
     AlertSubject, OWNER_ACK_ACTION, PushedAlert, acknowledge_pushed_alert, alert_subject,
     pushed_alerts,
 };
+pub use crate::owner_alerts::{WAITING_ALERTS_MAX, WaitingAlert, waiting_alerts};
 pub use crate::safe_mode::{
     SAFE_MODE_AFTER, SAFE_MODE_EVERY, SAFE_MODE_KIND, SAFE_MODE_KINDS, SAFE_MODE_OFF_ACTION,
     SAFE_MODE_ON_ACTION, check_safe_mode, run_safe_mode_check, safe_mode_on, schedule_safe_mode,

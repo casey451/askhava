@@ -8,9 +8,11 @@
 //! INT-019, D-807). A clear text (no 911-list match, INT-002) then goes to `answer_close`
 //! (JOB-019 to JOB-023, D-4051, D-4064): a CLOSE or CERRAR text, a cancel-intent message or a lone
 //! open number answering "Close which?" that closes jobs or asks which ends the reply as
-//! [`Reply::Closed`]; a mere mention adds the JOB-023 line and goes on. Everything else goes to
-//! `receive_text` as before, so consent, the 911 screen and `<n> YES` keep their own paths; a
-//! text that is not clear never reaches `answer_close`. The INT-032 "That's 2 jobs" wiring stays D-999's open
+//! [`Reply::Closed`]; a mere mention adds the JOB-023 line and goes on. A clear "<number> YES"
+//! from her phone (an inbox row; web chat never) with a live job picks (`text_pick_reply`,
+//! [`Reply::Picked`], PICK-015, D-4727). Everything else goes to `receive_text` as before, so
+//! consent and the 911 screen keep their own paths; a text that is not clear never reaches
+//! `answer_close` or a pick. The INT-032 "That's 2 jobs" wiring stays D-999's open
 //! gap. Before all of that, a check-in answer on one of her Connected jobs goes to
 //! `check_in_replies` in the same transaction (JOB-015, D-1840).
 //!
@@ -49,6 +51,8 @@ use askhava_messaging::api::{
     Language, answered_within, help_question, person_answer, quotes_answer, render,
 };
 use askhava_ops::api::{Actor, AuditEntry, Change, HelpOpened, audit};
+use askhava_picks::api::TextPickDone;
+use askhava_picks::api::rules::read_text_pick;
 use askhava_privacy::api::{CommonWords, Known, NameMemory, ScrubbedText, Vault, scrub};
 use jiff::Timestamp;
 use secrecy::{ExposeSecret, SecretString};
@@ -69,6 +73,7 @@ use crate::rules::{
     split_name_address,
 };
 use crate::service::{Asked, Handled, Queued, Screened, TextIn, receive_answer, receive_text};
+use crate::text_pick_reply::text_pick_reply;
 
 /// What [`receive_reply`] did with one inbound text.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -98,6 +103,9 @@ pub enum Reply {
     /// Any other clear, non-command message after HELP, or any one within 24 hours of an
     /// auto-answer: her help request opened or joined (OPS-036, CON-034).
     HelpRequest(HelpOpened),
+    /// A "<number> YES" from her own phone in an open request (PICK-015, PICK-031, TERMS-016,
+    /// D-4727): `picks::api::text_pick`'s texts and the pick, if any (one terms acceptance).
+    Picked(TextPickDone),
 }
 
 /// The raw text of a reply and the vault its name-and-address answer is written to (INT-027,
@@ -210,8 +218,9 @@ async fn reply_in(
 }
 
 /// A text in open request `conversation` that is not an opt-out or HELP (TXT-031, INT-019,
-/// INT-038, JOB-019, INT-027, D-4142): a LIST answered, the wait restarted, a clear under-18
-/// text stopped, a close by text, then the name-and-address answer (a stop after its screen).
+/// INT-038, JOB-019, PICK-015, INT-027, D-4142, D-4727): a LIST answered, the wait restarted, a
+/// clear under-18 text stopped, a close by text, a "<number> YES" from her phone (`raw` present)
+/// picked (`text_pick_reply`), then the name-and-address answer (a stop after its screen).
 /// The first item ends the reply; the second is the JOB-023 line for a reply that goes on.
 async fn in_request(
     tx: &mut PgConnection,
@@ -236,6 +245,11 @@ async fn in_request(
     let (ended, said) = by_text(tx, secret, msg).await?;
     if ended.is_some() {
         return Ok((ended, None));
+    }
+    if raw.is_some()
+        && let Some(done) = text_pick_reply(tx, secret, msg, (conversation, settings)).await?
+    {
+        return Ok((Some(Reply::Picked(done)), None));
     }
     if !closes(msg.inbound.words)
         && let Some(raw) = raw.filter(|_| list_ask(msg.inbound.words).is_none())
@@ -440,7 +454,8 @@ async fn after_help(
 
 /// A message a command parser takes keeps its path after HELP (D-4293, JOB-021, D-4346): LIST
 /// or LISTA, CLOSE or CERRAR alone or with one word, "CLOSE <number>", a lone number or ALL (a
-/// possible answer to "Close which?", which `answer_close` decides), and `<n> YES` or `<n> SI`.
+/// possible answer to "Close which?", which `answer_close` decides), and any text pick
+/// `read_text_pick` reads ("2 yes please"), so after HELP it still picks (PICK-015, D-5646).
 fn command(words: &str) -> bool {
     let lone = words.trim().trim_matches(|c: char| !c.is_alphanumeric());
     let asked = [lone.parse::<i64>().unwrap_or(0)];
@@ -457,7 +472,7 @@ fn command(words: &str) -> bool {
     match tokens.as_slice() {
         ["close" | "cerrar"] | ["close" | "cerrar", _] => true,
         [n, "yes" | "si" | "sí"] => number(n),
-        _ => false,
+        _ => read_text_pick(words).is_some(),
     }
 }
 

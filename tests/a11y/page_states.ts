@@ -576,6 +576,12 @@ const OWNER_SETTINGS_ROUTE = "/owner/settings";
 /** The owner home (T310; OPS-003, FEE-007, BIZ-027): the switches, fee mode, rates and sign-ups. */
 const OWNER_HOME_STATES: readonly PageState[] = [
   ["owner home", "Pause or resume", "Each change needs a code from your authenticator app", OWNER_SESSION_SQL],
+  [
+    "owner home, an alert not sent to the phone",
+    "The database is over 70% full",
+    "No other alerts.",
+    `${OWNER_SESSION_SQL}; INSERT INTO ops.alert (kind, severity) VALUES ('ops.volume_low', 'normal')`,
+  ],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: OWNER_HOME_ROUTE, name, shows, hides, sql, statusRegions: [] }));
 
 /** The owner settings (T310; LIC-002, CON-035, PICK-048): the category switches and both forms. */
@@ -762,6 +768,20 @@ const PHONES_STATES: readonly PageState[] = [
   ["phones to approve, one waiting", "Phone number ending in 0150", "No phones are waiting", businessSql(WAITING_PHONE_SQL)],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: PHONES_ROUTE, name, shows, hides, sql, statusRegions: [] }));
 
+/**
+ * The business team page (T544; BIZ-023, FEE-041, D-5567): the owner signed in with one fake
+ * "Cards and quotes" member, so the role form and Remove button show (the unkeyed binary shows the
+ * numbered fixed line in place of each address).
+ */
+const TEAM_ROUTE = "/b/team";
+const TEAM_MEMBER_SQL = `,
+    mm AS (INSERT INTO businesses.team_member (business_id, mailbox_id, is_owner, cards_and_quotes,
+      confirm_and_billing, added_at) SELECT business_id, gen_random_uuid(), false, true, false,
+      now() + interval '1 second' FROM m)`;
+const TEAM_STATES: readonly PageState[] = [
+  ["business team, owner with one member", "Remove from your team", "There is a problem", businessSql(TEAM_MEMBER_SQL)],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: TEAM_ROUTE, name, shows, hides, sql, statusRegions: [] }));
+
 /** The homeowner sign-in form (T307, SEC-008): no seed, the plain path. */
 const HOMEOWNER_SIGNIN_ROUTE = "/h/sign-in";
 const HOMEOWNER_SIGNIN_STATES: readonly PageState[] = [
@@ -907,6 +927,7 @@ export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: ADDRESS_CHANGE_ROUTE, seed: portalSeed(false), states: ADDRESS_CHANGE_STATES },
   { route: PHONES_ROUTE, seed: portalSeed(false), states: PHONES_STATES },
   { route: OWNER_AI_ROUTE, seed: portalSeed(false), states: OWNER_AI_STATES },
+  { route: TEAM_ROUTE, seed: portalSeed(false), states: TEAM_STATES },
 ];
 
 /** Every state of every page, in entry order. */

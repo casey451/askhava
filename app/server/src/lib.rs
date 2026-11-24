@@ -440,7 +440,8 @@ fn owner_pages(
 /// take it" page and button ([`cant_take_route`], T472), always; the business job page
 /// ([`job_page_route`], T666, with photo links only with the photo parts and the webhooks' ID
 /// secret), always; the business step-up page
-/// ([`business_step_up`], T364), always, sending codes only with its part, and the role, removal
+/// ([`business_step_up`], T364), always, sending codes only with its part, with the team page
+/// (T544, the portal's vault), and the role, removal
 /// and monthly-limit changes behind it ([`business_guarded_changes`], T565), and the notice and
 /// backup address changes ([`address_changes`], T542, changing only with their part), and the
 /// owner's waiting-phones page ([`phone_approval`], T397, with the portal's vault), always; and the
@@ -476,7 +477,7 @@ fn business_pages(
     let links = webhooks.filter(|_| parts.photos.is_some());
     let job_page = job_page_route::routes(pool.clone(), links.map(|hooks| &hooks.id_secret));
     let homeowner = homeowner_portal::routes(pool.clone(), webhooks, parts.homeowner, parts.photos);
-    let step_up = business_step_up::routes(pool.clone(), parts.step_up)
+    let step_up = business_step_up::routes(pool.clone(), parts.step_up, parts.vault.clone())
         .merge(business_guarded_changes::routes(pool.clone()))
         .merge(address_changes::routes(pool.clone(), parts.address))
         .merge(phone_approval::routes(
@@ -726,20 +727,11 @@ fn checked_postal(line: &str) -> io::Result<askhava_messaging::api::PostalAddres
         .map_err(|_| bad_postal())
 }
 
-/// The published homeowner Terms a page pick accepts: the exact text of
-/// `docs/legal/homeowner-terms.md`, compiled in, whose second line names its version (TERMS-016).
-const HOMEOWNER_TERMS: &str = include_str!("../../../docs/legal/homeowner-terms.md");
-
-/// The version `HOMEOWNER_TERMS` names on its "Version <v>" line, or `unversioned`. `pub(crate)`
-/// so this file's own tests still find it when `tests/integration/tests/task_registry.rs` compiles
-/// the file in place (T327).
+/// The version of the published homeowner Terms (`core::api::homeowner_terms`, TERMS-016).
+/// `pub(crate)` so this file's own tests still find it when
+/// `tests/integration/tests/task_registry.rs` compiles the file in place (T327).
 pub(crate) fn terms_version() -> String {
-    HOMEOWNER_TERMS
-        .lines()
-        .find_map(|l| l.strip_prefix("Version "))
-        .and_then(|rest| rest.split_whitespace().next())
-        .unwrap_or("unversioned")
-        .to_owned()
+    askhava_core::api::homeowner_terms().0.to_owned()
 }
 
 /// The page pick's keys (T246, D-1516), built from `settings` and `pairs` as [`job_text_keys`]
@@ -772,7 +764,7 @@ where
     let client_ip = ClientIpPolicy::from_pairs(pairs.clone()).map_err(io::Error::other)?;
     let twilio = TwilioConfig::from_settings(settings, pairs).map_err(io::Error::other)?;
     let (_, _, verify) = twilio_clients(&twilio).map_err(io::Error::other)?;
-    let terms = (terms_version(), HOMEOWNER_TERMS);
+    let terms = (terms_version(), askhava_core::api::homeowner_terms().1);
     let keys = PickCodeKeys::new(verify, vault, id_secret, terms);
     Ok(Some(keys.with_client_ip(client_ip)))
 }
