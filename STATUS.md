@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T06:29:27Z by runner 498909db4318 (actions).
+Updated 2026-11-24T06:33:15Z by runner 7d2bd0857902 (actions).
 
-**Building: T656 in progress since 05:11Z; 652 of 779 done; week 90% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T656 in progress since 05:11Z; 653 of 779 done; week 90% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 652 of 779 build tasks (owner gates not counted)
+- **Tasks done:** 653 of 779 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T656 claimed 05:11Z, lease until 08:11Z; lane 4: T410 claimed 05:58Z, lease until 08:58Z; lane 5: T804 claimed 05:28Z, lease until 08:28Z
 - **Week:** 90% used, 10.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:29Z, 0 min before this update
+- **Last run:** 06:29Z, 3 min before this update
 - **Keeper:** last ran 06:29Z, next wake 08:13Z
 
 ## Needs attention
@@ -25,13 +25,13 @@ Also: stand-in twilio fail fault answers 500 -> OutcomeUnknown, no retries (serv
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 47% of the context window, over its 45% limit
-- Strict plan check red: 57 problem(s) on tasks still to run (+551 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 60 problem(s) on tasks still to run (+552 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T779 | ops, server and portals: alerts that do not push show in the | MERGE_PENDING | 1 | 83 min | 06:27Z |  |
-| T728 | intake: a homeowner's "<n> YES" text from her phone picks th | MERGE_PENDING | 1 | 91 min | 05:32Z |  |
+| T728 | intake: a homeowner's "<n> YES" text from her phone picks th | done | 1 | 91 min | 05:32Z |  |
 | T676 | tests (harness): J1 runs the real intake conversation instea | done | 1 | 2 h 44 min | 05:29Z |  |
 | T656 | site: a failed submit on the /request chat shows a focused e | QUEUED | 1 | 17 min | 04:56Z | Reviewer after the findings round still FINDINGS (head 18fdb4a27): app/site/templates/request.html lines 7-10: header co |
 | T544 | portals and server: the business team page with its role-cha | done | 1 | 102 min | 04:50Z |  |
@@ -93,7 +93,7 @@ Also: stand-in twilio fail fault answers 500 -> OutcomeUnknown, no retries (serv
 ## Progress (requirements verified)
 
 **Requirements verified:** 434 of 735 (59.0%) · partial 289 · unstarted 12
-**Tasks merged (throughput only):** 652 of 779
+**Tasks merged (throughput only):** 653 of 779
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -129,7 +129,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 295 of 351 done
+- stage 5: 296 of 351 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
