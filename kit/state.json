@@ -107195,7 +107195,7 @@
    "deps": [
     "T668"
    ],
-   "status": "MERGE_PENDING",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "quote-withdraw-served",
    "type": "build",
@@ -107279,13 +107279,50 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 30,
      "head_sha": "0920f6c980446f91a654ffca4961a0fbfcd2ffca",
-     "pr": null,
-     "checks": null,
+     "pr": 1450,
+     "checks": [
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": null
+      },
+      {
+       "name": "Checks",
+       "conclusion": null
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": null
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-24T13:16:14Z",
      "ended_at": "2026-11-24T14:04:36Z",
-     "result": "MERGE_PENDING",
+     "result": "resync",
      "usage": {
       "worker": {
        "tokens": 661592,
@@ -107310,9 +107347,10 @@
     "why": "auto-merge on #1450 (gh pr merge)",
     "head": "60feccaf72f8634e60059ae1c92e05bbfa74eb92"
    },
-   "last_failure": "Ci: failure; Coverage: failure\nCoverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)\ntest td_call_24_another_business_lines_pin_is_refused ... ok\ntest td_call_24_the_main_phones_link_reply_links_the_blocked_phone ... ok\nfailures:\n---- td_call_24_no_row_or_log_line_holds_the_number_or_the_pin stdout ----\nthread 'td_call_24_no_row_or_log_line_holds_the_number_or_the_pin' (24624) panicked at tests/integration/tests/link_reply.rs:595:13:\nassertion `left == right` failed: businesses.staff_phone\n  left: 1\n right: 0\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\n    td_call_24_no_row_or_log_line_holds_the_number_or_the_pin\ntest result: FAILED. 10 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.98s\nerror: test failed, to rerun pass `-p askhava-integration --test link_reply`\nerror: process didn't exit successfully: `/home/runner/.rustup/toolchains/nightly-2026-10-15-x86_64-unknown-linux-gnu/bin/cargo test --tests --manifest-path /home/runner/work/askhava/askhava/Cargo.tom\n##[error]Process completed with exit code 101.\nCi failed at step: All five jobs passed\nChecks: success, Lint and slow tests: success, Python: success, Coverage: failure, E2e: success\n##[error]Process completed with exit code 1.",
+   "last_failure": "merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891)",
    "runner_closed_prs": [
-    1445
+    1445,
+    1450
    ],
    "update_merges": [
     {
@@ -107324,7 +107362,28 @@
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "merge_turn_since": "2026-11-24T14:20:22Z",
+   "resync": {
+    "attempt": 2,
+    "from": "60feccaf72f8634e60059ae1c92e05bbfa74eb92",
+    "main": "234ae7f8fe8e2b9c581cd2b750775af5a29dad21",
+    "paths": [
+     "docs/architecture.md"
+    ],
+    "at": "2026-11-24T14:20:22Z"
+   },
+   "resyncs": [
+    {
+     "attempt": 2,
+     "from": "60feccaf72f8634e60059ae1c92e05bbfa74eb92",
+     "main": "234ae7f8fe8e2b9c581cd2b750775af5a29dad21",
+     "paths": [
+      "docs/architecture.md"
+     ],
+     "at": "2026-11-24T14:20:22Z"
+    }
+   ]
   },
   {
    "id": "T733",
@@ -107335,7 +107394,7 @@
     "T810",
     "T813"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 0,
    "slug": "business-settings-routes",
    "type": "build",
@@ -107355,13 +107414,70 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 120,
      "head_sha": "cb06d6f290a8e6973f3d88cc184f68677cc54a0f",
-     "pr": null,
-     "checks": null,
+     "pr": 1449,
+     "checks": [
+      {
+       "name": "backup lane 3",
+       "conclusion": null
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-24T11:58:11Z",
      "ended_at": "2026-11-24T13:29:24Z",
-     "result": "MERGE_PENDING",
+     "result": "done",
      "usage": {
       "worker": {
        "tokens": 7181402,
@@ -107408,7 +107524,20 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "merge_turn_since": "2026-11-24T13:43:37Z"
+   "merge_turn_since": "2026-11-24T13:43:37Z",
+   "merged_sha": "234ae7f8fe8e2b9c581cd2b750775af5a29dad21",
+   "merged_at": "2026-11-24T14:17:08Z",
+   "files": [
+    "app/portals/templates/business_home.html",
+    "app/server/NOTES.md",
+    "app/server/src/business_settings_routes.rs",
+    "app/server/src/lib.rs",
+    "app/server/tests/business_settings_routes.rs",
+    "docs/architecture.md",
+    "docs/decisions.md",
+    "tests/a11y/fixtures.ts",
+    "tests/a11y/page_states.ts"
+   ]
   },
   {
    "id": "T734",
@@ -127546,7 +127675,7 @@
    }
   }
  },
- "updated_at": "2026-11-24T14:13:12Z",
+ "updated_at": "2026-11-24T14:20:36Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -127644,7 +127773,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "017788d7635ba2d088711b64b570e2456dbcd75c",
+ "runner_sha": "234ae7f8fe8e2b9c581cd2b750775af5a29dad21",
  "starter": "actions",
  "smoke_runs": [
   {
