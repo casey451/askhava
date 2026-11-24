@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-24T11:14:01Z by runner 16fd7ee8aae9 (actions).
+Updated 2026-11-24T11:20:11Z by runner 7a9faa3c0585 (actions).
 
 **Building: T802 in progress since 10:10Z; 658 of 780 done; week 91% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-24T11:14:01Z by runner 16fd7ee8aae9 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T802 claimed 10:10Z, lease until 13:10Z; lane 2: T732 claimed 11:13Z, lease until 14:13Z; lane 3: T410 claimed 09:38Z, lease until 12:38Z; lane 4: T305 claimed 11:07Z, lease until 14:07Z; lane 5: T624 claimed 10:37Z, lease until 13:37Z
 - **Week:** 91% used, 7.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:08Z, 5 min before this update
+- **Last run:** 11:14Z, 6 min before this update
 - **Keeper:** last ran 11:01Z, next wake 11:21Z
 
 ## Needs attention
@@ -23,7 +23,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 47% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 48% of the context window, over its 45% limit
-- Strict plan check red: 58 problem(s) on tasks still to run (+554 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 57 problem(s) on tasks still to run (+552 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -74,7 +74,6 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 | T714 | portals: a Confirm link sent by text is marked text-started  | check_failed | 2 | 47 min | 12:27Z |  |
 | T819 | portals: her feedback words are scrubbed before they are sto | check_failed | 1 | 54 min | 11:57Z |  |
 | T646 | site and server: the web chat's new-request limit counts the | check_failed | 2 | 54 min | 11:30Z |  |
-| T653 | licensing and server (harness): a typed BTR number is stored | check_failed | 1 | 117 min | 11:19Z |  |
 
 ### Plan and harness merges on main
 - 07:37Z Plan: per-turn token trims, PF-P1d pre-flight fixes, J1 keyboard flake task T846, T119 unblock, hand-offs (D-5693, D-5709, D-5715, D-5716) (#1419)

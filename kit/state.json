@@ -60895,12 +60895,12 @@
      }
     }
    ],
-   "reviewed_sha": "93dd3e5cad703940d4aaa5d39ff1fd6e625ca8c6",
+   "reviewed_sha": "797bf7d88c1c97aa3d1cca4da0f06b3cc4673357",
    "review_lease": {
     "task": "T410",
-    "session": "actions-45335931959",
-    "expires": "2026-11-24T08:58:38Z",
-    "lane": "4"
+    "session": "actions-45362965166",
+    "expires": "2026-11-24T12:38:39Z",
+    "lane": "3"
    },
    "branch": "claude/task/T410-business-get-help-link",
    "auto_merge": {
@@ -60908,30 +60908,6 @@
     "why": "auto-merge on #1435 (gh pr merge)",
     "head": "d5e5e2fc7d64c53a9e2a0417f8028a890672a24c"
    },
-   "update_merges": [
-    {
-     "from": "48417ba3bd67e925b5776627bc9670b9ef146d5f",
-     "to": "d5e5e2fc7d64c53a9e2a0417f8028a890672a24c",
-     "main": "10a688ebac37ac3ff0c3e792069cb47d7a14b34f",
-     "how": "hand-in",
-     "at": "2026-11-24T07:32:50Z"
-    },
-    {
-     "from": "d5e5e2fc7d64c53a9e2a0417f8028a890672a24c",
-     "to": "93dd3e5cad703940d4aaa5d39ff1fd6e625ca8c6",
-     "main": "9c95956462af23f2968d71e0f2fec7bffa10a514",
-     "how": "runner",
-     "checks": {
-      "Ci": "success",
-      "Ally": "success",
-      "Twin": "success"
-     },
-     "at": "2026-11-24T08:08:59Z"
-    }
-   ],
-   "update_waiting_since": null,
-   "update_push_failures": null,
-   "merge_turn_since": "2026-11-24T08:08:59Z",
    "last_failure": "Ci: failure; E2e: failure\nE2e failed at step: The journeys (npx playwright test tests/e2e)\n{\"timestamp\":\"2026-11-24T08:18:09.048778Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":3276,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-24T08:18:09.051027Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":3277,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-24T08:18:09.051073Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":3278,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-24T08:18:09.051912Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":3279,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-24T08:18:09.054130Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":3280,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-24T08:18:09.055642Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":3281,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n  \u2718  129 [late] \u203a tests/e2e/j3_operator.spec.ts:24:1 \u203a J3 TD-TXT-15: sign-in, pause, refund, fee mode, safe mode, audit log, with the closing checks, launch channel web-and-email (3.3m)\n##[error]  1) [late] \u203a tests/e2e/j3_operator.spec.ts:24:1 \u203a J3 TD-TXT-15: sign-in, pause, refund, fee mode, safe mode, audit log, with the closing checks, launch channel web-and-email \u203a 5. High alert,\nCi",
    "wip_claim": {
     "attempt": 2,
@@ -60939,7 +60915,19 @@
    },
    "runner_closed_prs": [
     1435
-   ]
+   ],
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "7a9faa3c0585e2a87edbbb8743ed321c308e2e46",
+     "to": "797bf7d88c1c97aa3d1cca4da0f06b3cc4673357",
+     "main": "16fd7ee8aae9465dcb7bf75fd20984021425b001",
+     "how": "hand-in",
+     "at": "2026-11-24T11:20:11Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T409",
@@ -126983,7 +126971,7 @@
    }
   }
  },
- "updated_at": "2026-11-24T11:14:01Z",
+ "updated_at": "2026-11-24T11:20:11Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -127081,7 +127069,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "16fd7ee8aae9465dcb7bf75fd20984021425b001",
+ "runner_sha": "7a9faa3c0585e2a87edbbb8743ed321c308e2e46",
  "starter": "actions",
  "smoke_runs": [
   {
