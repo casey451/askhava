@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T05:12:00Z by runner 498909db4318 (actions).
+Updated 2026-11-24T05:18:44Z by runner d22aa36f8a6b (actions).
 
 **Building: T656 in progress since 05:11Z; 650 of 779 done; week 89% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 650 of 779 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T656 claimed 05:11Z, lease until 08:11Z; lane 2: T779 claimed 05:03Z, lease until 08:03Z; lane 3: T728 claimed 04:01Z, lease until 07:01Z; lane 4: T676 claimed 02:45Z, lease until 05:45Z
+- **Lane:** lane 1: T656 claimed 05:11Z, lease until 08:11Z; lane 2: T779 claimed 05:03Z, lease until 08:03Z; lane 3: T728 claimed 04:01Z, lease until 07:01Z; lane 4: T676 claimed 02:45Z, lease until 08:18Z
 - **Week:** 89% used, 12.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:04Z, 7 min before this update
+- **Last run:** 05:12Z, 6 min before this update
 - **Keeper:** last ran 04:59Z, next wake 05:19Z
 
 ## Needs attention
@@ -25,7 +25,7 @@ Also: stand-in twilio fail fault answers 500 -> OutcomeUnknown, no retries (serv
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 47% of the context window, over its 45% limit
-- Strict plan check red: 59 problem(s) on tasks still to run (+549 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 53 problem(s) on tasks still to run (+541 on DONE tasks); first: T518: stored context_pct 17% but it measures 21%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -139,7 +139,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T656 (lease until 2026-11-24T08:11:14Z)
 - lane 2: T779 (lease until 2026-11-24T08:03:55Z)
 - lane 3: T728 (lease until 2026-11-24T07:01:21Z)
-- lane 4: T676 (lease until 2026-11-24T05:45:51Z)
+- lane 4: T676 (lease until 2026-11-24T08:18:44Z)
 
 ## Last usage reading
 - {"task": "T656", "at": "2026-11-24T04:56:38Z", "cache_creation_input_tokens": 141474, "input_tokens": 104, "output_tokens": 29928, "cache_read_input_tokens": 1805478}
