@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-24T21:22:19Z by runner f3d59057ac63 (actions).
+Updated 2026-11-24T21:23:03Z by runner f3d59057ac63 (actions).
 
 **Building: T826 in progress since 20:27Z; 669 of 780 done; week 96% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 669 of 780 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T826 claimed 20:27Z, lease until 23:27Z; lane 2: T815 claimed 19:52Z, lease until 22:52Z
+- **Lane:** lane 1: T826 claimed 20:27Z, lease until 23:27Z
 - **Week:** 96% used, 0.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 21:22Z, 0 min before this update
 - **Keeper:** last ran 21:00Z, next wake 22:55Z
@@ -28,9 +28,10 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T815 | portals: the owner portal serves the weekly digest view at / | MERGE_PENDING | 2 | 89 min | 21:22Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T839 | intake, privacy and messaging: an under-13 purge also delete | done | 1 | 93 min | 20:15Z |  |
 | T820 | server and portals: "Download my data" also holds withdrawn  | check_failed | 1 | 71 min | 19:49Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
-| T815 | portals: the owner portal serves the weekly digest view at / | check_failed | 1 | 81 min | 19:28Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
+| T815 | portals: the owner portal serves the weekly digest view at / | check_failed | 1 | 81 min | 19:28Z |  |
 | T846 | portals and a11y tests (harness): the quote card a "Go back" | done | 1 | 29 min | 19:15Z |  |
 | T826 | site: Spanish page fixes (ranking line, launch offer, city l | check_failed | 1 | 43 min | 18:56Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T799 | Templates and tests (harness): copy review fixes (refund att | BLOCKED | 1 | 9 min | 18:29Z | PLAN GAP: contradiction: D-5401 requires es.json text "dentro de 72 horas de recibir los datos del cliente" (5 keys), bu |
@@ -132,7 +133,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T826 (lease until 2026-11-24T23:27:00Z)
-- lane 2: T815 (lease until 2026-11-24T22:52:59Z)
 
 ## Last usage reading
-- {"task": "T839", "at": "2026-11-24T20:15:17Z", "cache_creation_input_tokens": 150692, "cache_read_input_tokens": 5487653, "input_tokens": 203, "output_tokens": 38290}
+- {"task": "T815", "at": "2026-11-24T21:22:17Z", "cache_creation_input_tokens": 98140, "input_tokens": 78, "cache_read_input_tokens": 1176457, "output_tokens": 10324}
