@@ -8,7 +8,8 @@
 //! inserting an object breaks a link that [`verify_audit_chain`] finds; the nightly
 //! `ops.offdb_verify` task queues the next night's run first, then runs it, purges request lines
 //! older than 30 days on the local stand-in (the bucket lifecycle rule in Phase 2) and raises a High
-//! alert on a break last. Request lines go to `request/<date>/<task id>.json`, through
+//! alert on a break last, once while one is open. Only a not-found answer or a mismatch is a break;
+//! any other storage error fails the run, which retries, and raises nothing (T779, D-5081, F33). Request lines go to `request/<date>/<task id>.json`, through
 //! [`RequestLog`]'s background writer so no response waits on the database; AI readings go to
 //! `ai_reading/<id>.json` (D-734, D-735, D-737).
 
@@ -17,14 +18,14 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Duration;
 
-use askhava_adapters::api::{IdempotencyKey, LocalStorage, StorageAdapter};
+use askhava_adapters::api::{AdapterError, IdempotencyKey, LocalStorage, StorageAdapter};
 use askhava_core::api::{
     Claimed, Clock, HandlerError, NewTask, Registry, Settings, SettingsError, arizona,
     check_base_url, enqueue,
 };
 use askhava_ops::api::{
-    AuditRow, EXPORT_PAGE_MAX, NewAlert, STREAM_KIND, Severity, StreamEvent, export_audit,
-    previous_audit_id, raise_alert, stream_event,
+    AuditRow, EXPORT_PAGE_MAX, STREAM_KIND, Severity, StreamEvent, export_audit, previous_audit_id,
+    raise_kind_once, stream_event,
 };
 use axum::extract::{MatchedPath, Request, State};
 use axum::middleware::Next;
@@ -171,10 +172,11 @@ impl<S: StorageAdapter + Send + Sync> OffDbStream<S> {
         Ok(link(&row, prev.as_ref()))
     }
 
-    /// The nightly run (PRIV-029, D-737): first queues tomorrow's run, so a run that fails for
-    /// good never ends the schedule; then checks the audit chain and purges request lines older
-    /// than 30 days from the stand-in; the High alert on a break comes last, so a retry of an
-    /// earlier failed step never raises it twice.
+    /// The nightly run (PRIV-029, D-737, D-5081): first queues tomorrow's run, so a run that
+    /// fails for good never ends the schedule; then checks the audit chain (a database or storage
+    /// error fails the run, raising nothing) and purges request lines older than 30 days from the
+    /// stand-in; the High alert on a break comes last and is raised once while one is open, so
+    /// neither a retry nor the next night's break adds a second.
     async fn nightly(&self, pool: &PgPool) -> Result<(), HandlerError> {
         let now = self.clock.now();
         let mut conn = pool.acquire().await.map_err(|_| HandlerError(DB))?;
@@ -182,19 +184,16 @@ impl<S: StorageAdapter + Send + Sync> OffDbStream<S> {
             .await
             .map_err(|_| HandlerError(DB))?;
         let checked = verify_audit_chain(&mut conn, &self.storage, now).await;
-        if checked == Err(ChainError::Database) {
-            return Err(HandlerError(DB));
+        match checked {
+            Err(ChainError::Database) => return Err(HandlerError(DB)),
+            Err(ChainError::Storage) => return Err(HandlerError(STORAGE)),
+            _ => {}
         }
         if let Some(root) = &self.purge_root {
             purge_request_log(root, now).map_err(|_| HandlerError("request log purge failed"))?;
         }
         if checked.is_err() {
-            let alert = NewAlert {
-                kind: CHAIN_ALERT,
-                severity: Severity::High,
-                subject: None,
-            };
-            raise_alert(&mut conn, &alert)
+            raise_kind_once(&mut conn, CHAIN_ALERT, Severity::High)
                 .await
                 .map_err(|_| HandlerError(DB))?;
         }
@@ -203,6 +202,7 @@ impl<S: StorageAdapter + Send + Sync> OffDbStream<S> {
 }
 
 const DB: &str = "the database could not be reached";
+const STORAGE: &str = "the audit stream storage could not be read";
 const BAD: HandlerError = HandlerError("bad stream payload");
 
 /// The object name of audit row `id`, zero-padded so names sort in ID order.
@@ -242,6 +242,9 @@ pub enum ChainError {
     Broken(i64),
     /// The database could not be read.
     Database,
+    /// The storage answered with an error other than not found, so nothing is known about the
+    /// object (D-5081): the run fails and retries, and no alert is raised.
+    Storage,
 }
 
 /// Checks every audit row older than an hour against its stored object, in ID order: each object
@@ -251,7 +254,8 @@ pub enum ChainError {
 ///
 /// # Errors
 ///
-/// [`ChainError::Broken`] naming the first row that fails, or [`ChainError::Database`].
+/// [`ChainError::Broken`] naming the first row that is not found or fails,
+/// [`ChainError::Storage`] for any other storage error, or [`ChainError::Database`].
 pub async fn verify_audit_chain<S: StorageAdapter>(
     db: &mut PgConnection,
     storage: &S,
@@ -265,7 +269,7 @@ pub async fn verify_audit_chain<S: StorageAdapter>(
             .await
             .map_err(|_| ChainError::Database)?;
         for row in page.iter().take_while(|r| r.at < horizon) {
-            let stored = storage.read_object(&audit_name(row.id)).await.ok();
+            let stored = stored_object(storage.read_object(&audit_name(row.id)).await)?;
             let object: Option<Value> = stored.and_then(|b| serde_json::from_slice(&b).ok());
             if object != Some(link(row, prev.as_ref())) {
                 return Err(ChainError::Broken(row.id));
@@ -276,6 +280,16 @@ pub async fn verify_audit_chain<S: StorageAdapter>(
         if page.iter().any(|r| r.at >= horizon) || page.len() < EXPORT_PAGE_MAX as usize {
             return Ok(checked);
         }
+    }
+}
+
+/// PRIV-029, D-5081: a read's bytes, `None` for the storage's not-found answer, or
+/// [`ChainError::Storage`] for any other error (an outage is not a broken chain).
+fn stored_object(read: Result<Vec<u8>, AdapterError>) -> Result<Option<Vec<u8>>, ChainError> {
+    match read {
+        Ok(bytes) => Ok(Some(bytes)),
+        Err(AdapterError::Vendor { status: 404, .. }) => Ok(None),
+        Err(_) => Err(ChainError::Storage),
     }
 }
 

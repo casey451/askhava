@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "WITH done AS (UPDATE ops.alert SET resolved_at = now() WHERE kind = $1 AND subject_kind IS NULL AND resolved_at IS NULL RETURNING id) INSERT INTO ops.alert_ack (alert_id, acknowledged_by, at) SELECT id, 'system', now() FROM done RETURNING alert_id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "alert_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "ops.alert_ack",
+            "name": "alert_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "d28a0bf5ed3693b1a71110b4d44ab2e678223b9c6407a7bbacee81ec84b130ee"
+}
