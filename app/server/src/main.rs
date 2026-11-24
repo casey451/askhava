@@ -165,7 +165,8 @@ fn business_parts(
             settings,
             std::env::vars(),
         ))
-        .with_report_settings(reports))
+        .with_report_settings(reports)
+        .with_owner_flag_limits(settings.owner_flag_limits()))
 }
 
 /// Applies every pending migration over `ASKHAVA_MIGRATION_DATABASE_URL`, never the app
