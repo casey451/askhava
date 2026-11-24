@@ -42841,8 +42841,8 @@
     "T348",
     "T530"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 1,
+   "status": "BLOCKED",
+   "attempts": 2,
    "slug": "owner-reports-served",
    "type": "build",
    "stage": "5",
@@ -42923,6 +42923,29 @@
        "turns": 20
       }
      }
+    },
+    {
+     "attempt": 2,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 48,
+     "head_sha": "125ebc351f9b0532e1f69aa6f7f0d40c2d794ccd",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-24T11:07:32Z",
+     "ended_at": "2026-11-24T11:41:52Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 1521261,
+       "turns": 28
+      },
+      "reviewer": {
+       "tokens": 345817,
+       "turns": 10
+      }
+     }
     }
    ],
    "reviewed_sha": "125ebc351f9b0532e1f69aa6f7f0d40c2d794ccd",
@@ -42960,14 +42983,22 @@
    "update_waiting_since": null,
    "update_push_failures": null,
    "merge_turn_since": "2026-11-24T10:35:22Z",
-   "last_failure": "Ally: failure\nAlly failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing)\n    [main] \u203a tests/a11y/reflow_spacing.spec.ts:120:7 \u203a text spacing \u203a A11Y-009: /owner/scorecard (owner pilot scorecard) takes the text-spacing override at 1280px \n    [main] \u203a tests/a11y/reflow_spacing.spec.ts:120:7 \u203a text spacing \u203a A11Y-009: /owner/intake-report (owner intake report) takes the text-spacing override at 320px \n    [main] \u203a tests/a11y/reflow_spacing.spec.ts:120:7 \u203a text spacing \u203a A11Y-009: /owner/intake-report (owner intake report) takes the text-spacing override at 768px \n    [main] \u203a tests/a11y/reflow_spacing.spec.ts:120:7 \u203a text spacing \u203a A11Y-009: /owner/intake-report (owner intake report) takes the text-spacing override at 1280px \n    [main] \u203a tests/a11y/reflow_spacing.spec.ts:120:7 \u203a text spacing \u203a A11Y-009: /owner/money (owner money view, an expense) takes the text-spacing override at 320px \n    [main] \u203a tests/a11y/reflow_spacing.spec.ts:120:7 \u203a text spacing \u203a A11Y-009: /owner/money (owner money view, an expense) takes the text-spacing override at 768px \n    [main] \u203a tests/a11y/reflow_spacing.spec.ts:120:7 \u203a text spacing \u203a A11Y-009: /owner/money (owner money view, an expense) takes the text-spacing override at 1280px \n  1 did not run\n  1446 passed (8.8m)\n##[error]Process completed with exit code 1.",
-   "wip_claim": {
-    "attempt": 2,
-    "remote_sha": "125ebc351f9b0532e1f69aa6f7f0d40c2d794ccd"
-   },
+   "last_failure": "PLAN GAP: outside ownership: app/portals/templates/scorecard.html, app/portals/templates/intake_report.html, app/portals/templates/money_view.html\nOwners T158 (scorecard.html) and T434 (intake_report.html, money_view.html); T305 owns none. Ally A11Y-008/009 fails once T305 serves these pages: bare tables not in a labelled focusable region (scorecard.html:17, money_view.html:33, intake_report.html:21; pattern business_billing.html:16) and label/hint/input on one line (intake_report.html:8-11, money_view.html:8-11 and :48-61, scorecard.html:48-52; pattern address_change.html:25-28). Reviewer confirmed; page_states.ts cannot fix it. Smallest plan change: T305 (or a small fix task) also owns these three templates.",
    "runner_closed_prs": [
     1439
-   ]
+   ],
+   "reason": "plan gap reported: PLAN GAP: outside ownership: app/portals/templates/scorecard.html, app/portals/templates/intake_report.html, app/portals/templates/money_view.html\nOwners T158 (scorecard.html) and T434 (intake_report.html, money_view.html); T305 owns none. Ally A11Y-008/009 fails once T305 serves these pages: bare tables not in a labelled focusable region (scorecard.html:17, money_view.html:33, intake_report.html:21; pattern business_billing.html:16) and label/hint/input on one line (intake_report.html:8-11, money_view.html:8-11 and :48-61, scorecard.html:48-52; pattern address_change.html:25-28). Reviewer con; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T305 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "plan_gap": {
+    "at": "2026-11-24T11:41:52Z",
+    "problems": [
+     "outside ownership: app/portals/templates/scorecard.html, app/portals/templates/intake_report.html, app/portals/templates/money_view.html"
+    ],
+    "paths": [
+     "app/portals/templates/scorecard.html",
+     "app/portals/templates/intake_report.html",
+     "app/portals/templates/money_view.html"
+    ]
+   }
   },
   {
    "id": "T306",
@@ -118946,12 +118977,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T410",
-   "at": "2026-11-24T11:20:08Z",
-   "input_tokens": 70,
-   "output_tokens": 12614,
-   "cache_creation_input_tokens": 110525,
-   "cache_read_input_tokens": 1253964
+   "task": "T305",
+   "at": "2026-11-24T11:41:52Z",
+   "cache_read_input_tokens": 1756803,
+   "input_tokens": 75,
+   "output_tokens": 13374,
+   "cache_creation_input_tokens": 96826
   },
   "source": "session_reading 2026-11-24T11:00:44Z (week)",
   "by_task": {
@@ -126953,14 +126984,14 @@
     "estimated_bytes": 462531,
     "estimated_tokens": 1354972,
     "usage_counting": "message_id",
-    "input_tokens": 188,
-    "cache_creation_input_tokens": 223902,
-    "cache_read_input_tokens": 9740125,
-    "output_tokens": 52779,
-    "worker_tokens": 8979563,
-    "worker_turns": 76,
-    "reviewer_tokens": 1037431,
-    "reviewer_turns": 20,
+    "input_tokens": 263,
+    "cache_creation_input_tokens": 320728,
+    "cache_read_input_tokens": 11496928,
+    "output_tokens": 66153,
+    "worker_tokens": 10500824,
+    "worker_turns": 104,
+    "reviewer_tokens": 1383248,
+    "reviewer_turns": 30,
     "last_model": "claude-opus-5-5"
    },
    "T802": {
@@ -126975,11 +127006,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-24T08:35:06Z",
-    "tokens": 6818471
+    "tokens": 7104426
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 261264544
+    "tokens": 261550499
    }
   },
   "session_reading": {
@@ -126990,7 +127021,7 @@
    }
   }
  },
- "updated_at": "2026-11-24T11:29:52Z",
+ "updated_at": "2026-11-24T11:41:53Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -127088,7 +127119,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "16fd7ee8aae9465dcb7bf75fd20984021425b001",
+ "runner_sha": "125ebc351f9b0532e1f69aa6f7f0d40c2d794ccd",
  "starter": "actions",
  "smoke_runs": [
   {
