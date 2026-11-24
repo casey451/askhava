@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-24T13:29:26Z by runner cb06d6f290a8 (actions).
+Updated 2026-11-24T13:30:03Z by runner cb06d6f290a8 (actions).
 
 **Building: T732 in progress since 13:16Z; 659 of 780 done; week 93% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 659 of 780 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T732 claimed 13:16Z, lease until 16:16Z; lane 2: T802 claimed 13:12Z, lease until 16:12Z; lane 3: T733 claimed 11:58Z, lease until 16:27Z; lane 5: T305 claimed 13:13Z, lease until 16:13Z
+- **Lane:** lane 1: T732 claimed 13:16Z, lease until 16:16Z; lane 2: T802 claimed 13:12Z, lease until 16:12Z; lane 5: T305 claimed 13:13Z, lease until 16:13Z
 - **Week:** 93% used, 5.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 13:28Z, 1 min before this update
 - **Keeper:** last ran 13:26Z, next wake 15:01Z
@@ -27,6 +27,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T733 | server: the business portal serves the service-area settings | MERGE_PENDING | 1 | 91 min | 13:29Z |  |
 | T410 | portals: every signed-in business page shows the Get help li | MERGE_PENDING | 3 | 85 min | 13:17Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T732 | server: the business job page's "Withdraw your quote" posts  | check_failed | 1 | 63 min | 12:16Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T624 | server: two failed in-process health checks in a row raise o | done | 2 | 95 min | 12:13Z | Ci: failure; Python: failure / Python failed at step: Unit, contract and drill tests (pytest) / T705: about 21877 tokens |
@@ -131,8 +132,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T732 (lease until 2026-11-24T16:16:14Z)
 - lane 2: T802 (lease until 2026-11-24T16:12:41Z)
-- lane 3: T733 (lease until 2026-11-24T16:27:58Z)
 - lane 5: T305 (lease until 2026-11-24T16:13:43Z)
 
 ## Last usage reading
-- {"task": "T410", "at": "2026-11-24T13:17:10Z", "input_tokens": 71, "cache_creation_input_tokens": 62971, "cache_read_input_tokens": 859114, "output_tokens": 9631}
+- {"task": "T733", "at": "2026-11-24T13:29:24Z", "output_tokens": 49290, "cache_creation_input_tokens": 206043, "input_tokens": 200, "cache_read_input_tokens": 8822317}
