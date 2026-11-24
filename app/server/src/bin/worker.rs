@@ -109,7 +109,8 @@ async fn schedule_messaging(conn: &mut sqlx::PgConnection, now: jiff::Timestamp)
 /// deliverability re-test run (T686, BIZ-042), `picks`' hourly open-cards email run (T684,
 /// CARD-022), `intake`'s daily consent
 /// sweep (T563, CON-022) and, only when `email` (the provider and vault exist), `messaging`'s
-/// queued-email drain (T470, D-3750), each under its own dedupe key.
+/// queued-email drain (T470, D-3750) and the daily weekly-digest check (T524, OPS-030), each
+/// under its own dedupe key.
 async fn schedule_checks(
     conn: &mut sqlx::PgConnection,
     now: jiff::Timestamp,
@@ -117,6 +118,9 @@ async fn schedule_checks(
 ) -> io::Result<()> {
     if email {
         askhava_messaging::api::schedule_email_due(conn, now)
+            .await
+            .map_err(io::Error::other)?;
+        askhava_server::digest_email::schedule_digest(conn, now)
             .await
             .map_err(io::Error::other)?;
     }
