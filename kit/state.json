@@ -42952,12 +42952,12 @@
      }
     }
    ],
-   "reviewed_sha": "125ebc351f9b0532e1f69aa6f7f0d40c2d794ccd",
+   "reviewed_sha": "17c3ad4bd8dfd0f1af7d310c2bd4259eb23c8777",
    "review_lease": {
     "task": "T305",
-    "session": "actions-45362344613",
-    "expires": "2026-11-24T12:14:51Z",
-    "lane": "2"
+    "session": "actions-45394774678",
+    "expires": "2026-11-24T16:13:43Z",
+    "lane": "5"
    },
    "branch": "claude/task/T305-owner-reports-served",
    "auto_merge": {
@@ -42965,28 +42965,6 @@
     "why": "auto-merge on #1439 (gh pr merge)",
     "head": "dd3f6ca2cfed863879ccb9bcf0c55e6e3b829374"
    },
-   "update_merges": [
-    {
-     "from": "12fd12654ae939c1617712e091dc9057a44fd246",
-     "to": "dd3f6ca2cfed863879ccb9bcf0c55e6e3b829374",
-     "main": "8528082f6c06f27147f297b075f32836d4670f3a",
-     "how": "hand-in",
-     "at": "2026-11-24T10:28:26Z"
-    },
-    {
-     "from": "dd3f6ca2cfed863879ccb9bcf0c55e6e3b829374",
-     "to": "125ebc351f9b0532e1f69aa6f7f0d40c2d794ccd",
-     "main": "16fd7ee8aae9465dcb7bf75fd20984021425b001",
-     "how": "runner",
-     "checks": {
-      "Twin": "success"
-     },
-     "at": "2026-11-24T10:35:22Z"
-    }
-   ],
-   "update_waiting_since": null,
-   "update_push_failures": null,
-   "merge_turn_since": "2026-11-24T10:35:22Z",
    "last_failure": "PLAN GAP: outside ownership: app/portals/templates/scorecard.html, app/portals/templates/intake_report.html, app/portals/templates/money_view.html\nOwners T158 (scorecard.html) and T434 (intake_report.html, money_view.html); T305 owns none. Ally A11Y-008/009 fails once T305 serves these pages: bare tables not in a labelled focusable region (scorecard.html:17, money_view.html:33, intake_report.html:21; pattern business_billing.html:16) and label/hint/input on one line (intake_report.html:8-11, money_view.html:8-11 and :48-61, scorecard.html:48-52; pattern address_change.html:25-28). Reviewer confirmed; page_states.ts cannot fix it. Smallest plan change: T305 (or a small fix task) also owns these three templates.\nre-queued after plan fix D-5792: D-5792 merged (#1446, 26e9bbe3): T305 owns its three owner-report templates for A11Y-008/009/028 (overseer)",
    "runner_closed_prs": [
     1439
@@ -43010,7 +42988,19 @@
    "wip_claim": {
     "attempt": 3,
     "remote_sha": "125ebc351f9b0532e1f69aa6f7f0d40c2d794ccd"
-   }
+   },
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "ae74ebd628b99de2cfee805f04aa5e9690c2b8e5",
+     "to": "17c3ad4bd8dfd0f1af7d310c2bd4259eb23c8777",
+     "main": "234ae7f8fe8e2b9c581cd2b750775af5a29dad21",
+     "how": "hand-in",
+     "at": "2026-11-24T14:56:01Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T306",
@@ -127760,7 +127750,7 @@
    }
   }
  },
- "updated_at": "2026-11-24T14:55:15Z",
+ "updated_at": "2026-11-24T14:56:01Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -127858,7 +127848,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "234ae7f8fe8e2b9c581cd2b750775af5a29dad21",
+ "runner_sha": "ae74ebd628b99de2cfee805f04aa5e9690c2b8e5",
  "starter": "actions",
  "smoke_runs": [
   {
