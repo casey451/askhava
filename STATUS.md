@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T18:33:29Z by runner 4b756acb549d (actions).
+Updated 2026-11-24T18:38:26Z by runner a5c0e45bc3c3 (actions).
 
 **Building: T815 in progress since 18:07Z; 667 of 780 done; week 95% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 667 of 780 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T815 claimed 18:07Z, lease until 21:07Z; lane 2: T820 claimed 16:58Z, lease until 19:58Z; lane 5: T826 claimed 18:12Z, lease until 21:12Z
+- **Lane:** lane 1: T815 claimed 18:07Z, lease until 21:07Z; lane 5: T826 claimed 18:12Z, lease until 21:12Z
 - **Week:** 95% used, 0.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:33Z, 0 min before this update
+- **Last run:** 18:33Z, 4 min before this update
 - **Keeper:** last ran 18:33Z, next wake 20:01Z
 
 ## Needs attention
@@ -23,7 +23,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 47% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 48% of the context window, over its 45% limit
-- Strict plan check red: 65 problem(s) on tasks still to run (+571 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 65 problem(s) on tasks still to run (+573 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -134,7 +134,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T815 (lease until 2026-11-24T21:07:01Z)
-- lane 2: T820 (lease until 2026-11-24T19:58:44Z)
 - lane 5: T826 (lease until 2026-11-24T21:12:27Z)
 
 ## Last usage reading
