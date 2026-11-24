@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-24T19:49:25Z by runner 81aee9d2fa3a (actions).
+Updated 2026-11-24T19:49:58Z by runner 81aee9d2fa3a (actions).
 
 **Building: T839 in progress since 18:41Z; 667 of 780 done; week 96% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 667 of 780 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T839 claimed 18:41Z, lease until 21:41Z; lane 4: T820 claimed 18:38Z, lease until 21:38Z
+- **Lane:** lane 3: T839 claimed 18:41Z, lease until 21:41Z
 - **Week:** 96% used, 0.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 19:43Z, 6 min before this update
 - **Keeper:** last ran 19:42Z, next wake 21:40Z
@@ -28,6 +28,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T820 | server and portals: "Download my data" also holds withdrawn  | MERGE_PENDING | 1 | 71 min | 19:49Z |  |
 | T815 | portals: the owner portal serves the weekly digest view at / | check_failed | 1 | 81 min | 19:28Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T846 | portals and a11y tests (harness): the quote card a "Go back" | MERGE_PENDING | 1 | 29 min | 19:15Z |  |
 | T826 | site: Spanish page fixes (ranking line, launch offer, city l | check_failed | 1 | 43 min | 18:56Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
@@ -135,7 +136,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 3: T839 (lease until 2026-11-24T21:41:20Z)
-- lane 4: T820 (lease until 2026-11-24T21:38:24Z)
 
 ## Last usage reading
-- {"task": "T815", "at": "2026-11-24T19:28:29Z", "cache_read_input_tokens": 4859590, "output_tokens": 39557, "cache_creation_input_tokens": 161993, "input_tokens": 166}
+- {"task": "T820", "at": "2026-11-24T19:49:24Z", "cache_creation_input_tokens": 294503, "output_tokens": 89349, "cache_read_input_tokens": 21955369, "input_tokens": 334}
