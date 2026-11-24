@@ -111,7 +111,7 @@ fn liveness_limit() -> io::Result<askhava_server::liveness::LivenessLimit> {
 /// T261), the step-up page's Verify part (T364), the quote page's update keys (T729), the homeowner sign-in's Verify part (T307), the web chat's code-step keys (T489) and the
 /// site pages' settings (T102) with the business number for the business page's WEB-024 line
 /// (T769, D-4931) and the homeowner number with the Gate C launch date for the home pages' texting
-/// number (T725, WEB-017, D-4709); each errors as its own builder does, naming a key, never a value.
+/// number (T725, WEB-017, D-4709) and the owner reports' settings (T305, D-5775); each errors as its own builder does, naming a key, never a value.
 fn business_parts(
     settings: &askhava_core::api::Settings,
     pool: &sqlx::PgPool,
@@ -142,6 +142,8 @@ fn business_parts(
     let pages = askhava_site::api::SitePages::from_settings(settings)
         .with_homeowner_texting(texting, settings.launch_date());
     let quote_keys = askhava_server::quote_page_keys(settings, std::env::vars())?;
+    let reports = askhava_server::owner_reports::ReportSettings::from_settings(settings)
+        .map_err(io::Error::other)?;
     Ok(parts
         .with_sign_in(signin)
         .with_sign_up(signup)
@@ -162,7 +164,8 @@ fn business_parts(
         .with_secret_report(askhava_server::owner_tools::SecretReport::from_settings(
             settings,
             std::env::vars(),
-        )))
+        ))
+        .with_report_settings(reports))
 }
 
 /// Applies every pending migration over `ASKHAVA_MIGRATION_DATABASE_URL`, never the app

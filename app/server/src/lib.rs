@@ -64,6 +64,7 @@ pub mod no_handler_alert;
 pub mod offdb_stream;
 pub mod owner_ai_routes;
 pub mod owner_portal;
+pub mod owner_reports;
 pub mod owner_signin;
 pub mod owner_tools;
 pub mod payment_jobs;
@@ -172,6 +173,7 @@ struct BusinessParts {
     data_link_postal: Option<askhava_messaging::api::PostalAddress>,
     business_number: Option<askhava_messaging::api::SendingNumber>,
     report: owner_tools::SecretReport,
+    reports: owner_reports::ReportSettings,
 }
 
 impl RouterParts {
@@ -253,6 +255,14 @@ impl RouterParts {
     #[must_use]
     pub fn with_secret_report(mut self, report: owner_tools::SecretReport) -> Self {
         self.business.report = report;
+        self
+    }
+
+    /// Adds what the owner reports take from the settings (T305, OPS-039, OPS-040, FEE-046,
+    /// D-3890, D-5318; [`owner_reports::ReportSettings::from_settings`]); without it the defaults.
+    #[must_use]
+    pub fn with_report_settings(mut self, reports: owner_reports::ReportSettings) -> Self {
+        self.business.reports = reports;
         self
     }
 
@@ -428,15 +438,18 @@ impl ApprovalSecret for StripeApproval {
 }
 
 /// The owner's sign-in ([`owner_signin`], T303), home, settings and switches ([`owner_portal`],
-/// T310, the opt-out with `vault`), help requests (`portals`' T530) and AI page
+/// T310, the opt-out with `vault`), scorecard, intake report and money view
+/// ([`owner_reports`], T305, with `reports`), help requests (`portals`' T530) and AI page
 /// ([`owner_ai_routes`], T737).
 fn owner_pages(
     pool: &PgPool,
     vault: Option<Arc<Vault>>,
     webhooks: Option<&Arc<inbound_text::Webhooks>>,
+    reports: owner_reports::ReportSettings,
 ) -> Router {
     let owner = owner_signin::routes(pool.clone())
         .merge(owner_portal::routes(pool.clone(), vault, webhooks))
+        .merge(owner_reports::routes(pool.clone(), reports))
         .merge(owner_ai_routes::routes(pool.clone()));
     owner.merge(askhava_portals::api::owner_help_routes(
         pool.clone(),
@@ -483,7 +496,7 @@ fn business_pages(
         };
         confirm_routes_with(route, parts.confirm_codes.clone())
     });
-    let owner = owner_pages(&pool, parts.vault.clone(), webhooks);
+    let owner = owner_pages(&pool, parts.vault.clone(), webhooks, parts.reports);
     let tools = owner_tools::routes(pool.clone(), stripe, &parts.confirm, parts.report);
     let cant_take = cant_take_route::routes(pool.clone());
     let links = webhooks.filter(|_| parts.photos.is_some());

@@ -629,6 +629,28 @@ const OWNER_HELP_STATES: readonly PageState[] = [
   ["owner help requests", "No open requests", "Nothing was sent", OWNER_SESSION_SQL],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: OWNER_HELP_ROUTE, name, shows, hides, sql, statusRegions: ["help-status"] }));
 
+const OWNER_SCORECARD_ROUTE = "/owner/scorecard";
+const OWNER_INTAKE_REPORT_ROUTE = "/owner/intake-report";
+const OWNER_MONEY_ROUTE = "/owner/money";
+
+/**
+ * The owner reports (T305; OPS-039, OPS-040, FEE-046, D-2128): the pilot scorecard with its
+ * minutes form, the month's intake report and the money view with a fake expense, so its table
+ * renders; no refusal on any.
+ */
+const OWNER_REPORTS_STATES: readonly PageState[] = [
+  [OWNER_SCORECARD_ROUTE, "owner pilot scorecard", "Your minutes this week", "Fix this to save your minutes", ""],
+  [OWNER_INTAKE_REPORT_ROUTE, "owner intake report", "Sample requests sorted right", "Error:", ""],
+  [
+    OWNER_MONEY_ROUTE,
+    "owner money view, an expense",
+    "Add an expense",
+    "No expenses entered for",
+    `; INSERT INTO payments.expense (spent_on, vendor, amount_cents, category, note, entered_at)
+      VALUES ((now() AT TIME ZONE 'America/Phoenix')::date, 'Sample Software Co', 1250, 'Software', '', now())`,
+  ],
+].map(([route = "", name = "", shows = "", hides = "", extra = ""]) => ({ route, name, shows, hides, sql: OWNER_SESSION_SQL + extra, statusRegions: [] }));
+
 const OWNER_REFUND_ROUTE = "/owner/refunds/{pick}";
 const OWNER_AUDIT_LOG_ROUTE = "/owner/audit-log";
 const OWNER_HEALTH_ROUTE = "/owner/health";
@@ -947,6 +969,9 @@ export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: OWNER_RELEASE_ROUTE, seed: portalSeed(false), states: OWNER_RELEASE_STATES },
   { route: OWNER_HELP_ROUTE, seed: portalSeed(false), states: OWNER_HELP_STATES },
   { route: OWNER_PROBLEM_REPORTS_ROUTE, seed: portalSeed(false), states: OWNER_PROBLEM_STATES },
+  { route: OWNER_SCORECARD_ROUTE, seed: portalSeed(false), states: OWNER_REPORTS_STATES.filter((s) => s.route === OWNER_SCORECARD_ROUTE) },
+  { route: OWNER_INTAKE_REPORT_ROUTE, seed: portalSeed(false), states: OWNER_REPORTS_STATES.filter((s) => s.route === OWNER_INTAKE_REPORT_ROUTE) },
+  { route: OWNER_MONEY_ROUTE, seed: portalSeed(false), states: OWNER_REPORTS_STATES.filter((s) => s.route === OWNER_MONEY_ROUTE) },
   { route: OWNER_REFUND_ROUTE, seed: portalSeed(false), states: OWNER_TOOLS_STATES.filter((s) => s.route === OWNER_REFUND_ROUTE) },
   { route: OWNER_AUDIT_LOG_ROUTE, seed: portalSeed(false), states: OWNER_TOOLS_STATES.filter((s) => s.route === OWNER_AUDIT_LOG_ROUTE) },
   { route: OWNER_HEALTH_ROUTE, seed: portalSeed(false), states: OWNER_TOOLS_STATES.filter((s) => s.route === OWNER_HEALTH_ROUTE) },
