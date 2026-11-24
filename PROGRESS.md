@@ -10915,3 +10915,4 @@
 - 2026-11-24T15:40:16Z runner 668bcac6a67e (actions): {"T815": "QUEUED -> IN_PROGRESS"}; T815 estimated 1.2M tokens (calibrated); week has 3.0M left (no five-hour budget, D-3056) after 3.0M still running in another lane (session_reading 2026-11-24T15:35:17Z (week)); claimed
 - 2026-11-24T15:40:49Z runner 668bcac6a67e (actions): {}
 - 2026-11-24T15:45:29Z runner 4686df673158 (actions): {}
+- 2026-11-24T15:46:04Z runner 4686df673158 (actions): {"T741": "IN_PROGRESS -> MERGE_PENDING"}
