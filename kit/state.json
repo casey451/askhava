@@ -60823,7 +60823,14 @@
    "update_waiting_since": null,
    "update_push_failures": null,
    "merge_turn_since": "2026-11-24T08:08:59Z",
-   "last_failure": "Ci: failure; E2e: failure\nE2e failed at step: The journeys (npx playwright test tests/e2e)\n{\"timestamp\":\"2026-11-24T08:18:09.048778Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":3276,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-24T08:18:09.051027Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":3277,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-24T08:18:09.051073Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":3278,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-24T08:18:09.051912Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":3279,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-24T08:18:09.054130Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":3280,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-24T08:18:09.055642Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":3281,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n  \u2718  129 [late] \u203a tests/e2e/j3_operator.spec.ts:24:1 \u203a J3 TD-TXT-15: sign-in, pause, refund, fee mode, safe mode, audit log, with the closing checks, launch channel web-and-email (3.3m)\n##[error]  1) [late] \u203a tests/e2e/j3_operator.spec.ts:24:1 \u203a J3 TD-TXT-15: sign-in, pause, refund, fee mode, safe mode, audit log, with the closing checks, launch channel web-and-email \u203a 5. High alert,\nCi"
+   "last_failure": "Ci: failure; E2e: failure\nE2e failed at step: The journeys (npx playwright test tests/e2e)\n{\"timestamp\":\"2026-11-24T08:18:09.048778Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":3276,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-24T08:18:09.051027Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":3277,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-24T08:18:09.051073Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":3278,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-24T08:18:09.051912Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":3279,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-24T08:18:09.054130Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":3280,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-24T08:18:09.055642Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":3281,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n  \u2718  129 [late] \u203a tests/e2e/j3_operator.spec.ts:24:1 \u203a J3 TD-TXT-15: sign-in, pause, refund, fee mode, safe mode, audit log, with the closing checks, launch channel web-and-email (3.3m)\n##[error]  1) [late] \u203a tests/e2e/j3_operator.spec.ts:24:1 \u203a J3 TD-TXT-15: sign-in, pause, refund, fee mode, safe mode, audit log, with the closing checks, launch channel web-and-email \u203a 5. High alert,\nCi",
+   "wip_claim": {
+    "attempt": 2,
+    "remote_sha": "93dd3e5cad703940d4aaa5d39ff1fd6e625ca8c6"
+   },
+   "runner_closed_prs": [
+    1435
+   ]
   },
   {
    "id": "T409",
@@ -126537,7 +126544,7 @@
    }
   }
  },
- "updated_at": "2026-11-24T09:38:57Z",
+ "updated_at": "2026-11-24T09:39:34Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
