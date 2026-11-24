@@ -878,6 +878,7 @@ name = "askhava-server"
 version = "0.1.0"
 dependencies = [
  "askhava-adapters",
+ "askhava-ai",
  "askhava-businesses",
  "askhava-calls",
  "askhava-catalog",

@@ -67,8 +67,8 @@ pub(crate) struct Readiness {
 }
 
 impl Readiness {
-    /// The first record the switch still needs, or none (AI-008, D-492).
-    pub(crate) fn missing(self) -> Option<Missing> {
+    /// Every record the switch still needs, in the gate's order (AI-008, D-492, D-5534).
+    fn gaps(self) -> impl Iterator<Item = Missing> {
         [
             (self.terms, Missing::Terms),
             (self.training_free, Missing::TrainingFree),
@@ -77,7 +77,12 @@ impl Readiness {
             (self.policy_wording, Missing::PolicyWording),
         ]
         .into_iter()
-        .find_map(|(held, missing)| (!held).then_some(missing))
+        .filter_map(|(held, missing)| (!held).then_some(missing))
+    }
+
+    /// The first record the switch still needs, or none (AI-008, D-492).
+    pub(crate) fn missing(self) -> Option<Missing> {
+        self.gaps().next()
     }
 
     /// The mode in `env` (AI-008): live needs zero retention, or the switch on and nothing missing.
@@ -128,6 +133,29 @@ async fn readiness(db: &mut PgConnection) -> Result<Readiness, AiError> {
 /// [`AiError::Database`] when the records cannot be read.
 pub async fn ai_mode(db: &mut PgConnection, env: Environment) -> Result<AiMode, AiError> {
     Ok(readiness(db).await?.mode(env))
+}
+
+/// Every record the switch still needs before it may turn on, in the gate's order (the first is
+/// what [`set_ai_switch`] names when it refuses), and whether the switch is on now; from the same
+/// read as [`ai_mode`]. Reads only (AI-008, D-492, D-5534).
+///
+/// # Errors
+///
+/// [`AiError::Database`] when the records cannot be read.
+pub async fn missing_records(db: &mut PgConnection) -> Result<(Vec<Missing>, bool), AiError> {
+    let ready = readiness(db).await?;
+    Ok((ready.gaps().collect(), ready.switch_on))
+}
+
+/// Whether the newest provider-terms row holds a zero-retention signing date on or before today
+/// in Arizona, so [`ai_mode`] answers [`AiMode::Ai`] in live whatever the switch says; from the
+/// same read as [`ai_mode`]. Reads only (AI-008, D-412, D-841, D-5690).
+///
+/// # Errors
+///
+/// [`AiError::Database`] when the records cannot be read.
+pub async fn zero_retention_in_force(db: &mut PgConnection) -> Result<bool, AiError> {
+    Ok(readiness(db).await?.zero_retention)
 }
 
 /// Turns the owner's "AI on scrubbed text" switch on or off, with its history row and audit row

@@ -41,6 +41,8 @@ tower-http = { workspace = true }
 tracing = { workspace = true }
 
 [dev-dependencies]
+# The AI gate's mode in the owner AI switch route test (T737, TD-AI-32).
+askhava-ai = { workspace = true }
 base64 = { workspace = true }
 hmac = { workspace = true }
 sha1 = { workspace = true }
