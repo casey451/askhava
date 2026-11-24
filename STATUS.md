@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-24T09:48:57Z by runner 3507d07e72ab (actions).
+Updated 2026-11-24T09:49:32Z by runner 3507d07e72ab (actions).
 
-**Building: T841 in progress since 08:11Z; 656 of 780 done; week 90% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T305 in progress since 09:14Z; 656 of 780 done; week 90% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 656 of 780 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T841 claimed 08:11Z, lease until 11:11Z; lane 2: T305 claimed 09:14Z, lease until 12:14Z; lane 3: T410 claimed 09:38Z, lease until 12:38Z; lane 4: T801 claimed 08:49Z, lease until 11:49Z; lane 5: T814 claimed 07:37Z, lease until 11:55Z
+- **Lane:** lane 2: T305 claimed 09:14Z, lease until 12:14Z; lane 3: T410 claimed 09:38Z, lease until 12:38Z; lane 4: T801 claimed 08:49Z, lease until 11:49Z; lane 5: T814 claimed 07:37Z, lease until 11:55Z
 - **Week:** 90% used, 8.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 09:39Z, 9 min before this update
 - **Keeper:** last ran 08:44Z, next wake 09:04Z
@@ -26,6 +26,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T841 | e2e: seedPick's new businesses hold the fixture licence ROC1 | MERGE_PENDING | 1 | 97 min | 09:48Z |  |
 | T804 | server and portals: a delete or copy request made in the por | done | 2 | 63 min | 08:35Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T410 | portals: every signed-in business page shows the Get help li | check_failed | 1 | 93 min | 07:32Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-24T |
 | T656 | site: a failed submit on the /request chat shows a focused e | done | 2 | 2 h 1 min | 07:12Z | Reviewer after the findings round still FINDINGS (head 18fdb4a27): app/site/templates/request.html lines 7-10: header co |
@@ -129,11 +130,11 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T841 (lease until 2026-11-24T11:11:14Z)
+- nothing
 - lane 2: T305 (lease until 2026-11-24T12:14:51Z)
 - lane 3: T410 (lease until 2026-11-24T12:38:39Z)
 - lane 4: T801 (lease until 2026-11-24T11:49:17Z)
 - lane 5: T814 (lease until 2026-11-24T11:55:24Z)
 
 ## Last usage reading
-- {"task": "T804", "at": "2026-11-24T08:35:06Z", "input_tokens": 83, "cache_creation_input_tokens": 105363, "cache_read_input_tokens": 1907766, "output_tokens": 15144}
+- {"task": "T841", "at": "2026-11-24T09:48:55Z", "output_tokens": 23922, "input_tokens": 135, "cache_read_input_tokens": 2638565, "cache_creation_input_tokens": 114458}

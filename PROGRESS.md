@@ -10766,3 +10766,4 @@
 - 2026-11-24T09:38:57Z runner 9eb978b60d55 (actions): {"T410": "QUEUED -> IN_PROGRESS"}; T410 estimated 1.4M tokens (calibrated); week has 8.4M left (no five-hour budget, D-3056) after 5.6M still running in another lane (session_reading 2026-11-24T08:43:49Z (week)); claimed
 - 2026-11-24T09:39:34Z runner 9eb978b60d55 (actions): {}
 - 2026-11-24T09:48:57Z runner 3507d07e72ab (actions): {}
+- 2026-11-24T09:49:32Z runner 3507d07e72ab (actions): {"T841": "IN_PROGRESS -> MERGE_PENDING"}
