@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-24T07:31:25Z by runner 10a688ebac37 (actions).
+Updated 2026-11-24T07:31:55Z by runner 10a688ebac37 (actions).
 
-**Building: T410 in progress since 05:58Z; 654 of 779 done; week 90% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T804 in progress since 07:31Z; 654 of 779 done; week 90% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 654 of 779 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 4: T410 claimed 05:58Z, lease until 08:58Z
-- **Week:** 90% used, 10.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 2: T804 claimed 07:31Z, lease until 10:31Z; lane 4: T410 claimed 05:58Z, lease until 08:58Z
+- **Week:** 90% used, 12.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 07:15Z, 16 min before this update
 - **Keeper:** last ran 07:14Z, next wake 07:34Z
 
@@ -120,7 +120,7 @@ Also: stand-in twilio fail fault answers 500 -> OutcomeUnknown, no retries (serv
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-24T05:38:42Z (week)): week: 183.6M used, 10.4M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T20:51:06Z.
+- Pacing (session_reading 2026-11-24T07:13:48Z (week)): week: 181.4M used, 12.6M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T20:22:46Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -136,6 +136,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 2: T804 (lease until 2026-11-24T10:31:14Z)
 - lane 4: T410 (lease until 2026-11-24T08:58:38Z)
 
 ## Last usage reading
