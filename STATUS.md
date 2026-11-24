@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-24T08:43:49Z by runner 9c95956462af (actions).
+Updated 2026-11-24T08:44:33Z by runner 9c95956462af (actions).
 
 **Building: T841 in progress since 08:11Z; 655 of 780 done; week 90% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-24T08:43:49Z by runner 9c95956462af (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T841 claimed 08:11Z, lease until 11:11Z; lane 5: T814 claimed 07:37Z, lease until 10:37Z
 - **Week:** 90% used, 10.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:43Z, 0 min before this update
-- **Keeper:** last ran 08:37Z, next wake 08:57Z
+- **Last run:** 08:44Z, 0 min before this update
+- **Keeper:** last ran 08:44Z, next wake 09:04Z
 
 ## Needs attention
 - BLOCKED T222: Reviewer over 457819c6bc470ff6f69d271d7ab023fb3c0c25eb ended REVIEW-VERDICT: FINDINGS (hand_in_by too close for a fix round):
@@ -74,7 +74,6 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 | T121 | Startup key checks, control router absent in live, supply-ch | check_failed | 3 | 103 min | 10:16Z |  |
 | T118 | Journey J3 (operator) keyboard-only, with closing checks | done | 5 | 82 min | 09:58Z | PLAN GAP: outside ownership: app/site/templates/request.html, app/site/static/site.css / At 1280x900 the /request chat s |
 | T646 | site and server: the web chat's new-request limit counts the | check_failed | 1 | 59 min | 08:59Z |  |
-| T588 | portals and server: a refused business sign-up keeps every f | done | 1 | 101 min | 08:44Z |  |
 
 ### Plan and harness merges on main
 - 07:37Z Plan: per-turn token trims, PF-P1d pre-flight fixes, J1 keyboard flake task T846, T119 unblock, hand-offs (D-5693, D-5709, D-5715, D-5716) (#1419)
