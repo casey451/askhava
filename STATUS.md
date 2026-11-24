@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T00:42:16Z by runner bd661c403c9e (actions).
+Updated 2026-11-24T00:42:50Z by runner bd661c403c9e (actions).
 
-**Building: T737 in progress since 22:49Z; 643 of 779 done; week 86% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T813 in progress since 00:33Z; 643 of 779 done; week 86% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 643 of 779 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T737 claimed 22:49Z, lease until 01:49Z; lane 2: T813 claimed 00:33Z, lease until 03:33Z; lane 4: T836 claimed 00:30Z, lease until 03:30Z; lane 5: T222 claimed 00:37Z, lease until 03:37Z
+- **Lane:** lane 2: T813 claimed 00:33Z, lease until 03:33Z; lane 4: T836 claimed 00:30Z, lease until 03:30Z; lane 5: T222 claimed 00:37Z, lease until 03:37Z
 - **Week:** 86% used, 18.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:38Z, 4 min before this update
+- **Last run:** 00:42Z, 0 min before this update
 - **Keeper:** last ran 00:36Z, next wake 00:56Z
 
 ## Needs attention
@@ -20,12 +20,13 @@ Updated 2026-11-24T00:42:16Z by runner bd661c403c9e (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T737 | portals, ai and server: the owner records the AI provider's  | MERGE_PENDING | 2 | 112 min | 00:42Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T738 | portals and server: owner settings refusals show an accessib | MERGE_PENDING | 1 | 85 min | 00:34Z |  |
 | T716 | intake: the dispatcher's trade questions at step 5: "Which f | done | 4 | 114 min | 23:57Z | PLAN GAP: outside ownership: app/intake/src/conversation.rs (purge_child, ~348-362), app/intake/src/models.rs (purge_req |
 | T649 | intake, site and server: after the code, the web chat's name | check_failed | 1 | 2 h 19 min | 22:52Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T819 | portals: her feedback words are scrubbed before they are sto | done | 3 | 85 min | 22:43Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T816 | messaging: the data-request confirm link goes by email to th | done | 1 | 112 min | 22:39Z |  |
-| T737 | portals, ai and server: the owner records the AI provider's  | check_failed | 1 | 65 min | 21:59Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
+| T737 | portals, ai and server: the owner records the AI provider's  | check_failed | 1 | 65 min | 21:59Z |  |
 | T745 | intake: a reader for a job's intake answers through `intake: | done | 1 | 2 h 19 min | 21:22Z |  |
 | T836 | ci and runner workflow (harness): the backup-runner gate ski | BLOCKED | 1 | 11 min | 20:40Z | PLAN GAP: tests/test_runner_five_lanes.py:176 (test_no_workflow_a_hand_in_starts_cancels_another_lanes_run_when_five_han |
 | T668 | server: the business job page at /b/jobs/{j} offers "Not a f | done | 1 | 56 min | 20:07Z |  |
@@ -126,10 +127,10 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T737 (lease until 2026-11-24T01:49:24Z)
+- nothing
 - lane 2: T813 (lease until 2026-11-24T03:33:53Z)
 - lane 4: T836 (lease until 2026-11-24T03:30:33Z)
 - lane 5: T222 (lease until 2026-11-24T03:37:12Z)
 
 ## Last usage reading
-- {"task": "T738", "at": "2026-11-24T00:34:31Z", "output_tokens": 86269, "cache_read_input_tokens": 18886675, "input_tokens": 267, "cache_creation_input_tokens": 291349}
+- {"task": "T737", "at": "2026-11-24T00:42:14Z", "cache_creation_input_tokens": 249720, "cache_read_input_tokens": 4882392, "input_tokens": 194, "output_tokens": 34074}
