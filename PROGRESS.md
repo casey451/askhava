@@ -10900,3 +10900,4 @@
 - 2026-11-24T15:09:36Z runner 234ae7f8fe8e (actions): {"T590": "QUEUED -> IN_PROGRESS"}; T590 estimated 1.3M tokens (calibrated); week has 4.6M left (no five-hour budget, D-3056) after 3.4M still running in another lane (session_reading 2026-11-24T15:04:21Z (week)); claimed
 - 2026-11-24T15:10:04Z runner 234ae7f8fe8e (actions): {}
 - 2026-11-24T15:13:19Z runner 3a058a211784 (actions): {}
+- 2026-11-24T15:13:53Z runner 3a058a211784 (actions): {"T732": "IN_PROGRESS -> MERGE_PENDING"}
