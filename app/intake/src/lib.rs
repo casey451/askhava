@@ -67,6 +67,7 @@ mod service;
 mod status;
 mod summary_step;
 mod text_failed_urgency;
+mod text_pick_reply;
 mod web_chat;
 mod zip_step;
 
