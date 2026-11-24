@@ -320,7 +320,7 @@ pub async fn stop_if_under_18(
     )
     .await?;
     if stop == AgeStop::Under13 {
-        purge_child(&mut tx, (conversation, homeowner), msg.contact, &jobs).await?;
+        purge_child(&mut tx, (conversation, homeowner), msg, &jobs).await?;
     }
     let entry = AuditEntry {
         actor: Actor::System,
@@ -342,6 +342,9 @@ pub async fn stop_if_under_18(
 /// (`purge_job_text`), then the words a short first text held under the request's own ID before
 /// its job opened (`purge_job_text` of the request, D-5617), then the request's data (`models::purge_request`), then the sender's vault
 /// contact (`purge_contact`, a savepoint), so a failure of any keeps nothing.
+/// PRIV-008, PRIV-027, D-5639: each job's and each of her help requests' kept message words
+/// (`delete_job_words`) go too, and every provider SID of her texts gets its body delete queued
+/// due at `msg.received_at` (`queue_contact_body_deletes_now`), not on day 31.
 /// The caller took the homeowner row first, so the contact row comes after it, as in the
 /// retention lock order (D-1839).
 /// The contact is the sender's, not the request's alone: an earlier request's paid pick loses the
@@ -349,9 +352,10 @@ pub async fn stop_if_under_18(
 async fn purge_child(
     tx: &mut PgConnection,
     (conversation, homeowner): (Uuid, Uuid),
-    contact: Uuid,
+    msg: &TextIn<'_>,
     jobs: &[Uuid],
 ) -> Result<(), IntakeError> {
+    let contact = msg.contact;
     for &job in jobs {
         purge_photos(tx, job)
             .await
@@ -359,11 +363,25 @@ async fn purge_child(
         askhava_quotes::api::purge_job_text(tx, job)
             .await
             .map_err(|_| IntakeError::Quotes)?;
+        askhava_privacy::api::delete_job_words(tx, job)
+            .await
+            .map_err(|_| IntakeError::Vault)?;
     }
     askhava_quotes::api::purge_job_text(tx, conversation)
         .await
         .map_err(|_| IntakeError::Quotes)?;
+    let helps = askhava_ops::api::help_requests_of_homeowner(tx, contact)
+        .await
+        .map_err(|_| IntakeError::Database)?;
+    for help in helps {
+        askhava_privacy::api::delete_job_words(tx, help)
+            .await
+            .map_err(|_| IntakeError::Vault)?;
+    }
     models::purge_request(tx, conversation, homeowner).await?;
+    askhava_messaging::api::queue_contact_body_deletes_now(tx, contact, msg.received_at)
+        .await
+        .map_err(|_| IntakeError::Outbox)?;
     purge_contact(tx, contact)
         .await
         .map_err(|_| IntakeError::Vault)?;

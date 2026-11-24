@@ -7,6 +7,8 @@
 //! record: a later scan queues nothing for it again, so each body is deleted once, and a provider
 //! error fails the task, which the queue retries. Nothing is queued before day 31. The local
 //! 30-day cut of bodies stays `retention::cut_bodies` (T093, TXT-020); no row here is changed.
+//! An under-13 purge (INT-038, D-5639) queues the same tasks for one contact's SIDs at once
+//! ([`queue_contact_body_deletes_now`]).
 
 use std::sync::Arc;
 
@@ -17,6 +19,7 @@ use jiff::{SignedDuration, Timestamp};
 use jiff_sqlx::ToSqlx;
 use secrecy::SecretString;
 use serde_json::json;
+use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
 use crate::models::OutboxError;
@@ -58,6 +61,43 @@ pub async fn queue_body_deletes(db: &mut PgConnection, now: Timestamp) -> Result
     .fetch_all(&mut *db)
     .await
     .map_err(|_| OutboxError::Database)?;
+    queue_sids(db, sids, now).await
+}
+
+/// INT-038, PRIV-027, D-5639: queues one [`DELETE_KIND`] task due at `now` for the `message_sid`
+/// of every inbound text from vault contact `contact` (`messaging.inbox_contact`) and the
+/// `provider_sid` of every outbound text to it that has one, without waiting for day 31, so an
+/// under-13 purge leaves no body of hers at the provider; returns how many it newly queued. Same
+/// dedupe key and attempts as [`queue_body_deletes`], so the day-31 scan queues none of them again.
+///
+/// # Errors
+///
+/// [`OutboxError::Database`].
+pub async fn queue_contact_body_deletes_now(
+    db: &mut PgConnection,
+    contact: Uuid,
+    now: Timestamp,
+) -> Result<u64, OutboxError> {
+    let sids = sqlx::query_scalar!(
+        r#"SELECT i.message_sid AS "sid!" FROM messaging.inbox i
+           JOIN messaging.inbox_contact c ON c.inbox_id = i.id WHERE c.contact_id = $1
+           UNION SELECT provider_sid AS "sid!" FROM messaging.outbox
+           WHERE recipient_id = $1 AND provider_sid IS NOT NULL"#,
+        contact
+    )
+    .fetch_all(&mut *db)
+    .await
+    .map_err(|_| OutboxError::Database)?;
+    queue_sids(db, sids, now).await
+}
+
+/// PRIV-027: queues one [`DELETE_KIND`] task due at `now` per SID in `sids` under the dedupe key
+/// `messaging.body_delete:<sid>`; the count newly queued (a SID already queued adds none).
+async fn queue_sids(
+    db: &mut PgConnection,
+    sids: Vec<String>,
+    now: Timestamp,
+) -> Result<u64, OutboxError> {
     let mut queued = 0;
     for sid in sids {
         let mut task = NewTask::new(DELETE_KIND, json!({ "sid": sid }), now);
