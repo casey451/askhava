@@ -1,4 +1,4 @@
-> Outside review PF-T801, received from Casey Nov 24, 2026 (about 6:40 am MST). Unverified: verify every finding on `main` before acting. Input for planning T801 after the Thursday Nov 26 reset (Casey's decision), with two Opus review rounds.
+> Outside review PF-T801, received from Casey Nov 24, 2026 (about 5:15 am MST). Unverified: verify every finding on `main` before acting. Input for planning T801 after the Thursday Nov 26 reset (Casey's decision), with two Opus review rounds.
 
 # PF-T801 — Consent plan fix
 
