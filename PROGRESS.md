@@ -10964,3 +10964,4 @@
 - 2026-11-24T18:33:08Z runner 4b756acb549d (actions): {}
 - 2026-11-24T18:33:29Z runner 4b756acb549d (actions): {}
 - 2026-11-24T18:38:26Z runner a5c0e45bc3c3 (actions): {"T820": "IN_PROGRESS -> QUEUED"}
+- 2026-11-24T18:38:58Z runner a5c0e45bc3c3 (actions): {"T820": "QUEUED -> IN_PROGRESS"}; T820 estimated 1.5M tokens (calibrated); week has 2.2M left (no five-hour budget, D-3056) after 1.8M still running in another lane (session_reading 2026-11-24T18:32:43Z (week)); claimed
