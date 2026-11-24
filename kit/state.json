@@ -26196,7 +26196,9 @@
     "T489",
     "T497",
     "T536",
-    "T561"
+    "T561",
+    "T841",
+    "T801"
    ],
    "status": "QUEUED",
    "attempts": 1,
@@ -26966,7 +26968,8 @@
     "T838",
     "T839",
     "T840",
-    "T841"
+    "T841",
+    "T846"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -80935,7 +80938,8 @@
     "T838",
     "T839",
     "T840",
-    "T841"
+    "T841",
+    "T846"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -81143,7 +81147,8 @@
     "T838",
     "T839",
     "T840",
-    "T841"
+    "T841",
+    "T846"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -118234,6 +118239,20 @@
    "slug": "plan-half-smoke",
    "type": "harness",
    "stage": "5"
+  },
+  {
+   "id": "T846",
+   "deps": [
+    "T098",
+    "T729",
+    "T831",
+    "T611"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "j1-keyboard-fragment-focus",
+   "type": "harness",
+   "stage": "5"
   }
  ],
  "owner_waits": [],
@@ -126245,7 +126264,7 @@
    }
   }
  },
- "updated_at": "2026-11-24T07:38:32Z",
+ "updated_at": "2026-11-24T07:40:56Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -126343,8 +126362,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "664b9e81172d8fe6afaa45748c72ee8873685b09",
- "starter": "manual",
+ "runner_sha": "10a688ebac37ac3ff0c3e792069cb47d7a14b34f",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "6f51aa49550be280143a97d58f2b92735516f666",
