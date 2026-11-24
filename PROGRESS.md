@@ -10994,3 +10994,4 @@
 - 2026-11-24T19:36:13Z runner a5c0e45bc3c3 (actions): {}
 - 2026-11-24T19:36:55Z runner a5c0e45bc3c3 (actions): {}
 - 2026-11-24T19:40:14Z runner a5c0e45bc3c3 (actions): {"T815": "MERGE_PENDING -> QUEUED"}
+- 2026-11-24T19:40:50Z runner a5c0e45bc3c3 (actions): {}; T815 estimated 1.2M tokens (calibrated); week has 194k left (no five-hour budget, D-3056) after 1.8M still running in another lane (session_reading 2026-11-24T19:36:12Z (week)); waiting until 2026-11-26T17:00:00Z
