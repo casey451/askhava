@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-24T01:09:13Z by runner ead721be92bb (actions).
+Updated 2026-11-24T01:11:51Z by runner ead721be92bb (actions).
 
-**Building: T813 in progress since 00:33Z; 644 of 779 done; week 87% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T524 in progress since 01:11Z; 644 of 779 done; week 87% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 644 of 779 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T813 claimed 00:33Z, lease until 03:33Z; lane 5: T222 claimed 00:37Z, lease until 03:37Z
-- **Week:** 87% used, 18.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:04Z, 4 min before this update
+- **Lane:** lane 1: T524 claimed 01:11Z, lease until 04:11Z; lane 2: T813 claimed 00:33Z, lease until 03:33Z; lane 5: T222 claimed 00:37Z, lease until 03:37Z
+- **Week:** 87% used, 17.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 01:09Z, 2 min before this update
 - **Keeper:** last ran 01:04Z, next wake 03:36Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 46% of the context window, over its 45% limit
+- PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 47% of the context window, over its 45% limit
 - Strict plan check red: 52 problem(s) on tasks still to run (+538 on DONE tasks); first: T518: stored context_pct 17% but it measures 21%; regenerate
 
 ## Last 24 hours
@@ -70,7 +70,6 @@ Updated 2026-11-24T01:09:13Z by runner ead721be92bb (actions).
 | T645 | intake and messaging: the web chat honours an opt-out word,  | done | 2 | 2 h 6 min | 01:58Z | PLAN GAP: app/site/src/chat.rs:340 (owned by T593, then T646 and T649; T593 is not merged yet) calls `chat_message(db, & |
 | T837 | runner (harness): the keeper judges work with the real stage | done | 1 | 41 min | 01:47Z |  |
 | T712 | server and portals: the owner portal lists PROBLEM reports w | resync | 1 | 90 min | 01:40Z |  |
-| T832 | ci (harness): the Checks job allows 60 minutes, so a full na | done | 1 | 79 min | 01:09Z |  |
 
 ### Plan and harness merges on main
 - 23:24Z Plan: token efficiency and phase-2 pre-flight (D-5676); smoke throughput harness task T843, T836 unblocked (D-5682) (#1412)
@@ -113,7 +112,7 @@ Updated 2026-11-24T01:09:13Z by runner ead721be92bb (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-24T00:35:51Z (week)): week: 175.3M used, 18.7M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T21:45:47Z.
+- Pacing (session_reading 2026-11-24T01:03:26Z (week)): week: 176.4M used, 17.6M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T22:26:00Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -128,7 +127,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T524 (lease until 2026-11-24T04:11:37Z)
 - lane 2: T813 (lease until 2026-11-24T03:33:53Z)
 - lane 5: T222 (lease until 2026-11-24T03:37:12Z)
 
