@@ -60693,8 +60693,8 @@
     "T544",
     "T810"
    ],
-   "status": "MERGE_PENDING",
-   "attempts": 0,
+   "status": "QUEUED",
+   "attempts": 1,
    "slug": "business-get-help-link",
    "type": "build",
    "stage": "5",
@@ -60713,13 +60713,54 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 49,
      "head_sha": "48417ba3bd67e925b5776627bc9670b9ef146d5f",
-     "pr": null,
-     "checks": null,
+     "pr": 1435,
+     "checks": [
+      {
+       "name": "Ci",
+       "conclusion": "failure"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-24T05:58:38Z",
      "ended_at": "2026-11-24T07:32:16Z",
-     "result": "MERGE_PENDING",
+     "result": "check_failed",
      "usage": {
       "worker": {
        "tokens": 1520947,
@@ -60768,7 +60809,8 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "merge_turn_since": "2026-11-24T08:08:59Z"
+   "merge_turn_since": "2026-11-24T08:08:59Z",
+   "last_failure": "Ci: failure; E2e: failure\nE2e failed at step: The journeys (npx playwright test tests/e2e)\n{\"timestamp\":\"2026-11-24T08:18:09.048778Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":3276,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-24T08:18:09.051027Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":3277,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-24T08:18:09.051073Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":3278,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-24T08:18:09.051912Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":3279,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-24T08:18:09.054130Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":3280,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-24T08:18:09.055642Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":3281,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n  \u2718  129 [late] \u203a tests/e2e/j3_operator.spec.ts:24:1 \u203a J3 TD-TXT-15: sign-in, pause, refund, fee mode, safe mode, audit log, with the closing checks, launch channel web-and-email (3.3m)\n##[error]  1) [late] \u203a tests/e2e/j3_operator.spec.ts:24:1 \u203a J3 TD-TXT-15: sign-in, pause, refund, fee mode, safe mode, audit log, with the closing checks, launch channel web-and-email \u203a 5. High alert,\nCi"
   },
   {
    "id": "T409",
@@ -114948,7 +114990,8 @@
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "merge_turn_since": "2026-11-24T08:42:46Z"
   },
   {
    "id": "T805",
@@ -126378,7 +126421,7 @@
    }
   }
  },
- "updated_at": "2026-11-24T08:37:11Z",
+ "updated_at": "2026-11-24T08:43:07Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -126476,7 +126519,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "10a688ebac37ac3ff0c3e792069cb47d7a14b34f",
+ "runner_sha": "9c95956462af23f2968d71e0f2fec7bffa10a514",
  "starter": "actions",
  "smoke_runs": [
   {
@@ -128819,7 +128862,7 @@
    ]
   },
   "4": {
-   "count": 0,
+   "count": 1,
    "last": [
     {
      "at": "2026-11-14T12:08:19Z",
@@ -128832,6 +128875,10 @@
     {
      "at": "2026-11-22T04:46:55Z",
      "why": "T616 check_failed: Ci: failure; Coverage: failure\nCoverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)\ntest td_priv_21_sign_in_by_texted_code_and_the_same_answer_for_any_number ... ok\ntest td_"
+    },
+    {
+     "at": "2026-11-24T08:42:46Z",
+     "why": "T410 check_failed: Ci: failure; E2e: failure\nE2e failed at step: The journeys (npx playwright test tests/e2e)\n{\"timestamp\":\"2026-11-24T08:18:09.048778Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":3276,\"kind\":\"ops.offdb_"
     }
    ]
   },

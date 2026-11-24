@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-24T08:37:11Z by runner 10a688ebac37 (actions).
+Updated 2026-11-24T08:43:07Z by runner 9c95956462af (actions).
 
 **Building: T841 in progress since 08:11Z; 655 of 780 done; week 90% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-24T08:37:11Z by runner 10a688ebac37 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T841 claimed 08:11Z, lease until 11:11Z; lane 5: T814 claimed 07:37Z, lease until 10:37Z
 - **Week:** 90% used, 10.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:36Z, 0 min before this update
+- **Last run:** 08:37Z, 5 min before this update
 - **Keeper:** last ran 08:37Z, next wake 08:57Z
 
 ## Needs attention
@@ -21,13 +21,13 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 47% of the context window, over its 45% limit
-- Strict plan check red: 60 problem(s) on tasks still to run (+558 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 55 problem(s) on tasks still to run (+549 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T804 | server and portals: a delete or copy request made in the por | MERGE_PENDING | 2 | 63 min | 08:35Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
-| T410 | portals: every signed-in business page shows the Get help li | MERGE_PENDING | 1 | 93 min | 07:32Z |  |
+| T410 | portals: every signed-in business page shows the Get help li | check_failed | 1 | 93 min | 07:32Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-24T |
 | T656 | site: a failed submit on the /request chat shows a focused e | done | 2 | 2 h 1 min | 07:12Z | Reviewer after the findings round still FINDINGS (head 18fdb4a27): app/site/templates/request.html lines 7-10: header co |
 | T804 | server and portals: a delete or copy request made in the por | check_failed | 1 | 69 min | 06:37Z |  |
 | T779 | ops, server and portals: alerts that do not push show in the | done | 1 | 83 min | 06:27Z |  |
@@ -88,7 +88,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 ## Progress (requirements verified)
 
 **Requirements verified:** 434 of 735 (59.0%) · partial 289 · unstarted 12
-**Tasks merged (throughput only):** 655 of 779
+**Tasks merged (throughput only):** 655 of 780
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
