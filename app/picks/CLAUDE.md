@@ -14,7 +14,7 @@ The layer-6 crate that takes the homeowner's pick and carries it to the business
 - Every new pick stores exactly one fee in its own transaction, and a pick whose fee can't be fixed stores nothing: `tests/integration/tests/fee_fixed_at_pick.rs` (TD-FEE-48).
 - A page re-pick replaces the waiting one with its notice and no charge; the waiting quote again stores nothing; Guarded by `tests/integration/tests/page_pick.rs`. More: `(never 9)` in NOTES.md.
 - The window, its stale-timer fence, a repeated send restarting nothing, a held notice expiring a dead pick and the license checks: `tests/integration/tests/confirm_window.rs::td_pick_09_*`; More: `(never 10)` in NOTES.md.
-- Each other quoter told once, never an amount or a name; the 90% and 110% edges; Guarded by `tests/integration/tests/pick_aftermath.rs`. More: `(never 11)` in NOTES.md.
+- Each other quoter told once, never an amount or a name; Guarded by `tests/integration/tests/pick_aftermath.rs`. More: `(never 11)` in NOTES.md.
 - The released view: the refusal rule over every status, seat and pairing, and on the database (crate-private `viewable`: owner and billing member only, the bound contact and email choice, a removed or demoted member refused) in `src/tests/released_view.rs`; More: `(never 12)` in NOTES.md.
 - PICK-018, PRIV-001, D-3457: `picks.contact_choice` holds the choice word and IDs only, never an email; a pick with no row releases as a masked call: `tests/integration/tests/pick_contact_choice.rs`.
 - Details only on a proof, once, never the phone, no detail in the notice: `src/tests/prop_release_only_paid.rs`, `tests/security/tests/no_phone_released.rs`. Never add `Field::Phone` to a release field list or a phone field to `ReleaseView`. More: `(never 14)` in NOTES.md.
