@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-24T00:34:32Z by runner 3bdc24aca9ac (actions).
+Updated 2026-11-24T00:35:01Z by runner cc72b2c6067c (actions).
 
 **Building: T737 in progress since 22:49Z; 643 of 779 done; week 86% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,14 +8,14 @@ Updated 2026-11-24T00:34:32Z by runner 3bdc24aca9ac (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T737 claimed 22:49Z, lease until 01:49Z; lane 2: T813 claimed 00:33Z, lease until 03:33Z; lane 3: T738 claimed 23:08Z, lease until 02:08Z; lane 4: T836 claimed 00:30Z, lease until 03:30Z
 - **Week:** 86% used, 17.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:31Z, 2 min before this update
+- **Last run:** 00:34Z, 0 min before this update
 - **Keeper:** last ran 23:59Z, next wake 00:19Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: dependency T716 is DONE but its owned file tests/integration/tests/intake_order_trade_questions.rs is not on main; T723: dependency T716 is DONE but its owned file tests/integration/tests/intake_boundary_count.rs is not on main
-- Strict plan check red: 40 problem(s) on tasks still to run (+533 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
+- Strict plan check red: 41 problem(s) on tasks still to run (+533 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -83,7 +83,7 @@ Updated 2026-11-24T00:34:32Z by runner 3bdc24aca9ac (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 428 of 735 (58.2%) · partial 294 · unstarted 13
-**Tasks merged (throughput only):** 643 of 779
+**Tasks merged (throughput only):** 643 of 778
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
