@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T23:20:20Z by runner 7992274bcd88 (actions).
+Updated 2026-11-24T23:22:20Z by runner 7992274bcd88 (actions).
 
-**Building: T820 in progress since 23:01Z; 670 of 781 done; week 96% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T820 in progress since 23:01Z; 671 of 781 done; week 96% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 670 of 781 build tasks (owner gates not counted)
+- **Tasks done:** 671 of 781 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T820 claimed 23:01Z, lease until 02:01Z; lane 5: T123 claimed 23:07Z, lease until 02:07Z
 - **Week:** 96% used, 0.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:20Z, 0 min before this update
+- **Last run:** 23:20Z, 1 min before this update
 - **Keeper:** last ran 23:20Z, next wake 02:04Z
 
 ## Needs attention
@@ -23,12 +23,12 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 48% of the context window, over its 45% limit
-- Strict plan check red: 68 problem(s) on tasks still to run (+575 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 67 problem(s) on tasks still to run (+576 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T826 | site: Spanish page fixes (ranking line, launch offer, city l | MERGE_PENDING | 2 | 2 h 30 min | 22:57Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
+| T826 | site: Spanish page fixes (ranking line, launch offer, city l | done | 2 | 2 h 30 min | 22:57Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T815 | portals: the owner portal serves the weekly digest view at / | done | 2 | 89 min | 21:22Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T839 | intake, privacy and messaging: an under-13 purge also delete | done | 1 | 93 min | 20:15Z |  |
 | T820 | server and portals: "Download my data" also holds withdrawn  | check_failed | 1 | 71 min | 19:49Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
@@ -87,7 +87,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 ## Progress (requirements verified)
 
 **Requirements verified:** 483 of 735 (65.7%) · partial 244 · unstarted 8
-**Tasks merged (throughput only):** 670 of 781
+**Tasks merged (throughput only):** 671 of 781
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -123,7 +123,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 313 of 353 done
+- stage 5: 314 of 353 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
