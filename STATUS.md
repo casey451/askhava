@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-25T01:31:58Z by runner 7f1ca1d636bc (actions).
+Updated 2026-11-25T01:33:44Z by runner c4d284e73197 (actions).
 
 **Building: T123 in progress since 00:07Z; 671 of 781 done; week 97% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-25T01:31:58Z by runner 7f1ca1d636bc (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 5: T123 claimed 00:07Z, lease until 03:07Z
 - **Week:** 97% used, 0.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:31Z, 0 min before this update
+- **Last run:** 01:32Z, 1 min before this update
 - **Keeper:** last ran 01:31Z, next wake 03:09Z
 
 ## Needs attention
@@ -23,7 +23,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 48% of the context window, over its 45% limit
-- Strict plan check red: 63 problem(s) on tasks still to run (+576 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 67 problem(s) on tasks still to run (+576 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -84,7 +84,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 ## Progress (requirements verified)
 
 **Requirements verified:** 483 of 735 (65.7%) · partial 244 · unstarted 8
-**Tasks merged (throughput only):** 671 of 780
+**Tasks merged (throughput only):** 671 of 781
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
