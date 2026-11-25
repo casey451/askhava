@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-25T01:39:48Z by runner d348adc236e1 (actions).
+Updated 2026-11-25T01:47:05Z by runner 0f6466a20c23 (actions).
 
-**Waiting for tokens until 17:00Z; 671 of 781 done; week 97% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Waiting for tokens until 17:00Z; 672 of 781 done; week 97% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 671 of 781 build tasks (owner gates not counted)
+- **Tasks done:** 672 of 781 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** idle since 01:33Z (no task in progress)
+- **Lane:** idle since 01:43Z (no task in progress)
 - **Week:** 97% used, 0.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:39Z, 0 min before this update
+- **Last run:** 01:40Z, 6 min before this update
 - **Keeper:** last ran 01:39Z, next wake 07:19Z
 
 ## Needs attention
@@ -28,7 +28,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T123 | docs/owner-guide.md: how everything works, daily and weekly  | MERGE_PENDING | 2 | 86 min | 01:33Z | Reviewer after the findings round (head abc739335b85acdcead6902a51518ce39a82a4bd) still ended FINDINGS: / 1. docs/owner- |
+| T123 | docs/owner-guide.md: how everything works, daily and weekly  | done | 2 | 86 min | 01:33Z | Reviewer after the findings round (head abc739335b85acdcead6902a51518ce39a82a4bd) still ended FINDINGS: / 1. docs/owner- |
 | T820 | server and portals: "Download my data" also holds withdrawn  | QUEUED | 2 | 2 h 28 min | 01:30Z | Hand-in time passed. Worker added unit tests in app/portals/src/data_download.rs (commit f4a102dca); portals-only covera |
 | T123 | docs/owner-guide.md: how everything works, daily and weekly  | QUEUED | 1 | 53 min | 00:00Z |  |
 | T826 | site: Spanish page fixes (ranking line, launch offer, city l | done | 2 | 2 h 30 min | 22:57Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
@@ -85,7 +85,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 ## Progress (requirements verified)
 
 **Requirements verified:** 483 of 735 (65.7%) · partial 244 · unstarted 8
-**Tasks merged (throughput only):** 671 of 781
+**Tasks merged (throughput only):** 672 of 781
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -121,7 +121,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 314 of 353 done
+- stage 5: 315 of 353 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
