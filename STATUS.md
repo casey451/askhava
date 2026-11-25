@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-25T18:11:56Z by runner 0f6466a20c23 (actions).
+Updated 2026-11-25T18:12:42Z by runner 0f6466a20c23 (actions).
 
 **Waiting for tokens until 19:21Z; 672 of 781 done; week 97% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,9 +8,8 @@ Updated 2026-11-25T18:11:56Z by runner 0f6466a20c23 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** idle since 01:43Z (no task in progress)
 - **Week:** 97% used, -79.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:49Z, 12 h 22 min before this update
+- **Last run:** 18:12Z, 0 min before this update
 - **Keeper:** last ran 05:48Z, next wake 11:28Z
-- **WARNING:** no runner cycle logged for over 90 minutes before this update
 
 ## Needs attention
 - BLOCKED T222: Reviewer over 457819c6bc470ff6f69d271d7ab023fb3c0c25eb ended REVIEW-VERDICT: FINDINGS (hand_in_by too close for a fix round):
@@ -75,7 +74,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (ledger; quota_probe: no token: CLAUDE_CODE_OAUTH_TOKEN unset and no credentials file): week: 273.4M used, -79.4M left, resets 2026-11-26T19:21:06Z; projected finish 2026-12-08T14:33:22Z; waiting until 2026-11-26T19:21:06Z.
+- Pacing (ledger; quota_probe: no token: CLAUDE_CODE_OAUTH_TOKEN unset and no credentials file): week: 273.4M used, -79.4M left, resets 2026-11-26T19:21:06Z; projected finish 2026-12-08T14:34:06Z; waiting until 2026-11-26T19:21:06Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
