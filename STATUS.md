@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T23:35:00Z by runner d348adc236e1 (actions).
+Updated 2026-11-25T00:00:30Z by runner abc739335b85 (actions).
 
 **Building: T820 in progress since 23:01Z; 671 of 781 done; week 96% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 671 of 781 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T820 claimed 23:01Z, lease until 02:01Z; lane 5: T123 claimed 23:07Z, lease until 02:07Z
+- **Lane:** lane 3: T820 claimed 23:01Z, lease until 02:01Z
 - **Week:** 96% used, 0.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:34Z, 0 min before this update
+- **Last run:** 23:35Z, 25 min before this update
 - **Keeper:** last ran 23:34Z, next wake 02:03Z
 
 ## Needs attention
@@ -28,6 +28,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T123 | docs/owner-guide.md: how everything works, daily and weekly  | QUEUED | 1 | 53 min | 00:00Z | Reviewer after the findings round (head abc739335b85acdcead6902a51518ce39a82a4bd) still ended FINDINGS: / 1. docs/owner- |
 | T826 | site: Spanish page fixes (ranking line, launch offer, city l | done | 2 | 2 h 30 min | 22:57Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T815 | portals: the owner portal serves the weekly digest view at / | done | 2 | 89 min | 21:22Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T839 | intake, privacy and messaging: an under-13 purge also delete | done | 1 | 93 min | 20:15Z |  |
@@ -75,7 +76,6 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 | T836 | ci and runner workflow (harness): the backup-runner gate ski | done | 2 | 25 min | 00:55Z | PLAN GAP: tests/test_runner_five_lanes.py:176 (test_no_workflow_a_hand_in_starts_cancels_another_lanes_run_when_five_han |
 | T737 | portals, ai and server: the owner records the AI provider's  | done | 2 | 112 min | 00:42Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T738 | portals and server: owner settings refusals show an accessib | done | 1 | 85 min | 00:34Z |  |
-| T716 | intake: the dispatcher's trade questions at step 5: "Which f | done | 4 | 114 min | 23:57Z | PLAN GAP: outside ownership: app/intake/src/conversation.rs (purge_child, ~348-362), app/intake/src/models.rs (purge_req |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: harness task T847 for the J3 step-5 race (D-5809); Sonnet for T612 (D-5810); hand-off, ChatGPT queue and plan drafts (#1458)
@@ -131,7 +131,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 3: T820 (lease until 2026-11-25T02:01:19Z)
-- lane 5: T123 (lease until 2026-11-25T02:07:20Z)
 
 ## Last usage reading
-- {"task": "T826", "at": "2026-11-24T22:57:25Z", "input_tokens": 99, "cache_creation_input_tokens": 92372, "output_tokens": 16731, "cache_read_input_tokens": 1445825}
+- {"task": "T123", "at": "2026-11-25T00:00:25Z", "cache_creation_input_tokens": 153923, "cache_read_input_tokens": 1746352, "input_tokens": 117, "output_tokens": 22101}
