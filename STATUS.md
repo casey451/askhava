@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-25T02:17:23Z by runner 0f6466a20c23 (actions).
+Updated 2026-11-25T02:52:15Z by runner 0f6466a20c23 (actions).
 
 **Waiting for tokens until 17:00Z; 672 of 781 done; week 97% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-25T02:17:23Z by runner 0f6466a20c23 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** idle since 01:43Z (no task in progress)
 - **Week:** 97% used, 0.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:17Z, 0 min before this update
+- **Last run:** 02:17Z, 34 min before this update
 - **Keeper:** last ran 02:17Z, next wake 07:57Z
 
 ## Needs attention
@@ -72,9 +72,6 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 | T757 | privacy and ops: "Delete my data" also deletes her kept mess | done | 1 | 43 min | 03:54Z |  |
 | T524 | portals and server: the weekly digest and the owner-portal f | done | 1 | 2 h 24 min | 03:35Z |  |
 | T222 | Journeys J1 and J2, the full variants: web chat, photos, que | BLOCKED | 3 | 2 h 22 min | 03:00Z | Reviewer after the fix round still ended REVIEW-VERDICT: FINDINGS over 0aedbd3769e83a983d24d694c7abe05f8773a57a: / 1. do |
-| T649 | intake, site and server: after the code, the web chat's name | done | 2 | 62 min | 02:40Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
-| T119 | Journey J4 (vendor outage), with closing checks | BLOCKED | 1 | 36 min | 02:36Z | PLAN GAP: outside ownership: tests/e2e/webserver.ts / keyedEnv (webserver.ts:143-177) sets no ASKHAVA_HOMEOWNER_NUMBER;  |
-| T813 | businesses and portals (harness): a step-up counts only in t | done | 1 | 59 min | 02:35Z |  |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: harness task T847 for the J3 step-5 race (D-5809); Sonnet for T612 (D-5810); hand-off, ChatGPT queue and plan drafts (#1458)
@@ -113,7 +110,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-25T01:39:11Z (week)): week: 194.0M used, 0k left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T22:11:18Z; waiting until 2026-11-26T17:00:00Z.
+- Pacing (session_reading 2026-11-25T02:16:39Z (week)): week: 194.0M used, 0k left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T23:13:42Z; waiting until 2026-11-26T17:00:00Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
