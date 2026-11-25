@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-25T00:25:02Z by runner d348adc236e1 (actions).
+Updated 2026-11-25T01:30:17Z by runner f4a102dca9cf (actions).
 
-**Building: T820 in progress since 23:01Z; 671 of 781 done; week 96% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T123 in progress since 00:07Z; 671 of 781 done; week 96% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 671 of 781 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T820 claimed 23:01Z, lease until 02:01Z; lane 5: T123 claimed 00:07Z, lease until 03:07Z
+- **Lane:** lane 5: T123 claimed 00:07Z, lease until 03:07Z
 - **Week:** 96% used, 0.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:24Z, 0 min before this update
+- **Last run:** 00:25Z, 64 min before this update
 - **Keeper:** last ran 00:25Z, next wake 02:04Z
 
 ## Needs attention
@@ -23,16 +23,17 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 48% of the context window, over its 45% limit
-- Strict plan check red: 67 problem(s) on tasks still to run (+576 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 69 problem(s) on tasks still to run (+578 on DONE tasks); first: T402: stored context_pct 29% but it measures 34%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T820 | server and portals: "Download my data" also holds withdrawn  | QUEUED | 2 | 2 h 28 min | 01:30Z | Hand-in time passed. Worker added unit tests in app/portals/src/data_download.rs (commit f4a102dca); portals-only covera |
 | T123 | docs/owner-guide.md: how everything works, daily and weekly  | QUEUED | 1 | 53 min | 00:00Z | Reviewer after the findings round (head abc739335b85acdcead6902a51518ce39a82a4bd) still ended FINDINGS: / 1. docs/owner- |
 | T826 | site: Spanish page fixes (ranking line, launch offer, city l | done | 2 | 2 h 30 min | 22:57Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T815 | portals: the owner portal serves the weekly digest view at / | done | 2 | 89 min | 21:22Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T839 | intake, privacy and messaging: an under-13 purge also delete | done | 1 | 93 min | 20:15Z |  |
-| T820 | server and portals: "Download my data" also holds withdrawn  | check_failed | 1 | 71 min | 19:49Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
+| T820 | server and portals: "Download my data" also holds withdrawn  | check_failed | 1 | 71 min | 19:49Z |  |
 | T815 | portals: the owner portal serves the weekly digest view at / | check_failed | 1 | 81 min | 19:28Z |  |
 | T846 | portals and a11y tests (harness): the quote card a "Go back" | done | 1 | 29 min | 19:15Z |  |
 | T826 | site: Spanish page fixes (ranking line, launch offer, city l | check_failed | 1 | 43 min | 18:56Z |  |
@@ -73,9 +74,6 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 | T649 | intake, site and server: after the code, the web chat's name | done | 2 | 62 min | 02:40Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T119 | Journey J4 (vendor outage), with closing checks | BLOCKED | 1 | 36 min | 02:36Z | PLAN GAP: outside ownership: tests/e2e/webserver.ts / keyedEnv (webserver.ts:143-177) sets no ASKHAVA_HOMEOWNER_NUMBER;  |
 | T813 | businesses and portals (harness): a step-up counts only in t | done | 1 | 59 min | 02:35Z |  |
-| T836 | ci and runner workflow (harness): the backup-runner gate ski | done | 2 | 25 min | 00:55Z | PLAN GAP: tests/test_runner_five_lanes.py:176 (test_no_workflow_a_hand_in_starts_cancels_another_lanes_run_when_five_han |
-| T737 | portals, ai and server: the owner records the AI provider's  | done | 2 | 112 min | 00:42Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
-| T738 | portals and server: owner settings refusals show an accessib | done | 1 | 85 min | 00:34Z |  |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: harness task T847 for the J3 step-5 race (D-5809); Sonnet for T612 (D-5810); hand-off, ChatGPT queue and plan drafts (#1458)
@@ -130,8 +128,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 3: T820 (lease until 2026-11-25T02:01:19Z)
 - lane 5: T123 (lease until 2026-11-25T03:07:34Z)
 
 ## Last usage reading
-- {"task": "T123", "at": "2026-11-25T00:00:25Z", "cache_creation_input_tokens": 153923, "cache_read_input_tokens": 1746352, "input_tokens": 117, "output_tokens": 22101}
+- {"task": "T820", "at": "2026-11-25T01:30:16Z", "output_tokens": 19026, "cache_creation_input_tokens": 90627, "input_tokens": 130, "cache_read_input_tokens": 2443231}
