@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-25T02:54:19Z by runner 0f6466a20c23 (actions).
+Updated 2026-11-25T05:44:28Z by runner 0f6466a20c23 (actions).
 
 **Waiting for tokens until 17:00Z; 672 of 781 done; week 97% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,9 @@ Updated 2026-11-25T02:54:19Z by runner 0f6466a20c23 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** idle since 01:43Z (no task in progress)
 - **Week:** 97% used, 0.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:54Z, 0 min before this update
+- **Last run:** 02:54Z, 2 h 49 min before this update
 - **Keeper:** last ran 02:54Z, next wake 08:34Z
+- **WARNING:** no runner cycle logged for over 90 minutes before this update
 
 ## Needs attention
 - BLOCKED T222: Reviewer over 457819c6bc470ff6f69d271d7ab023fb3c0c25eb ended REVIEW-VERDICT: FINDINGS (hand_in_by too close for a fix round):
@@ -65,13 +66,6 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 | T656 | site: a failed submit on the /request chat shows a focused e | done | 2 | 2 h 1 min | 07:12Z | Reviewer after the findings round still FINDINGS (head 18fdb4a27): app/site/templates/request.html lines 7-10: header co |
 | T804 | server and portals: a delete or copy request made in the por | check_failed | 1 | 69 min | 06:37Z |  |
 | T779 | ops, server and portals: alerts that do not push show in the | done | 1 | 83 min | 06:27Z |  |
-| T728 | intake: a homeowner's "<n> YES" text from her phone picks th | done | 1 | 91 min | 05:32Z |  |
-| T676 | tests (harness): J1 runs the real intake conversation instea | done | 1 | 2 h 44 min | 05:29Z |  |
-| T656 | site: a failed submit on the /request chat shows a focused e | QUEUED | 1 | 17 min | 04:56Z |  |
-| T544 | portals and server: the business team page with its role-cha | done | 1 | 102 min | 04:50Z |  |
-| T757 | privacy and ops: "Delete my data" also deletes her kept mess | done | 1 | 43 min | 03:54Z |  |
-| T524 | portals and server: the weekly digest and the owner-portal f | done | 1 | 2 h 24 min | 03:35Z |  |
-| T222 | Journeys J1 and J2, the full variants: web chat, photos, que | BLOCKED | 3 | 2 h 22 min | 03:00Z | Reviewer after the fix round still ended REVIEW-VERDICT: FINDINGS over 0aedbd3769e83a983d24d694c7abe05f8773a57a: / 1. do |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: harness task T847 for the J3 step-5 race (D-5809); Sonnet for T612 (D-5810); hand-off, ChatGPT queue and plan drafts (#1458)
@@ -110,7 +104,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-25T02:16:39Z (week)): week: 194.0M used, 0k left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T23:14:24Z; waiting until 2026-11-26T17:00:00Z.
+- Pacing (session_reading 2026-11-25T02:53:38Z (week)): week: 194.0M used, 0k left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-08T02:05:53Z; waiting until 2026-11-26T17:00:00Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
