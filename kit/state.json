@@ -121415,7 +121415,7 @@
    "cache_read_input_tokens": 2165304,
    "output_tokens": 23531
   },
-  "source": "session_reading 2026-11-25T01:35:13Z (week)",
+  "source": "session_reading 2026-11-25T01:39:11Z (week)",
   "by_task": {
    "FIX-MAIN": {
     "estimated_bytes": 3756447,
@@ -129497,7 +129497,7 @@
    },
    "T820": {
     "estimated_bytes": 503690,
-    "estimated_tokens": 1448402,
+    "estimated_tokens": 1446593,
     "usage_counting": "message_id",
     "cache_creation_input_tokens": 385130,
     "output_tokens": 108375,
@@ -129602,7 +129602,7 @@
    }
   }
  },
- "updated_at": "2026-11-25T01:47:05Z",
+ "updated_at": "2026-11-25T01:49:56Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -129703,13 +129703,6 @@
  "runner_sha": "0f6466a20c238af24aab3da3253b59d07616101f",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "7992274bcd8830421e01881d83380e182a60aaf7",
-   "ok": true,
-   "at": "2026-11-24T23:01:19Z",
-   "why": "start routine (background)",
-   "seconds": 1479
-  },
   {
    "sha": "7992274bcd8830421e01881d83380e182a60aaf7",
    "ok": true,
@@ -129857,12 +129850,20 @@
    "why": "start routine (ancestry reuse of 7992274bcd88, 2026-11-24T23:01:19Z)",
    "reused": "2026-11-24T23:01:19Z",
    "base": "7992274bcd8830421e01881d83380e182a60aaf7"
+  },
+  {
+   "sha": "0f6466a20c238af24aab3da3253b59d07616101f",
+   "ok": true,
+   "at": "2026-11-25T01:49:43Z",
+   "why": "start routine (ancestry reuse of 7992274bcd88, 2026-11-24T23:01:19Z)",
+   "reused": "2026-11-24T23:01:19Z",
+   "base": "7992274bcd8830421e01881d83380e182a60aaf7"
   }
  ],
  "main_red": null,
  "pacing": {
-  "last": "T820 estimated 1.4M tokens (calibrated); week has 0k left (no five-hour budget, D-3056) (session_reading 2026-11-25T01:35:13Z (week)); waiting until 2026-11-26T17:00:00Z",
-  "at": "2026-11-25T01:38:26Z",
+  "last": "T820 estimated 1.4M tokens (calibrated); week has 0k left (no five-hour budget, D-3056) (session_reading 2026-11-25T01:39:11Z (week)); waiting until 2026-11-26T17:00:00Z",
+  "at": "2026-11-25T01:49:43Z",
   "decision": "wait",
   "waiting_until": "2026-11-26T17:00:00Z",
   "standing": {
@@ -129873,8 +129874,8 @@
     "resets_at": "2026-11-26T17:00:00Z"
    }
   },
-  "remaining_estimate": 357012156,
-  "projected_finish": "2026-12-07T22:48:20Z"
+  "remaining_estimate": 356082102,
+  "projected_finish": "2026-12-07T22:11:18Z"
  },
  "main_red_history": [
   {
