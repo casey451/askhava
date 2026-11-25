@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-25T01:33:44Z by runner c4d284e73197 (actions).
+Updated 2026-11-25T01:34:28Z by runner c4d284e73197 (actions).
 
-**Building: T123 in progress since 00:07Z; 671 of 781 done; week 97% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Waiting for tokens until 17:00Z; 671 of 781 done; week 97% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 671 of 781 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 5: T123 claimed 00:07Z, lease until 03:07Z
+- **Lane:** idle since 01:33Z (no task in progress)
 - **Week:** 97% used, 0.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:32Z, 1 min before this update
+- **Last run:** 01:32Z, 2 min before this update
 - **Keeper:** last ran 01:31Z, next wake 03:09Z
 
 ## Needs attention
@@ -28,8 +28,9 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T123 | docs/owner-guide.md: how everything works, daily and weekly  | MERGE_PENDING | 2 | 86 min | 01:33Z | Reviewer after the findings round (head abc739335b85acdcead6902a51518ce39a82a4bd) still ended FINDINGS: / 1. docs/owner- |
 | T820 | server and portals: "Download my data" also holds withdrawn  | QUEUED | 2 | 2 h 28 min | 01:30Z | Hand-in time passed. Worker added unit tests in app/portals/src/data_download.rs (commit f4a102dca); portals-only covera |
-| T123 | docs/owner-guide.md: how everything works, daily and weekly  | QUEUED | 1 | 53 min | 00:00Z | Reviewer after the findings round (head abc739335b85acdcead6902a51518ce39a82a4bd) still ended FINDINGS: / 1. docs/owner- |
+| T123 | docs/owner-guide.md: how everything works, daily and weekly  | QUEUED | 1 | 53 min | 00:00Z |  |
 | T826 | site: Spanish page fixes (ranking line, launch offer, city l | done | 2 | 2 h 30 min | 22:57Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T815 | portals: the owner portal serves the weekly digest view at / | done | 2 | 89 min | 21:22Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T839 | intake, privacy and messaging: an under-13 purge also delete | done | 1 | 93 min | 20:15Z |  |
@@ -128,7 +129,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 5: T123 (lease until 2026-11-25T03:07:34Z)
 
 ## Last usage reading
-- {"task": "T820", "at": "2026-11-25T01:30:16Z", "output_tokens": 19026, "cache_creation_input_tokens": 90627, "input_tokens": 130, "cache_read_input_tokens": 2443231}
+- {"task": "T123", "at": "2026-11-25T01:33:41Z", "cache_creation_input_tokens": 98373, "input_tokens": 128, "cache_read_input_tokens": 2165304, "output_tokens": 23531}
