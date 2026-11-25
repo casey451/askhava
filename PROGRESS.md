@@ -11097,3 +11097,4 @@
 - 2026-11-25T00:01:11Z runner abc739335b85 (actions): {}
 - 2026-11-25T00:01:50Z runner 7992274bcd88 (actions): {}
 - 2026-11-25T00:07:45Z runner d348adc236e1 (actions): {"T123": "QUEUED -> IN_PROGRESS"}; T123 estimated 518k tokens (calibrated); week has 551k left (no five-hour budget, D-3056) after 1.4M still running in another lane (session_reading 2026-11-25T00:01:10Z (week)); claimed
+- 2026-11-25T00:08:19Z runner d348adc236e1 (actions): {}
