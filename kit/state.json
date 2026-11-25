@@ -121300,7 +121300,7 @@
    "input_tokens": 117,
    "output_tokens": 22101
   },
-  "source": "session_reading 2026-11-25T00:16:33Z (week)",
+  "source": "session_reading 2026-11-25T00:22:15Z (week)",
   "by_task": {
    "FIX-MAIN": {
     "estimated_bytes": 3756447,
@@ -129487,7 +129487,7 @@
    }
   }
  },
- "updated_at": "2026-11-25T00:23:27Z",
+ "updated_at": "2026-11-25T00:23:50Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -129588,14 +129588,6 @@
  "runner_sha": "d348adc236e199a0fce34611766d34771b5bafcb",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "7f1ca1d636bc36211b887845a1bcbed30f494e94",
-   "ok": true,
-   "at": "2026-11-24T20:59:35Z",
-   "why": "start routine (ancestry reuse of 4b756acb549d, 2026-11-24T18:19:45Z)",
-   "reused": "2026-11-24T18:19:45Z",
-   "base": "4b756acb549d5d7549a83cdc5c018e333f8fb9b7"
-  },
   {
    "sha": "7f1ca1d636bc36211b887845a1bcbed30f494e94",
    "ok": false,
@@ -129742,12 +129734,20 @@
    "why": "start routine (ancestry reuse of 7992274bcd88, 2026-11-24T23:01:19Z)",
    "reused": "2026-11-24T23:01:19Z",
    "base": "7992274bcd8830421e01881d83380e182a60aaf7"
+  },
+  {
+   "sha": "d348adc236e199a0fce34611766d34771b5bafcb",
+   "ok": true,
+   "at": "2026-11-25T00:23:40Z",
+   "why": "start routine (ancestry reuse of 7992274bcd88, 2026-11-24T23:01:19Z)",
+   "reused": "2026-11-24T23:01:19Z",
+   "base": "7992274bcd8830421e01881d83380e182a60aaf7"
   }
  ],
  "main_red": null,
  "pacing": {
-  "last": "T612 estimated 648k tokens (calibrated); week has 33k left (no five-hour budget, D-3056) after 2.0M still running in another lane (session_reading 2026-11-25T00:16:33Z (week)); waiting until 2026-11-26T17:00:00Z",
-  "at": "2026-11-25T00:21:52Z",
+  "last": "T612 estimated 648k tokens (calibrated); week has 33k left (no five-hour budget, D-3056) after 2.0M still running in another lane (session_reading 2026-11-25T00:22:15Z (week)); waiting until 2026-11-26T17:00:00Z",
+  "at": "2026-11-25T00:23:40Z",
   "decision": "wait",
   "waiting_until": "2026-11-26T17:00:00Z",
   "standing": {
@@ -129759,7 +129759,7 @@
    }
   },
   "remaining_estimate": 357012156,
-  "projected_finish": "2026-12-07T21:31:47Z"
+  "projected_finish": "2026-12-07T21:33:35Z"
  },
  "main_red_history": [
   {
