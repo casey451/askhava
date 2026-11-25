@@ -5,17 +5,12 @@
   "2": null,
   "3": null,
   "4": null,
-  "5": {
-   "task": "T123",
-   "session": "actions-45506944728",
-   "expires": "2026-11-25T03:07:34Z",
-   "lane": "5"
-  },
+  "5": null,
   "6": null,
   "7": null,
   "fix": null
  },
- "seq": 11066,
+ "seq": 11067,
  "runner_sha": "c4d284e73197ea32a5ec8469e477de977a5d8205",
  "starter": "actions"
 }
