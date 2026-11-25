@@ -62,3 +62,36 @@ Nothing here applies now, during the freeze. Each item names where it belongs.
 - his doc layout (GLOSSARY.md, docs/agents/);
 - his parallel-worktree build flow.
 The runner, the crate guides and `docs/spec/wording.md` already cover those, with stricter gates.
+
+## Pre-Gate-C quality plan: independent checks without a human engineer (Casey: "Do what you recommend")
+
+**Context.** Casey has no access to a human engineer for an outside review, so the build must create its own independence.
+
+**The main risk is shared blind spots, not sloppiness.** The same model family writes the code, the tests and the reviews. A misunderstanding can pass all three. T801 is an example: earlier tasks' tests contradicted CON-005 and passed review.
+
+**Schedule:** after phase 1 and before Gate C, ahead of the account checkpoint where possible. Each item is planned as normal tasks or outside jobs under the usual gates. Nothing here starts during the freeze.
+
+**Priority order** (cheapest, most mechanical and most aimed at the risk come first):
+
+1. **Black-box tests written from the spec, not the code.**
+   - **Who writes them:** an outside model (ChatGPT, or Grok when it has tokens) writes test cases only from `docs/spec/` requirement IDs and `docs/test-design.md`. It sees no code, no existing tests and no decisions.
+   - **Start with the costly areas:** fees and charges (FEE, PICK), consent and texting (CON, TXT), privacy and the vault (PRIV), sign-in (SEC).
+   - **How a harness task uses them:** it turns the cases into a new test suite and runs them. Each failure is triaged: a real bug becomes a fix task, and a spec gap becomes a decision for Casey, through Fable.
+   - The test-weakening rule still applies: a new spec-driven test never replaces an existing one; it only adds to it.
+2. **Mutation testing on money and consent code.**
+   - **What it is:** a mutation tool (for example `cargo-mutants`) deliberately breaks the code, for example by flipping a comparison or deleting a check, and confirms a test fails.
+   - **What a surviving mutant means:** a test that looks thorough but doesn't guard the rule.
+   - **Scope:** `app/payments`, `app/picks` and the consent and opt-out paths in `app/messaging` and `app/intake`.
+   - **Library approval:** the tool needs a `docs/decisions.md` library entry (purpose, licence, cargo-audit) and must pass cargo-deny.
+   - **When it runs:** as a one-off audit task, not on every build, because it is slow.
+   - **Output:** each survivor becomes a test-strengthening task.
+3. **Outside reviews of the five risky areas** (money, consent and texting, privacy and the vault, sign-in and security, legal wording).
+   - **Package:** each one goes out as its own zip under `docs/handoff/ChatGPT_job_standard.md`, holding only the spec and the code, never Claude's tests or decisions.
+   - **Verification:** every finding is checked on `main` by Opus before acting, as now.
+4. **Casey's own run-throughs.**
+   - Gate B is already his click-through. Make it adversarial: as a homeowner and as a business, on his phone, try wrong numbers, STOP mid-flow, two picks at once, going back and forth, Spanish, and a slow connection.
+   - A short checklist for this can be added to `docs/owner-guide.md` or the Gate B notes.
+   - Some of this may need Casey's own hands-on stop; it is never delegated.
+5. **War games (T243) aimed at the risky areas, then a small pilot.**
+   - Part of T243 (Casey's go, D-1473) targets consent, fees and privacy.
+   - After Gate C, launch first with a handful of friendly businesses and homeowners before going wide.
