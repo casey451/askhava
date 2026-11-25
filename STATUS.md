@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-25T01:39:11Z by runner d348adc236e1 (actions).
+Updated 2026-11-25T01:39:48Z by runner d348adc236e1 (actions).
 
 **Waiting for tokens until 17:00Z; 671 of 781 done; week 97% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-25T01:39:11Z by runner d348adc236e1 (actions).
 - **Lane:** idle since 01:33Z (no task in progress)
 - **Week:** 97% used, 0.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 01:39Z, 0 min before this update
-- **Keeper:** last ran 01:36Z, next wake 07:16Z
+- **Keeper:** last ran 01:39Z, next wake 07:19Z
 
 ## Needs attention
 - BLOCKED T222: Reviewer over 457819c6bc470ff6f69d271d7ab023fb3c0c25eb ended REVIEW-VERDICT: FINDINGS (hand_in_by too close for a fix round):
