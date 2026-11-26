@@ -263,7 +263,7 @@ impl WebSecurity {
     }
 
     async fn refuse(&self, kind: SecurityEventKind, site: EventSite) -> Response {
-        let now = self.clock.now();
+        let now = self.clock.real_now();
         if !admit_security_event(kind, site.client, &site.route, now) {
             return StatusCode::FORBIDDEN.into_response();
         }
