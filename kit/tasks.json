@@ -53091,7 +53091,9 @@
     "T858",
     "T859",
     "T860",
-    "T864"
+    "T864",
+    "T865",
+    "T840"
    ],
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
@@ -53109,7 +53111,7 @@
    "id": "T801",
    "slug": "chat-code-not-optin",
    "title": "intake and site (harness): the served web chat runs the request on the page with zero texts; with texting live it shows the number and asks her to text it",
-   "goal": "Plan change D-5848 (task H of the T801 chain, after T856 to T860; Fable's scope decision section 1, design decisions b and c, and T3; supersedes the transport and test assumptions of D-5279's narrow path and moves D-5716's `j1_homeowner.spec.ts` clause to T861). (1) While homeowner texting is live (T725's `businesses::api::homeowner_texting_number` answers a number), the web chat has no phone or code step and opens no request: its start screen shows the Laftly number with the SMS disclosures and the 18-or-older line and says \"Text {number} from your phone to continue.\" (draft copy, WORD-028); a typed message gets the same answer, except the INT-004 text and `business_signup_reply`, shown and never texted (CON-005, CON-025). (2) Texting goes live mid-chat (Fable's b): an unverified session switches to that screen at once; a verified open web request finishes on the page with zero texts; if she texts in, T856's path appends the `sms` record and the request goes on by text. (3) Outside that state the chat-run request runs on the page through T857 to T860's web dispatch: `open_verified` (`web_chat.rs:764` to `:776`) queues no consent text or Spanish line (the consent text is shown above the chat box), writes the `web_chat` record and an audit event \"shown\", not `intake.consent_sent` (Fable's c; `consent_sent_at` means presented, no migration); `text_turn` (`web_chat.rs:448` to `:475`) goes to web dispatch; `chat.rs` shows the replies (no TEXTED, `chat.rs:436` to `:445`; OPEN loses \"We just sent you a text.\", `:153` to `:156`, but keeps \"got your request\" and \"we've got your request\", `app/server/tests/web_chat_client_ip.rs:35`, `tests/e2e/web_chat.spec.ts:153`); delete T856's named chat exemption, and leave no web-dispatch function reachable only from tests. (4) The old transport assertions change under this decision only (CLAUDE.md rule 6): T645's `app/server/tests/web_chat_stops.rs` (:502 to :506, :572 to :578, :592 to :607, matching TD-CON-36 as reworded), T649's `app/server/tests/web_chat_after_code.rs` (the fixture `ask()` at :216 to :235 asks through the chat, not the SMS API; :46, :319, :325 to :330, :368), T103's `tests/integration/tests/web_chat.rs` (:360 to :373, :501 to :505, :552, :631; the genuine SMS business-intent path at :202 to :211 stays), `tests/e2e/web_chat.spec.ts` (:154 to :161 read the page; reword the header, :8 to :10), `chat.rs`'s unit tests (:769, :852, :879), and `app/server/tests/web_chat_route.rs`, `app/server/tests/home_request_box.rs` and `tests/integration/tests/consent_records.rs` where they expect the old screen; the shared `tests/a11y/page_states.ts` `/request` entries (:544) are updated add-only. Run every test that drives the chat (`grep -rln 'web_chat\\|/request' tests app/server/tests`) and report one this task does not own that fails as a plan gap. Consent: Opus worker, Opus consent and privacy review, two review rounds. Fake data only. Update `app/intake/CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-5848 (task H of the T801 chain, after T856 to T860; Fable's scope decision section 1, design decisions b and c, and T3; supersedes the transport and test assumptions of D-5279's narrow path and moves D-5716's `j1_homeowner.spec.ts` clause to T861). (1) While homeowner texting is live (T725's `businesses::api::homeowner_texting_number` answers a number), the web chat has no phone or code step and opens no request: its start screen shows the Laftly number with the SMS disclosures and the 18-or-older line and says \"Text {number} from your phone to continue.\" (draft copy, WORD-028); a typed message gets the same answer, except the INT-004 text and `business_signup_reply`, shown and never texted (CON-005, CON-025). (2) Texting goes live mid-chat (Fable's b): an unverified session switches to that screen at once; a verified open web request finishes on the page with zero texts; if she texts in, T856's path appends the `sms` record and the request goes on by text. (3) Outside that state the chat-run request runs on the page through T857 to T860's web dispatch: `open_verified` (`web_chat.rs:764` to `:776`) queues no consent text or Spanish line (the consent text is shown above the chat box), writes the `web_chat` record and an audit event \"shown\", not `intake.consent_sent` (Fable's c; `consent_sent_at` means presented, no migration); `text_turn` (`web_chat.rs:448` to `:475`) goes to web dispatch; `chat.rs` shows the replies (no TEXTED, `chat.rs:436` to `:445`; OPEN loses \"We just sent you a text.\", `:153` to `:156`, but keeps \"got your request\" and \"we've got your request\", `app/server/tests/web_chat_client_ip.rs:35`, `tests/e2e/web_chat.spec.ts:153`); delete T856's named chat exemption (`CHAT_LEGACY_TEXTS`, defined and used only in `web_chat.rs`), and leave no web-dispatch function reachable only from tests. (4) The old transport assertions change under this decision only (CLAUDE.md rule 6): T645's `app/server/tests/web_chat_stops.rs` (:502 to :506, :572 to :578, :592 to :607, matching TD-CON-36 as reworded), T649's `app/server/tests/web_chat_after_code.rs` (the fixture `ask()` at :216 to :235 asks through the chat, not the SMS API; :46, :319, :325 to :330, :368), T103's `tests/integration/tests/web_chat.rs` (:360 to :373, :501 to :505, :552, :631; the genuine SMS business-intent path at :202 to :211 stays), `tests/e2e/web_chat.spec.ts` (:154 to :161 read the page; reword the header, :8 to :10), `chat.rs`'s unit tests (:769, :852, :879), and `app/server/tests/web_chat_route.rs`, `app/server/tests/home_request_box.rs` and `tests/integration/tests/consent_records.rs` where they expect the old screen; the shared `tests/a11y/page_states.ts` `/request` entries (:544) are updated add-only. Run every test that drives the chat (`grep -rln 'web_chat\\|/request' tests app/server/tests`) and report one this task does not own that fails as a plan gap. Consent: Opus worker, Opus consent and privacy review, two review rounds. Fake data only. Update `app/intake/CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
    "type": "harness",
    "model": "claude-opus-5-5",
    "review_areas": [
@@ -53122,6 +53124,7 @@
     "app/intake/src/web_dispatch.rs",
     "app/site/src/chat.rs",
     "app/site/templates/request.html",
+    "app/server/src/chat_codes.rs",
     "tests/integration/tests/web_chat.rs",
     "app/server/tests/web_chat_stops.rs",
     "app/server/tests/web_chat_after_code.rs",
@@ -53155,9 +53158,9 @@
     "D-5848"
    ],
    "budget": {
-    "files": 11,
+    "files": 12,
     "lines": 700,
-    "context_pct": 44
+    "context_pct": 46
    },
    "acceptance": "With texting live the chat opens no request and shows the number with the SMS disclosures; outside it a chat-run request runs on the page with zero texts and her first inbound text gets the consent text; only the listed transport assertions change; Ally passes.",
    "branch": "claude/task/T801-chat-code-not-optin",
@@ -54410,13 +54413,14 @@
    "id": "T824",
    "slug": "close-which-day",
    "title": "intake: \"Close which?\" expires 24 hours after it was asked",
-   "goal": "Plan change D-5400 (intake review job 16, finding I5, Fable: yes, for Casey under D-305; JOB-019, JOB-021; D-4777). T759 (DONE, D-5367: `closing::which_mark` writes `asked`, then `answered` or `dropped`) makes \"Close which?\" expire on a worded reply that is not a close answer (`close_which` = `dropped`), but a question left with no reply still waits for ever, so a lone \"ALL\" or number sent days later for another reason still closes jobs. T759 has no time limit (its `tests/integration/tests/close_which_expiry.rs` replies within minutes, so its cases hold unchanged). In `app/intake/src/closing.rs`, a latest `close_which` = `asked` mark at least 24 hours (inclusive) older than the reply's `now` is no waiting question: the reply is read as it would be with no question asked (a lone \"ALL\" closes nothing), and nothing is written for the old mark. Tests in the new `tests/integration/tests/close_which_day.rs` (PostgreSQL, fake data only, manual clock): \"Close which?\", then \"ALL\" at least 24 hours (inclusive) later closes nothing; \"ALL\" 23 hours later still closes every open job; \"cancel\" alone still closes nothing; TD-JOB-05 (`tests/integration/tests/close_which.rs`) and T759's `tests/integration/tests/close_which_expiry.rs` pass unchanged. Opus worker and review. Update the `intake` notes and `docs/decisions.md`. Plan change D-5585 (Grok pre-flight G3, checked on main): \"more than 24 hours older\" means the question has expired once 24 hours have passed (`now - asked_at >= 24 hours`, inclusive); a test sends \"ALL\" exactly 24 hours after \"Close which?\" and it closes nothing. Plan change D-5657 (pre-flight, checked on main 98e09a35): read the mark's time with `models::latest_answer_time` (`app/intake/src/models.rs:548`, `pub(crate)`); the expiry is at least 24 hours (inclusive) throughout; the tests also send a lone \"2\" and a lone \"ALL\" exactly 24 hours and 24 hours and a minute after the question: each closes nothing and writes no `answered` or `dropped` mark.",
+   "goal": "Plan change D-5400 (intake review job 16, finding I5, Fable: yes, for Casey under D-305; JOB-019, JOB-021; D-4777). T759 (DONE, D-5367: `closing::which_mark` writes `asked`, then `answered` or `dropped`) makes \"Close which?\" expire on a worded reply that is not a close answer (`close_which` = `dropped`), but a question left with no reply still waits for ever, so a lone \"ALL\" or number sent days later for another reason still closes jobs. T759 has no time limit (its `tests/integration/tests/close_which_expiry.rs` replies within minutes, so its cases hold unchanged). In `app/intake/src/closing.rs`, a latest `close_which` = `asked` mark at least 24 hours (inclusive) older than the reply's `now` is no waiting question: the reply is read as it would be with no question asked (a lone \"ALL\" closes nothing), and nothing is written for the old mark. Tests in the new `tests/integration/tests/close_which_day.rs` (PostgreSQL, fake data only, manual clock): \"Close which?\", then \"ALL\" at least 24 hours (inclusive) later closes nothing; \"ALL\" 23 hours later still closes every open job; \"cancel\" alone still closes nothing; TD-JOB-05 (`tests/integration/tests/close_which.rs`) and T759's `tests/integration/tests/close_which_expiry.rs` pass unchanged. Opus worker and review. Update the `intake` notes and `docs/decisions.md`. Plan change D-5585 (Grok pre-flight G3, checked on main): \"more than 24 hours older\" means the question has expired once 24 hours have passed (`now - asked_at >= 24 hours`, inclusive); a test sends \"ALL\" exactly 24 hours after \"Close which?\" and it closes nothing. Plan change D-5657 (pre-flight, checked on main 98e09a35): read the mark's time with `models::latest_answer_time` (`app/intake/src/models.rs:548`, `pub(crate)`); the expiry is at least 24 hours (inclusive) throughout; the tests also send a lone \"2\" and a lone \"ALL\" exactly 24 hours and 24 hours and a minute after the question: each closes nothing and writes no `answered` or `dropped` mark. Plan change D-5848: this task follows T865, which puts `closing.rs`'s direct outbox call behind the per-request consent guard; keep that guard.",
    "type": "build",
    "phase": 1,
    "stage": "5",
    "module": "intake",
    "deps": [
-    "T759"
+    "T759",
+    "T865"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -54447,13 +54451,14 @@
     "D-5400",
     "D-5367",
     "D-5585",
-    "D-5657"
+    "D-5657",
+    "D-5848"
    ],
    "cites": [],
    "budget": {
     "files": 2,
     "lines": 200,
-    "context_pct": 24
+    "context_pct": 26
    },
    "checks": [
     "Ci",
@@ -55430,7 +55435,7 @@
    "id": "T856",
    "slug": "consent-per-request",
    "title": "intake: a request may be texted only with an `sms` consent record of its own; the guard primitive",
-   "goal": "Plan change D-5848 (task A of the T801 chain; Fable's T2, scope decision section 1). (1) New `models::sms_consented(conversation)`, exposed as `service::may_text_request`: true only when an `sms` consent record exists for that request's conversation (`intake.consent_record.conversation_id`, no migration). It decides `rules::plan`'s consent input in `service::handle` (`service.rs:154`, `:182`, in place of `open.is_some()`) and the text uses of `card_allowed` (`tell`, `handlers.rs:350` to `:377`). `card_allowed` stays per request and keeps counting any record (CON-007's web-chat card). `models::contact_consented`, read by `service::may_text`, counts only `sms` records (R1-01); `may_text` stays only for the one caller with no request in hand, the owner's help reply (`app/portals/src/owner_help.rs:199`, D-5848): a number with only `web_chat` records gets `ReplyRefusal::EmailOnly` there (a test in this task's test file), and the opt-out and texting-switch checks at send are unchanged. (2) Every text-opened request gets its own `sms` record from its first inbound text, whether or not the consent text is queued again (`receive_answer`, `service.rs:222` to `:249`); her first text into a web-opened request queues the consent text and appends the `sms` record, then the request goes on by text (Fable's b); reword `app/intake/CLAUDE.md:16` (\"One consent record per request, none from a reply\") and NOTES never 27 to allow that appended record. (3) An `sms` record is written only from a carrier inbound: the chat's turn (`web_chat.rs:333` reads the open request before its transaction at `:337`) re-reads it under the transaction and never reaches the `sms` record path with a browser message ID (R2-02, R2-03), without editing `app/server/src/inbound_text.rs`. (4) A guard primitive for request texts: given the request and the text kind it answers Outbox, or refuses with an error (fail closed); named exemptions only: the consent text of a first inbound text, the INT-004 safety text, the carrier keyword replies and the business sign-up reply, plus one named exemption for the chat's old consent and reply texts that T801 deletes. Use it at this task's own call sites; T857 makes it the seam for every caller. Tests in the new `tests/integration/tests/consent_per_request.rs`: a returning number's second text-opened request is textable; a web-opened request is not textable until her first text, which gets the consent text and one `sms` record; a `web_chat` record never makes `may_text` or `may_text_request` true; the stale-read race writes no `sms` record; 911 before consent unchanged (INT-002). Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-5848 (task A of the T801 chain; Fable's T2, scope decision section 1). (1) New `models::sms_consented(conversation)`, exposed as `service::may_text_request`: true only when an `sms` consent record exists for that request's conversation (`intake.consent_record.conversation_id`, no migration). It decides `rules::plan`'s consent input in `service::handle` (`service.rs:154`, `:182`, in place of `open.is_some()`) and the text uses of `card_allowed` (`tell`, `handlers.rs:350` to `:377`). `card_allowed` stays per request and keeps counting any record (CON-007's web-chat card). `models::contact_consented`, read by `service::may_text`, counts only `sms` records (R1-01); `may_text` stays only for the one caller with no request in hand, the owner's help reply (`app/portals/src/owner_help.rs:199`, D-5848): a number with only `web_chat` records gets `ReplyRefusal::EmailOnly` there (a test in this task's test file), and the opt-out and texting-switch checks at send are unchanged. (2) Every text-opened request gets its own `sms` record from its first inbound text, whether or not the consent text is queued again (`receive_answer`, `service.rs:222` to `:249`); her first text into a web-opened request queues the consent text and appends the `sms` record, then the request goes on by text (Fable's b); reword `app/intake/CLAUDE.md:16` (\"One consent record per request, none from a reply\") and NOTES never 27 to allow that appended record. (3) An `sms` record is written only from a carrier inbound, structurally: the chat path (`web_chat.rs:333` reads the open request before its transaction at `:337`) never calls `models::record_consent` and never passes a browser message ID as an `inbox_id` (R2-02, R2-03), with a test; if a re-read of the open request stays, it is `SELECT ... FOR UPDATE` on the conversation row; `app/server/src/inbound_text.rs` is not edited. (4) A guard primitive for request texts: given the request and the text kind it answers Outbox, or refuses with an error (fail closed); named exemptions only: the consent text of a carrier-inbound first text, the INT-004 safety text for a carrier-inbound request with no consent record yet (a web request's safety text is shown on the page, `docs/spec/intake.md:62`, CON-005), the carrier keyword replies, the business sign-up reply, and `CHAT_LEGACY_TEXTS`, the one named exemption for the chat's old consent and reply texts, defined and used only in `app/intake/src/web_chat.rs` (T801 deletes it). Use it at this task's own call sites; T857 and T865 put every caller behind it. Tests in the new `tests/integration/tests/consent_per_request.rs`: a returning number's second text-opened request is textable; a web-opened request is not textable until her first text, which gets the consent text and one `sms` record; a `web_chat` record never makes `may_text` or `may_text_request` true; the stale-read race writes no `sms` record; 911 before consent unchanged (INT-002). Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -55494,13 +55499,13 @@
    ],
    "branch": "claude/task/T856-consent-per-request",
    "prompt": "kit/prompts/T856.md",
-   "acceptance": "Every existing test passes unchanged; the new consent_per_request tests pass; no `web_chat` record lets a request text go; `rules::plan` takes the per-request `sms` predicate; two Opus review rounds."
+   "acceptance": "Every existing test passes unchanged; the new consent_per_request tests pass; no `web_chat` record lets a request text go, except T856's named chat exemption (`CHAT_LEGACY_TEXTS` in `web_chat.rs`), deleted by T801; `rules::plan` takes the per-request `sms` predicate; two Opus review rounds."
   },
   {
    "id": "T857",
    "slug": "guarded-enqueue-seam",
-   "title": "intake: the guarded enqueue is the seam: an `sms` request to the outbox, a web request to the page",
-   "goal": "Plan change D-5848 (task C, first half; Fable's section C.2; verification R1-05, R1-06). `queue_text` (`conversation.rs:585`) and `queue_body` (`handlers.rs:379`) and the direct callers `zip_step.rs:253`, `replies.rs:518` and `ask_name_address` (`conversation.rs:420`) deliver by the request's channel through T856's guard: an `sms` request to the outbox (unchanged), a web request's reply returned to the caller for the page (never an outbox row), anything else refused with an error (fail closed; T856's named exemptions only). The `order_dispatch` gates (`:371`, `:476`, `:522`) ask the same question per request (T856's `may_text_request` for a text, the web request for the page) with small edits only; `order.rs:399` and `cards_out.rs:582` keep compiling through the same seam. No caller is switched to the page here: every existing test passes unchanged. Tests in the new `tests/integration/tests/guarded_enqueue.rs`: an `sms` request's texts are unchanged; a web request's reply comes back for the page with zero outbox rows; a request with neither is refused. Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
+   "title": "intake: `queue_text` and `queue_body` behind the guard; a page sink for web dispatch only",
+   "goal": "Plan change D-5848 (task C, part 1; Fable's section C.2; verification R1-05, R1-06; round-1 review). `queue_text` (`conversation.rs:585`) and `queue_body` (`handlers.rs:379`) keep their signatures (callers `summary_step.rs:35`, `:193`, `photos.rs:236`, `order.rs:399`, `cards_out.rs:582`) and check T856's guard before every enqueue: an `sms` request to the outbox as today, anything else refused, except `CHAT_LEGACY_TEXTS`, the one named exemption for the chat's old consent and reply texts, defined and used only in `app/intake/src/web_chat.rs` (T801 deletes it), so every legacy caller on a `web_chat` request (`zip_step`, `ask_name_address` at `conversation.rs:420`, the T649 and T645 paths) keeps outbox delivery until T801. Page delivery happens only when web dispatch is the explicit caller: a new function returns the rendered reply in a chat result type of its own (`intake::api`), never an outbox row; the shared `Queued`/`Handled` (`service.rs:66` to `:86`) are not changed. The `order_dispatch` gates (`:371`, `:476`, `:522`) ask the same question per request (`may_text_request` for a text, the web request for the page) with small edits only. Every existing test passes unchanged, including `app/server/tests/web_chat_after_code.rs:216` to `:235`, `:325` to `:330`, `app/server/tests/web_chat_stops.rs:572` and `tests/integration/tests/web_chat.rs:360`. Tests in the new `tests/integration/tests/guarded_enqueue.rs`. Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -55518,8 +55523,6 @@
    "owns": [
     "app/intake/src/conversation.rs",
     "app/intake/src/handlers.rs",
-    "app/intake/src/zip_step.rs",
-    "app/intake/src/replies.rs",
     "app/intake/src/order_dispatch.rs",
     "tests/integration/tests/guarded_enqueue.rs"
    ],
@@ -55543,9 +55546,9 @@
    ],
    "cites": [],
    "budget": {
-    "files": 6,
-    "lines": 450,
-    "context_pct": 40
+    "files": 4,
+    "lines": 400,
+    "context_pct": 35
    },
    "checks": [
     "Ci",
@@ -55554,19 +55557,83 @@
    ],
    "branch": "claude/task/T857-guarded-enqueue-seam",
    "prompt": "kit/prompts/T857.md",
-   "acceptance": "Every existing test passes unchanged; through the seam an `sms` request's texts reach the outbox, a web request's replies come back for the page with zero outbox rows, and anything else is refused; two Opus review rounds."
+   "acceptance": "Every existing test passes unchanged; an `sms` request's texts reach the outbox, the page function returns a web request's reply with zero outbox rows, a request with neither is refused, and the chat exemption keeps the old chat texts; two Opus review rounds."
   },
   {
-   "id": "T864",
-   "slug": "web-dispatch-zip",
-   "title": "intake: web dispatch after the code through ZIP, the replayed description and the coverage line",
-   "goal": "Plan change D-5848 (task C, second half; Fable's section C.2 and T4; verification V1, R1-04, R1-25). (1) The new `app/intake/src/web_dispatch.rs`: after the code a web request runs the shared steps of the Intake order table's web-chat column (`docs/spec/intake.md:60` to `:72`) through T857's seam: the ZIP and area check (INT-022), the trade check and the coverage line (INT-016, INT-017), every reply returned for the page; chat results carry no outbox ID (`Queued`/`Handled`, `service.rs:66` to `:86`). (2) Fable's T4: on the code POST her \"you\" lines from the hidden `said` field (`app/site/src/chat.rs:230` to `:233`) are untrusted input: a length cap, the same scrub as any chat message (vault name included), the 911 and INT-038 checks again, then `keep_description` under `first_message_id`, so a retried POST stores nothing twice (D-3189); a missing, empty or over-cap `said` gets one request for the description; the server never keeps pre-code words (`web_chat.rs:578` to `:579`, D-4292). The served chat is not switched here (T801 does it): the web path is reached through `intake::api` and this task's tests, and every existing test passes unchanged. Tests in the new `tests/integration/tests/web_dispatch_zip.rs`. Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
+   "id": "T865",
+   "slug": "direct-enqueue-callers",
+   "title": "intake: the direct outbox callers go through the guard (ZIP, replies, routing, closing, address wait)",
+   "goal": "Plan change D-5848 (task C, part 2; R1-06 and the round-1 review). The intake callers that enqueue directly, outside `queue_text`/`queue_body`, check T856's guard the same way (an `sms` request to the outbox, anything else refused, except `CHAT_LEGACY_TEXTS`, the one named exemption for the chat's old consent and reply texts, defined and used only in `app/intake/src/web_chat.rs` (T801 deletes it)) and offer T857's page function to web dispatch: `zip_step.rs:253`; `replies.rs:518`; `routing.rs:618` to `:634` (`queue`, reached by `tell_coverage` `:378`, `:393`, `apply` `:330` via `zip_step.rs:210` and `order_dispatch.rs:1241`, `:1451`, and `not_covered` `:429`); `closing.rs:243` (`answer_close`/`say`, from `replies.rs:299`); `address_wait.rs:150`. Every existing test passes unchanged. Tests in the new `tests/integration/tests/guarded_direct_callers.rs`. Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
    "module": "intake",
    "deps": [
-    "T857"
+    "T857",
+    "T759"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "compliance",
+    "privacy"
+   ],
+   "owns": [
+    "app/intake/src/zip_step.rs",
+    "app/intake/src/replies.rs",
+    "app/intake/src/routing.rs",
+    "app/intake/src/closing.rs",
+    "app/intake/src/address_wait.rs",
+    "tests/integration/tests/guarded_direct_callers.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/consent.md",
+    "docs/spec/intake.md",
+    "docs/spec/messaging.md"
+   ],
+   "requirements": [
+    "CON-005",
+    "CON-007",
+    "CON-021",
+    "TXT-034",
+    "INT-043"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-5848"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 6,
+    "lines": 400,
+    "context_pct": 29
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T865-direct-enqueue-callers",
+   "prompt": "kit/prompts/T865.md",
+   "acceptance": "Every existing test passes unchanged; no listed caller enqueues without the guard; a web request's reply from each is returned for the page; two Opus review rounds."
+  },
+  {
+   "id": "T864",
+   "slug": "web-dispatch-zip",
+   "title": "intake: web dispatch after the code through ZIP, the replayed description and the coverage line",
+   "goal": "Plan change D-5848 (task C, second half; Fable's section C.2 and T4; verification V1, R1-04, R1-25). (1) The new `app/intake/src/web_dispatch.rs`: after the code a web request runs the shared steps of the Intake order table's web-chat column (`docs/spec/intake.md:60` to `:72`) through T857's seam: the ZIP and area check (INT-022), the trade check and the coverage line (INT-016, INT-017), every reply returned for the page through T857's page function in its own chat result type (no outbox ID, R1-04; the shared `Queued`/`Handled` unchanged). (2) Fable's T4: on the code POST (`app/site/src/chat.rs:491` to `:516`, through the composition's `ChatKeys` check and vault scrub, `app/server/src/chat_codes.rs:109` to `:117`, `:163` to `:180`) her \"you\" lines from the hidden `said` field (`app/site/src/chat.rs:230` to `:233`) are untrusted input: a length cap, the same scrub as any chat message (vault name included), the 911 and INT-038 checks again, then `keep_description` under `first_message_id`, so a retried POST stores nothing twice (D-3189); a missing, empty or over-cap `said` gets one request for the description (draft copy for the copy panel, WORD-028, English and Spanish); the server never keeps pre-code words (`web_chat.rs:578` to `:579`, D-4292). The served chat is not switched here (T801 does it): the web path is reached through `intake::api` and this task's tests, and every existing test passes unchanged. Tests in the new `tests/integration/tests/web_dispatch_zip.rs`. Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "intake",
+   "deps": [
+    "T865",
+    "T656",
+    "T609",
+    "T831"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -55578,7 +55645,8 @@
    "owns": [
     "app/intake/src/web_dispatch.rs",
     "app/intake/src/web_chat.rs",
-    "app/intake/src/service.rs",
+    "app/site/src/chat.rs",
+    "app/server/src/chat_codes.rs",
     "tests/integration/tests/web_dispatch_zip.rs"
    ],
    "reads": [
@@ -55605,7 +55673,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 4,
+    "files": 5,
     "lines": 500,
     "context_pct": 30
    },
@@ -55616,13 +55684,14 @@
    ],
    "branch": "claude/task/T864-web-dispatch-zip",
    "prompt": "kit/prompts/T864.md",
-   "acceptance": "Every existing test passes unchanged; a web request after the code reaches the coverage line with every reply returned for the page and zero outbox rows; the replayed description is scrubbed and kept once; two Opus review rounds."
+   "acceptance": "Every existing test passes unchanged; a web request after the code reaches the coverage line with every reply returned for the page and zero outbox rows; the replayed description is scrubbed and kept once; two Opus review rounds.",
+   "copy": true
   },
   {
    "id": "T858",
    "slug": "web-dispatch-questions",
    "title": "intake: the web request answers the remaining question steps on the page in the table order (TD-INT-30)",
-   "goal": "Plan change D-5848 (task D; Fable's T5). On T857's web dispatch, a web request runs the remaining steps of the Intake order table's web-chat column in order (`docs/spec/intake.md:60` to `:72`): \"How soon?\" (INT-030), emergency or regular (INT-006) with the night count first (INT-033), the trade questions (INT-039), the design categories (INT-045, INT-046) and the first name and address (INT-027, the chat's name-and-address turn, `web_chat.rs:338` to `:342`), each shown on the page and none queued; `order_dispatch.rs` takes small edits only. TD-INT-30's behavioural proof is this task's: a golden test in the new `tests/integration/tests/web_chat_order_steps.rs` drives a web request through the served steps and fails if any two swap (the existing static check, `tests/integration/tests/web_chat.rs:471`, stays). Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-5848 (task D; Fable's T5). Through T864's web dispatch via `intake::api`, a web request runs the remaining steps of the Intake order table's web-chat column in order (`docs/spec/intake.md:60` to `:72`): \"How soon?\" (INT-030), emergency or regular (INT-006) with the night count first (INT-033), the trade questions (INT-039), the design categories (INT-045, INT-046) and the first name and address (INT-027, the chat's name-and-address turn, `web_chat.rs:338` to `:342`), each shown on the page and none queued; `order_dispatch.rs` takes small edits only. TD-INT-30's behavioural proof is this task's: a golden test in the new `tests/integration/tests/web_chat_order_steps.rs` drives a web request through the steps in-process (T533 gives the end-to-end proof) and fails if any two swap (the existing static check, `tests/integration/tests/web_chat.rs:471`, stays). Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -55679,13 +55748,13 @@
    ],
    "branch": "claude/task/T858-web-dispatch-questions",
    "prompt": "kit/prompts/T858.md",
-   "acceptance": "TD-INT-30's golden test passes on the served steps; every existing test passes unchanged; zero outbox rows for a web request; two Opus review rounds."
+   "acceptance": "TD-INT-30's golden test passes in-process; every existing test passes unchanged; zero outbox rows for a web request; two Opus review rounds."
   },
   {
    "id": "T859",
    "slug": "web-photo-upload",
    "title": "intake and site: photo upload on the chat page for a web request (step 9); no picture text",
-   "goal": "Plan change D-5848 (task E; R2-06). For a web request at step 9 (INT-044) the chat page offers a photo upload (the same checks, limits and confirm or remove steps as the photo step, `app/intake/src/photos.rs`), served from the chat's own router (`app/site/src/chat.rs:277` to `:287`), never from `app/server/src/homeowner_portal.rs` (T820's); `photo_text` (`photos.rs:217` to `:236`) queues no SMS for a web request, and `picture_text.rs:356` asks T856's per-request predicate. Session-bound to her verified chat; a cross-site POST is refused (SEC-042). Add the route's row to `docs/architecture.md` section 13 (Wired: T801). Reached through T857's web dispatch; T801 switches the served chat. Tests in the new `app/server/tests/web_chat_photos.rs`. Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-5848 (task E; R2-06). For a web request at step 9 (INT-044) the chat page offers a photo upload (the same checks, limits and confirm or remove steps as the photo step, `app/intake/src/photos.rs`), served from the chat's own router (`app/site/src/chat.rs:277` to `:287`), never from `app/server/src/homeowner_portal.rs` (T820's); `photo_text` (`photos.rs:217` to `:236`) queues no SMS for a web request, and `picture_text.rs:356` asks T856's per-request predicate. Session-bound to her verified chat (the composition's `app/server/src/chat_codes.rs` takes the upload, `take_upload`); a cross-site POST is refused (SEC-042). Add the route's row to `docs/architecture.md` section 13 (Wired: T801). Reached through T857's web dispatch; T801 switches the served chat. Tests in the new `app/server/tests/web_chat_photos.rs`. Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -55710,6 +55779,7 @@
     "app/intake/src/picture_text.rs",
     "app/intake/src/web_dispatch.rs",
     "app/site/src/chat.rs",
+    "app/server/src/chat_codes.rs",
     "app/site/templates/request.html",
     "app/server/tests/web_chat_photos.rs"
    ],
@@ -55734,9 +55804,9 @@
    ],
    "cites": [],
    "budget": {
-    "files": 6,
+    "files": 7,
     "lines": 500,
-    "context_pct": 38
+    "context_pct": 40
    },
    "checks": [
     "Ci",
@@ -55796,7 +55866,7 @@
    "budget": {
     "files": 6,
     "lines": 500,
-    "context_pct": 30
+    "context_pct": 29
    },
    "checks": [
     "Ci",
@@ -55861,7 +55931,7 @@
    "id": "T862",
    "slug": "conversation-email",
    "title": "privacy: the email she types in her own conversation is kept apart as her conversation address",
-   "goal": "Plan change D-5848 (PKE part 1; Fable's T1; D-1612's missing conversation address). No web-chat step of the Intake order table collects her email (`docs/spec/intake.md:60` to `:72`), and `privacy.contact.email` holds only the address shared at the page pick (`app/privacy/src/vault.rs:449`), which never gets a code (D-050). New migration `migrations/0218_privacy_conversation_email.sql`: `privacy.conversation_email`, one row per contact, sealed under `VAULT_KEY` bound to its row (as `privacy.update_email`, `app/privacy/src/update_email.rs`). An email address in a message she types in her own text or web-chat conversation (INT-012's \"my email is ...\") is taken where her raw words are scrubbed with her contact in hand (`privacy::api::read_inbound_for`, `app/privacy/src/scrub_context.rs`; the scrub already cuts it, `scrub.rs:745`) and stored there, replacing an earlier one, audited without the value; the scrubbed text is unchanged. New read for `picks` only under the `(Picks, PickCode)` grant, audited and counted; the contact purge deletes the row. No caller outside `privacy` is edited here. Tests in the new `tests/integration/tests/conversation_email.rs`: a typed address is stored once and sealed; a quote-page or page-pick address is never returned by the new read; the purge removes it. Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-5848 (PKE part 1; Fable's T1; D-1612's missing conversation address). No web-chat step of the Intake order table collects her email (`docs/spec/intake.md:60` to `:72`), and `privacy.contact.email` holds only the address shared at the page pick (`app/privacy/src/vault.rs:449`), which never gets a code (D-050). New migration `migrations/0218_privacy_conversation_email.sql`: `privacy.conversation_email`, one row per contact, sealed under `VAULT_KEY` bound to its row (as `privacy.update_email`, `app/privacy/src/update_email.rs`). An email address in a message she types in her own text or web-chat conversation (INT-012's \"my email is ...\") is taken where her raw words are scrubbed with her contact in hand (`privacy::api::read_inbound_for`, `app/privacy/src/scrub_context.rs`; the scrub already cuts it, `scrub.rs:745`) and stored there, replacing an earlier one, audited without the value; the scrubbed text is unchanged. New read for `picks` only under the `(Picks, PickCode)` grant, audited and counted; the contact purge deletes the row. Her data download (`app/portals/src/data_download.rs`, after T820) includes her conversation address (PRIV-021). No other caller outside `privacy` is edited here. Tests in the new `tests/integration/tests/conversation_email.rs`: a typed address is stored once and sealed; a quote-page or page-pick address is never returned by the new read; the purge removes it. Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -55872,7 +55942,8 @@
     "T266",
     "T658",
     "T756",
-    "T757"
+    "T757",
+    "T820"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -55888,6 +55959,7 @@
     "app/privacy/src/scrub.rs",
     "app/privacy/src/models.rs",
     "app/privacy/src/purge.rs",
+    "app/portals/src/data_download.rs",
     "tests/integration/tests/conversation_email.rs"
    ],
    "reads": [
@@ -55913,9 +55985,9 @@
    ],
    "cites": [],
    "budget": {
-    "files": 7,
+    "files": 8,
     "lines": 450,
-    "context_pct": 30
+    "context_pct": 36
    },
    "checks": [
     "Ci",
@@ -55979,7 +56051,7 @@
    "budget": {
     "files": 4,
     "lines": 450,
-    "context_pct": 30
+    "context_pct": 33
    },
    "checks": [
     "Ci",
@@ -55988,7 +56060,8 @@
    ],
    "branch": "claude/task/T863-pick-code-by-email",
    "prompt": "kit/prompts/T863.md",
-   "acceptance": "In web-and-email mode, texting off or suspended, or opted out, the code goes by email to her conversation address and no Verify SMS is sent; otherwise unchanged; two Opus review rounds."
+   "acceptance": "In web-and-email mode, texting off or suspended, or opted out, the code goes by email to her conversation address and no Verify SMS is sent; otherwise unchanged; two Opus review rounds.",
+   "copy": true
   }
  ]
 }
