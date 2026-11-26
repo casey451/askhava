@@ -132,22 +132,25 @@ function ownerSql(business: string, existing: boolean): string {
  * A business (new and active, or the given one), its owner's session, a job waiting for Confirm
  * with its homeowner and a fake plumbing leak repair facts row (the Confirm re-check reads the
  * job's kind, PICK-020, D-4897; R-37 covers `plumbing_repair`, D-5657), and a page pick on it with
- * a `feeCents` fee due ($25 unless given).
+ * a `feeCents` fee due ($25 unless given). `at` (an instant, such as the app clock's) dates the job's
+ * `created_at`, `status_at` and `timer_from` and the pick's `picked_at`, so a timer the daily backstop
+ * queues for the job falls after it (D-5809); every other row stays at `now()`, as all four do without it.
  */
-export function seedPick({ business, feeCents = 2500 }: { business?: string; feeCents?: number } = {}): Seeded {
+export function seedPick({ business, feeCents = 2500, at }: { business?: string; feeCents?: number; at?: string } = {}): Seeded {
   const [id, pick, job] = [business ?? randomUUID(), randomUUID(), randomUUID()];
   const owner = token();
+  const when = at === undefined ? "now()" : `'${at}'::timestamptz`;
   psql(`WITH ${ownerSql(id, business !== undefined)},
     ${sessionSql(owner.hash, "m")},
     j AS (INSERT INTO jobs.job (id, status, emergency, created_at, status_at, timer_from)
-      VALUES ('${job}', 'awaiting_confirm', false, now(), now(), now()) RETURNING id),
+      VALUES ('${job}', 'awaiting_confirm', false, ${when}, ${when}, ${when}) RETURNING id),
     f AS (INSERT INTO jobs.job_facts (job_id, seq, category, job_types, set_at)
       SELECT id, 1, 'plumbing_repair', ARRAY['leak repair'], now() FROM j),
     ${homeownerSql(job)},
     n AS (UPDATE jobs.job_number_next SET next = next + 1 RETURNING next - 1 AS n),
     num AS (INSERT INTO jobs.job_number (number, job_id, issued_at) SELECT n.n, j.id, now() FROM n, j),
     p AS (INSERT INTO picks.pick (id, job_id, business_id, quote_number, channel, status, picked_at)
-      SELECT '${pick}', j.id, m.business_id, 1, 'page', 'awaiting_confirm', now() FROM j, m RETURNING id)
+      SELECT '${pick}', j.id, m.business_id, 1, 'page', 'awaiting_confirm', ${when} FROM j, m RETURNING id)
     INSERT INTO payments.pick_fee (pick_id, business_id, job_id, mode, kind, amount_cents, terms_version, fixed_at)
       SELECT p.id, '${id}', '${job}', t.mode, 'charged', ${String(feeCents)}, t.authorization_version, now()
       FROM p, payments.fee_terms t`);
