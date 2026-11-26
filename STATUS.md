@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-26T17:45:09Z by runner 0f6466a20c23 (actions).
+Updated 2026-11-26T17:45:43Z by runner 0f6466a20c23 (actions).
 
-**Building: T820 in progress since 17:44Z; 672 of 781 done; week 1% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Building: T612 in progress since 17:45Z; 672 of 781 done; week 1% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 672 of 781 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T820 claimed 17:44Z, lease until 20:44Z
-- **Week:** 1% used, 192.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:44Z, 0 min before this update
+- **Lane:** lane 2: T612 claimed 17:45Z, lease until 20:45Z; lane 3: T820 claimed 17:44Z, lease until 20:44Z
+- **Week:** 1% used, 190.6M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
+- **Last run:** 17:45Z, 0 min before this update
 - **Keeper:** last ran 10:49Z, next wake 16:29Z
 
 ## Needs attention
@@ -62,7 +62,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-26T17:43:57Z (week)): week: 2.0M used, 192.0M left, resets 2026-12-03T17:00:00Z; projected finish 2026-12-09T14:06:06Z.
+- Pacing (session_reading 2026-11-26T17:43:57Z (week)): week: 3.4M used, 190.6M left, resets 2026-12-03T17:00:00Z; projected finish 2026-12-09T14:06:51Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -78,6 +78,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 2: T612 (lease until 2026-11-26T20:45:16Z)
 - lane 3: T820 (lease until 2026-11-26T20:44:31Z)
 
 ## Last usage reading
