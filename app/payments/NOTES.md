@@ -409,3 +409,4 @@
 - [SEC-049 PICK-022] (task 754) D-4763 m3, D-5171: `routes.rs` `alerted`: a `paid_release` refusal (`WrongAmount`, `WrongPick`, `NotPaid`, `WrongIntent`) on the pick's own stored intent (`names_own_intent`) raises one High `payments.success_refused_<reason>` alert per pick and reason; another intent ID raises none; a failed read or write is `Database`. Tests: `zero_fee_after_intent.rs`.
 - [-] (never 7) every recurring row (and W32) matches through `period_fee_for`, and W20 and W33 need the cap: `src/tests/recurring.rs`.
 - [FEE-027 FEE-050] (never 17) A portal reads one pick's disputes only through `disputes_of` and records Casey's press only through `record_pick_owner_submission`, which locks the dispute row and writes nothing for another pick's or an unknown dispute (D-4506): `dispute_pick_scope.rs` (TD-FEE-73).
+- [SEC-017] (task 848) The Stripe webhook checks its 300 s signature tolerance at `clock.real_now()`; dispatch still gets `now()` (D-5854).
