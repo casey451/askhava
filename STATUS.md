@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-26T23:23:17Z by runner eb870d353d81 (manual).
+Updated 2026-11-26T23:54:07Z by runner 214a81ebbf8d (actions).
 
 **Building: T744 in progress since 22:15Z; 675 of 799 done; week 5% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,10 @@ Updated 2026-11-26T23:23:17Z by runner eb870d353d81 (manual).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T744 claimed 22:15Z, lease until 01:15Z; lane 2: T854 claimed 21:52Z, lease until 00:52Z; lane 3: T309 claimed 22:19Z, lease until 01:19Z; lane 4: T783 claimed 22:18Z, lease until 01:18Z
 - **Week:** 5% used, 180.6M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:22Z, 0 min before this update
+- **Last run:** 23:23Z, 30 min before this update
 - **Keeper:** last ran 22:10Z, next wake 22:30Z
 
 ## Needs attention
-- CLAIMS STOPPED: nightly success on a508df213427, failures_since_green 0; no stage passed its exit test
 - BLOCKED T820: Ci: failure; Checks: failure
 Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS, D-3142)
 test td_sec_80_a_text_started_session_lasts_30_minutes ... ok
@@ -36,7 +35,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 48% of the context window, over its 45% limit
-- Strict plan check red: 53 problem(s) on tasks still to run (+580 on DONE tasks); first: T704: stored context_pct 38% but it measures 42%; regenerate
+- Strict plan check red: 68 problem(s) on tasks still to run (+580 on DONE tasks); first: T704: stored context_pct 38% but it measures 42%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -54,31 +53,31 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 3 of 735 (0.4%) · partial 724 · unstarted 8
-**Tasks merged (throughput only):** 675 of 800
+**Requirements verified:** 478 of 735 (65.0%) · partial 249 · unstarted 8
+**Tasks merged (throughput only):** 675 of 788
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 0 | 35 | 0 | 35 |
-| ai | 0 | 26 | 3 | 29 |
-| businesses | 0 | 57 | 1 | 58 |
-| calls | 0 | 25 | 0 | 25 |
-| consent | 0 | 35 | 0 | 35 |
-| fees | 0 | 52 | 0 | 52 |
-| intake | 0 | 43 | 0 | 43 |
-| job-cards | 0 | 24 | 0 | 24 |
-| licensing | 0 | 48 | 0 | 48 |
-| lifecycle | 0 | 28 | 0 | 28 |
-| messaging | 0 | 45 | 0 | 45 |
-| ops-recovery | 3 | 50 | 1 | 54 |
-| privacy | 0 | 31 | 0 | 31 |
-| quiet-hours | 0 | 9 | 0 | 9 |
-| quotes-pick | 0 | 56 | 0 | 56 |
-| recurring | 0 | 11 | 0 | 11 |
-| security | 0 | 52 | 3 | 55 |
-| terms | 0 | 35 | 0 | 35 |
-| website | 0 | 30 | 0 | 30 |
-| wording | 0 | 32 | 0 | 32 |
+| accessibility | 28 | 7 | 0 | 35 |
+| ai | 11 | 15 | 3 | 29 |
+| businesses | 35 | 22 | 1 | 58 |
+| calls | 17 | 8 | 0 | 25 |
+| consent | 23 | 12 | 0 | 35 |
+| fees | 27 | 25 | 0 | 52 |
+| intake | 14 | 29 | 0 | 43 |
+| job-cards | 17 | 7 | 0 | 24 |
+| licensing | 41 | 7 | 0 | 48 |
+| lifecycle | 22 | 6 | 0 | 28 |
+| messaging | 25 | 20 | 0 | 45 |
+| ops-recovery | 35 | 18 | 1 | 54 |
+| privacy | 15 | 16 | 0 | 31 |
+| quiet-hours | 4 | 5 | 0 | 9 |
+| quotes-pick | 39 | 17 | 0 | 56 |
+| recurring | 10 | 1 | 0 | 11 |
+| security | 23 | 29 | 3 | 55 |
+| terms | 35 | 0 | 0 | 35 |
+| website | 27 | 3 | 0 | 30 |
+| wording | 30 | 2 | 0 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
