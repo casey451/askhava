@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-26T17:43:58Z by runner 0f6466a20c23 (actions).
+Updated 2026-11-26T17:45:03Z by runner 0f6466a20c23 (actions).
 
-**Idle since 01:43Z; 672 of 781 done; week 1% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Building: T820 in progress since 17:44Z; 672 of 781 done; week 1% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 672 of 781 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** idle since 01:43Z (no task in progress)
-- **Week:** 1% used, 0.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:43Z, 0 min before this update
+- **Lane:** lane 3: T820 claimed 17:44Z, lease until 20:44Z
+- **Week:** 1% used, 192.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
+- **Last run:** 17:44Z, 0 min before this update
 - **Keeper:** last ran 10:49Z, next wake 16:29Z
 
 ## Needs attention
@@ -62,7 +62,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-26T10:36:47Z (week)): week: 194.0M used, 0k left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-09T06:59:04Z; waiting until 2026-11-26T17:00:00Z.
+- Pacing (session_reading 2026-11-26T17:43:57Z (week)): week: 2.0M used, 192.0M left, resets 2026-12-03T17:00:00Z; projected finish 2026-12-09T14:06:06Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -78,6 +78,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 3: T820 (lease until 2026-11-26T20:44:31Z)
 
 ## Last usage reading
 - {"task": "T123", "at": "2026-11-25T01:33:41Z", "cache_creation_input_tokens": 98373, "input_tokens": 128, "cache_read_input_tokens": 2165304, "output_tokens": 23531}

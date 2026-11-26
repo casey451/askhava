@@ -11207,3 +11207,4 @@
 - 2026-11-26T17:24:56Z runner 0f6466a20c23 (manual): {}
 - 2026-11-26T17:43:10Z runner 0f6466a20c23 (actions): {}
 - 2026-11-26T17:43:58Z runner 0f6466a20c23 (actions): {}
+- 2026-11-26T17:45:03Z runner 0f6466a20c23 (actions): {"T820": "QUEUED -> IN_PROGRESS"}; T820 estimated 1.4M tokens (calibrated); week has 192.0M left (no five-hour budget, D-3056) (session_reading 2026-11-26T17:43:57Z (week)); claimed
