@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-26T21:48:19Z by runner b4a057ce7f55 (actions).
+Updated 2026-11-26T21:48:39Z by runner a508df213427 (actions).
 
 **Building: T309 in progress since 20:18Z; 673 of 788 done; week 4% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-26T21:48:19Z by runner b4a057ce7f55 (actions).
 - **Lane:** lane 4: T309 claimed 20:18Z, lease until 23:18Z
 - **Week:** 4% used, 183.9M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
 - **Last run:** 21:48Z, 0 min before this update
-- **Keeper:** last ran 21:42Z, next wake 23:07Z
+- **Keeper:** last ran 21:48Z, next wake 23:21Z
 
 ## Needs attention
 - BLOCKED T612: plan gap reported: PLAN GAP: app/site/static/site.css:96-99 (owner T613, not T612): the "DM Sans fallback" face names only local("Arial") and local("Roboto"); the CI image has Liberation Sans only, so with fonts blocked the 320x740 first-screen check in tests/e2e/site_speed.spec.ts fails (Get quotes bottom 771 of 740). Reviewer confirmed: with local("Liberation Sans") added in-browser the button bottom is 695 px. Smallest fix: add local("Liberation Sans") to that face's src with the same size-adjust figures. Reviewer also found: quote-page animation check at site_speed.spec.ts:321-329 reads getAnimations only af; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T612 --plan-fix D-### --reason "..."` (D-2859)
@@ -17,7 +17,7 @@ Updated 2026-11-26T21:48:19Z by runner b4a057ce7f55 (actions).
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 48% of the context window, over its 45% limit
-- Strict plan check red: 67 problem(s) on tasks still to run (+578 on DONE tasks); first: T402: stored context_pct 29% but it measures 34%; regenerate
+- Strict plan check red: 65 problem(s) on tasks still to run (+576 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
