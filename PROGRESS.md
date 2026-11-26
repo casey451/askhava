@@ -11245,3 +11245,4 @@
 - 2026-11-26T19:56:57Z runner a508df213427 (actions): {"T848": "IN_PROGRESS -> QUEUED"}
 - 2026-11-26T19:57:27Z runner a508df213427 (actions): {"T848": "QUEUED -> IN_PROGRESS"}; T848 estimated 578k tokens (calibrated); week has 187.2M left (no five-hour budget, D-3056) after 777k still running in another lane (session_reading 2026-11-26T19:31:26Z (week)); claimed
 - 2026-11-26T20:01:05Z runner 70ef9b0901ed (actions): {}
+- 2026-11-26T20:01:39Z runner 70ef9b0901ed (actions): {"T847": "IN_PROGRESS -> MERGE_PENDING"}

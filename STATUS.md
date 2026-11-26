@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-26T20:01:05Z by runner 70ef9b0901ed (actions).
+Updated 2026-11-26T20:01:39Z by runner 70ef9b0901ed (actions).
 
-**Building: T847 in progress since 18:26Z; 672 of 788 done; week 3% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Building: T848 in progress since 19:56Z; 672 of 788 done; week 3% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 672 of 788 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T847 claimed 18:26Z, lease until 21:26Z; lane 2: T848 claimed 19:56Z, lease until 22:56Z; lane 5: T840 claimed 19:09Z, lease until 22:09Z
+- **Lane:** lane 2: T848 claimed 19:56Z, lease until 22:56Z; lane 5: T840 claimed 19:09Z, lease until 22:09Z
 - **Week:** 3% used, 187.2M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
 - **Last run:** 19:57Z, 3 min before this update
 - **Keeper:** last ran 19:32Z, next wake 21:29Z
@@ -22,6 +22,7 @@ Updated 2026-11-26T20:01:05Z by runner 70ef9b0901ed (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T847 | e2e: J3 step 5 seeds its refused pick at the app clock, so t | MERGE_PENDING | 1 | 94 min | 20:01Z |  |
 | T612 | harness: the WEB-029 and WEB-030 runtime checks on every sit | BLOCKED | 1 | 50 min | 18:35Z | PLAN GAP: app/site/static/site.css:96-99 (owner T613, not T612): the "DM Sans fallback" face names only local("Arial") a |
 
 ### Plan and harness merges on main
@@ -73,9 +74,9 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T847 (lease until 2026-11-26T21:26:32Z)
+- nothing
 - lane 2: T848 (lease until 2026-11-26T22:56:55Z)
 - lane 5: T840 (lease until 2026-11-26T22:09:53Z)
 
 ## Last usage reading
-- {"task": "T612", "at": "2026-11-26T18:35:36Z", "cache_read_input_tokens": 6573358, "cache_creation_input_tokens": 212492, "input_tokens": 129, "output_tokens": 64089}
+- {"task": "T847", "at": "2026-11-26T20:01:04Z", "cache_read_input_tokens": 2466080, "input_tokens": 116, "cache_creation_input_tokens": 107413, "output_tokens": 21894}
