@@ -121513,7 +121513,14 @@
    "attempts": 0,
    "slug": "clock-real-time-split",
    "type": "build",
-   "stage": "5"
+   "stage": "5",
+   "plan_gap": {
+    "at": "2026-11-26T18:54:36Z",
+    "problems": [
+     "T848: prompt kit/prompts/T848.md is missing; run scripts/gen_prompts.py",
+     "T848: branch claude/task/T848-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet"
+    ]
+   }
   },
   {
    "id": "T849",
@@ -129822,7 +129829,7 @@
    }
   }
  },
- "updated_at": "2026-11-26T18:54:46Z",
+ "updated_at": "2026-11-26T19:02:02Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

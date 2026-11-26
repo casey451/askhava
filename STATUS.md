@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-26T18:54:46Z by runner 0f6466a20c23 (actions).
+Updated 2026-11-26T19:02:02Z by runner 0f6466a20c23 (actions).
 
 **Building: T847 in progress since 18:26Z; 672 of 788 done; week 3% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-26T18:54:46Z by runner 0f6466a20c23 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T847 claimed 18:26Z, lease until 21:26Z
 - **Week:** 3% used, 186.7M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:37Z, 17 min before this update
+- **Last run:** 18:37Z, 24 min before this update
 - **Keeper:** last ran 18:37Z, next wake 18:57Z
 
 ## Needs attention
@@ -17,6 +17,7 @@ Updated 2026-11-26T18:54:46Z by runner 0f6466a20c23 (actions).
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 48% of the context window, over its 45% limit
+- PLAN GAP T848 (since 2026-11-26T18:54:36Z, no attempt used; a plan change fixes it): T848: prompt kit/prompts/T848.md is missing; run scripts/gen_prompts.py; T848: branch claude/task/T848-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
 - Strict plan check red: 67 problem(s) on tasks still to run (+576 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
