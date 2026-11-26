@@ -1,15 +1,16 @@
 # Ask Hava build status
 
-Updated 2026-11-25T18:26:23Z by runner 0f6466a20c23 (actions).
+Updated 2026-11-26T01:43:38Z by runner 0f6466a20c23 (actions).
 
-**Waiting for tokens until 17:00Z; 672 of 781 done; week 97% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Waiting for tokens until 19:21Z; 672 of 781 done; week 97% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 672 of 781 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** idle since 01:43Z (no task in progress)
-- **Week:** 97% used, 0.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:25Z, 0 min before this update
+- **Week:** 97% used, -79.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 18:26Z, 7 h 17 min before this update
 - **Keeper:** last ran 18:25Z, next wake 00:05Z
+- **WARNING:** no runner cycle logged for over 90 minutes before this update
 
 ## Needs attention
 - BLOCKED T222: Reviewer over 457819c6bc470ff6f69d271d7ab023fb3c0c25eb ended REVIEW-VERDICT: FINDINGS (hand_in_by too close for a fix round):
@@ -26,26 +27,14 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 - Strict plan check red: 67 problem(s) on tasks still to run (+576 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
-| Task | Title | Result | Attempt | Took | Ended | Retry reason |
-|---|---|---|---|---|---|---|
-| T123 | docs/owner-guide.md: how everything works, daily and weekly  | done | 2 | 86 min | 01:33Z | Reviewer after the findings round (head abc739335b85acdcead6902a51518ce39a82a4bd) still ended FINDINGS: / 1. docs/owner- |
-| T820 | server and portals: "Download my data" also holds withdrawn  | QUEUED | 2 | 2 h 28 min | 01:30Z | Hand-in time passed. Worker added unit tests in app/portals/src/data_download.rs (commit f4a102dca); portals-only covera |
-| T123 | docs/owner-guide.md: how everything works, daily and weekly  | QUEUED | 1 | 53 min | 00:00Z |  |
-| T826 | site: Spanish page fixes (ranking line, launch offer, city l | done | 2 | 2 h 30 min | 22:57Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
-| T815 | portals: the owner portal serves the weekly digest view at / | done | 2 | 89 min | 21:22Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
-| T839 | intake, privacy and messaging: an under-13 purge also delete | done | 1 | 93 min | 20:15Z |  |
-| T820 | server and portals: "Download my data" also holds withdrawn  | check_failed | 1 | 71 min | 19:49Z |  |
-| T815 | portals: the owner portal serves the weekly digest view at / | check_failed | 1 | 81 min | 19:28Z |  |
-| T846 | portals and a11y tests (harness): the quote card a "Go back" | done | 1 | 29 min | 19:15Z |  |
-| T826 | site: Spanish page fixes (ranking line, launch offer, city l | check_failed | 1 | 43 min | 18:56Z |  |
-| T799 | Templates and tests (harness): copy review fixes (refund att | BLOCKED | 1 | 9 min | 18:29Z | PLAN GAP: contradiction: D-5401 requires es.json text "dentro de 72 horas de recibir los datos del cliente" (5 keys), bu |
+- no attempt ended in the last 24 hours
 
 ### Plan and harness merges on main
-- 22:18Z Plan: harness task T847 for the J3 step-5 race (D-5809); Sonnet for T612 (D-5810); hand-off, ChatGPT queue and plan drafts (#1458)
+- none
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 483 of 735 (65.7%) · partial 244 · unstarted 8
+**Requirements verified:** 488 of 735 (66.4%) · partial 239 · unstarted 8
 **Tasks merged (throughput only):** 672 of 781
 
 | Area | Verified | Partial | Unstarted | Total |
@@ -61,20 +50,20 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 | licensing | 41 | 7 | 0 | 48 |
 | lifecycle | 23 | 5 | 0 | 28 |
 | messaging | 27 | 18 | 0 | 45 |
-| ops-recovery | 33 | 20 | 1 | 54 |
+| ops-recovery | 35 | 18 | 1 | 54 |
 | privacy | 15 | 16 | 0 | 31 |
 | quiet-hours | 4 | 5 | 0 | 9 |
 | quotes-pick | 40 | 16 | 0 | 56 |
 | recurring | 10 | 1 | 0 | 11 |
 | security | 25 | 27 | 3 | 55 |
 | terms | 35 | 0 | 0 | 35 |
-| website | 25 | 5 | 0 | 30 |
-| wording | 30 | 2 | 0 | 32 |
+| website | 27 | 3 | 0 | 30 |
+| wording | 31 | 1 | 0 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-25T18:13:18Z (week)): week: 194.0M used, 0k left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-08T14:35:31Z; waiting until 2026-11-26T17:00:00Z.
+- Pacing (ledger; quota_probe: no token: CLAUDE_CODE_OAUTH_TOKEN unset and no credentials file): week: 273.4M used, -79.4M left, resets 2026-11-26T19:21:06Z; projected finish 2026-12-08T22:05:05Z; waiting until 2026-11-26T19:21:06Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
