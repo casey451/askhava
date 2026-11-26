@@ -19,8 +19,15 @@
 //! text, it keeps nothing and deletes the media at the provider ([`PictureSource::discard`]). With
 //! a job, each media is taken once: a `photo_media` row per media SID records its outcome, so a
 //! rerun fetches nothing twice. A store error or a failed fetch retries the task (nothing is
-//! deleted at the provider on a store error); on the last attempt it counts as left off. Then,
-//! under the homeowner lock, `photos::picture_step` drives step 9 on every outcome.
+//! deleted at the provider on a store error); on the last attempt it counts as left off and the
+//! media is deleted at the provider, nothing being kept. Then, under the homeowner lock,
+//! `photos::picture_step` drives step 9 on every outcome.
+//!
+//! Every provider delete goes through [`PictureSource::discard`] (T783, D-5081, D-5550, D-5646):
+//! when it answers false (after a `MediaState::DeletePending` answer, after the last failed store
+//! or on the [`Hold`] discard path) one [`PICTURE_DELETE_KIND`] task is queued, deduped on the
+//! media SID, whose handler ([`run_picture_delete`]) errors until the delete goes, so `core`'s
+//! queue retries it with backoff and dead-letters it after its last attempt (T366's alert).
 
 use std::future::Future;
 use std::sync::Arc;
@@ -54,6 +61,9 @@ pub const HOLD_FOR: SignedDuration = SignedDuration::from_hours(72);
 const PHOTO_MEDIA: &str = "photo_media.";
 const BAD_PAYLOAD: &str = "bad intake picture text payload";
 const FAILED: &str = "the intake picture text task failed";
+const NOT_DELETED: &str = "the picture text media is not deleted at the provider yet";
+/// The task kind of one media's delete-only retry at the provider (T783, D-5550).
+pub const PICTURE_DELETE_KIND: &str = "intake.picture_delete";
 
 /// A picture text's media, as the handler reaches it (D-5337). `url` is always the tail
 /// `{message SID}/{media SID}` ([`media_tail`]); only the implementation builds the provider URL.
@@ -185,9 +195,8 @@ pub async fn run_picture_text_at<P: PictureSource + Send + Sync>(
     match held.map_err(|_| HandlerError(FAILED))? {
         Hold::Discard => {
             for media in &picture.media {
-                keys.source
-                    .discard(&media_tail(&picture.message, media))
-                    .await;
+                let tail = media_tail(&picture.message, media);
+                discard_or_queue(&mut db, &keys.source, &tail, now).await?;
             }
             Ok(())
         }
@@ -232,6 +241,10 @@ async fn take_all<P: PictureSource>(
                 let tail = media_tail(&picture.message, media);
                 let one = take_one(db, &keys.source, (job, &tail), now).await;
                 match one {
+                    None if last => {
+                        discard_or_queue(db, &keys.source, &tail, now).await?;
+                        PhotoTaken::Refused
+                    }
                     Some(taken) => {
                         let code = code_of(taken);
                         models::insert_plain(db, conversation, (&question, &code), now)
@@ -239,7 +252,6 @@ async fn take_all<P: PictureSource>(
                             .map_err(fail)?;
                         taken
                     }
-                    None if last => PhotoTaken::Refused,
                     None => return Err(HandlerError(FAILED)),
                 }
             }
@@ -251,7 +263,7 @@ async fn take_all<P: PictureSource>(
 
 /// One media taken; `None` for a store error (nothing deleted at the provider) or a fetch that
 /// reached or tried Twilio and failed, both retried. A stored photo whose provider delete failed
-/// gets one more delete.
+/// gets one more delete and, if that fails too, its delete-only task ([`discard_or_queue`]).
 async fn take_one<P: PictureSource>(
     db: &mut PgConnection,
     source: &P,
@@ -268,10 +280,50 @@ async fn take_one<P: PictureSource>(
         } => None,
         PictureText { taken, media } => {
             if media == MediaState::DeletePending {
-                source.discard(tail).await;
+                discard_or_queue(db, source, tail, now).await.ok()?;
             }
             Some(taken)
         }
+    }
+}
+
+/// INT-044, PRIV-014 (T783, D-5550, D-5646): deletes media `tail` at the provider through
+/// [`PictureSource::discard`]; when it answers false, queues its [`PICTURE_DELETE_KIND`] task, due
+/// at `now` and deduped on the media SID.
+async fn discard_or_queue<P: PictureSource>(
+    db: &mut PgConnection,
+    source: &P,
+    tail: &str,
+    now: Timestamp,
+) -> Result<(), HandlerError> {
+    if source.discard(tail).await {
+        return Ok(());
+    }
+    let media = tail.rsplit('/').next().unwrap_or(tail);
+    let mut task = NewTask::new(PICTURE_DELETE_KIND, json!({ "media": tail }), now);
+    task.dedupe_key = Some(format!("{PICTURE_DELETE_KIND}:{media}"));
+    let queued = enqueue(db, &task).await;
+    queued.map(|_| ()).map_err(|_| HandlerError(FAILED))
+}
+
+/// INT-044, PRIV-014 (T783, D-5081, D-5550): the [`PICTURE_DELETE_KIND`] handler: deletes the
+/// payload's media tail at the provider through [`PictureSource::discard`].
+///
+/// # Errors
+///
+/// A fixed [`HandlerError`] on a bad payload or whenever `discard` answers false, so `core`'s
+/// queue retries it with backoff and dead-letters it after its last attempt.
+pub async fn run_picture_delete<P: PictureSource + Send + Sync>(
+    keys: Arc<PictureKeys<P>>,
+    task: Claimed,
+) -> Result<(), HandlerError> {
+    let tail = task.payload["media"]
+        .as_str()
+        .ok_or(HandlerError(BAD_PAYLOAD))?;
+    if keys.source.discard(tail).await {
+        Ok(())
+    } else {
+        Err(HandlerError(NOT_DELETED))
     }
 }
 
