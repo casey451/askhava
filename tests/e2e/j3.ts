@@ -359,7 +359,7 @@ export async function step5SafeMode(j: J3): Promise<void> {
   expect(psql(`SELECT count(*) FROM picks.release WHERE pick_id = '${held.pick}'`)).toBe("0");
   expect(psql(`SELECT count(*) FROM core.task WHERE kind = 'payments.held_release' AND payload::text LIKE '%${held.pick}%'`)).not.toBe("0");
   await textsStillGo(j);
-  const refused = seedPick();
+  const refused = seedPick({ at: await j.control.now() });
   j.picks.push(refused);
   const confirm = await pressRefused(j, refused);
   await ageOwnerSession(j.page, 31, "idle");
@@ -371,6 +371,8 @@ export async function step5SafeMode(j: J3): Promise<void> {
   await confirm.reload();
   expect(psql(`SELECT status FROM licensing.license_check WHERE business_id = '${refused.business}'
     ORDER BY checked_at DESC LIMIT 1`), "PICK-020, D-5657: the latest licence check before the press").toBe("active");
+  expect(psql(`SELECT status FROM jobs.job WHERE id = '${refused.job}'`),
+    "D-5809: the refused pick's job before the press, not moved on by a backstop timer").toBe("awaiting_confirm");
   await j.drive.press(confirm.getByRole("button", { name: "Confirm and pay $25" }));
   await expect(confirm.locator("#confirm-status")).toHaveText(WAITING);
   expect(await standInCharges(j.page.request, refused.pick)).toEqual([2500]);
