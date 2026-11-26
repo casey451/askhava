@@ -97259,7 +97259,15 @@
    "wip_claim": {
     "attempt": 1,
     "remote_sha": ""
-   }
+   },
+   "reviewed_sha": "3005eff2378ac7282d031bc2d469e069f262286d",
+   "review_lease": {
+    "task": "T657",
+    "session": "actions-45890116779",
+    "expires": "2026-11-26T23:24:45Z"
+   },
+   "branch": "claude/task/T657-portal-form-error-fields",
+   "head_check_since": null
   },
   {
    "id": "T658",
@@ -130123,7 +130131,7 @@
    }
   }
  },
- "updated_at": "2026-11-26T21:40:09Z",
+ "updated_at": "2026-11-26T21:40:50Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -130221,8 +130229,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "0f6466a20c238af24aab3da3253b59d07616101f",
- "starter": "manual",
+ "runner_sha": "3005eff2378ac7282d031bc2d469e069f262286d",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "0f6466a20c238af24aab3da3253b59d07616101f",
