@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT EXISTS (SELECT 1 FROM messaging.email_outbox e WHERE e.recipient_id = $1 AND $2 = ANY(e.subject_ids) AND e.template_id = $3 AND (e.status = 'dropped' OR EXISTS (SELECT 1 FROM messaging.email_event v WHERE v.provider_id = e.provider_id AND v.kind = ANY($4::text[])))) AS \"untold!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "untold!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Text",
+        "TextArray"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "e7695c521b9a821908cda0d560dd159be9ecd06bb514b1998be8ae53823f22d5"
+}
