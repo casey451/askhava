@@ -309,8 +309,8 @@ pub(crate) fn verified(
         body,
         headers: &pairs,
     };
-    let now = h.clock.now().as_second();
-    verify_webhook(WebhookVendor::Twilio, &h.auth_token, delivery, now).map_err(|e| {
+    let fresh = h.clock.real_now().as_second();
+    verify_webhook(WebhookVendor::Twilio, &h.auth_token, delivery, fresh).map_err(|e| {
         StatusCode::from_u16(refuse(WebhookVendor::Twilio, e)).unwrap_or(StatusCode::FORBIDDEN)
     })
 }
@@ -411,7 +411,8 @@ async fn text(
         provider: ProviderKeyword::from_opt_out_type(field(hook, "OptOutType")),
     };
     let media = media(hook);
-    let done = handle(&h.ctx(), db, (&fields, &media), (inbox_id, now), Reach::All).await;
+    let at = (inbox_id, now, h.clock.real_now());
+    let done = handle(&h.ctx(), db, (&fields, &media), at, Reach::All).await;
     match &done {
         Err(Halt::Failed(step, _)) => {
             failure_alert(db, inbox_id, step).await?;
@@ -538,7 +539,8 @@ pub async fn rerun(
     fields: &Fields<'_>,
     (inbox_id, now, reach): (Uuid, Timestamp, Reach),
 ) -> Rerun {
-    match handle(ctx, db, (fields, &Media::default()), (inbox_id, now), reach).await {
+    let at = (inbox_id, now, now);
+    match handle(ctx, db, (fields, &Media::default()), at, reach).await {
         Err(Halt::Ends(STOPPED)) => Rerun::Stopped,
         Ok(_) | Err(Halt::Ends(_)) => Rerun::Done,
         Err(Halt::Failed(step, error)) => Rerun::Failed(step, error, true),
@@ -573,12 +575,13 @@ async fn failure_alert(db: &mut PgConnection, inbox_id: Uuid, step: &'static str
 }
 
 /// The steps after the repeat check for inbox row `inbox_id`, in order, with `safety_call_on`
-/// read from the stored owner-portal switch for this message ([`switched`]).
+/// read from the stored owner-portal switch for this message ([`switched`]); `now` is business
+/// time and `real` the instant the SEC-014 new-request limit counts at (D-5836).
 async fn handle(
     ctx: &Ctx<'_>,
     db: &mut PgConnection,
     (fields, media): (&Fields<'_>, &Media),
-    (inbox_id, now): (Uuid, Timestamp),
+    (inbox_id, now, real): (Uuid, Timestamp, Timestamp),
     reach: Reach,
 ) -> Step<After> {
     let (from, to) = match (fields.from, fields.to) {
@@ -619,7 +622,7 @@ async fn handle(
         return Err(Halt::Failed("vault", error));
     }
     let text = (&msg, &read, fields.body, media);
-    intake(h, db, text, (resubscribed, now)).await
+    intake(h, db, text, (resubscribed, now, real)).await
 }
 
 /// CALL-019, CALL-022, CON-031, TXT-024, D-3134 (T407): `ctx` with `safety_call_on` read from the
@@ -749,7 +752,7 @@ async fn intake(
     h: &Ctx<'_>,
     db: &mut PgConnection,
     text: (&InboundText<'_>, &Read, &str, &Media),
-    at: (bool, Timestamp),
+    at: (bool, Timestamp, Timestamp),
 ) -> Step<After> {
     let mut savepoint = db.begin().await.map_err(|_| Halt::Database)?;
     let done = intake_steps(h, &mut savepoint, text, at).await;
@@ -773,7 +776,7 @@ async fn intake_steps(
     h: &Ctx<'_>,
     db: &mut PgConnection,
     (msg, read, body, media): (&InboundText<'_>, &Read, &str, &Media),
-    (resubscribed, now): (bool, Timestamp),
+    (resubscribed, now, real): (bool, Timestamp, Timestamp),
 ) -> Step<After> {
     let inbound = Inbound {
         words: msg.text,
@@ -802,7 +805,7 @@ async fn intake_steps(
         Some(_) => Vec::new(),
         None if resubscribed || msg.emergency => Vec::new(),
         None => {
-            admitted(db, msg.contact, now).await?;
+            admitted(db, msg.contact, real).await?;
             Vec::new()
         }
     };
@@ -934,7 +937,9 @@ fn opened(replied: &Reply) -> bool {
 /// nothing and nothing waits on the network while the shared hourly row is held. A refused text
 /// ends here (200, its inbox row kept, so Twilio's resend is a repeat): it opens nothing and is
 /// answered by nothing; its alert (one per window, no body or phone) is `intake`'s. A counter or
-/// alert error is a database error, so the delivery rolls back and Twilio resends it.
+/// alert error is a database error, so the delivery rolls back and Twilio resends it. `now` is
+/// the route's `real_now()` (a test-control advance never opens a new window; a worker rerun
+/// passes its `now()`), D-5836.
 async fn admitted(db: &mut PgConnection, contact: Uuid, now: Timestamp) -> Step<()> {
     match admit_new_request(&mut *db, (contact, None), now).await {
         Ok(Admission::Admitted) => Ok(()),

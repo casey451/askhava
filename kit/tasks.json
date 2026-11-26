@@ -30177,8 +30177,7 @@
     "D-4361",
     "D-4748",
     "D-4764",
-    "D-5664",
-    "D-5876"
+    "D-5664"
    ],
    "cites": [],
    "budget": {
@@ -30193,7 +30192,7 @@
    ],
    "branch": "claude/task/T744-final-status-ends-picks",
    "prompt": "kit/prompts/T744.md",
-   "acceptance": "`tests/integration/tests/final_status_pick_end.rs` passes against PostgreSQL and the Stripe stand-in; `tests/integration/tests/aftermath_notices.rs` and every pick-ending test pass unchanged; no PaymentIntent stored in `payments.pick_intent` for a pick of a final job stays open (case A; case B, no intent stored at the close, is T689's, D-5664)."
+   "acceptance": "`tests/integration/tests/final_status_pick_end.rs` passes against PostgreSQL and the Stripe stand-in; `tests/integration/tests/aftermath_notices.rs` and every pick-ending test pass unchanged; no PaymentIntent of a final job stays open."
   },
   {
    "id": "T654",

@@ -180,7 +180,8 @@ where
         headers: &pairs,
     };
     let now = h.clock.now();
-    let hook = match verify_webhook(WebhookVendor::Stripe, &h.secret, delivery, now.as_second()) {
+    let fresh = h.clock.real_now().as_second();
+    let hook = match verify_webhook(WebhookVendor::Stripe, &h.secret, delivery, fresh) {
         Ok(hook) => hook,
         Err(error) => return rejected(error),
     };
