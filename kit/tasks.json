@@ -10822,7 +10822,8 @@
     "T318",
     "T355",
     "T402",
-    "T590"
+    "T590",
+    "T867"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -10855,13 +10856,14 @@
     "D-2628",
     "D-3055",
     "D-3106",
-    "D-4052"
+    "D-4052",
+    "D-5888"
    ],
    "cites": [],
    "budget": {
     "files": 3,
     "lines": 200,
-    "context_pct": 18
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -33059,7 +33061,8 @@
     "T840",
     "T841",
     "T846",
-    "T847"
+    "T847",
+    "T867"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -33312,7 +33315,8 @@
     "T840",
     "T841",
     "T846",
-    "T847"
+    "T847",
+    "T867"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -33343,7 +33347,7 @@
    "budget": {
     "files": 1,
     "lines": 300,
-    "context_pct": 12
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -34126,7 +34130,8 @@
     "T840",
     "T841",
     "T846",
-    "T847"
+    "T847",
+    "T867"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -34188,7 +34193,7 @@
    "budget": {
     "files": 14,
     "lines": 800,
-    "context_pct": 57
+    "context_pct": 63
    },
    "checks": [
     "Ci",
@@ -35633,7 +35638,8 @@
     "T837",
     "T843",
     "T852",
-    "T853"
+    "T853",
+    "T867"
    ],
    "model": null,
    "effort": null,
@@ -38550,7 +38556,8 @@
     "T797",
     "T818",
     "T821",
-    "T825"
+    "T825",
+    "T867"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -38612,7 +38619,7 @@
    "budget": {
     "files": 14,
     "lines": 800,
-    "context_pct": 18
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -38652,7 +38659,8 @@
     "T757",
     "T758",
     "T759",
-    "T760"
+    "T760",
+    "T867"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -38709,7 +38717,7 @@
    "budget": {
     "files": 14,
     "lines": 800,
-    "context_pct": 20
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -38749,7 +38757,8 @@
     "T757",
     "T758",
     "T759",
-    "T760"
+    "T760",
+    "T867"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -38806,7 +38815,7 @@
    "budget": {
     "files": 14,
     "lines": 800,
-    "context_pct": 20
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -39055,7 +39064,8 @@
     "T760",
     "T818",
     "T821",
-    "T825"
+    "T825",
+    "T867"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -52201,7 +52211,7 @@
    "id": "T785",
    "slug": "dispute-without-due-date",
    "title": "payments: a dispute with no usable evidence date is still recorded and still blocks refunds",
-   "goal": "Plan change D-5081 (external code review of Nov 20, 2026, finding F26; FEE-026, FEE-027; D-2073 (1)). A `charge.dispute.created` whose `evidence_details.due_by` is null is read as unreadable (`app/payments/src/routes.rs`): one High alert with no subject, no `payments.dispute` row and no ledger entry, so FEE-026's refund block never applies and an automatic refund can go out on a disputed charge; D-2073 (1) said Casey records such a dispute by hand, but no screen or caller exists for that. A `due_by` of 0 or below is stored as 1970 and its tasks fire at once. The new `migrations/0219_payments_dispute_due_optional.sql` drops `NOT NULL` from `payments.dispute.due_at`. The webhook route now treats a null, zero, negative or already-past `due_by` as no date and still records the dispute: the dispute row, the ledger entry and the dispute alert are written exactly as for a dated one, so refunds on that pick are blocked and flagged, and only the submit task and the due reminders, which need a date, are skipped; the alert says the evidence date is missing and names the pick, so Casey can act in Stripe. `record_dispute`'s existing signature stays for dated disputes; the undated case is a new entry beside it in `app/payments/src/disputes.rs`, so no done test changes except TD-FEE-43's `td_fee_43_an_unreadable_event_alerts_casey_once`, by logged spec change (D-5164): its unreadable dispute becomes one with no `payment_intent`; the odd refund status, the alert count 2, the no-dispute-row and High assertions stay. Every reader of `payments.dispute.due_at` handles a missing date: the ones in these two files (in `disputes.rs`, `mark_auto_submit` (`:213` to `:224`) neither sets `auto_submit` nor queues a submit task for an undated dispute and answers as for one it did not mark, and `list_disputes` (`:414`) reads `(due_at IS NULL OR due_at >= $1)` so an undated open dispute stays in the digest), `DisputeView.due_at` (now `Option<Timestamp>`, `models.rs`), `dispute_row` in `app/portals/src/owner_portal.rs` (an undated dispute shows `date not given by Stripe` as `due` and, unless submitted, the standing 'You need to counter or accept this one in Stripe.', never the 2-days line; no template change), and `place_dispute_holds` in `app/payments/src/purge.rs`, which this task also owns for that read alone: an undated dispute's PRIV-007 hold counts from `opened_at` in place of the missing date, and the decision entry and `docs/for-casey-review.md` say so. Tests in the new `tests/integration/tests/dispute_no_due_date.rs`, PostgreSQL with the Stripe stand-in's signing, fake data only, the event bodies built in the test: `due_by` null makes one dispute row with no date and one ledger entry, and a later refund on that pick is blocked and flagged; `due_by` 0 and a past date do the same and queue no task due in the past; an undated dispute still places its retention hold; a dated dispute behaves as today; an undated open dispute is listed by `list_disputes` and gets no submit task from `mark_auto_submit`; a negative `due_by` is undated; a null `due_by` raises no `UNREADABLE_EVENT_ALERT`; `disputes_of` returns `None` for the date; the owner refund page line for an undated dispute; and the null, zero, negative and past `due_by` paths and the undated `purge.rs:41` read each get a case (95% branch floor). Every existing dispute and refund test passes unchanged except that one TD-FEE-43 case. It is money code under the `payments` 95% branch floor. The worker updates `td_fee_43_an_unreadable_event_alerts_casey_once`'s doc comment (\"a dispute with no evidence due date\") to match its new body. This task does not touch `kit/plan.lock`. Build notes go to the end of `app/payments/NOTES.md`; update `docs/architecture.md` and `docs/decisions.md`. Plan change D-5252 (job-5 money review findings 2 and 9, verified on `main`; FEE-026, FEE-027; D-2289): (2) a `charge.dispute.created` whose PaymentIntent a `payments.pick_intent` row holds but which has no `payments.charge_evidence` row is not an unknown charge: `record_dispute` (`app/payments/src/disputes.rs:97` to `:106`) answers a new `MoneyEventError::NoEvidence(pick)` there (`models.rs`), and the `Dispatch::Dispute` arm (`app/payments/src/routes.rs:329` to `:337`; `money` at `:431` is synchronous) raises one `raise_alert_once` per pick of a new High alert kind `payments.dispute_no_evidence` (subject the pick; not `FRAUD_WARNING_ALERT` and not `no_evidence_alert`) and answers `Acted::Retry` (500, Stripe resends), the same retry shape as the fraud-warning `NoEvidence` path (`routes.rs:473` to `:477`); a dispute no pick holds keeps today's answer (200, nothing written; TD-FEE-43, D-1754; `td_fee_43_an_unknown_object_changes_nothing`, `tests/integration/tests/stripe_webhook_dispatch.rs:451` to `:505`, passes unchanged), the nightly reconcile's `UNKNOWN_CHARGE_ALERT` already covering it. (9) in `run_dispute_submit` (`disputes.rs:361` to `:398`), after the existing `auto_submit AND submitted_at IS NULL` read finds the row, when its `due_at` is set and `now >= due_at` it makes no Stripe call, raises one High alert of a new kind `payments.dispute_deadline_missed` through `raise_alert_once` (subject the pick) and returns `Ok`. Their cases join `tests/integration/tests/dispute_no_due_date.rs` (a dispute with evidence missing is resent and alerted once; a submit task run after the deadline calls no Stripe and alerts once). Plan change D-5314: this task's migration moves to `migrations/0220_payments_dispute_due_optional.sql` for T812's `0216_businesses_step_up_session.sql`, which runs earlier (V9); earlier numbers in this goal are history. Plan change D-5336: this task's migration moves to `migrations/0222_payments_dispute_due_optional.sql` for T804's `0216_portals_data_request_link.sql`, which runs earlier (V9); earlier numbers in this goal are history. Plan change D-5848: the migration is `0222_payments_dispute_due_optional.sql` (T862 takes `0218`); earlier numbers are history.",
+   "goal": "Plan change D-5081 (external code review of Nov 20, 2026, finding F26; FEE-026, FEE-027; D-2073 (1)). A `charge.dispute.created` whose `evidence_details.due_by` is null is read as unreadable (`app/payments/src/routes.rs`): one High alert with no subject, no `payments.dispute` row and no ledger entry, so FEE-026's refund block never applies and an automatic refund can go out on a disputed charge; D-2073 (1) said Casey records such a dispute by hand, but no screen or caller exists for that. A `due_by` of 0 or below is stored as 1970 and its tasks fire at once. The new `migrations/0219_payments_dispute_due_optional.sql` drops `NOT NULL` from `payments.dispute.due_at`. The webhook route now treats a null, zero, negative or already-past `due_by` as no date and still records the dispute: the dispute row, the ledger entry and the dispute alert are written exactly as for a dated one, so refunds on that pick are blocked and flagged, and only the submit task and the due reminders, which need a date, are skipped; the alert says the evidence date is missing and names the pick, so Casey can act in Stripe. `record_dispute`'s existing signature stays for dated disputes; the undated case is a new entry beside it in `app/payments/src/disputes.rs`, so no done test changes except TD-FEE-43's `td_fee_43_an_unreadable_event_alerts_casey_once`, by logged spec change (D-5164): its unreadable dispute becomes one with no `payment_intent`; the odd refund status, the alert count 2, the no-dispute-row and High assertions stay. Every reader of `payments.dispute.due_at` handles a missing date: the ones in these two files (in `disputes.rs`, `mark_auto_submit` (`:213` to `:224`) neither sets `auto_submit` nor queues a submit task for an undated dispute and answers as for one it did not mark, and `list_disputes` (`:414`) reads `(due_at IS NULL OR due_at >= $1)` so an undated open dispute stays in the digest), `DisputeView.due_at` (now `Option<Timestamp>`, `models.rs`), `dispute_row` in `app/portals/src/owner_portal.rs` (an undated dispute shows `date not given by Stripe` as `due` and, unless submitted, the standing 'You need to counter or accept this one in Stripe.', never the 2-days line; no template change), and `place_dispute_holds` in `app/payments/src/purge.rs`, which this task also owns for that read alone: an undated dispute's PRIV-007 hold counts from `opened_at` in place of the missing date, and the decision entry and `docs/for-casey-review.md` say so. Tests in the new `tests/integration/tests/dispute_no_due_date.rs`, PostgreSQL with the Stripe stand-in's signing, fake data only, the event bodies built in the test: `due_by` null makes one dispute row with no date and one ledger entry, and a later refund on that pick is blocked and flagged; `due_by` 0 and a past date do the same and queue no task due in the past; an undated dispute still places its retention hold; a dated dispute behaves as today; an undated open dispute is listed by `list_disputes` and gets no submit task from `mark_auto_submit`; a negative `due_by` is undated; a null `due_by` raises no `UNREADABLE_EVENT_ALERT`; `disputes_of` returns `None` for the date; the owner refund page line for an undated dispute; and the null, zero, negative and past `due_by` paths and the undated `purge.rs:41` read each get a case (95% branch floor). Every existing dispute and refund test passes unchanged except that one TD-FEE-43 case. It is money code under the `payments` 95% branch floor. The worker updates `td_fee_43_an_unreadable_event_alerts_casey_once`'s doc comment (\"a dispute with no evidence due date\") to match its new body. This task does not touch `kit/plan.lock`. Build notes go to the end of `app/payments/NOTES.md`; update `docs/architecture.md` and `docs/decisions.md`. Plan change D-5252 (job-5 money review findings 2 and 9, verified on `main`; FEE-026, FEE-027; D-2289): (2) a `charge.dispute.created` whose PaymentIntent a `payments.pick_intent` row holds but which has no `payments.charge_evidence` row is not an unknown charge: `record_dispute` (`app/payments/src/disputes.rs:97` to `:106`) answers a new `MoneyEventError::NoEvidence(pick)` there (`models.rs`), and the `Dispatch::Dispute` arm (`app/payments/src/routes.rs:329` to `:337`; `money` at `:431` is synchronous) raises one `raise_alert_once` per pick of a new High alert kind `payments.dispute_no_evidence` (subject the pick; not `FRAUD_WARNING_ALERT` and not `no_evidence_alert`) and answers `Acted::Retry` (500, Stripe resends), the same retry shape as the fraud-warning `NoEvidence` path (`routes.rs:473` to `:477`); a dispute no pick holds keeps today's answer (200, nothing written; TD-FEE-43, D-1754; `td_fee_43_an_unknown_object_changes_nothing`, `tests/integration/tests/stripe_webhook_dispatch.rs:451` to `:505`, passes unchanged), the nightly reconcile's `UNKNOWN_CHARGE_ALERT` already covering it. (9) in `run_dispute_submit` (`disputes.rs:361` to `:398`), after the existing `auto_submit AND submitted_at IS NULL` read finds the row, when its `due_at` is set and `now >= due_at` it makes no Stripe call, raises one High alert of a new kind `payments.dispute_deadline_missed` through `raise_alert_once` (subject the pick) and returns `Ok`. Their cases join `tests/integration/tests/dispute_no_due_date.rs` (a dispute with evidence missing is resent and alerted once; a submit task run after the deadline calls no Stripe and alerts once). Plan change D-5314: this task's migration moves to `migrations/0220_payments_dispute_due_optional.sql` for T812's `0216_businesses_step_up_session.sql`, which runs earlier (V9); earlier numbers in this goal are history. Plan change D-5336: this task's migration moves to `migrations/0222_payments_dispute_due_optional.sql` for T804's `0216_portals_data_request_link.sql`, which runs earlier (V9); earlier numbers in this goal are history. Plan change D-5848: the migration is `0222_payments_dispute_due_optional.sql` (T862 takes `0218`); earlier numbers are history. Plan change D-5888 (MONEY-1 review finding F4, verified; FEE-026, FEE-027): `record_dispute` (`app/payments/src/disputes.rs:97` to `:106`) answers `UnknownCharge`, which `money()` (`app/payments/src/routes.rs:470` to `:474`) acknowledges with 200, both when no charge matches and when the pick is known but its charge evidence is not stored yet, so a dispute arriving before the success is recorded is dropped. When a `payments.pick_intent` row names the intent's pick but no `payments.charge_evidence` row exists yet, the route answers retry (`Acted::Retry`, so Stripe resends), as the fraud route's `Found::NotYet` does; a dispute on a charge no pick names raises one High alert through `raise_alert_once` naming the dispute (no homeowner detail) before its 200. Tests in the new `tests/integration/tests/dispute_before_success.rs`, PostgreSQL with the Stripe stand-in's signing, fake data only: a dispute before the success answers retry and writes nothing, and once the success is recorded its resend records the dispute, fee and refund block once (fails on `main`); a dispute on an unknown charge answers 200 and raises one alert across two deliveries.",
    "type": "harness",
    "phase": 2,
    "stage": "6",
@@ -52227,7 +52237,8 @@
     "tests/integration/tests/dispute_no_due_date.rs",
     "app/payments/src/models.rs",
     "app/portals/src/owner_portal.rs",
-    "tests/integration/tests/stripe_webhook_dispatch.rs"
+    "tests/integration/tests/stripe_webhook_dispatch.rs",
+    "tests/integration/tests/dispute_before_success.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -52247,12 +52258,13 @@
     "D-5252",
     "D-5314",
     "D-5336",
-    "D-5848"
+    "D-5848",
+    "D-5888"
    ],
    "cites": [],
    "budget": {
-    "files": 8,
-    "lines": 700,
+    "files": 9,
+    "lines": 800,
     "context_pct": 44
    },
    "checks": [
@@ -52262,7 +52274,7 @@
    ],
    "branch": "claude/task/T785-dispute-without-due-date",
    "prompt": "kit/prompts/T785.md",
-   "acceptance": "`tests/integration/tests/dispute_no_due_date.rs` passes against PostgreSQL with every listed case, the null case failing on `main` before the change (no dispute row there); every existing dispute and refund test passes unchanged except that one TD-FEE-43 case; the migration only drops the `NOT NULL`; `app/payments/` stays at or above its branch floor."
+   "acceptance": "`tests/integration/tests/dispute_no_due_date.rs` passes against PostgreSQL with every listed case, the null case failing on `main` before the change (no dispute row there); every existing dispute and refund test passes unchanged except that one TD-FEE-43 case; the migration only drops the `NOT NULL`; `app/payments/` stays at or above its branch floor. `tests/integration/tests/dispute_before_success.rs` passes, its before-success case failing on `main` before the change."
   },
   {
    "id": "T789",
@@ -52866,7 +52878,7 @@
    "id": "T796",
    "slug": "reconcile-partial-refunds",
    "title": "payments: the nightly reconcile books a dashboard partial refund once and alerts Casey, and catches a stored refund Stripe shows failed",
-   "goal": "Plan change D-5254 (job-5 money review findings 4 and 6, verified on `main`; FEE-029, FEE-030; D-2303, D-5158; review rounds 1 and 2). (4) A refund Casey makes in the Stripe dashboard (which D-5158 sanctions) can be partial; `plan_charge` (`app/payments/src/models.rs:749`) books any refund as yes or no (`has_refund`, `:770`), so a second partial refund is never booked. The reconcile does not refund the rest of a dashboard partial refund on an ended pick (T066's `request_refund` would refund it but book nothing, raise a spurious `REFUND_MISMATCH_ALERT` and settle at the dashboard amount): `plan_charge`'s decision and signature are unchanged, and `app/payments/src/reconcile.rs` (its only production caller, `:457`) books the charge's refund this way: the first refund booking for a charge (the ledger holds no net refund for it) keeps today's key from `key_and_id` (`reconcile.rs:557` to `:564`: `refund.{pick}` on the pick's own intent, `reconcile.refund.{charge}` on a second charge), so T066's `held`, `last_refund` and `refund_ended` (`app/payments/src/refunds.rs:497` to `:529`, `:744` to `:748`) still see it (D-1753, D-2067; both `td_fee_42` cases in `tests/integration/tests/refund_lifecycle.rs` pass unchanged); only a later top-up, when the ledger already holds a positive net refund for the charge, is booked as `refunded_cents` minus that net refund under `reconcile.refund.{charge}.{refunded_cents}`, and only when positive; and, for a partial refund (`0 < refunded_cents < amount_cents`, no dispute) on an ended pick with no refund of Laftly's own on record for the charge (no `payments.refund` row on the pick whose own intent is the charge's, and no `payments.reconcile_charge` row for the charge with a `refund_reason`, which `first_seen` writes, `reconcile.rs:590` to `:610`), raises one High `payments.reconcile_partial_refund` alert per charge (`raise_alert_once`, subject the pick) asking Casey to refund the rest in Stripe; the no-pick branch is decided by the same per-charge marker. A no-pick charge with a dashboard partial refund raises nothing new and books nothing (`plan_charge` is unchanged, a no-pick charge never enters the ledger, and `UNKNOWN_CHARGE_ALERT` already covers it); the `payments.reconcile_partial_refund` alert is only for a charge with a pick as its subject. A partial answer to Laftly's own refund stays as D-2303 books and alerts it. (6) When the ledger's net refund is more than Stripe's `refunded_cents` and the pick's refund is stored `succeeded`, the nightly reconcile reads the refund with `fetch_refund` (`app/payments/src/refund_stripe.rs:132`) and calls the existing `refund_failed` or `refund_canceled` (`app/payments/src/refunds.rs:713`, `:725`) for what it answers; a `fetch_refund` error, `NotSent` included (`app/adapters/src/payments.rs:397` to `:403`), leaves the refund as stored, keeps the charge open in the report and never fails the run. Tests in the new `tests/integration/tests/reconcile_partial_refund.rs`, PostgreSQL and the Stripe stand-in, fake data only: a dashboard partial refund on an ended pick is booked once across two nights, refunds nothing and raises one `payments.reconcile_partial_refund` alert; a second partial refund books only the new part; a stored-succeeded refund Stripe shows failed is moved through `refund_failed`; a `fetch_refund` error leaves it as stored. Every reconcile and refund test passes unchanged, both `td_fee_42` cases in `refund_lifecycle.rs`, the TD-FEE-16 property (`app/payments/src/tests/prop_ledger_matches_stripe.rs`), `coverage_margin.rs` and both `td_fee_60` partial-refund cases (`tests/integration/tests/reconcile_catch_up.rs:373` to `:437`, the night-1 `refunded == 1` included) among them. Money: Opus worker, Opus money review, two review rounds. Update `app/payments/NOTES.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-5254 (job-5 money review findings 4 and 6, verified on `main`; FEE-029, FEE-030; D-2303, D-5158; review rounds 1 and 2). (4) A refund Casey makes in the Stripe dashboard (which D-5158 sanctions) can be partial; `plan_charge` (`app/payments/src/models.rs:749`) books any refund as yes or no (`has_refund`, `:770`), so a second partial refund is never booked. The reconcile does not refund the rest of a dashboard partial refund on an ended pick (T066's `request_refund` would refund it but book nothing, raise a spurious `REFUND_MISMATCH_ALERT` and settle at the dashboard amount): `plan_charge`'s decision and signature are unchanged, and `app/payments/src/reconcile.rs` (its only production caller, `:457`) books the charge's refund this way: the first refund booking for a charge (the ledger holds no net refund for it) keeps today's key from `key_and_id` (`reconcile.rs:557` to `:564`: `refund.{pick}` on the pick's own intent, `reconcile.refund.{charge}` on a second charge), so T066's `held`, `last_refund` and `refund_ended` (`app/payments/src/refunds.rs:497` to `:529`, `:744` to `:748`) still see it (D-1753, D-2067; both `td_fee_42` cases in `tests/integration/tests/refund_lifecycle.rs` pass unchanged); only a later top-up, when the ledger already holds a positive net refund for the charge, is booked as `refunded_cents` minus that net refund under `reconcile.refund.{charge}.{refunded_cents}`, and only when positive; and, for a partial refund (`0 < refunded_cents < amount_cents`, no dispute) on an ended pick with no refund of Laftly's own on record for the charge (no `payments.refund` row on the pick whose own intent is the charge's, and no `payments.reconcile_charge` row for the charge with a `refund_reason`, which `first_seen` writes, `reconcile.rs:590` to `:610`), raises one High `payments.reconcile_partial_refund` alert per charge (`raise_alert_once`, subject the pick) asking Casey to refund the rest in Stripe; the no-pick branch is decided by the same per-charge marker. A no-pick charge with a dashboard partial refund raises nothing new and books nothing (`plan_charge` is unchanged, a no-pick charge never enters the ledger, and `UNKNOWN_CHARGE_ALERT` already covers it); the `payments.reconcile_partial_refund` alert is only for a charge with a pick as its subject. A partial answer to Laftly's own refund stays as D-2303 books and alerts it. (6) When the ledger's net refund is more than Stripe's `refunded_cents` and the pick's refund is stored `succeeded`, the nightly reconcile reads the refund with `fetch_refund` (`app/payments/src/refund_stripe.rs:132`) and calls the existing `refund_failed` or `refund_canceled` (`app/payments/src/refunds.rs:713`, `:725`) for what it answers; a `fetch_refund` error, `NotSent` included (`app/adapters/src/payments.rs:397` to `:403`), leaves the refund as stored, keeps the charge open in the report and never fails the run. Tests in the new `tests/integration/tests/reconcile_partial_refund.rs`, PostgreSQL and the Stripe stand-in, fake data only: a dashboard partial refund on an ended pick is booked once across two nights, refunds nothing and raises one `payments.reconcile_partial_refund` alert; a second partial refund books only the new part; a stored-succeeded refund Stripe shows failed is moved through `refund_failed`; a `fetch_refund` error leaves it as stored. Every reconcile and refund test passes unchanged, both `td_fee_42` cases in `refund_lifecycle.rs`, the TD-FEE-16 property (`app/payments/src/tests/prop_ledger_matches_stripe.rs`), `coverage_margin.rs` and both `td_fee_60` partial-refund cases (`tests/integration/tests/reconcile_catch_up.rs:373` to `:437`, the night-1 `refunded == 1` included) among them. Money: Opus worker, Opus money review, two review rounds. Update `app/payments/NOTES.md` and `docs/decisions.md`. Plan change D-5888 (MONEY-1 review finding F2, verified): the `payments.reconcile_partial_refund` alert's condition uses the same predicate as the refund, `pick.ended || !pick.own_intent`: a partly refunded second charge (not the pick's own intent) on a pick that has not ended raises the same one High alert per charge, with the same no-refund-of-Laftly's-own test; a case for it joins `tests/integration/tests/reconcile_partial_refund.rs`.",
    "deps": [
     "T785"
    ],
@@ -52886,13 +52898,15 @@
    ],
    "requirements": [
     "FEE-029",
-    "FEE-030"
+    "FEE-030",
+    "FEE-037"
    ],
    "tests": [],
    "decisions": [
     "D-5254",
     "D-5158",
-    "D-2303"
+    "D-2303",
+    "D-5888"
    ],
    "budget": {
     "files": 2,
@@ -56156,6 +56170,70 @@
    "prompt": "kit/prompts/T863.md",
    "acceptance": "In web-and-email mode, texting off or suspended, or opted out, the code goes by email to her conversation address and no Verify SMS is sent; otherwise unchanged; two Opus review rounds.",
    "copy": true
+  },
+  {
+   "id": "T867",
+   "slug": "fraud-end-real-states",
+   "title": "picks and payments (harness): an early fraud warning before release ends the pick and returns the job from the states that really occur",
+   "goal": "Plan change D-5888 (MONEY-1 review finding F3, verified by Opus on `main` 32744d0f2; Casey's go of November 26; FEE-052, JOB-014, PICK-022; D-491, D-2627, D-4349). FEE-052 says a warned charge whose details were not yet released is refunded at once, its pick ending as fraud-refunded and the job returning to Quotes ready. `fraud_warning` (`app/picks/src/unreachable_refund.rs:546` to `:562`) moves the job only from Payment pending and ends only a `paid` pick, but since T663 `settle` makes the pick `paid` and the job Connected in one transaction (`app/picks/src/settle.rs:113` to `:123`), so that pair never holds on `main`: (a) a pick `awaiting_confirm` with its job in Payment pending is refunded, `end_pick` gives `MovedOn`, the job move rolls back and `run_fraud_warning` swallows it (`app/picks/src/unreachable_steps.rs:685` to `:687`), so the job stays in Payment pending, `payment_held` (`app/payments/src/payment_hold.rs:61`, which ignores refunds) keeps answering `Success`, `picks.held_success` is queued hourly and refused each time, and only the 24-hour `picks.payment_held_long` alert follows; she never gets her backup; (b) a pick `paid` with its job Connected and nothing released is refunded but the job stays Connected. Money is already right (refunded, nothing released); the lifecycle is not. This task, after T744 (owner of `app/picks/src/connect.rs`) and T799 (owner of `tests/integration/tests/unreachable_refund.rs`): (1) after the refund reads `Succeeded`, `fraud_warning` re-reads the pick and job under the pick's row lock (the lock the release claim takes first, D-2627) and branches on the real state: a pick `awaiting_confirm` whose job is in Payment pending ends as fraud-refunded and the job returns to Quotes ready with her backup offer (PICK-047) or PICK-046's text, as T663's `end_pending` does (`app/picks/src/connect.rs`, through a new `PendingEnd` variant that ends the pick with status `fraud_refunded`, no new `end_reason` and no migration; if a CHECK constraint would reject it, stop and report it as a plan gap); a pick `paid` whose job is Connected with no `picks.release` row moves Connected to Quotes ready (an allowed arrow, `app/jobs/src/status.rs:100`) and ends as fraud-refunded, in one transaction with the same backup offer; any other state (released, ended, a final job, a fee-free pick) changes nothing, and a second warning or a rerun ends nothing twice and offers no second backup; (2) `payments::api::payment_held` treats a `succeeded` attempt whose charge has a `succeeded` refund on record as not `Success` (it falls through to today's `Held` or `Free` rules), so the hourly `picks.held_success` loop stops; every other `payment_held` answer is unchanged. The DONE tests that pass only on a planted `paid` pick with a Payment pending job move their seeds to the two real states, with no assertion weakened or removed and the TD-FEE-39 and TD-PICK-59 rows unchanged: `td_fee_39_the_fraud_warning` in `tests/integration/tests/unreachable_refund.rs` (`:246` to `:253`, `:472` to `:505`; every other test there keeps its seed) and `tests/integration/tests/release_fraud_race.rs` (`:101` to `:108`, `:218` to `:242`; both race orders and the no-show case keep their assertions). New tests in `tests/integration/tests/fraud_end_real_states.rs`, PostgreSQL and the Stripe stand-in, fake data only: case (a) ends the pick fraud-refunded, returns the job to Quotes ready and queues one backup offer (fails on `main`); case (b) does the same from Connected (fails on `main`); a released pick is listed for Casey and its job and pick are untouched; a repeated warning changes nothing; after a refunded success `payment_held` is not `Success` and no `picks.held_success` task is queued. Money: Opus worker, Opus money, privacy and harness review, two review rounds. Update `app/picks/CLAUDE.md`, `app/payments/NOTES.md` and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": "picks",
+   "deps": [
+    "T744",
+    "T799"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "privacy",
+    "harness"
+   ],
+   "owns": [
+    "app/picks/src/unreachable_refund.rs",
+    "app/picks/src/connect.rs",
+    "app/payments/src/payment_hold.rs",
+    "tests/integration/tests/unreachable_refund.rs",
+    "tests/integration/tests/release_fraud_race.rs",
+    "tests/integration/tests/fraud_end_real_states.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/fees.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/lifecycle.md",
+    "docs/brains/payments-stripe.md"
+   ],
+   "requirements": [
+    "FEE-052",
+    "JOB-014",
+    "PICK-022"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-491",
+    "D-2627",
+    "D-4349",
+    "D-5888"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 6,
+    "lines": 500,
+    "context_pct": 30
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T867-fraud-end-real-states",
+   "prompt": "kit/prompts/T867.md",
+   "acceptance": "`tests/integration/tests/fraud_end_real_states.rs` passes against PostgreSQL with cases (a) and (b) failing on `main` before the change; `td_fee_39_the_fraud_warning` and every case in `release_fraud_race.rs` pass on real seeds with no assertion weakened; every other pick, payment-wait and release test passes unchanged; `app/payments/` keeps its 95% branch floor."
   }
  ]
 }
