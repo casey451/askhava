@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-26T23:58:03Z by runner f768b5962fcf (actions).
+Updated 2026-11-26T23:58:42Z by runner f768b5962fcf (actions).
 
-**Building: T854 in progress since 21:52Z; 675 of 799 done; week 7% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Building: T309 in progress since 22:19Z; 675 of 799 done; week 7% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 675 of 799 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T854 claimed 21:52Z, lease until 00:52Z; lane 3: T309 claimed 22:19Z, lease until 01:19Z; lane 4: T783 claimed 22:18Z, lease until 01:18Z
+- **Lane:** lane 3: T309 claimed 22:19Z, lease until 01:19Z; lane 4: T783 claimed 22:18Z, lease until 01:18Z
 - **Week:** 7% used, 180.6M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:56Z, 1 min before this update
+- **Last run:** 23:56Z, 2 min before this update
 - **Keeper:** last ran 23:56Z, next wake 00:16Z
 
 ## Needs attention
@@ -40,6 +40,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T854 | portals and action links: sessions and admissions on `real_n | MERGE_PENDING | 1 | 2 h 5 min | 23:58Z |  |
 | T744 | picks: a job that reaches a final status ends its pick await | MERGE_PENDING | 1 | 98 min | 23:54Z |  |
 | T820 | server and portals: "Download my data" also holds withdrawn  | check_failed | 3 | 102 min | 21:46Z | Hand-in time passed. Worker added unit tests in app/portals/src/data_download.rs (commit f4a102dca); portals-only covera |
 | T657 | quotes and portals: quote-form and sign-in errors mark the f | check_failed | 1 | 75 min | 21:40Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-26T |
@@ -99,9 +100,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T854 (lease until 2026-11-27T00:52:25Z)
 - lane 3: T309 (lease until 2026-11-27T01:19:36Z)
 - lane 4: T783 (lease until 2026-11-27T01:18:01Z)
 
 ## Last usage reading
-- {"task": "T744", "at": "2026-11-26T23:54:05Z", "output_tokens": 56771, "cache_read_input_tokens": 9328611, "cache_creation_input_tokens": 196827, "input_tokens": 205}
+- {"task": "T854", "at": "2026-11-26T23:58:01Z", "cache_read_input_tokens": 8364795, "output_tokens": 45069, "cache_creation_input_tokens": 162846, "input_tokens": 225}
