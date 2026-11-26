@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-26T21:40:50Z by runner 3005eff2378a (actions).
+Updated 2026-11-26T21:41:01Z by runner 3005eff2378a (actions).
 
-**Building: T657 in progress since 20:24Z; 673 of 788 done; week 4% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Building: T820 in progress since 20:04Z; 673 of 788 done; week 4% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 673 of 788 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T657 claimed 20:24Z, lease until 23:24Z; lane 3: T820 claimed 20:04Z, lease until 23:04Z; lane 4: T309 claimed 20:18Z, lease until 23:18Z
+- **Lane:** lane 3: T820 claimed 20:04Z, lease until 23:04Z; lane 4: T309 claimed 20:18Z, lease until 23:18Z
 - **Week:** 4% used, 183.9M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
 - **Last run:** 21:40Z, 0 min before this update
 - **Keeper:** last ran 21:21Z, next wake 22:12Z
@@ -22,6 +22,7 @@ Updated 2026-11-26T21:40:50Z by runner 3005eff2378a (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T657 | quotes and portals: quote-form and sign-in errors mark the f | MERGE_PENDING | 1 | 75 min | 21:40Z |  |
 | T840 | intake and messaging: quote updates reach Email and web-and- | MERGE_PENDING | 1 | 2 h 10 min | 21:20Z |  |
 | T848 | core, payments, inbound text, security: `Clock::real_now()`  | MERGE_PENDING | 1 | 75 min | 21:12Z |  |
 | T847 | e2e: J3 step 5 seeds its refused pick at the app clock, so t | done | 1 | 94 min | 20:01Z |  |
@@ -76,9 +77,9 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T657 (lease until 2026-11-26T23:24:45Z)
+- nothing
 - lane 3: T820 (lease until 2026-11-26T23:04:34Z)
 - lane 4: T309 (lease until 2026-11-26T23:18:50Z)
 
 ## Last usage reading
-- {"task": "T840", "at": "2026-11-26T21:20:42Z", "cache_read_input_tokens": 11247178, "output_tokens": 85596, "input_tokens": 292, "cache_creation_input_tokens": 281379}
+- {"task": "T657", "at": "2026-11-26T21:40:19Z", "cache_read_input_tokens": 6882838, "output_tokens": 41090, "input_tokens": 177, "cache_creation_input_tokens": 165675}
