@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-26T21:46:37Z by runner b4a057ce7f55 (actions).
+Updated 2026-11-26T21:47:15Z by runner b4a057ce7f55 (actions).
 
-**Building: T820 in progress since 20:04Z; 673 of 788 done; week 4% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Building: T309 in progress since 20:18Z; 673 of 788 done; week 4% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 673 of 788 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T820 claimed 20:04Z, lease until 23:04Z; lane 4: T309 claimed 20:18Z, lease until 23:18Z
+- **Lane:** lane 4: T309 claimed 20:18Z, lease until 23:18Z
 - **Week:** 4% used, 183.9M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:42Z, 3 min before this update
+- **Last run:** 21:42Z, 4 min before this update
 - **Keeper:** last ran 21:42Z, next wake 23:07Z
 
 ## Needs attention
@@ -22,6 +22,7 @@ Updated 2026-11-26T21:46:37Z by runner b4a057ce7f55 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T820 | server and portals: "Download my data" also holds withdrawn  | MERGE_PENDING | 3 | 102 min | 21:46Z | Hand-in time passed. Worker added unit tests in app/portals/src/data_download.rs (commit f4a102dca); portals-only covera |
 | T657 | quotes and portals: quote-form and sign-in errors mark the f | MERGE_PENDING | 1 | 75 min | 21:40Z |  |
 | T840 | intake and messaging: quote updates reach Email and web-and- | MERGE_PENDING | 1 | 2 h 10 min | 21:20Z |  |
 | T848 | core, payments, inbound text, security: `Clock::real_now()`  | MERGE_PENDING | 1 | 75 min | 21:12Z |  |
@@ -78,8 +79,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 3: T820 (lease until 2026-11-26T23:04:34Z)
 - lane 4: T309 (lease until 2026-11-26T23:18:50Z)
 
 ## Last usage reading
-- {"task": "T657", "at": "2026-11-26T21:40:19Z", "cache_read_input_tokens": 6882838, "output_tokens": 41090, "input_tokens": 177, "cache_creation_input_tokens": 165675}
+- {"task": "T820", "at": "2026-11-26T21:46:35Z", "cache_read_input_tokens": 3009018, "output_tokens": 20126, "input_tokens": 121, "cache_creation_input_tokens": 114789}
