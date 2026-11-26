@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 {#- The owner's step-up page (T303; SEC-043, A11Y-030, A11Y-031; D-3878). One form takes a fresh
     6-digit code from the authenticator app; a wrong code puts "Error: " in the title and a focused
-    summary first, linked to the field. Then "Sign out" and "Sign out everywhere". No screen links
+    summary first in main, before the h1 (T657, D-4326), linked to the field. Then "Sign out" and "Sign out everywhere". No screen links
     to the owner sign-in page (the door probe reads such a link as a refusal). Forms post with
     novalidate and never disable their button. -#}
 {% block title %}{% if failed %}Error: {% endif %}Confirm it's you{% endblock %}
-{% block main %}<h1>Confirm it's you</h1>
-{% if failed %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
+{% block main %}{% if failed %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
 <h2>That code didn't work</h2>
 <p><a href="#code">Type the newest code from your app</a></p>
 </div>
-{% endif %}{% if done %}<p id="step-up-done" role="status">That worked. For the next 5 minutes you can change settings, give refunds and turn switches on or off.</p>
+{% endif %}<h1>Confirm it's you</h1>
+{% if done %}<p id="step-up-done" role="status">That worked. For the next 5 minutes you can change settings, give refunds and turn switches on or off.</p>
 {% endif %}<p>Settings, refunds and switches need a new code from your authenticator app first. Each code works once.</p>
 <form method="post" action="{{ step_up_route }}" novalidate>
 <input type="hidden" name="csrf" value="{{ csrf }}">

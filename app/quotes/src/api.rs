@@ -89,8 +89,8 @@ pub use crate::emergency_card_notice::{
 };
 pub use crate::flag_inputs::{MonthQuotes, month_quotes};
 pub use crate::formats::{
-    OTHER_SCHEDULE, PriceFields, PriceProblem, VisitSchedule, format_for, parse_price,
-    visit_schedule_of,
+    OTHER_SCHEDULE, PackagePart, PriceFields, PriceProblem, RangeEnd, VisitSchedule, format_for,
+    parse_price, visit_schedule_of,
 };
 pub use crate::gate::final_gate;
 pub use crate::handlers::{WINDOWS_KIND, WindowsCheck, run_windows_end, windows_ended};

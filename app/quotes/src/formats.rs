@@ -128,28 +128,71 @@ impl std::fmt::Debug for PriceFields {
 pub enum PriceProblem {
     /// The price (or visit fee) is missing or not an amount.
     Amount,
-    /// A range's low or high is missing or not an amount.
-    Range,
+    /// A range's low or high is missing or not an amount; which end the form points at.
+    Range(RangeEnd),
     /// A recurring price has no period.
     Per,
     /// A per-visit price has no visit schedule (REC-010, D-2333).
     Schedule,
-    /// No package has both a name and a price, or one has only one of them.
-    Tiers,
+    /// No package has both a name and a price, or one has only one of them or a price that is
+    /// not an amount: the first such package (1 to 3) and the part at fault (D-4326).
+    Tiers {
+        /// The package's number on the form, 1 to 3.
+        package: u8,
+        /// Its name or its price.
+        part: PackagePart,
+    },
     /// The setup charge is not an amount.
     Setup,
 }
 
+/// The end of a range the form points at (A11Y-030, D-4326).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RangeEnd {
+    /// The low is not an amount.
+    Low,
+    /// The low is an amount and the high is not.
+    High,
+}
+
+/// The part of a package the form points at (A11Y-030, D-4326).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PackagePart {
+    /// The package has a price but no name, or no package was filled in.
+    Name,
+    /// The package has a name and no price, or a price that is not an amount.
+    Price,
+}
+
+/// The package fields' element IDs, by package and then name and price.
+const TIER_FIELDS: [[&str; 2]; 3] = [
+    ["tier1_name", "tier1_price"],
+    ["tier2_name", "tier2_price"],
+    ["tier3_name", "tier3_price"],
+];
+
 impl PriceProblem {
-    /// The form element the message points at.
+    /// A11Y-030, D-4326: the form element the message points at; a package problem names the
+    /// first faulty package's name or price, a range problem the bad end.
     #[must_use]
     pub const fn field(self) -> &'static str {
         match self {
             Self::Amount => "amount",
-            Self::Range => "low",
+            Self::Range(RangeEnd::Low) => "low",
+            Self::Range(RangeEnd::High) => "high",
             Self::Per => "per",
             Self::Schedule => "schedule",
-            Self::Tiers => "tier1_name",
+            Self::Tiers { package, part } => {
+                let row = match package {
+                    1..=3 => package - 1,
+                    _ => 0,
+                };
+                let column = match part {
+                    PackagePart::Name => 0,
+                    PackagePart::Price => 1,
+                };
+                TIER_FIELDS[row as usize][column]
+            }
             Self::Setup => "setup",
         }
     }
@@ -159,14 +202,14 @@ impl PriceProblem {
     pub const fn message(self) -> &'static str {
         match self {
             Self::Amount => "Enter your price in dollars, like 250 or 250.00.",
-            Self::Range => "Enter a low and a high price in dollars.",
+            Self::Range(_) => "Enter a low and a high price in dollars.",
             Self::Per => {
                 "Choose what the price covers: one week, one month, 3 months, one year or one visit."
             }
             Self::Schedule => {
                 "Choose how often you'll visit, or choose Other and enter the monthly amount."
             }
-            Self::Tiers => "Give each package a name and a price in dollars.",
+            Self::Tiers { .. } => "Give each package a name and a price in dollars.",
             Self::Setup => "Enter the setup charge in dollars, or leave it empty.",
         }
     }
@@ -201,8 +244,8 @@ pub fn parse_price(
         Format::Firm => Price::Firm(amount()?),
         Format::DiagnosticVisit => Price::VisitFee(amount()?),
         Format::Range => Price::Range {
-            low: dollars(&fields.low).ok_or(PriceProblem::Range)?,
-            high: dollars(&fields.high).ok_or(PriceProblem::Range)?,
+            low: dollars(&fields.low).ok_or(PriceProblem::Range(RangeEnd::Low))?,
+            high: dollars(&fields.high).ok_or(PriceProblem::Range(RangeEnd::High))?,
             on_site: fields.on_site,
         },
         Format::Tiers => Price::Tiers(tiers(fields)?),
@@ -247,20 +290,23 @@ fn monthly(
     Ok((price, schedule))
 }
 
-/// The packages with a name and a price; a half-filled one or none at all is a problem.
+/// A11Y-030, D-4326: the packages with a name and a price; a half-filled one names its missing or
+/// unreadable part, and none at all names package 1's name.
 fn tiers(fields: &PriceFields) -> Result<Vec<(String, u64)>, PriceProblem> {
     let mut out = Vec::new();
-    for (name, price) in &fields.tiers {
+    for (package, (name, price)) in (1..=3).zip(&fields.tiers) {
+        let fault = |part| PriceProblem::Tiers { package, part };
         match (name.trim(), price.trim()) {
             ("", "") => {}
-            (n, p) if !n.is_empty() => {
-                out.push((n.to_owned(), dollars(p).ok_or(PriceProblem::Tiers)?));
-            }
-            _ => return Err(PriceProblem::Tiers),
+            ("", _) => return Err(fault(PackagePart::Name)),
+            (n, p) => out.push((n.to_owned(), dollars(p).ok_or(fault(PackagePart::Price))?)),
         }
     }
     if out.is_empty() {
-        return Err(PriceProblem::Tiers);
+        return Err(PriceProblem::Tiers {
+            package: 1,
+            part: PackagePart::Name,
+        });
     }
     Ok(out)
 }

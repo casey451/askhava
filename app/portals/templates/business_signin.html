@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {#- Business sign-in (T084; SEC-004, SEC-026, A11Y-030, A11Y-031; D-1724 to D-1726). Five screens:
     "form" asks for the sign-in email (a failed submit puts "Error: " in the title, a focused
-    summary first with a link to the field, and keeps the value); "sent" says the same thing
+    summary first in main, before the h1 (T657, D-4326), with a link to the field, and keeps the value); "sent" says the same thing
     whether or not the address is on file; "open" is the emailed link's page, whose one button
     signs in (opening the link changes nothing); "ended" is a used, expired or unknown link;
     "done" is a finished sign-in, with one more line linking to the capability step for an owner
@@ -22,12 +22,12 @@
 {% else if screen == "done" %}<h1 id="signin-done" tabindex="-1" autofocus>You're signed in</h1>
 <p>You'll stay signed in on this device for 30 days.</p>
 {% if let Some(route) = capability %}<p>Next, <a href="{{ route }}" id="capability-link">pick the jobs you want us to send you</a>.</p>
-{% endif %}{% else %}<h1>Sign in to your business account</h1>
-{% if failed %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
+{% endif %}{% else %}{% if failed %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
 <h2>Check the email address</h2>
 <p><a href="#email">Enter the email address you sign in with, like name@example.com</a></p>
 </div>
-{% endif %}<form method="post" action="/b/sign-in" novalidate>
+{% endif %}<h1>Sign in to your business account</h1>
+<form method="post" action="/b/sign-in" novalidate>
 <input type="hidden" name="csrf" value="{{ csrf }}">
 <p><label for="email">Email address</label></p>
 <p id="email-hint">Use the email address you were set up with on your business account. We'll send you a link that signs you in.</p>
