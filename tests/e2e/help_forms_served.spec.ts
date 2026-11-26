@@ -6,6 +6,7 @@
 // one help request is open for that business. A visitor with no session sends "please delete my
 // data" through the site help form with the token its own GET /help set: the answer links the
 // homeowner sign-in, one help request opens and no data request, deletion or copy is recorded.
+// Each test closes the requests it opened, so the owner help page's a11y state sees none open.
 // The served pages' axe checks run through their `PAGE_STATES` entries in tests/a11y/page_states.ts.
 // Fake data only; no key or value is printed or logged.
 import { randomUUID } from "node:crypto";
@@ -31,6 +32,11 @@ function openRequests(asker: string, id: string | null): number {
   return Number(psql(`SELECT count(*) FROM ops.help_request WHERE asker = '${asker}' AND ${whose} AND closed_at IS NULL`));
 }
 
+/** Closes the help requests `asker` opened since `since`, so later pages see none open (as owner_reports_served.spec.ts does). */
+function closeRequests(asker: string, since: string): void {
+  psql(`UPDATE ops.help_request SET closed_at = now() WHERE asker = '${asker}' AND opened_at >= '${since}' AND closed_at IS NULL`);
+}
+
 /** Audit rows of a data request, a deletion or a contact read: what a help-form ask must not leave. */
 function dataRows(): number {
   return Number(psql(`SELECT count(*) FROM ops.audit_log WHERE subject_kind IN ('portals.data_request', 'privacy.contact')`));
@@ -39,6 +45,7 @@ function dataRows(): number {
 test("TD-BIZ-23: a signed-in business sends Get help and reads the topic's answer", async ({ page }) => {
   const owner = token();
   const business = seedOwner(owner.hash);
+  const since = psql("SELECT now()");
   await signIn(page, owner.value);
 
   await page.goto(`${keyedUrl()}/b/help`);
@@ -52,11 +59,12 @@ test("TD-BIZ-23: a signed-in business sends Get help and reads the topic's answe
   await expect(answer).toContainText("spam");
   await expect(answer.locator("[data-fixed='BIZ-047']")).toContainText("usually replies within 2 days");
   expect(openRequests("business", business), "one help request for that business").toBe(1);
+  closeRequests("business", since);
 });
 
 test("TD-PRIV-16: a help-form delete request is answered with the sign-in link and changes nothing", async ({ page }) => {
   await signIn(page, null);
-  const [before, rows] = [openRequests("email", null), dataRows()];
+  const [before, rows, since] = [openRequests("email", null), dataRows(), psql("SELECT now()")];
 
   await page.goto(`${keyedUrl()}/help`);
   await page.getByLabel("Your message").fill("Please delete my data.");
@@ -66,4 +74,5 @@ test("TD-PRIV-16: a help-form delete request is answered with the sign-in link a
   await expect(page.getByRole("link", { name: "sign in with your phone number" })).toHaveAttribute("href", "/h/sign-in");
   expect(openRequests("email", null), "one help request opened").toBe(before + 1);
   expect(dataRows(), "nothing requested, deleted or read").toBe(rows);
+  closeRequests("email", since);
 });
