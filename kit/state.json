@@ -118752,8 +118752,8 @@
     "T745",
     "T819"
    ],
-   "status": "MERGE_PENDING",
-   "attempts": 2,
+   "status": "BLOCKED",
+   "attempts": 3,
    "slug": "data-download-contents",
    "type": "harness",
    "stage": "5",
@@ -118877,13 +118877,54 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 74,
      "head_sha": "b4a057ce7f55ce600e7bc6f23711afd1e9506649",
-     "pr": null,
-     "checks": null,
+     "pr": 1479,
+     "checks": [
+      {
+       "name": "Ci",
+       "conclusion": "failure"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "failure"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-26T20:04:34Z",
      "ended_at": "2026-11-26T21:46:35Z",
-     "result": "MERGE_PENDING",
+     "result": "check_failed",
      "usage": {
       "worker": {
        "tokens": 2258923,
@@ -118923,7 +118964,8 @@
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "reason": "Ci: failure; Checks: failure\nChecks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS, D-3142)\ntest td_sec_80_a_text_started_session_lasts_30_minutes ... ok\ntest td_sec_80_an_emailed_confirm_session_still_answers_at_29_days ... ok\ntest td_sec_80_a_text_token_elsewhere_or_appended_is_not_found ... ok\ntest td_sec_80_only_a_text_minted_grant_is_text_started ... ok\ntest td_sec_80_only_confirm_is_minted_by_text ... ok\nfailures:\n---- td_sec_44_the_quote_form_acts_once_and_bounces_a_phone_number stdout ----\nthread 'td_sec_44_the_quote_form_acts_once_and_bounces_a_phone_number' (42381) panicked at app/server/tests/action_links_route.rs:546:5:\nthe second price is not stored\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\n    td_sec_44_the_quote_form_acts_once_and_bounces_a_phone_number\ntest result: FAILED. 30 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 12.34s\nerror: test failed, to rerun pass `-p askhava-server --test action_links_route`\n##[error]Process completed with exit code 101.\nCi failed at step: All five jobs passed\nChecks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1."
   },
   {
    "id": "T821",
@@ -121322,7 +121364,7 @@
     "T708",
     "T816"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 0,
    "slug": "update-email-counts",
    "type": "build",
@@ -121342,13 +121384,58 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 193,
      "head_sha": "9ed65ed10d21ba89b7435bac0503b22fa39b75fa",
-     "pr": null,
-     "checks": null,
+     "pr": 1477,
+     "checks": [
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-26T19:09:53Z",
      "ended_at": "2026-11-26T21:20:42Z",
-     "result": "MERGE_PENDING",
+     "result": "done",
      "usage": {
       "worker": {
        "tokens": 10366030,
@@ -121391,7 +121478,23 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "merge_turn_since": "2026-11-26T21:51:30Z"
+   "merge_turn_since": "2026-11-26T21:51:30Z",
+   "merged_sha": "32744d0f235781149511b37caecb1e4835e99e68",
+   "merged_at": "2026-11-26T22:12:31Z",
+   "files": [
+    ".sqlx/query-200332f2d9bcef443483870c65417db13fc276b47835ffb7a82827672f2c451b.json",
+    ".sqlx/query-af4f99b999dad54e9e82c9040f937aca0c1c6042d1d8c3c5232aa0620a598b59.json",
+    ".sqlx/query-e7695c521b9a821908cda0d560dd159be9ecd06bb514b1998be8ae53823f22d5.json",
+    "app/intake/NOTES.md",
+    "app/intake/src/job_texts.rs",
+    "app/intake/src/quote_updates.rs",
+    "app/messaging/NOTES.md",
+    "app/messaging/src/api.rs",
+    "app/messaging/src/quote_text_sent.rs",
+    "docs/architecture.md",
+    "docs/decisions.md",
+    "tests/integration/tests/update_email_counts.rs"
+   ]
   },
   {
    "id": "T841",
@@ -130333,7 +130436,7 @@
    }
   }
  },
- "updated_at": "2026-11-26T22:10:00Z",
+ "updated_at": "2026-11-26T22:12:38Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
