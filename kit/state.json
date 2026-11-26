@@ -121522,7 +121522,7 @@
     "T814",
     "T741"
    ],
-   "status": "IN_PROGRESS",
+   "status": "QUEUED",
    "attempts": 0,
    "slug": "clock-real-time-split",
    "type": "build",
@@ -121539,7 +121539,15 @@
    "wip_claim": {
     "attempt": 1,
     "remote_sha": ""
-   }
+   },
+   "stale_leases": [
+    {
+     "task": "T848",
+     "session": "actions-45865934507",
+     "expires": "2026-11-26T22:05:46Z",
+     "lane": "3"
+    }
+   ]
   },
   {
    "id": "T849",
@@ -129856,7 +129864,7 @@
    }
   }
  },
- "updated_at": "2026-11-26T19:32:11Z",
+ "updated_at": "2026-11-26T19:56:57Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
