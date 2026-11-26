@@ -16439,8 +16439,8 @@
   {
    "id": "T222",
    "slug": "journeys-full-variants",
-   "title": "Journeys J1 and J2, the full variants: web chat, photos, question order, quote formats, share box, review links",
-   "goal": "J1 and J2 run end to end with every feature the stage-4 slices (T098, T099) left out: the web-chat path with the consent text first (CON-025), INT-043's question order, INT-039's skips, the INT-044 photo check, the INT-041 card confirmation and TXT-018's email option, PICK-053's quote formats with a note, PICK-049's share box, PICK-050's 'Can't take it', and BIZ-052's review links; keyboard-only variants included; both journeys green on the stand-ins is the stage-5 exit evidence. The web-and-email runs of J1 and J2 (TD-TXT-15's J1 and J2 half, D-3263) go in `tests/e2e/j1_j2_web_email.spec.ts`: signed in as the owner as T310's spec does, the spec sets the launch channel to web-and-email on the served owner settings page (`messaging::api::set_launch_channel`, `app/messaging/src/mode_state.rs:198`, has no other caller), then runs J1 and J2 with web-chat consent and intake, the safety text on screen, the pick code by email through Twilio Verify's email channel (`app/picks/src/email_code.rs:113`, read with the stand-in's `GET /_stand_in/twilio/code`, `stand_ins/server.py:388`), no call-window or who-lets-in question anywhere (D-440), a portal quote, Confirm, HOLD, Away, PAUSE and BUSY in the business portal, and the stand-in carrier listing zero texts at the end of each journey. TD-TXT-15's Resend email checks (the safety email, quote, job-card and check-in emails) are parked: nothing in the app sends email to Resend yet (the server built no `ResendEmail` when this was written, and no task drained the email outbox to a provider), so they wait for a future email-sender wiring task (D-3186's account mailer and the outbox send handler, with the e2e app pointed at the stand-in), which reads them with T414's `control.sentEmails`; this task neither builds that sender nor waits for it. J1's run also carries the J1 half of TD-BIZ-22's and TD-BIZ-25's sweeps: the fake voice provider records no call to a business phone except masked calls a person placed (D-492). Plan change D-3744: J2's Confirm from the email with no session, HOLD, Away and BUSY are served by T457 (the Confirm link's code step), T456 (Hold and Away) and T463 (Busy), so this task depends on T457, which follows T463 and, through it, T456. It signs the owner in only through T303's shared `tests/e2e/owner_session.ts` helper, never running `bootstrap-owner` itself (D-3744). Plan change D-3750: the email-sender wiring D-3263 waited for is T469 (the Resend client in every account mailer, the end-to-end app on the fake Resend) and T470 (the task that sends queued emails); T222 runs after both, so J1 and J2 run with email reaching the fake Resend, but its parked Resend email checks stay parked, since it is at its 600-line limit; a later plan change un-parks them. Plan change D-3889 (Fable's pre-claim check, Nov 16, 2026): the stage-4 slices alone are about 925 lines, so this task is split in three, each within 600 lines: this task keeps `tests/e2e/j1_full.spec.ts` and `tests/e2e/j2_full.spec.ts` (J1 and J2 with every feature above, TD-BIZ-22 and TD-BIZ-25); T532 takes the keyboard-only variants (`tests/a11y/j_full_keyboard.spec.ts`); T533 takes the web-and-email runs (`tests/e2e/j1_j2_web_email.spec.ts`, TD-TXT-15's J1 and J2 half), which take the pick code by Verify text: the code by email (PICK-029) is parked, since the pick page only ever texts a code (`app/portals/src/pick_flow.rs:670` to `:715`) and no conversation address is stored (D-1612). PICK-050's \"Can't take it\" is served by T472 (`docs/architecture.md:550` to `:551`), so this task depends on it. Earlier sentences about the keyboard variants and the web-and-email runs are history. Plan change D-3892 (Opus pre-claim checks of T532, T533 and T536, Nov 16, 2026): Playwright refuses a test file that imports another test file, so the J1 and J2 steps T532 and T533 reuse live in this task's helper modules `tests/e2e/j1_full.ts` and `tests/e2e/j2_full.ts` (exported functions, as `tests/e2e/j2.ts` serves T099's specs), and the two specs stay thin; together within 600 lines. The journeys need the worker's outbox sender, email sender and Stripe jobs, and move the shared clock by days, so this task depends on T536, which starts the worker with the keyed values and runs `j1_full*` and `j2_full*` in the late Playwright project; every seed takes the app clock (`GET /__test/clock`), never the database's `now()`. Iterate on one spec with `--no-deps` (T536); the commands under \"Run your tests\" stay the hand-in check. Plan change D-4258 (closed scan lists, Nov 17, 2026): TD-TXT-15's no-call-window check is T533's, closed there (the four phrases of `tests/a11y/pick_forms.spec.ts:123`); this task adds no copy of that list. Passing the closed scans is the wording bar; an off-list phrasing that no file in scope contains is a note under 'Scan list notes (not findings)', not a finding (D-4038). Forbidden framing actually present in a file this task writes still blocks, whether or not a pattern catches it. D-4349: J1 step 7's day-3 DONE and masked call need a job that reaches Connected; until T663 and T664 nothing moved a job past Awaiting confirm, so this task now runs after both. Plan change D-4360: INT-043's question order, the INT-044 photo check and the INT-041 card confirmation are first driven by T671 to T675 (the intake order dispatcher, `app/intake/src/order_dispatch.rs`), so this task runs after T675.",
+   "title": "Journey J1 full core: homeowner text through day-3 DONE (SMS mode)",
+   "goal": "Plan change D-5836 (Fable's scope decision section 2 and clock decisions C1 to C5, Nov 26, 2026; `docs/handoff/2026-11-24-fable-scope-T801-T222.md`): this task is rewritten as J1's full core and every earlier version of this goal is history (its three attempts failed on scope and on a web binary serving real time while the worker ran on the test clock; T849 fixes the second). J2 moves to T851, the variants to T852 and T853, the web-chat start to T533. In `tests/e2e/j1_full.spec.ts`, its steps in `tests/e2e/j1_full.ts` (exported for T532, T533 and T852), J1 in the INT-043 order, `docs/test-design.md:77` to `:84`: (1) \"AC blowing warm air\" from a fake number is the consent (CON-005), no safety or heat text (INT-002, D-436), the consent text first and the next text with no reply asked (D-419); (2) ZIP and area first (INT-016), the stored job type `ac_repair` and the coverage line's count (INT-017); the two stand-in AI readings of TD-INT-03 are not driven here: the AI reading is served only from T299 (phase 2, `inbound_text.rs:164` to `:170`), so that clause stays unclaimed (D-5836); (3) \"How soon?\" 2 (INT-030), the hvac questions one at a time with the AI off (INT-039), two photos asked and one sent by picture text, checked and shown back (INT-044), first name and address to the vault (INT-027), no own-or-rent question; (4) the card shown by link and SEND (INT-041); five seeded businesses (R-39, R-39R that ticked AC repair, R-39 that ticked only heating, one paused, one in Kingman), exactly the first two get the card with the photo (CARD-001, CARD-013), the cards-out text (TXT-032), no updates question; (5) two diagnostic-visit quotes (PICK-053), the first-quote text's free line, LIST line and link (TXT-016), the quote page in arrival order with WORD-005's line, licence lines and review links, announced by `aria-live`; (6) pick quote 2: the share box unticked and required (PICK-049, D-492), only \"By picking, you agree to the Terms\" beside Pick, \"Go back\", pick again, a wrong code then the right one, masked call, no call window and no who-lets-in question (D-440), focus on the result heading; (7) the business confirms, stripe-mock succeeds, the same signed webhook twice (SEC-017), one charge and one release of first name and address without the phone (PICK-022, PICK-023), a person-placed masked call of 50 seconds (CALL-007), the clock advanced from the release to day 3, the worker's check-in, \"DONE\" → Done → one private feedback request (JOB-017), a second DONE adds nothing, the other quoter's PICK-026 notice once. TD-BIZ-22's and TD-BIZ-25's J1 half: no call to a business phone except a person-placed masked call (D-492). Seeds take the app clock through T850's options; sessions stay real (C5). Every driven journey ends with the four closing checks of `docs/test-design.md:75` (no duplicate message or charge, ledger equals Stripe, every status change audited, no sentinel outside the vault), each asserting its expected positive evidence first (an empty log is not a pass). Fake data and stand-ins only; no SQL-seeded quote, pick, Connected, DONE or authorization claimed as a journey step; no clock rewind, retry or loosened assertion; T098's and T099's specs stay unchanged; a step whose served path is missing is a `PLAN GAP:` with file:line, never seeded around. Shared steps live in helper modules (`tests/e2e/j1_full.ts`, `tests/e2e/j2_full.ts`), never in a `.spec.ts` (Playwright refuses importing one, D-3892); iterate with `--no-deps` (T536). Not claimed: TD-TXT-15's parked clauses (T533), PICK-029. Update `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -16472,7 +16472,8 @@
     "T600",
     "T663",
     "T664",
-    "T675"
+    "T675",
+    "T850"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -16482,9 +16483,7 @@
    ],
    "owns": [
     "tests/e2e/j1_full.spec.ts",
-    "tests/e2e/j2_full.spec.ts",
-    "tests/e2e/j1_full.ts",
-    "tests/e2e/j2_full.ts"
+    "tests/e2e/j1_full.ts"
    ],
    "reads": [
     "docs/architecture.md",
@@ -16499,14 +16498,13 @@
     "docs/spec/website.md"
    ],
    "requirements": [
-    "CON-025",
     "INT-043",
+    "INT-044",
     "PICK-053",
     "PICK-049"
    ],
    "tests": [
     "J1",
-    "J2",
     "TD-BIZ-22",
     "TD-BIZ-25"
    ],
@@ -16521,13 +16519,14 @@
     "D-4196",
     "D-4258",
     "D-4349",
-    "D-4360"
+    "D-4360",
+    "D-5836"
    ],
    "cites": [],
    "budget": {
-    "files": 4,
+    "files": 2,
     "lines": 600,
-    "context_pct": 13
+    "context_pct": 19
    },
    "checks": [
     "Ci",
@@ -16541,14 +16540,17 @@
    "id": "T533",
    "slug": "journeys-web-email",
    "title": "Journeys J1 and J2 in web-and-email mode (TD-TXT-15's J1 and J2 half)",
-   "goal": "Plan change D-3889 (split from T222, Fable's pre-claim check, Nov 16, 2026; D-3263, D-3744): the web-and-email runs of J1 and J2 go in `tests/e2e/j1_j2_web_email.spec.ts`: signed in as the owner only through T303's shared `tests/e2e/owner_session.ts`, the spec sets the launch channel to web-and-email on the served owner home (T108, served by T310; `messaging::api::set_launch_channel`, `app/messaging/src/mode_state.rs:216`), then runs J1 and J2 with web-chat consent and intake, the safety text on screen, the pick code by Verify text (a Verify code is not a carrier message; read with the stand-in's `GET /_stand_in/twilio/code`, `stand_ins/server.py:446`; the code by email, PICK-029, is parked by D-3889's review round), no call-window or who-lets-in question anywhere (D-440), a portal quote, Confirm, HOLD, Away, PAUSE and BUSY in the business portal, and the stand-in carrier recording no new text from the journey's start to its end (its count before and after, and none to the journey's homeowner or business phones; earlier specs' texts stay in the log); J2's sign-up takes its identity code by Verify text to the record phone (BIZ-002's first step; a Verify code is not a carrier message, D-313, TXT-037; `tests/e2e/j2.ts:94`), then verifies its notice email by the emailed code; a mode-aware email-first identity code (TXT-034's \"by email or letter\") is parked post-freeze (TD-TXT-15's 'identity code by email or letter' clause, `docs/test-design.md:408`, is parked with it, D-5551); the fake voice provider records no call to a business phone (`tests/e2e/j2.ts:192`, `callsTo`) (TD-TXT-15, BIZ-046, BIZ-002). Web-and-email also switches homeowner texting off and switching back to SMS leaves it off (`app/messaging/src/mode_state.rs:222` to `:228`), and the outbox sender sends no homeowner text while it is off, so an `afterAll` switches the launch channel back to SMS and homeowner texting back on (`messaging::api::switch_on`, `mode_state.rs:126`, through the same owner page) and asserts both. TD-TXT-15's Resend email checks stay parked (D-3750). Fake data only. Update `docs/decisions.md`. Plan change D-3892 (Opus pre-claim check, Nov 16, 2026): without the keyed worker nothing is ever sent, so the no-text check would prove nothing; this task depends on T536, which starts the worker with the keyed values and runs `j1_j2_web_email*` in the e2e late project, after `j1_full` has moved the clock by days. Every seed takes the app clock (`GET /__test/clock`), never the database's `now()` (`tests/e2e/keyed.ts:85` uses `now()`). Shared steps are imported from T222's helper modules `tests/e2e/j1_full.ts` and `tests/e2e/j2_full.ts`, `tests/e2e/j2.ts` and `tests/e2e/keyed.ts`, never from a `.spec.ts` and never copied, within 500 lines; iterate with `--no-deps`. Plan change D-4258 (closed scan lists, Nov 17, 2026): \"no call-window or who-lets-in question anywhere\" is now a closed check, one definition for worker and reviewer. The phrases are exactly the four of `tests/a11y/pick_forms.spec.ts:112` (\"What time\", \"call window\", \"Who will let\", \"lockbox\"), matched as a case-insensitive substring (stricter than that spec's case-sensitive `not.toContainText`, so a capitalised \"Call window:\" heading is caught). Playwright refuses importing a `.spec.ts` and this task does not own that file, so the list is copied exactly into this spec, and a test here reads `tests/a11y/pick_forms.spec.ts`, takes the array on the line holding `for (const asked of [`, and asserts it equals the copy. \"Anywhere\" is closed as: the `main` element's text of every page each journey loads (each navigation and each form answer) and the web chat's transcript after each homeowner turn. Must fail (planted, a page set to each text): \"What time works for a call?\", \"Your call window\", \"Who will let the business in?\", \"Is there a lockbox?\", \"Call window: 9 a.m. to noon\". Must pass: \"They never see your number.\" and each journey page as served. Passing the closed scans is the wording bar; an off-list phrasing that no file in scope contains is a note under 'Scan list notes (not findings)', not a finding (D-4038). Plan change D-5664 (outside pre-flight): TD-TXT-15's pick-code-by-email (D-3889 review round (a)), identity-code-by-email-or-letter (D-5551) and Resend email clauses (D-3750) are out of scope; the reviewer checks only the remaining clauses.",
+   "goal": "Plan change D-3889 (split from T222, Fable's pre-claim check, Nov 16, 2026; D-3263, D-3744): the web-and-email runs of J1 and J2 go in `tests/e2e/j1_j2_web_email.spec.ts`: signed in as the owner only through T303's shared `tests/e2e/owner_session.ts`, the spec sets the launch channel to web-and-email on the served owner home (T108, served by T310; `messaging::api::set_launch_channel`, `app/messaging/src/mode_state.rs:216`), then runs J1 and J2 with web-chat consent and intake, the safety text on screen, the pick code by Verify text (a Verify code is not a carrier message; read with the stand-in's `GET /_stand_in/twilio/code`, `stand_ins/server.py:446`; the code by email, PICK-029, is parked by D-3889's review round), no call-window or who-lets-in question anywhere (D-440), a portal quote, Confirm, HOLD, Away, PAUSE and BUSY in the business portal, and the stand-in carrier recording no new text from the journey's start to its end (its count before and after, and none to the journey's homeowner or business phones; earlier specs' texts stay in the log); J2's sign-up takes its identity code by Verify text to the record phone (BIZ-002's first step; a Verify code is not a carrier message, D-313, TXT-037; `tests/e2e/j2.ts:94`), then verifies its notice email by the emailed code; a mode-aware email-first identity code (TXT-034's \"by email or letter\") is parked post-freeze (TD-TXT-15's 'identity code by email or letter' clause, `docs/test-design.md:408`, is parked with it, D-5551); the fake voice provider records no call to a business phone (`tests/e2e/j2.ts:192`, `callsTo`) (TD-TXT-15, BIZ-046, BIZ-002). Web-and-email also switches homeowner texting off and switching back to SMS leaves it off (`app/messaging/src/mode_state.rs:222` to `:228`), and the outbox sender sends no homeowner text while it is off, so an `afterAll` switches the launch channel back to SMS and homeowner texting back on (`messaging::api::switch_on`, `mode_state.rs:126`, through the same owner page) and asserts both. TD-TXT-15's Resend email checks stay parked (D-3750). Fake data only. Update `docs/decisions.md`. Plan change D-3892 (Opus pre-claim check, Nov 16, 2026): without the keyed worker nothing is ever sent, so the no-text check would prove nothing; this task depends on T536, which starts the worker with the keyed values and runs `j1_j2_web_email*` in the e2e late project, after `j1_full` has moved the clock by days. Every seed takes the app clock (`GET /__test/clock`), never the database's `now()` (`tests/e2e/keyed.ts:85` uses `now()`). Shared steps are imported from T222's helper modules `tests/e2e/j1_full.ts` and `tests/e2e/j2_full.ts`, `tests/e2e/j2.ts` and `tests/e2e/keyed.ts`, never from a `.spec.ts` and never copied, within 500 lines; iterate with `--no-deps`. Plan change D-4258 (closed scan lists, Nov 17, 2026): \"no call-window or who-lets-in question anywhere\" is now a closed check, one definition for worker and reviewer. The phrases are exactly the four of `tests/a11y/pick_forms.spec.ts:112` (\"What time\", \"call window\", \"Who will let\", \"lockbox\"), matched as a case-insensitive substring (stricter than that spec's case-sensitive `not.toContainText`, so a capitalised \"Call window:\" heading is caught). Playwright refuses importing a `.spec.ts` and this task does not own that file, so the list is copied exactly into this spec, and a test here reads `tests/a11y/pick_forms.spec.ts`, takes the array on the line holding `for (const asked of [`, and asserts it equals the copy. \"Anywhere\" is closed as: the `main` element's text of every page each journey loads (each navigation and each form answer) and the web chat's transcript after each homeowner turn. Must fail (planted, a page set to each text): \"What time works for a call?\", \"Your call window\", \"Who will let the business in?\", \"Is there a lockbox?\", \"Call window: 9 a.m. to noon\". Must pass: \"They never see your number.\" and each journey page as served. Passing the closed scans is the wording bar; an off-list phrasing that no file in scope contains is a note under 'Scan list notes (not findings)', not a finding (D-4038). Plan change D-5664 (outside pre-flight): TD-TXT-15's pick-code-by-email (D-3889 review round (a)), identity-code-by-email-or-letter (D-5551) and Resend email clauses (D-3750) are out of scope; the reviewer checks only the remaining clauses. Plan change D-5836 (Fable's scope decision): J1's web-chat start variant (CON-025) is this task's, moved from T222; shared steps come from T222's `tests/e2e/j1_full.ts` and T851's `tests/e2e/j2_full.ts`. The web chat runs the whole request on the page only after the T801 chain (T801 is its last task); T840 sends the async email. The pick code by email (Fable T1) arrives with the T801 plan change, which adds its task as a dependency here.",
    "type": "build",
    "phase": 1,
    "stage": "5",
    "module": null,
    "deps": [
     "T222",
-    "T536"
+    "T536",
+    "T851",
+    "T801",
+    "T840"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -16565,12 +16567,16 @@
     "docs/test-design.md",
     "docs/spec/messaging.md",
     "docs/spec/website.md",
-    "tests/e2e/fixtures.ts"
+    "tests/e2e/fixtures.ts",
+    "tests/e2e/j1_full.ts",
+    "tests/e2e/j2_full.ts",
+    "docs/spec/consent.md"
    ],
    "requirements": [
     "TXT-021",
     "TXT-034",
-    "WEB-009"
+    "WEB-009",
+    "CON-025"
    ],
    "tests": [
     "TD-TXT-15"
@@ -16580,7 +16586,8 @@
     "D-3892",
     "D-4258",
     "D-5551",
-    "D-5664"
+    "D-5664",
+    "D-5836"
    ],
    "cites": [],
    "budget": {
@@ -16600,14 +16607,15 @@
    "id": "T532",
    "slug": "journeys-full-keyboard",
    "title": "Journeys J1 and J2 full variants, keyboard-only",
-   "goal": "Plan change D-3889 (split from T222, Fable's pre-claim check, Nov 16, 2026): every web step of J1 and J2 and of each variant that has one (web-chat start, quote page, pick, quote form, Confirm; the text-only variants have nothing to drive by keyboard) runs again keyboard-only in `tests/a11y/j_full_keyboard.spec.ts`, every step reached and used with Tab, Shift+Tab, Enter and Space alone (A11Y-005), with the keyboard checks `tests/a11y/j2_keyboard.spec.ts` makes for the stage-4 slice, each journey ending with the closing checks (A11Y-021) as in T222's J1 and J2. Shared steps are imported from T222's helper modules `tests/e2e/j1_full.ts` and `tests/e2e/j2_full.ts`, `tests/e2e/j2.ts` and `tests/e2e/keyed.ts`, never from a `.spec.ts` (Playwright refuses that) and never copied; at most two form sign-ups per run (`portals::limits::SIGNUPS_PER_IP` allows five per address per Arizona day and `j2_keyboard` already uses three), the other variant businesses seeded through the `keyed.ts` and `j2.ts` helpers; the spec seeds from the app clock and uses the e2e `test` with `test.use({ controlSecret: controlSecret() })` when it needs the `control` fixture. Fake data only. Update `docs/decisions.md`. Plan change D-3892 (Opus pre-claim check, Nov 16, 2026): the closing checks need the keyed worker, and the spec moves the shared clock, so this task depends on T536, which runs `j_full_keyboard*` in the a11y late project after the PAGE_STATES specs; iterate with `--no-deps`. Budget 600 lines, as D-3889 set for each part of the split.",
+   "goal": "Plan change D-3889 (split from T222, Fable's pre-claim check, Nov 16, 2026): every web step of J1 and J2 and of each variant that has one (web-chat start, quote page, pick, quote form, Confirm; the text-only variants have nothing to drive by keyboard) runs again keyboard-only in `tests/a11y/j_full_keyboard.spec.ts`, every step reached and used with Tab, Shift+Tab, Enter and Space alone (A11Y-005), with the keyboard checks `tests/a11y/j2_keyboard.spec.ts` makes for the stage-4 slice, each journey ending with the closing checks (A11Y-021) as in T222's J1 and J2. Shared steps are imported from T222's helper modules `tests/e2e/j1_full.ts` and `tests/e2e/j2_full.ts`, `tests/e2e/j2.ts` and `tests/e2e/keyed.ts`, never from a `.spec.ts` (Playwright refuses that) and never copied; at most two form sign-ups per run (`portals::limits::SIGNUPS_PER_IP` allows five per address per Arizona day and `j2_keyboard` already uses three), the other variant businesses seeded through the `keyed.ts` and `j2.ts` helpers; the spec seeds from the app clock and uses the e2e `test` with `test.use({ controlSecret: controlSecret() })` when it needs the `control` fixture. Fake data only. Update `docs/decisions.md`. Plan change D-3892 (Opus pre-claim check, Nov 16, 2026): the closing checks need the keyed worker, and the spec moves the shared clock, so this task depends on T536, which runs `j_full_keyboard*` in the a11y late project after the PAGE_STATES specs; iterate with `--no-deps`. Budget 600 lines, as D-3889 set for each part of the split. Plan change D-5836: the keyboard runs cover the two cores, T222's J1 (`tests/e2e/j1_full.ts`) and T851's J2 (`tests/e2e/j2_full.ts`); the variants' web pages are the same pages the cores drive, and the web-chat start's keyboard run is T533's. Sessions and sign-up limits run on real time (C5), so the two-sign-up ceiling above still holds.",
    "type": "build",
    "phase": 1,
    "stage": "5",
    "module": null,
    "deps": [
     "T222",
-    "T536"
+    "T536",
+    "T851"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -16623,7 +16631,9 @@
     "docs/code-docs.md",
     "docs/spec/accessibility.md",
     "docs/brains/accessibility-forms.md",
-    "docs/test-design.md"
+    "docs/test-design.md",
+    "tests/e2e/j1_full.ts",
+    "tests/e2e/j2_full.ts"
    ],
    "requirements": [
     "A11Y-005",
@@ -16635,13 +16645,14 @@
    ],
    "decisions": [
     "D-3889",
-    "D-3892"
+    "D-3892",
+    "D-5836"
    ],
    "cites": [],
    "budget": {
     "files": 1,
     "lines": 600,
-    "context_pct": 10
+    "context_pct": 18
    },
    "checks": [
     "Ci",
@@ -33036,7 +33047,8 @@
     "T839",
     "T840",
     "T841",
-    "T846"
+    "T846",
+    "T847"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -33288,7 +33300,8 @@
     "T839",
     "T840",
     "T841",
-    "T846"
+    "T846",
+    "T847"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -34101,7 +34114,8 @@
     "T839",
     "T840",
     "T841",
-    "T846"
+    "T846",
+    "T847"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -35606,7 +35620,9 @@
     "T815",
     "T836",
     "T837",
-    "T843"
+    "T843",
+    "T852",
+    "T853"
    ],
    "model": null,
    "effort": null,
@@ -43975,7 +43991,7 @@
     "T611",
     "T603"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -44013,7 +44029,8 @@
     "D-4246",
     "D-3292",
     "D-5657",
-    "D-5676"
+    "D-5676",
+    "D-5810"
    ],
    "cites": [
     "docs/design/DESIGN_SPEC.md:128",
@@ -49189,7 +49206,8 @@
    "module": "intake",
    "deps": [
     "T723",
-    "T745"
+    "T745",
+    "T849"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -49230,7 +49248,8 @@
     "D-4360",
     "D-4441",
     "D-5553",
-    "D-5670"
+    "D-5670",
+    "D-5836"
    ],
    "cites": [],
    "budget": {
@@ -53396,7 +53415,7 @@
    "id": "T799",
    "slug": "copy-review-fixes",
    "title": "Templates and tests (harness): copy review fixes (refund attempts, payment wording, closed request) and TXT-026's three-hour rule",
-   "goal": "Plan change D-5266 (the verified outcome of an outside English copy review; TXT-026 changed by spec, ID kept; FEE-022, TXT-044, TXT-003, WORD-028). Change these texts in the shared `app/messaging/templates/en.json` and `es.json`, word for word, and nothing else in them (an exception to D-491's add-only rule for these keys, D-5266): (a) `unreachable_no_attempts` and `unreachable_no_one_attempt`: \"The refund needs 2.\" becomes \"The refund needs 2 calls.\"; Spanish \"El reembolso necesita 2.\" becomes \"El reembolso necesita 2 llamadas.\"; (b) `card_fix_notice` and `card_fix_notice_untimed`: \"Your card didn't go through\" becomes \"Your payment didn't go through\" (\"another business's quote\" stays); Spanish \"Su tarjeta no pasó\" becomes \"Su pago no pasó\"; (c) `closed_no_quote_left`: \"{brand_short}: Request {job} is closed because none of its quotes are still available. Text us any time to start a new one.\"; Spanish \"…porque ninguna de sus cotizaciones sigue disponible. …\" in place of \"…puede seguir adelante. …\"; (d) `business_no_call_reminder` and `business_no_call_reminder_email` (TXT-026): \"Your 2 attempts can be on different days.\" becomes \"Your 2 attempts must be at least 3 hours apart and can be on different days.\" (FEE-022); Spanish \"Sus 2 intentos pueden ser en días distintos.\" becomes \"Sus 2 intentos deben tener al menos 3 horas de diferencia y pueden ser en días distintos.\". Spanish lines are drafts marked for native-speaker review (TXT-003); none of these keys is a Spanish stay-on text, so no TXT-039 back-translation is needed. Segments (TXT-044, counted on the brand-filled template, D-761): the task sets these recorded `segments` values and no others: en `business_no_call_reminder_email` 2 to 3 (329 GSM-7 characters), es `business_no_call_reminder` 4 to 5, es `business_no_call_reminder_email` 6 to 7; every other changed text stays within its recorded count, the English refund texts at 2 under both the real brand and the test brand (296 characters with Laftly, 299 with Testbrand, TD-WORD-38's `tests/integration/tests/brand_setting.rs`); each raised value is logged in `docs/decisions.md`. The DONE test `tests/integration/tests/unreachable_refund.rs:223` (TD-TXT-30) pins the old reminder sentence; by logged spec change (D-5266, `BUILD_BRIEF.md:69`) only that string changes. `tests/integration/tests/business_notices.rs:567` to `:570` checks only \"didn't go through\" and \"Try again\" and passes unchanged; `tests/docs/test_brain_phrases.py:238` lists only \"no call yet.\" and passes unchanged. Run `scripts/check_copy.py` and `scripts/check_ai_smell.py`. Update `docs/decisions.md`. Plan change D-5401 (Spanish review job 15, finding S-copy): on top of (a) to (d), and keeping every change and segment value above, these Spanish texts also change, word for word, in `es.json` only: in `business_no_call_reminder`, `business_no_call_reminder_email`, `unreachable_refunded`, `unreachable_no_attempts` and `unreachable_no_one_attempt`, \"dentro de 72 horas de la entrega\" becomes \"dentro de 72 horas de recibir los datos del cliente\"; `unreachable_no_too_close`: \"El reembolso las necesita con al menos 3 horas de diferencia.\" becomes \"Para el reembolso, las 2 llamadas deben tener al menos 3 horas de diferencia.\"; `unreachable_no_notice`: \"y el reembolso necesita que ese mensaje salga.\" becomes \"y sin ese mensaje no hay reembolso.\"; `business_signup_reply`: \"Este teléfono es\" becomes \"Este canal de textos es\" (GSM-7, 2 segments; \"Esta línea\" would need UCS-2 and 3, D-5401); `name_address`: \"Solo el negocio que usted elija la recibe\" becomes \"Solo el negocio que usted elija recibe estos datos\" (\"dirección de su casa\" stays). Counted with `app/messaging/src/templates.rs`'s `count_segments` on the brand-filled text, these need no new `segments` value beyond those above (es `business_no_call_reminder` 5 and `business_no_call_reminder_email` 7 already cover the change; the others stay at 6, 6, 6, 5, 5, 2 and 3), under Laftly and the test brand; each stays a draft (`draft: true`). The DONE test `app/intake/src/tests/conversation.rs:289` (T040) pins the old `name_address` line; by this logged spec change only that string changes, to \"Solo el negocio que usted elija recibe estos datos, después de que lo elija.\"",
+   "goal": "Plan change D-5266 (the verified outcome of an outside English copy review; TXT-026 changed by spec, ID kept; FEE-022, TXT-044, TXT-003, WORD-028). Change these texts in the shared `app/messaging/templates/en.json` and `es.json`, word for word, and nothing else in them (an exception to D-491's add-only rule for these keys, D-5266): (a) `unreachable_no_attempts` and `unreachable_no_one_attempt`: \"The refund needs 2.\" becomes \"The refund needs 2 calls.\"; Spanish \"El reembolso necesita 2.\" becomes \"El reembolso necesita 2 llamadas.\"; (b) `card_fix_notice` and `card_fix_notice_untimed`: \"Your card didn't go through\" becomes \"Your payment didn't go through\" (\"another business's quote\" stays); Spanish \"Su tarjeta no pasó\" becomes \"Su pago no pasó\"; (c) `closed_no_quote_left`: \"{brand_short}: Request {job} is closed because none of its quotes are still available. Text us any time to start a new one.\"; Spanish \"…porque ninguna de sus cotizaciones sigue disponible. …\" in place of \"…puede seguir adelante. …\"; (d) `business_no_call_reminder` and `business_no_call_reminder_email` (TXT-026): \"Your 2 attempts can be on different days.\" becomes \"Your 2 attempts must be at least 3 hours apart and can be on different days.\" (FEE-022); Spanish \"Sus 2 intentos pueden ser en días distintos.\" becomes \"Sus 2 intentos deben tener al menos 3 horas de diferencia y pueden ser en días distintos.\". Spanish lines are drafts marked for native-speaker review (TXT-003); none of these keys is a Spanish stay-on text, so no TXT-039 back-translation is needed. Segments (TXT-044, counted on the brand-filled template, D-761): the task sets these recorded `segments` values and no others: en `business_no_call_reminder_email` 2 to 3 (329 GSM-7 characters), es `business_no_call_reminder` 4 to 5, es `business_no_call_reminder_email` 6 to 7; every other changed text stays within its recorded count, the English refund texts at 2 under both the real brand and the test brand (296 characters with Laftly, 299 with Testbrand, TD-WORD-38's `tests/integration/tests/brand_setting.rs`); each raised value is logged in `docs/decisions.md`. The DONE test `tests/integration/tests/unreachable_refund.rs:223` (TD-TXT-30) pins the old reminder sentence; by logged spec change (D-5266, `BUILD_BRIEF.md:69`) only that string changes. `tests/integration/tests/business_notices.rs:567` to `:570` checks only \"didn't go through\" and \"Try again\" and passes unchanged; `tests/docs/test_brain_phrases.py:238` lists only \"no call yet.\" and passes unchanged. Run `scripts/check_copy.py` and `scripts/check_ai_smell.py`. Update `docs/decisions.md`. Plan change D-5401 (Spanish review job 15, finding S-copy): on top of (a) to (d), and keeping every change and segment value above, these Spanish texts also change, word for word, in `es.json` only: in `business_no_call_reminder`, `business_no_call_reminder_email`, `unreachable_refunded`, `unreachable_no_attempts` and `unreachable_no_one_attempt`, \"dentro de 72 horas de la entrega\" becomes \"dentro de 72 horas de recibir los datos del propietario\" (D-5837: D-5401's \"datos del cliente\" is WORD-026's banned \"datos de(l) cliente(s)\", `tests/docs/test_introduction_fee_wording.py:60`); `unreachable_no_too_close`: \"El reembolso las necesita con al menos 3 horas de diferencia.\" becomes \"Para el reembolso, las 2 llamadas deben tener al menos 3 horas de diferencia.\"; `unreachable_no_notice`: \"y el reembolso necesita que ese mensaje salga.\" becomes \"y sin ese mensaje no hay reembolso.\"; `business_signup_reply`: \"Este teléfono es\" becomes \"Este canal de textos es\" (GSM-7, 2 segments; \"Esta línea\" would need UCS-2 and 3, D-5401); `name_address`: \"Solo el negocio que usted elija la recibe\" becomes \"Solo el negocio que usted elija recibe estos datos\" (\"dirección de su casa\" stays). Counted with `app/messaging/src/templates.rs`'s `count_segments` on the brand-filled text, these need no new `segments` value beyond those above (es `business_no_call_reminder` 5 and `business_no_call_reminder_email` 7 already cover the change; the others stay at 6, 6, 6, 5, 5, 2 and 3), under Laftly and the test brand; each stays a draft (`draft: true`). The DONE test `app/intake/src/tests/conversation.rs:289` (T040) pins the old `name_address` line; by this logged spec change only that string changes, to \"Solo el negocio que usted elija recibe estos datos, después de que lo elija.\" Plan change D-5837 (T799's attempt-1 plan gap): the five 72-hour texts read \"dentro de 72 horas de recibir los datos del propietario\" (WORD-026; the Spanish business terms summary already says \"datos del propietario\", `docs/legal/business-terms-summary-es.md:43`), never \"datos del cliente\"; counted with `count_segments` on the brand-filled text they are UCS-2 at 332/335, 431/434, 361/364, 386/389 and 377/380 units (Laftly/Testbrand) for `business_no_call_reminder`, `business_no_call_reminder_email`, `unreachable_refunded`, `unreachable_no_attempts` and `unreachable_no_one_attempt`, so the recorded 5, 7, 6, 6 and 6 still hold; WORD-026's test has no exemption and does not change.",
    "type": "harness",
    "phase": 1,
    "stage": "5",
@@ -53422,18 +53441,21 @@
    "reads": [
     "docs/spec/messaging.md",
     "docs/spec/fees.md",
-    "docs/copy/copy-panel.md"
+    "docs/copy/copy-panel.md",
+    "docs/spec/wording.md"
    ],
    "requirements": [
     "TXT-026",
     "FEE-022",
     "TXT-044",
-    "TXT-003"
+    "TXT-003",
+    "WORD-026"
    ],
    "tests": [],
    "decisions": [
     "D-5266",
-    "D-5401"
+    "D-5401",
+    "D-5837"
    ],
    "cites": [],
    "budget": {
@@ -53532,7 +53554,8 @@
    "module": "server",
    "deps": [
     "T810",
-    "T814"
+    "T814",
+    "T854"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -53568,7 +53591,8 @@
     "D-3562",
     "D-5319",
     "D-5568",
-    "D-5670"
+    "D-5670",
+    "D-5836"
    ],
    "cites": [],
    "budget": {
@@ -53920,7 +53944,8 @@
    "deps": [
     "T730",
     "T738",
-    "T741"
+    "T741",
+    "T848"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -53962,7 +53987,8 @@
     "D-5383",
     "D-5384",
     "D-5388",
-    "D-5793"
+    "D-5793",
+    "D-5836"
    ],
    "cites": [],
    "budget": {
@@ -54915,6 +54941,461 @@
    "branch": "claude/task/T846-j1-keyboard-fragment-focus",
    "prompt": "kit/prompts/T846.md",
    "acceptance": "The quote card `<li id=\"quote-N\">` carries `tabindex=\"-1\"` right after its `id`; after \"Go back\" the J1 keyboard spec asserts `#quote-2` is focused before its first Tab, and that Tab reaches Pick #2 at 320, 768 and 1280 px; the focused card shows the 3 px outline with its top at least 6 px inside the viewport (asserted); every other assertion of `j1_keyboard.spec.ts` is unchanged and the full `Ally` suite passes; no retry, skipped step or `outline: none` on the card."
+  },
+  {
+   "id": "T847",
+   "slug": "j3-refused-pick-app-clock",
+   "title": "e2e: J3 step 5 seeds its refused pick at the app clock, so the daily timer backstop cannot move its job on (J3 flake)",
+   "goal": "Plan change D-5809 (Fable's decision on Casey's \"Ask fable\", Nov 24, 2026; a freeze-allowed fix: the flake charged T741 and T590's second attempt within an hour and every in-flight branch runs this step). J3 step 5 (`tests/e2e/j3.ts:362` to `:376`) fails intermittently with \"This pick can't be confirmed anymore. Nothing was charged.\" (`ChargeOutcome::MovedOn`, `app/portals/src/confirm_pay.rs:330` to `:333`) although its licence check is `active` (D-5657's earlier cause is fixed by T841). Probable cause (code reading, not yet reproduced): `seedPick` inserts the job by raw SQL at system time with `timer_from = now()` and no `jobs.timeout` task (`tests/e2e/keyed.ts:141` to `:142`); `safeModeStarts` moves the worker clock 24 h (`tests/e2e/j3.ts:308`), which makes the daily `jobs.timer_backstop` due (`app/jobs/src/timer_backstop.rs:62` to `:68`, queued at worker start, `app/server/src/bin/worker.rs:217`); tasks run `ORDER BY run_at` (`app/core/src/tasks.rs:211`), so the backstop can drain after `refused` is seeded, finds its job missing a timer and queues one (`timer_backstop.rs:146` to `:149`, at most 50 jobs in UUID order, `:41`, `:96`), already overdue by the 4-business-hour rule (`app/jobs/src/rules.rs:27`) against the advanced clock, and `run_timer` moves the job from Awaiting confirm to Quotes ready (`app/jobs/src/status.rs:122` to `:125`); the reloaded page still shows the button, `recheck` passes (`app/portals/src/confirm_moves.rs:118` to `:121`) and `confirm_move` is Lost and `press_move` answers `Stop::Ended` (`:185` to `:196`; `confirm_pay.rs:1662`). The timer's run time comes from `timer_from` (`app/jobs/src/service.rs:227`), not the clock, and the clock moves at most about 2 h between the seed and the press (review round 1). First confirm the cause: run J3 (`npx playwright test --config tests/e2e/playwright.config.ts tests/e2e/j3_operator.spec.ts --no-deps`, several times if needed) and, on a failure, check for an `ops.audit_log` row `jobs.timer_revived` (or the job's status history) on `refused.job`; if the cause is a different one, report it as a plan gap with evidence rather than guess. The fix, in the two owned files only: (1) `seedPick` (`tests/e2e/keyed.ts`) takes an optional instant used for the job's `created_at`, `status_at` and `timer_from` and the pick's `picked_at` (only these four; the session, licence check, homeowner, number and fee rows stay at `now()`: `portals.session` has `CHECK (expires_at > created_at)`, `migrations/0058_portals_base_security.sql:27`), defaulting to exactly today's SQL so every other caller is unchanged; (2) step 5 seeds `refused` at the app clock's now (the instant `/__test/clock` reports, `tests/e2e/fixtures.ts:117`), so a timer the backstop queues falls 4 business hours ahead; (3) just before the second Confirm press, beside D-5657's licence assertion, step 5 asserts `jobs.job.status` of `refused.job` is `awaiting_confirm`, with a message naming D-5809. No existing assertion is removed or loosened, no wait or retry is added to hide a failure, and no other file changes (a needed change elsewhere is a plan gap to report). Fake data only. Update `docs/decisions.md` (an entry from the hand-off's decision ids).",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T841",
+    "T515",
+    "T452",
+    "T644",
+    "T767",
+    "T118"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness"
+   ],
+   "owns": [
+    "tests/e2e/keyed.ts",
+    "tests/e2e/j3.ts"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "tests/e2e/j3_operator.spec.ts",
+    "tests/e2e/fixtures.ts",
+    "app/jobs/src/timer_backstop.rs",
+    "app/jobs/src/rules.rs"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-5657",
+    "D-5762",
+    "D-5809"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 120,
+    "context_pct": 12
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T847-j3-refused-pick-app-clock",
+   "prompt": "kit/prompts/T847.md",
+   "acceptance": "J3 passes repeatedly with its cause shown in the task report (the `jobs.timer_revived` evidence or the reported plan gap); step 5 seeds `refused` at the app clock and asserts its job is `awaiting_confirm` just before the second Confirm press; `seedPick` without the new argument seeds exactly as before; every existing assertion of every `seedPick` user is unchanged and passes; only `tests/e2e/keyed.ts` and `tests/e2e/j3.ts` change; fake data only."
+  },
+  {
+   "id": "T848",
+   "slug": "clock-real-time-split",
+   "title": "core, payments, inbound text, security: `Clock::real_now()` and its first real-time reads (behaviour-neutral)",
+   "goal": "Plan change D-5836 (Fable's clock decisions C1 to C5, Nov 26, 2026; `docs/handoff/2026-11-24-fable-scope-T801-T222.md` section 2; the clock work is three tasks, T848, T854 and T849, to fit the context limit). The e2e web binary serves its routes on `SystemClock` while the worker runs on the test-control clock, so J1 and J2 cannot advance time across a served step; before T849 moves the routes onto the test-control clock, the reads that must stay on real time are split off, changing nothing in production. Signature freshness, rate limits, security events and sessions read `real_now()`; business time reads `now()`. (1) `app/core/src/clock.rs`: the `Clock` trait gains `fn real_now(&self) -> Timestamp` with the default body `self.now()`, so `SystemClock`, `ManualClock` and every implementer and struct literal are unchanged (C1); its `///` names the rule above (not `wall_now`: `clock.rs:89`, `:104` already use \"wall-clock\" for Arizona local time). (2) `app/core/src/test_control.rs`: the offset clock overrides `real_now()` with system time while `now()` keeps the offset (`:355`, `:375` to `:377`, `:402` to `:403` unchanged). (3) These sites read `real_now()`: Stripe signature freshness, the 300 s tolerance (`app/payments/src/routes.rs:183`; dispatch `:182`, `:191` keeps `now()`); Twilio `verify_webhook` (`app/server/src/inbound_text.rs:312`) and the SEC-014 new-request limit (`inbound_text.rs:805`, `:938` to `:939`); every security event and cap `WebSecurity` records (`app/portals/src/security.rs:266` and `:148` to `:161`, shared by the pick flow and Confirm). Not changed here (T849 moves the worker's sweep and prune cutoffs to `real_now()`; C2): owner sessions, TOTP and RefusalLog (`tests/e2e/j3.ts:6` to `:8`, D-5282), the database-time floors (`app/messaging/src/consent_purge.rs:45`, `app/intake/src/conversation.rs:557` to `:558`, `app/ops/src/safe_mode.rs:67`, `app/privacy/src/vault.rs:733`) and `app/portals/src/limits.rs`. Every existing test passes unchanged (no new pub field, no signature change, no DONE test edited). Tests: `test_control.rs`'s own unit tests show an offset clock advanced 40 days giving `real_now()` within a few seconds of system time while `now()` keeps the offset, and `ManualClock`'s `real_now()` equal to its `now()`. Update `docs/decisions.md` (an entry from the hand-off's decision ids).",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T589",
+    "T814",
+    "T741"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "money",
+    "privacy"
+   ],
+   "owns": [
+    "app/core/src/clock.rs",
+    "app/core/src/test_control.rs",
+    "app/payments/src/routes.rs",
+    "app/portals/src/security.rs",
+    "app/server/src/inbound_text.rs"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "docs/spec/security.md"
+   ],
+   "requirements": [
+    "SEC-017",
+    "SEC-014",
+    "SEC-035"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-5836"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 5,
+    "lines": 180,
+    "context_pct": 22
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T848-clock-real-time-split",
+   "prompt": "kit/prompts/T848.md",
+   "acceptance": "`cargo test --workspace` and `cargo test -p askhava-core --features test-control --lib test_control` pass (the offset clock is behind `#[cfg(feature = \"test-control\")]`, `test_control.rs:106` to `:107`) with no existing test edited; the new `test_control.rs` unit tests show an advanced offset clock's `real_now()` at system time and `now()` at the offset; `SystemClock` and `ManualClock` behave exactly as before; each listed site reads `real_now()`; `limits.rs`, the worker and the database floors are unchanged."
+  },
+  {
+   "id": "T849",
+   "slug": "clock-composition",
+   "title": "server: the e2e web binary serves J1/J2 business time from the test-control clock",
+   "goal": "Plan change D-5836 (Fable C1 to C5 with the overseer's round-1 corrections; after T848 and T854). The web binary takes `control.clock()` once (`app/server/src/main.rs:63` to `:75`; the worker already does, `bin/worker.rs:49` to `:50`) and passes clones into new `build_router_with_clock`, `webhooks_with_clock` and `stripe_webhook_with_clock` constructors in `app/server/src/lib.rs`; the old functions stay as `SystemClock` wrappers with their signatures, because about 50 DONE test files call `build_router(pool, Router::new(), ...)` (e.g. `app/server/tests/action_links_route.rs:161`). The clock reaches `Webhooks.clock` (`lib.rs:962`: inbound SMS dispatch `inbound_text.rs:350`, voice, voice status and call status through the shared Arc, `lib.rs:993`), the pick flow (`lib.rs:672`), the quote page (`lib.rs:837`), action links (`lib.rs:591`), feedback (`lib.rs:598`), check-in (`app/server/src/checkin.rs:19`, merged at `lib.rs:599`) and `stripe_webhook` (`app/server/src/release_sink.rs:492`: `PickReleaser` `:121`, `:139`, Confirm, Stripe dispatch). Settling: `app/picks/src/settle.rs` gains `settle_at(tx, cleared, at)`, and `settle` stays as its `Timestamp::now()` wrapper; `settle_at` uses `at` for Connected (`:114`), `end_pending` (`:115`) and the accepted-quote task's `run_at` (`:164`); `release_sink.rs:167` and `:394` call `settle_at` with the release instant, so day 3's check-in is due from the release. The worker's session sweep and rate-limit prune take their cutoff from `real_now()` and keep their scheduling on `now()` (the daily dedupe chain, `migrations/0020_core_task_queue.sql:22`, `app/core/src/tasks.rs:180`, must stay on the worker clock): `run_session_sweep_at` (`app/portals/src/session.rs:274` to `:286`, scheduling through `schedule_session_sweep` `:258`) and `run_prune_at` (`app/core/src/rate_limit.rs:332` to `:342`) each gain a variant taking `(schedule_now, cutoff_now)`, the old functions kept as wrappers passing one instant to both, and `lib.rs:2964` to `:2969` call the variants with `at.now()` and `at.real_now()`. Stay on `SystemClock`: the business portal (its statement month, `business_portal.rs:368`, `:415`, compares with `ledger_entry.recorded_at`, a database `DEFAULT now()`, `migrations/0090_payments_ledger.sql:21`), owner pages, help and digest (`lib.rs:476`, `:482`), RefusalLog (`lib.rs:676`), the job page, sign-in and sign-up, and the worker's Stripe hooks (`lib.rs:1144`). The release build is unchanged (`test_control.rs:86` to `:96`; `:163` to `:165` refuses Test and Live) and no TestControl error is replaced by system time. Tests in `app/server/tests/clock_composition.rs`, built with `*_with_clock` and an advanced clock: a signed inbound text after a 3-day advance is stored at the advanced instant; the router composes with no webhook keys; a Stripe webhook signed at real time after a 5-day advance is accepted and settles once; after a 100-day advance a business session issued at real time still opens Confirm and the charge lands, and the ledger row it writes shows in the business portal's statement for the current month, the CSV equal to the ledger; a released pick's Connected `status_at` equals the release instant; a session the sweep runs over after the advance is kept. Tests use a small local `Clock` impl defined in the test file (`now()` advanced, `real_now()` at system time), since `ManualClock`'s `real_now()` equals its `now()`. Update `docs/architecture.md` (the composition) and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T681",
+    "T707",
+    "T854"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "money",
+    "privacy"
+   ],
+   "owns": [
+    "app/server/src/main.rs",
+    "app/server/src/lib.rs",
+    "app/server/src/checkin.rs",
+    "app/server/src/release_sink.rs",
+    "app/picks/src/settle.rs",
+    "app/server/tests/clock_composition.rs",
+    "app/portals/src/session.rs",
+    "app/core/src/rate_limit.rs"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "docs/spec/security.md",
+    "docs/spec/lifecycle.md",
+    "app/core/src/clock.rs"
+   ],
+   "requirements": [
+    "SEC-035",
+    "SEC-017",
+    "JOB-017"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-5836"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 8,
+    "lines": 480,
+    "context_pct": 35
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T849-clock-composition",
+   "prompt": "kit/prompts/T849.md",
+   "acceptance": "`cargo test --workspace` passes with no existing test edited; the regression tests in `app/server/tests/clock_composition.rs` pass; the old constructors and `settle` keep their signatures; the release build is unchanged; the full e2e and a11y suites pass in `Ci`, and a break in a spec this task does not own is a `PLAN GAP:` report, never a workaround."
+  },
+  {
+   "id": "T850",
+   "slug": "e2e-clock-seeds",
+   "title": "e2e: clock-aware seed options in `keyed.ts` and `j2.ts`, old defaults kept",
+   "goal": "Plan change D-5836 (Fable's seeds task; verdict #4). The journeys after T849 seed lifecycle rows at the app clock (`GET /__test/clock`, `tests/e2e/fixtures.ts:113` to `:114`), never the database's `now()`. Add optional instant options to the seed helpers in `tests/e2e/keyed.ts` and `tests/e2e/j2.ts` (granted here from DONE T536 and from T847, which runs first) for the job, pick, licence-check day and fee-terms rows (`keyed.ts:108` to `:152`, `:225`; `j2.ts:33` to `:36`, `:136`); with no option each helper runs exactly today's SQL, so every existing caller is unchanged, and T847's `seedPick(at)` contract (four columns, D-5809) stays as it is. Sessions stay on real time (`keyed.ts:85`; C5: every switched route reads sessions on `real_now()`), as do Stripe signing (`j2.ts:187`), owner and TOTP seeds and `portals.session`'s `CHECK (expires_at > created_at)`. A small test in the helpers' existing specs is not needed: the proof is that T098, T099 and J3 pass unchanged and that one call with an instant 10 days ahead stores that instant (checked by a SQL read in the report's run). Fake data only. Update `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T847",
+    "T849"
+   ],
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness"
+   ],
+   "owns": [
+    "tests/e2e/keyed.ts",
+    "tests/e2e/j2.ts"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "tests/e2e/fixtures.ts",
+    "tests/e2e/j3.ts",
+    "tests/e2e/j2_business.spec.ts"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-5836"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 150,
+    "context_pct": 12
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T850-e2e-clock-seeds",
+   "prompt": "kit/prompts/T850.md",
+   "acceptance": "T098, T099 and J3 pass unchanged; every seed helper called without the new option stores exactly what it stored before; T847's `seedPick(at)` keeps its four columns; sessions, Stripe signing and owner seeds stay on real time; only the two owned files change."
+  },
+  {
+   "id": "T851",
+   "slug": "journey-j2-full-core",
+   "title": "Journey J2 full core: business sign-up through charge and statement",
+   "goal": "Plan change D-5836 (Fable's scope decision section 2; split from T222). J2 in SMS mode, `docs/test-design.md:88` to `:93`, in `tests/e2e/j2_full.spec.ts` with its steps in `tests/e2e/j2_full.ts` (exported for T532, T533 and T853): (1) sign-up for an R-37 plumbing business on a fixture ROC record, E-SIGN unticked at first (CON-019), the licence class read back (LIC-006, LIC-027); (2) the identity code by Verify to the record phone (BIZ-002), automatic activation (BIZ-016), the Google and Yelp links and licence number saved (BIZ-052), the sign-up email verified (BIZ-040), email the only channel with business texting off (BIZ-036), the welcome email before the first card; (3) a card by email (CARD-020) opens the quote form; a quote with a phone number bounces (PICK-007); a firm $650.00 faucet quote with a note is accepted (PICK-053, PICK-052); no text to any business phone (TXT-037); (4) the homeowner picks it (\"Done. <Business> has your pick. ...\", PICK-045), the pick email (\"Accept by <time>\" with \"Can't take it\", PICK-050), no call to any business phone, Confirm signed out from the email through the code step (T457), the review step with $75 and \"Go back\", the Stripe test element; (5) charged once, details in the portal after release, the statement CSV equals the ledger (BIZ-015, FEE-030; the statement compares with the ledger row's database time, so it shows the charge in the current real month whatever the advance, D-5836); HOLD, Away and BUSY on the served links (T456, T463). A separate real pick takes \"Can't take it\" (never decline and then confirm one pick). TD-BIZ-22's and TD-BIZ-25's J2 half: the fake voice provider records no call to a business phone except a masked call a person placed (D-492). Advances move the shared clock; no assertion on away or month text beyond step 5 and none on a per-number code cap across an advance (C2). Every driven journey ends with the four closing checks of `docs/test-design.md:75` (no duplicate message or charge, ledger equals Stripe, every status change audited, no sentinel outside the vault), each asserting its expected positive evidence first (an empty log is not a pass). Fake data and stand-ins only; no SQL-seeded quote, pick, Connected, DONE or authorization claimed as a journey step; no clock rewind, retry or loosened assertion; T098's and T099's specs stay unchanged; a step whose served path is missing is a `PLAN GAP:` with file:line, never seeded around. Shared steps live in helper modules (`tests/e2e/j1_full.ts`, `tests/e2e/j2_full.ts`), never in a `.spec.ts` (Playwright refuses importing one, D-3892); iterate with `--no-deps` (T536). Update `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T850"
+   ],
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "money"
+   ],
+   "owns": [
+    "tests/e2e/j2_full.spec.ts",
+    "tests/e2e/j2_full.ts"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/test-design.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/businesses.md",
+    "tests/e2e/fixtures.ts",
+    "tests/e2e/j2.ts",
+    "tests/e2e/keyed.ts",
+    "tests/e2e/owner_session.ts"
+   ],
+   "requirements": [
+    "PICK-053",
+    "PICK-050",
+    "BIZ-052"
+   ],
+   "tests": [
+    "J2",
+    "TD-BIZ-22",
+    "TD-BIZ-25"
+   ],
+   "decisions": [
+    "D-5836"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 600,
+    "context_pct": 22
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T851-journey-j2-full-core",
+   "prompt": "kit/prompts/T851.md"
+  },
+  {
+   "id": "T852",
+   "slug": "journey-j1-variants",
+   "title": "Journey J1 variants: Spanish homeowner and the urgent no-safety-text cases",
+   "goal": "Plan change D-5836 (Fable: variants last, off the critical path). The J1 variants of `docs/test-design.md:86` that no other task drives, in `tests/e2e/j1_full_variants.spec.ts`, reusing T222's `tests/e2e/j1_full.ts`: (a) Spanish homeowner with Spanish conversations on through the served owner switch (T480; `inbound_text.rs:629` to `:640` reads it live), every text from the Spanish template (TXT-002, TXT-039), the switch restored afterwards; if the switch refuses without review facts the test cannot honestly record on the served page, that is a `PLAN GAP:`; (b) \"pipe burst\" and (c) \"AC died, 92 inside\": no safety text, the urgent choice instead (D-436), each driven past the ZIP to the urgent answer. Not here: STOP and 911-list words (T098 drives them), the web-chat start (T533). Every driven journey ends with the four closing checks of `docs/test-design.md:75` (no duplicate message or charge, ledger equals Stripe, every status change audited, no sentinel outside the vault), each asserting its expected positive evidence first (an empty log is not a pass). Fake data and stand-ins only; no SQL-seeded quote, pick, Connected, DONE or authorization claimed as a journey step; no clock rewind, retry or loosened assertion; T098's and T099's specs stay unchanged; a step whose served path is missing is a `PLAN GAP:` with file:line, never seeded around. Shared steps live in helper modules (`tests/e2e/j1_full.ts`, `tests/e2e/j2_full.ts`), never in a `.spec.ts` (Playwright refuses importing one, D-3892); iterate with `--no-deps` (T536). Update `docs/decisions.md`. The spec name matches the `late` project's `j1_full*`/`j2_full*` globs (`tests/e2e/playwright.config.ts:21`), so it runs after the clock-advancing journeys.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T222"
+   ],
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy"
+   ],
+   "owns": [
+    "tests/e2e/j1_full_variants.spec.ts"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "docs/test-design.md",
+    "docs/spec/intake.md",
+    "docs/spec/messaging.md",
+    "tests/e2e/j1_full.ts",
+    "tests/e2e/fixtures.ts",
+    "tests/e2e/owner_session.ts"
+   ],
+   "requirements": [
+    "TXT-002",
+    "TXT-039"
+   ],
+   "tests": [
+    "J1"
+   ],
+   "decisions": [
+    "D-5836"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 1,
+    "lines": 450,
+    "context_pct": 6
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T852-journey-j1-variants",
+   "prompt": "kit/prompts/T852.md"
+  },
+  {
+   "id": "T853",
+   "slug": "journey-j2-variants",
+   "title": "Journey J2 variants: both channels, reminder and lapse, the handyman limit and the free first win",
+   "goal": "Plan change D-5836 (Fable: variants last). The J2 variants of `docs/test-design.md:95`, in `tests/e2e/j2_full_variants.spec.ts`, reusing T851's `tests/e2e/j2_full.ts`: business texting on through the served owner control, a business that chose both gets the card and pick by text from the business number too, never with homeowner details (TXT-035, TXT-036), the switch restored; a business that misses the pick email confirms after the 1-hour reminder email, and one that never confirms lapses, the homeowner gets the other quotes by text and picks with \"1 YES\" (PICK-037, PICK-046); a handyman quote of $1,000.00 refused with the limit explanation (LIC-019); a free first win records $0 with the waived $75 (FEE-012); a business joining after day 90 has no free win (FEE-010). At most two form sign-ups per run (`portals::limits::SIGNUPS_PER_IP`, real time); other businesses come from the `keyed.ts` and `j2.ts` seeds, never claimed as a tested sign-up. Every driven journey ends with the four closing checks of `docs/test-design.md:75` (no duplicate message or charge, ledger equals Stripe, every status change audited, no sentinel outside the vault), each asserting its expected positive evidence first (an empty log is not a pass). Fake data and stand-ins only; no SQL-seeded quote, pick, Connected, DONE or authorization claimed as a journey step; no clock rewind, retry or loosened assertion; T098's and T099's specs stay unchanged; a step whose served path is missing is a `PLAN GAP:` with file:line, never seeded around. Shared steps live in helper modules (`tests/e2e/j1_full.ts`, `tests/e2e/j2_full.ts`), never in a `.spec.ts` (Playwright refuses importing one, D-3892); iterate with `--no-deps` (T536). Update `docs/decisions.md`. The spec name matches the `late` project's `j1_full*`/`j2_full*` globs (`tests/e2e/playwright.config.ts:21`), so it runs after the clock-advancing journeys.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T851"
+   ],
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "money"
+   ],
+   "owns": [
+    "tests/e2e/j2_full_variants.spec.ts"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "docs/test-design.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/fees.md",
+    "tests/e2e/j2_full.ts",
+    "tests/e2e/j2.ts",
+    "tests/e2e/keyed.ts",
+    "tests/e2e/fixtures.ts",
+    "docs/spec/messaging.md",
+    "docs/spec/licensing.md"
+   ],
+   "requirements": [
+    "TXT-035",
+    "TXT-036",
+    "PICK-046",
+    "LIC-019",
+    "FEE-012",
+    "FEE-010"
+   ],
+   "tests": [
+    "J2"
+   ],
+   "decisions": [
+    "D-5836"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 1,
+    "lines": 500,
+    "context_pct": 12
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T853-journey-j2-variants",
+   "prompt": "kit/prompts/T853.md"
+  },
+  {
+   "id": "T854",
+   "slug": "clock-real-time-portals",
+   "title": "portals and action links: sessions and admissions on `real_now()` (behaviour-neutral)",
+   "goal": "Plan change D-5836 (Fable's clock decisions C1 to C5, Nov 26, 2026; `docs/handoff/2026-11-24-fable-scope-T801-T222.md` section 2; the clock work is three tasks, T848, T854 and T849, to fit the context limit). The e2e web binary serves its routes on `SystemClock` while the worker runs on the test-control clock, so J1 and J2 cannot advance time across a served step; before T849 moves the routes onto the test-control clock, the reads that must stay on real time are split off, changing nothing in production. Signature freshness, rate limits, security events and sessions read `real_now()`; business time reads `now()`. After T848 adds `Clock::real_now()`, these sites read it in place of `now()`: the per-IP-only pick code send admission and every code-try admission (`app/portals/src/pick_flow.rs:853`, `:863`; `app/portals/src/confirm_pay.rs:574`); Confirm's own security cap (`confirm_pay.rs:999`); the SEC-014 quote-submission admission (`admit_quote`, `app/server/src/action_links.rs:1422`); every session issue and validity read on these routes (C5): Confirm's principal (`confirm_pay.rs:1064` in `mine`, and the reads its `now` feeds), any session read in `pick_flow.rs`, and the action-link session reads and the Confirm-link session it starts (`app/server/src/action_links.rs:280`, `:324`, `:613`, `:693`, `:789`, `:859`, `:1030`, `:1248`, `:1342`). A session site that does not take `now` as its own argument keeps the route clock, and the report names it (C5's fallback). Named exception (C2): a code-send admission that also carries a per-number daily cap (`admit_code_send` with a person, `confirm_pay.rs:500`, and the pick page's per-number code cap in `send_page_code`) stays on `now()`, one instant with the code's life and its day lock (D-3631). Not changed here (T849 moves the worker's sweep and prune cutoffs to `real_now()`; C2): owner sessions, TOTP and RefusalLog (`tests/e2e/j3.ts:6` to `:8`, D-5282), the database-time floors (`app/messaging/src/consent_purge.rs:45`, `app/intake/src/conversation.rs:557` to `:558`, `app/ops/src/safe_mode.rs:67`, `app/privacy/src/vault.rs:733`) and `app/portals/src/limits.rs`. Every existing test passes unchanged (no new pub field, no signature change, no DONE test edited). Tests (Tests use a small local `Clock` impl defined in the test file (`now()` advanced, `real_now()` at system time), since `ManualClock`'s `real_now()` equals its `now()`.): one unit or route test per file built on an advanced offset clock shows a session issued at real time still accepted and a try admission counted at real time. Update `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T848"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "money",
+    "privacy"
+   ],
+   "owns": [
+    "app/portals/src/pick_flow.rs",
+    "app/portals/src/confirm_pay.rs",
+    "app/server/src/action_links.rs"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "docs/spec/security.md",
+    "app/core/src/clock.rs"
+   ],
+   "requirements": [
+    "SEC-004",
+    "SEC-020",
+    "SEC-014"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-5836"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 200,
+    "context_pct": 32
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T854-clock-real-time-portals",
+   "prompt": "kit/prompts/T854.md",
+   "acceptance": "`cargo test --workspace` passes with no existing test edited; each listed site reads `real_now()` (or the report names the C5 fallback for a site); `admit_code_send` with a person and `send_page_code`'s cap stay on `now()`; production behaviour is unchanged."
   }
  ]
 }

@@ -14,8 +14,8 @@ use askhava_adapters::api::{
     TwilioVerify, twilio_clients,
 };
 use askhava_core::api::{
-    Brand, ClientIpPolicy, Clock, Environment, IdSecret, LogGuard, Registry, Settings, SystemClock,
-    init_logging, install_brand, request_span,
+    Brand, ClientIpPolicy, Clock, Environment, IdSecret, LogGuard, OwnerFlagLimits, Registry,
+    Settings, SystemClock, init_logging, install_brand, request_span,
 };
 use askhava_intake::api::JobTextKeys;
 use askhava_intake::api::rules::Settings as IntakeSettings;
@@ -26,6 +26,7 @@ use askhava_portals::api::{
     security_headers,
 };
 use askhava_privacy::api::{SessionMint, Vault};
+use askhava_recovery::api::{RESTORE_FAILED_ACTION, RESTORE_PASSED_ACTION};
 use axum::Router;
 use axum::body::Body;
 use secrecy::SecretString;
@@ -176,6 +177,7 @@ struct BusinessParts {
     business_number: Option<askhava_messaging::api::SendingNumber>,
     report: owner_tools::SecretReport,
     reports: owner_reports::ReportSettings,
+    owner_flags: OwnerFlagLimits,
 }
 
 impl RouterParts {
@@ -265,6 +267,14 @@ impl RouterParts {
     #[must_use]
     pub fn with_report_settings(mut self, reports: owner_reports::ReportSettings) -> Self {
         self.business.reports = reports;
+        self
+    }
+
+    /// Adds the owner digest page's flag numbers (T815, OPS-027, OPS-031, OPS-034;
+    /// `Settings::owner_flag_limits`); without it the defaults.
+    #[must_use]
+    pub fn with_owner_flag_limits(mut self, limits: OwnerFlagLimits) -> Self {
+        self.business.owner_flags = limits;
         self
     }
 
@@ -441,24 +451,38 @@ impl ApprovalSecret for StripeApproval {
 
 /// The owner's sign-in ([`owner_signin`], T303), home, settings and switches ([`owner_portal`],
 /// T310, the opt-out with `vault`), scorecard, intake report and money view
-/// ([`owner_reports`], T305, with `reports`), help requests (`portals`' T530) and AI page
-/// ([`owner_ai_routes`], T737).
+/// ([`owner_reports`], T305, with `reports`), help requests (`portals`' T530), AI page
+/// ([`owner_ai_routes`], T737) and weekly digest (`portals`' T815, with `flags`).
 fn owner_pages(
     pool: &PgPool,
-    vault: Option<Arc<Vault>>,
     webhooks: Option<&Arc<inbound_text::Webhooks>>,
-    reports: owner_reports::ReportSettings,
+    (vault, reports, flags): (
+        Option<Arc<Vault>>,
+        owner_reports::ReportSettings,
+        OwnerFlagLimits,
+    ),
 ) -> Router {
     let owner = owner_signin::routes(pool.clone())
         .merge(owner_portal::routes(pool.clone(), vault, webhooks))
         .merge(owner_reports::routes(pool.clone(), reports))
         .merge(owner_ai_routes::routes(pool.clone()));
-    owner.merge(askhava_portals::api::owner_help_routes(
-        pool.clone(),
-        Arc::new(SystemClock),
-        Some(session_minter()),
-        webhooks.map(|hooks| hooks.id_secret.clone()),
-    ))
+    let digest = askhava_portals::api::DigestInputs {
+        limits: flags,
+        restore_actions: [RESTORE_PASSED_ACTION, RESTORE_FAILED_ACTION],
+    };
+    owner
+        .merge(askhava_portals::api::owner_digest_routes(
+            pool.clone(),
+            Arc::new(SystemClock),
+            Some(session_minter()),
+            digest,
+        ))
+        .merge(askhava_portals::api::owner_help_routes(
+            pool.clone(),
+            Arc::new(SystemClock),
+            Some(session_minter()),
+            webhooks.map(|hooks| hooks.id_secret.clone()),
+        ))
 }
 
 /// The served business sign-in (T280) and sign-up (T302) routes, each only when its part is given,
@@ -500,7 +524,11 @@ fn business_pages(
         };
         confirm_routes_with(route, parts.confirm_codes.clone())
     });
-    let owner = owner_pages(&pool, parts.vault.clone(), webhooks, parts.reports);
+    let owner = owner_pages(
+        &pool,
+        webhooks,
+        (parts.vault.clone(), parts.reports, parts.owner_flags),
+    );
     let tools = owner_tools::routes(pool.clone(), stripe, &parts.confirm, parts.report);
     let cant_take = cant_take_route::routes(pool.clone());
     let links = webhooks.filter(|_| parts.photos.is_some());

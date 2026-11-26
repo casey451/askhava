@@ -52,7 +52,7 @@
 </table>
 </div>
 <p>Los servicios continuos cuentan como cuatro meses del precio mensual. Su tarifa tiene un tope de ${{ facts.fees.medium }}.</p>
-<p>Oferta de lanzamiento: su primer trabajo ganado es gratis, de cualquier tamaño, si se registra en los primeros 90 días o dentro de los 90 días después de que abra su oficio.</p>
+<p>Oferta de lanzamiento: no paga la tarifa de presentación por su primer trabajo ganado, de cualquier tamaño, si se registra en los primeros 90 días o dentro de los 90 días después de que abra su oficio.</p>
 
 <h2>Tarjetas de trabajo de muestra</h2>
 <p>Estas tarjetas son inventadas para mostrarle lo que recibe. Hay una para cada oficio abierto.</p>
@@ -66,7 +66,7 @@
 <li>Enviada a 3 negocios</li>
 </ul>
 {%- if card.guide && facts.guide.shown() %}
-<p>¿Trabaja en Lake Havasu City? Revise si necesita una licencia comercial de la ciudad.</p>
+<p>¿Trabaja dentro de los límites de Lake Havasu City? Revise si necesita una licencia comercial de la ciudad.</p>
 {%- if let Some(cost) = facts.guide.cost %}
 <p>Costo: {{ cost }}</p>
 {%- endif %}
@@ -114,9 +114,9 @@
 <h2>Para propietarios</h2>
 <ul>
 <li><a href="/es/how-it-works">Cómo funciona</a></li>
-<li><a href="/services">Servicios</a></li>
+<li><a href="/services" hreflang="en">Servicios</a> (en inglés)</li>
 <li><a href="/request">Pida cotizaciones</a></li>
-<li><a href="/help">Ayuda</a></li>
+<li><a href="/help" hreflang="en">Ayuda</a> (en inglés)</li>
 </ul>
 <p>Cotizaciones locales. Usted elige.</p>
 <p>{{ askhava_core::api::brand().es().display_name() }} no es contratista y no realiza, cotiza ni supervisa trabajos. Pasamos su solicitud y le mostramos cotizaciones de negocios locales independientes, tal como las escribieron. Usted elige y contrata directamente al negocio.</p>
