@@ -117145,7 +117145,7 @@
     "T147",
     "T791"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "copy-review-fixes",
    "type": "harness",
@@ -117159,8 +117159,8 @@
     5819,
     5820
    ],
-   "reason": "plan gap reported: PLAN GAP: contradiction: D-5401 requires es.json text \"dentro de 72 horas de recibir los datos del cliente\" (5 keys), but tests/docs/test_introduction_fee_wording.py:60 forbids the pattern `\\bdatos de(l)? clientes?\\b` (WORD-026); test_td_word_10[app/messaging/templates/es.json] fails with 4 hits (the negated use in unreachable_no_attempts is allowed). That test is protected and not owned by T799. Reviewer (a4e70d1f2bbf42da0) confirmed on head a34a900bb2a5. Fix: change the Spanish phrase (e.g. \"datos del propietario\", recount segments) or add an exemption via a harness task. All other changes m; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T799 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: contradiction: D-5401 requires es.json text \"dentro de 72 horas de recibir los datos del cliente\" (5 keys), but tests/docs/test_introduction_fee_wording.py:60 forbids the pattern `\\bdatos de(l)? clientes?\\b` (WORD-026); test_td_word_10[app/messaging/templates/es.json] fails with 4 hits (the negated use in unreachable_no_attempts is allowed). That test is protected and not owned by T799. Reviewer (a4e70d1f2bbf42da0) confirmed on head a34a900bb2a5. Fix: change the Spanish phrase (e.g. \"datos del propietario\", recount segments) or add an exemption via a harness task. All other changes matched the goal; messaging, integration, intake tests, check_copy and check_ai_smell passed; smoke.sh was not run.",
+   "reason": null,
+   "last_failure": "PLAN GAP: contradiction: D-5401 requires es.json text \"dentro de 72 horas de recibir los datos del cliente\" (5 keys), but tests/docs/test_introduction_fee_wording.py:60 forbids the pattern `\\bdatos de(l)? clientes?\\b` (WORD-026); test_td_word_10[app/messaging/templates/es.json] fails with 4 hits (the negated use in unreachable_no_attempts is allowed). That test is protected and not owned by T799. Reviewer (a4e70d1f2bbf42da0) confirmed on head a34a900bb2a5. Fix: change the Spanish phrase (e.g. \"datos del propietario\", recount segments) or add an exemption via a harness task. All other changes matched the goal; messaging, integration, intake tests, check_copy and check_ai_smell passed; smoke.sh was not run.\nre-queued after plan fix D-5837: D-5837 (#1472): Spanish text reworded to 'datos del propietario' (WORD-026); segments unchanged",
    "history": [
     {
      "attempt": 1,
@@ -117185,6 +117185,21 @@
       }
      },
      "wip_skipped": "PII scan: a commit message in 4b756acb549d5d7549a83cdc5c018e333f8fb9b7"
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-26T18:28:57Z",
+     "reason": "D-5837 (#1472): Spanish text reworded to 'datos del propietario' (WORD-026); segments unchanged",
+     "by": "manual-857474a5efe5",
+     "was": "plan gap reported: PLAN GAP: contradiction: D-5401 requires es.json text \"dentro de 72 horas de recibir los datos del cliente\" (5 keys), but tests/docs/test_introduction_fee_wording.py:60 forbids the pattern `\\bdatos de(l)? clientes?\\b` (WORD-026); test_td_word_10[app/messaging/templates/es.json] fails with 4 hits (the negated use in unreachable_no_attempts is allowed). That test is protected and not owned by T799. Reviewer (a4e70d1f2bbf42da0) confirmed on head a34a900bb2a5. Fix: change the Spanish phrase (e.g. \"datos del propietario\", recount segments) or add an exemption via a harness task. All other changes m; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T799 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-5837",
+     "plan_since": "2026-11-24T18:19:45Z",
+     "plan_base": "4b756acb549d5d7549a83cdc5c018e333f8fb9b7",
+     "plan_head": "a508df213427913227939906fb33559c5406f819",
+     "plan_then": "b6f5454228509529658188eecfdb7a048bd38745e097ede3e225bd538ab1cb23",
+     "plan_now": "c673ef145c2e9198ce111f70d2b6ac55e1baba2f1b05c0f920d20a4b28fb4619"
     }
    ]
   },
@@ -129667,7 +129682,7 @@
    }
   }
  },
- "updated_at": "2026-11-26T18:28:35Z",
+ "updated_at": "2026-11-26T18:28:57Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
