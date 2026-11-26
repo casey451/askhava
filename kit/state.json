@@ -121652,7 +121652,7 @@
     "T814",
     "T741"
    ],
-   "status": "IN_PROGRESS",
+   "status": "MERGE_PENDING",
    "attempts": 0,
    "slug": "clock-real-time-split",
    "type": "build",
@@ -121666,16 +121666,37 @@
     5857,
     5858
    ],
-   "wip_claim": {
-    "attempt": 1,
-    "remote_sha": ""
-   },
    "stale_leases": [
     {
      "task": "T848",
      "session": "actions-45865934507",
      "expires": "2026-11-26T22:05:46Z",
      "lane": "3"
+    }
+   ],
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 80,
+     "head_sha": "3aa4fa07972a85aa668ed0f47e6d166515251d02",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": true,
+     "started_at": "2026-11-26T19:56:55Z",
+     "ended_at": "2026-11-26T21:12:29Z",
+     "result": "MERGE_PENDING",
+     "usage": {
+      "worker": {
+       "tokens": 1981206,
+       "turns": 49
+      },
+      "reviewer": {
+       "tokens": 287993,
+       "turns": 10
+      }
+     }
     }
    ],
    "reviewed_sha": "beb0513104e5ca9f4d51177efd3fbcef9f6b4fe2",
@@ -121686,7 +121707,11 @@
     "lane": "2"
    },
    "branch": "claude/task/T848-clock-real-time-split",
-   "head_check_since": null,
+   "auto_merge": {
+    "enabled": true,
+    "why": "auto-merge on #1476 (gh pr merge)",
+    "head": "beb0513104e5ca9f4d51177efd3fbcef9f6b4fe2"
+   },
    "update_merges": [
     {
      "from": "3aa4fa07972a85aa668ed0f47e6d166515251d02",
@@ -121794,12 +121819,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T847",
-   "at": "2026-11-26T20:01:04Z",
-   "cache_read_input_tokens": 2466080,
-   "input_tokens": 116,
-   "cache_creation_input_tokens": 107413,
-   "output_tokens": 21894
+   "task": "T848",
+   "at": "2026-11-26T21:12:29Z",
+   "cache_read_input_tokens": 2145823,
+   "cache_creation_input_tokens": 102102,
+   "output_tokens": 21155,
+   "input_tokens": 119
   },
   "source": "session_reading 2026-11-26T20:09:31Z (week)",
   "by_task": {
@@ -129999,7 +130024,17 @@
    },
    "T848": {
     "estimated_bytes": 201086,
-    "estimated_tokens": 577517
+    "estimated_tokens": 577517,
+    "usage_counting": "message_id",
+    "cache_read_input_tokens": 2145823,
+    "cache_creation_input_tokens": 102102,
+    "output_tokens": 21155,
+    "input_tokens": 119,
+    "worker_tokens": 1981206,
+    "worker_turns": 49,
+    "reviewer_tokens": 287993,
+    "reviewer_turns": 10,
+    "last_model": "claude-opus-5-5"
    },
    "T840": {
     "estimated_bytes": 180560,
@@ -130017,11 +130052,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-26T18:35:36Z",
-    "tokens": 1310076
+    "tokens": 1648034
    },
    "week": {
     "start": "2026-11-26T20:01:04Z",
-    "tokens": 376031
+    "tokens": 713989
    }
   },
   "session_reading": {
@@ -130032,7 +130067,7 @@
    }
   }
  },
- "updated_at": "2026-11-26T21:12:31Z",
+ "updated_at": "2026-11-26T21:13:04Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

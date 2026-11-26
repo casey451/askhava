@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-26T21:12:31Z by runner 3aa4fa07972a (actions).
+Updated 2026-11-26T21:13:04Z by runner 3aa4fa07972a (actions).
 
 **Building: T657 in progress since 20:24Z; 673 of 788 done; week 3% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 673 of 788 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T657 claimed 20:24Z, lease until 23:24Z; lane 2: T848 claimed 19:56Z, lease until 22:56Z; lane 3: T820 claimed 20:04Z, lease until 23:04Z; lane 4: T309 claimed 20:18Z, lease until 23:18Z; lane 5: T840 claimed 19:09Z, lease until 22:09Z
+- **Lane:** lane 1: T657 claimed 20:24Z, lease until 23:24Z; lane 3: T820 claimed 20:04Z, lease until 23:04Z; lane 4: T309 claimed 20:18Z, lease until 23:18Z; lane 5: T840 claimed 19:09Z, lease until 22:09Z
 - **Week:** 3% used, 183.9M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
 - **Last run:** 20:25Z, 47 min before this update
 - **Keeper:** last ran 20:10Z, next wake 20:30Z
@@ -22,6 +22,7 @@ Updated 2026-11-26T21:12:31Z by runner 3aa4fa07972a (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T848 | core, payments, inbound text, security: `Clock::real_now()`  | MERGE_PENDING | 1 | 75 min | 21:12Z |  |
 | T847 | e2e: J3 step 5 seeds its refused pick at the app clock, so t | done | 1 | 94 min | 20:01Z |  |
 | T612 | harness: the WEB-029 and WEB-030 runtime checks on every sit | BLOCKED | 1 | 50 min | 18:35Z | PLAN GAP: app/site/static/site.css:96-99 (owner T613, not T612): the "DM Sans fallback" face names only local("Arial") a |
 
@@ -75,10 +76,9 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T657 (lease until 2026-11-26T23:24:45Z)
-- lane 2: T848 (lease until 2026-11-26T22:56:55Z)
 - lane 3: T820 (lease until 2026-11-26T23:04:34Z)
 - lane 4: T309 (lease until 2026-11-26T23:18:50Z)
 - lane 5: T840 (lease until 2026-11-26T22:09:53Z)
 
 ## Last usage reading
-- {"task": "T847", "at": "2026-11-26T20:01:04Z", "cache_read_input_tokens": 2466080, "input_tokens": 116, "cache_creation_input_tokens": 107413, "output_tokens": 21894}
+- {"task": "T848", "at": "2026-11-26T21:12:29Z", "cache_read_input_tokens": 2145823, "cache_creation_input_tokens": 102102, "output_tokens": 21155, "input_tokens": 119}
