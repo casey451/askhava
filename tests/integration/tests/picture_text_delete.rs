@@ -369,6 +369,41 @@ async fn a_delete_pending_photo_is_deleted_by_the_retry(pool: PgPool) {
     );
 }
 
+/// The (attempts, open) of the delete-only task of `media`: open is neither done nor dead.
+async fn delete_task(pool: &PgPool, media: &str) -> (i32, bool) {
+    let key = format!("{PICTURE_DELETE_KIND}:{media}");
+    let sql = "SELECT attempts, done_at IS NULL AND dead_at IS NULL FROM core.task \
+               WHERE dedupe_key = $1";
+    sqlx::query_as(sql)
+        .bind(key)
+        .fetch_one(pool)
+        .await
+        .expect("delete task")
+}
+
+/// INT-044, PRIV-014 (D-5550, D-5845): a delete-only task whose own `discard` fails stays queued
+/// with its attempt counted and the media still at the provider; a later run deletes it.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn a_failed_delete_task_stays_queued_until_it_deletes(pool: PgPool) {
+    let kit = kit(&pool, "redelete", (false, 2, false)).await;
+    let (inbox, tail) = (Uuid::new_v4(), picture(kit.port).await);
+    request(&pool, inbox).await;
+    queue(&kit, inbox, &tail).await;
+    run_due(&kit).await;
+    assert_eq!(delete_task(&pool, media_of(&tail)).await, (0, true));
+    run_due(&kit).await;
+    let (attempts, open) = delete_task(&pool, media_of(&tail)).await;
+    assert!(open && attempts > 0, "failed delete still queued");
+    assert_eq!(
+        fetch_status(kit.port, &tail).await,
+        200,
+        "still at the provider"
+    );
+    run_due(&kit).await;
+    assert_eq!(fetch_status(kit.port, &tail).await, 404, "deleted later");
+    assert!(!delete_task(&pool, media_of(&tail)).await.1, "task done");
+}
+
 /// INT-044 (D-5081): a store failing on every retry keeps nothing and deletes the media after
 /// the last attempt.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]

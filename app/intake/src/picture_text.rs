@@ -245,12 +245,9 @@ async fn take_all<P: PictureSource>(
                         discard_or_queue(db, &keys.source, &tail, now).await?;
                         PhotoTaken::Refused
                     }
-                    Some(taken) => {
-                        let code = code_of(taken);
-                        models::insert_plain(db, conversation, (&question, &code), now)
-                            .await
-                            .map_err(fail)?;
-                        taken
+                    Some(one) => {
+                        let at = (conversation, question.as_str(), tail.as_str());
+                        keep_one(db, &keys.source, at, one, now).await?
                     }
                     None => return Err(HandlerError(FAILED)),
                 }
@@ -261,15 +258,36 @@ async fn take_all<P: PictureSource>(
     Ok(steps)
 }
 
-/// One media taken; `None` for a store error (nothing deleted at the provider) or a fetch that
-/// reached or tried Twilio and failed, both retried. A stored photo whose provider delete failed
-/// gets one more delete and, if that fails too, its delete-only task ([`discard_or_queue`]).
+/// Writes media `tail`'s `photo_media` outcome under `question`, then, when its provider delete
+/// is still owed, calls [`discard_or_queue`]: the outcome first, so a failed queue write never
+/// makes a rerun take the media twice (T783 fix, D-5844).
+async fn keep_one<P: PictureSource>(
+    db: &mut PgConnection,
+    source: &P,
+    (conversation, question, tail): (Uuid, &str, &str),
+    (taken, pending): (PhotoTaken, bool),
+    now: Timestamp,
+) -> Result<PhotoTaken, HandlerError> {
+    let code = code_of(taken);
+    models::insert_plain(db, conversation, (question, &code), now)
+        .await
+        .map_err(|_| HandlerError(FAILED))?;
+    if pending {
+        discard_or_queue(db, source, tail, now).await?;
+    }
+    Ok(taken)
+}
+
+/// One media taken, with whether its provider delete is still owed; `None` for a store error
+/// (nothing deleted at the provider) or a fetch that reached or tried Twilio and failed, both
+/// retried. A stored photo whose provider delete failed comes back `Some((taken, true))` for
+/// [`keep_one`].
 async fn take_one<P: PictureSource>(
     db: &mut PgConnection,
     source: &P,
     (job, tail): (Uuid, &str),
     now: Timestamp,
-) -> Option<PhotoTaken> {
+) -> Option<(PhotoTaken, bool)> {
     let taken = source
         .take(db, job, tail, (DEFAULT_MIN_SHORT_SIDE, now))
         .await;
@@ -278,12 +296,7 @@ async fn take_one<P: PictureSource>(
             taken: PhotoTaken::Refused,
             media: MediaState::DeletePending,
         } => None,
-        PictureText { taken, media } => {
-            if media == MediaState::DeletePending {
-                discard_or_queue(db, source, tail, now).await.ok()?;
-            }
-            Some(taken)
-        }
+        PictureText { taken, media } => Some((taken, media == MediaState::DeletePending)),
     }
 }
 
