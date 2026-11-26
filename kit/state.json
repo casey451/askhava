@@ -21597,7 +21597,8 @@
     "T600",
     "T663",
     "T664",
-    "T675"
+    "T675",
+    "T850"
    ],
    "status": "QUEUED",
    "attempts": 3,
@@ -27291,7 +27292,9 @@
     "T815",
     "T836",
     "T837",
-    "T843"
+    "T843",
+    "T852",
+    "T853"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -81232,7 +81235,10 @@
    "id": "T533",
    "deps": [
     "T222",
-    "T536"
+    "T536",
+    "T851",
+    "T801",
+    "T840"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -81244,7 +81250,8 @@
    "id": "T532",
    "deps": [
     "T222",
-    "T536"
+    "T536",
+    "T851"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -105515,7 +105522,8 @@
    "id": "T718",
    "deps": [
     "T723",
-    "T745"
+    "T745",
+    "T849"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -114534,7 +114542,7 @@
    "deps": [
     "T675"
    ],
-   "status": "IN_PROGRESS",
+   "status": "QUEUED",
    "attempts": 0,
    "slug": "picture-text-delete-kept",
    "type": "build",
@@ -114551,7 +114559,15 @@
    "wip_claim": {
     "attempt": 1,
     "remote_sha": ""
-   }
+   },
+   "stale_leases": [
+    {
+     "task": "T783",
+     "session": "actions-45865301405",
+     "expires": "2026-11-26T20:46:51Z",
+     "lane": "4"
+    }
+   ]
   },
   {
    "id": "T784",
@@ -117449,7 +117465,8 @@
    "id": "T811",
    "deps": [
     "T810",
-    "T814"
+    "T814",
+    "T854"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -118303,7 +118320,8 @@
    "deps": [
     "T730",
     "T738",
-    "T741"
+    "T741",
+    "T848"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -118622,7 +118640,7 @@
     "T745",
     "T819"
    ],
-   "status": "IN_PROGRESS",
+   "status": "QUEUED",
    "attempts": 2,
    "slug": "data-download-contents",
    "type": "harness",
@@ -118642,6 +118660,12 @@
      "session": "actions-45431713232",
      "expires": "2026-11-24T19:58:44Z",
      "lane": "2"
+    },
+    {
+     "task": "T820",
+     "session": "actions-45865297710",
+     "expires": "2026-11-26T20:44:31Z",
+     "lane": "3"
     }
    ],
    "history": [
@@ -121477,6 +121501,88 @@
     "attempt": 1,
     "remote_sha": ""
    }
+  },
+  {
+   "id": "T848",
+   "deps": [
+    "T589",
+    "T814",
+    "T741"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "clock-real-time-split",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T849",
+   "deps": [
+    "T681",
+    "T707",
+    "T854"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "clock-composition",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T850",
+   "deps": [
+    "T847",
+    "T849"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "e2e-clock-seeds",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T851",
+   "deps": [
+    "T850"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "journey-j2-full-core",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T852",
+   "deps": [
+    "T222"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "journey-j1-variants",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T853",
+   "deps": [
+    "T851"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "journey-j2-variants",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T854",
+   "deps": [
+    "T848"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "clock-real-time-portals",
+   "type": "build",
+   "stage": "5"
   }
  ],
  "owner_waits": [],
@@ -129716,7 +129822,7 @@
    }
   }
  },
- "updated_at": "2026-11-26T18:37:14Z",
+ "updated_at": "2026-11-26T18:54:46Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
