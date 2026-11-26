@@ -16440,7 +16440,7 @@
    "id": "T222",
    "slug": "journeys-full-variants",
    "title": "Journey J1 full core: homeowner text through day-3 DONE (SMS mode)",
-   "goal": "Plan change D-5836 (Fable's scope decision section 2 and clock decisions C1 to C5, Nov 26, 2026; `docs/handoff/2026-11-24-fable-scope-T801-T222.md`): this task is rewritten as J1's full core and every earlier version of this goal is history (its three attempts failed on scope and on a web binary serving real time while the worker ran on the test clock; T849 fixes the second). J2 moves to T851, the variants to T852 and T853, the web-chat start to T533. In `tests/e2e/j1_full.spec.ts`, its steps in `tests/e2e/j1_full.ts` (exported for T532, T533 and T852), J1 in the INT-043 order, `docs/test-design.md:77` to `:84`: (1) \"AC blowing warm air\" from a fake number is the consent (CON-005), no safety or heat text (INT-002, D-436), the consent text first and the next text with no reply asked (D-419); (2) ZIP and area first (INT-016), the stored job type `ac_repair` and the coverage line's count (INT-017); the two stand-in AI readings of TD-INT-03 are not driven here: the AI reading is served only from T299 (phase 2, `inbound_text.rs:164` to `:170`), so that clause stays unclaimed (D-5836); (3) \"How soon?\" 2 (INT-030), the hvac questions one at a time with the AI off (INT-039), two photos asked and one sent by picture text, checked and shown back (INT-044), first name and address to the vault (INT-027), no own-or-rent question; (4) the card shown by link and SEND (INT-041); five seeded businesses (R-39, R-39R that ticked AC repair, R-39 that ticked only heating, one paused, one in Kingman), exactly the first two get the card with the photo (CARD-001, CARD-013), the cards-out text (TXT-032), no updates question; (5) two diagnostic-visit quotes (PICK-053), the first-quote text's free line, LIST line and link (TXT-016), the quote page in arrival order with WORD-005's line, licence lines and review links, announced by `aria-live`; (6) pick quote 2: the share box unticked and required (PICK-049, D-492), only \"By picking, you agree to the Terms\" beside Pick, \"Go back\", pick again, a wrong code then the right one, masked call, no call window and no who-lets-in question (D-440), focus on the result heading; (7) the business confirms, stripe-mock succeeds, the same signed webhook twice (SEC-017), one charge and one release of first name and address without the phone (PICK-022, PICK-023), a person-placed masked call of 50 seconds (CALL-007), the clock advanced from the release to day 3, the worker's check-in, \"DONE\" → Done → one private feedback request (JOB-017), a second DONE adds nothing, the other quoter's PICK-026 notice once. TD-BIZ-22's and TD-BIZ-25's J1 half: no call to a business phone except a person-placed masked call (D-492). Seeds take the app clock through T850's options; sessions stay real (C5). Every driven journey ends with the four closing checks of `docs/test-design.md:75` (no duplicate message or charge, ledger equals Stripe, every status change audited, no sentinel outside the vault), each asserting its expected positive evidence first (an empty log is not a pass). Fake data and stand-ins only; no SQL-seeded quote, pick, Connected, DONE or authorization claimed as a journey step; no clock rewind, retry or loosened assertion; T098's and T099's specs stay unchanged; a step whose served path is missing is a `PLAN GAP:` with file:line, never seeded around. Shared steps live in helper modules (`tests/e2e/j1_full.ts`, `tests/e2e/j2_full.ts`), never in a `.spec.ts` (Playwright refuses importing one, D-3892); iterate with `--no-deps` (T536). Not claimed: TD-TXT-15's parked clauses (T533), PICK-029. Update `docs/decisions.md`.",
+   "goal": "Plan change D-5836 (Fable's scope decision section 2 and clock decisions C1 to C5, Nov 26, 2026; `docs/handoff/2026-11-24-fable-scope-T801-T222.md`): this task is rewritten as J1's full core and every earlier version of this goal is history (its three attempts failed on scope and on a web binary serving real time while the worker ran on the test clock; T849 fixes the second). J2 moves to T851, the variants to T852 and T853, the web-chat start to T533. In `tests/e2e/j1_full.spec.ts`, its steps in `tests/e2e/j1_full.ts` (exported for T532, T533 and T852), J1 in the INT-043 order, `docs/test-design.md:77` to `:84`: (1) \"AC blowing warm air\" from a fake number is the consent (CON-005), no safety or heat text (INT-002, D-436), the consent text first and the next text with no reply asked (D-419); (2) ZIP and area first (INT-016), the stored job type `ac_repair` and the coverage line's count (INT-017); the two stand-in AI readings of TD-INT-03 are not driven here: the AI reading is served only from T299 (phase 2, `inbound_text.rs:164` to `:170`), so that clause stays unclaimed (D-5836); (3) \"How soon?\" 2 (INT-030), the hvac questions one at a time with the AI off (INT-039), two photos asked and one sent by picture text, checked and shown back (INT-044), first name and address to the vault (INT-027), no own-or-rent question; (4) the card shown by link and SEND (INT-041); five seeded businesses (R-39, R-39R that ticked AC repair, R-39 that ticked only heating, one paused, one in Kingman), exactly the first two get the card with the photo (CARD-001, CARD-013), the cards-out text (TXT-032), no updates question; (5) two diagnostic-visit quotes (PICK-053), the first-quote text's free line, LIST line and link (TXT-016), the quote page in arrival order with WORD-005's line, licence lines and review links, announced by `aria-live`; (6) pick quote 2: the share box unticked and required (PICK-049, D-492), only \"By picking, you agree to the Terms\" beside Pick, \"Go back\", pick again, a wrong code then the right one, masked call, no call window and no who-lets-in question (D-440), focus on the result heading; (7) the business confirms, stripe-mock succeeds, the same signed webhook twice (SEC-017), one charge and one release of first name and address without the phone (PICK-022, PICK-023), a person-placed masked call of 50 seconds (CALL-007), the clock advanced from the release to day 3, the worker's check-in, \"DONE\" → Done → one private feedback request (JOB-017), a second DONE adds nothing, the other quoter's PICK-026 notice once. TD-BIZ-22's and TD-BIZ-25's J1 half: no call to a business phone except a person-placed masked call (D-492). Seeds take the app clock through T850's options; sessions stay real (C5). Every driven journey ends with the four closing checks of `docs/test-design.md:75` (no duplicate message or charge, ledger equals Stripe, every status change audited, no sentinel outside the vault), each asserting its expected positive evidence first (an empty log is not a pass). Fake data and stand-ins only; no SQL-seeded quote, pick, Connected, DONE or authorization claimed as a journey step; no clock rewind, retry or loosened assertion; T098's and T099's specs stay unchanged; a step whose served path is missing is a `PLAN GAP:` with file:line, never seeded around. Shared steps live in helper modules (`tests/e2e/j1_full.ts`, `tests/e2e/j2_full.ts`), never in a `.spec.ts` (Playwright refuses importing one, D-3892); iterate with `--no-deps` (T536). Not claimed: TD-TXT-15's parked clauses (T533), PICK-029. Update `docs/decisions.md`. Plan change D-5848: this task follows T861, which makes J1's existing spec read a sent text from the fake carrier once the sender clears its body.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -16473,7 +16473,8 @@
     "T663",
     "T664",
     "T675",
-    "T850"
+    "T850",
+    "T861"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -16520,7 +16521,8 @@
     "D-4258",
     "D-4349",
     "D-4360",
-    "D-5836"
+    "D-5836",
+    "D-5848"
    ],
    "cites": [],
    "budget": {
@@ -16540,7 +16542,7 @@
    "id": "T533",
    "slug": "journeys-web-email",
    "title": "Journeys J1 and J2 in web-and-email mode (TD-TXT-15's J1 and J2 half)",
-   "goal": "Plan change D-3889 (split from T222, Fable's pre-claim check, Nov 16, 2026; D-3263, D-3744): the web-and-email runs of J1 and J2 go in `tests/e2e/j1_j2_web_email.spec.ts`: signed in as the owner only through T303's shared `tests/e2e/owner_session.ts`, the spec sets the launch channel to web-and-email on the served owner home (T108, served by T310; `messaging::api::set_launch_channel`, `app/messaging/src/mode_state.rs:216`), then runs J1 and J2 with web-chat consent and intake, the safety text on screen, the pick code by Verify text (a Verify code is not a carrier message; read with the stand-in's `GET /_stand_in/twilio/code`, `stand_ins/server.py:446`; the code by email, PICK-029, is parked by D-3889's review round), no call-window or who-lets-in question anywhere (D-440), a portal quote, Confirm, HOLD, Away, PAUSE and BUSY in the business portal, and the stand-in carrier recording no new text from the journey's start to its end (its count before and after, and none to the journey's homeowner or business phones; earlier specs' texts stay in the log); J2's sign-up takes its identity code by Verify text to the record phone (BIZ-002's first step; a Verify code is not a carrier message, D-313, TXT-037; `tests/e2e/j2.ts:94`), then verifies its notice email by the emailed code; a mode-aware email-first identity code (TXT-034's \"by email or letter\") is parked post-freeze (TD-TXT-15's 'identity code by email or letter' clause, `docs/test-design.md:408`, is parked with it, D-5551); the fake voice provider records no call to a business phone (`tests/e2e/j2.ts:192`, `callsTo`) (TD-TXT-15, BIZ-046, BIZ-002). Web-and-email also switches homeowner texting off and switching back to SMS leaves it off (`app/messaging/src/mode_state.rs:222` to `:228`), and the outbox sender sends no homeowner text while it is off, so an `afterAll` switches the launch channel back to SMS and homeowner texting back on (`messaging::api::switch_on`, `mode_state.rs:126`, through the same owner page) and asserts both. TD-TXT-15's Resend email checks stay parked (D-3750). Fake data only. Update `docs/decisions.md`. Plan change D-3892 (Opus pre-claim check, Nov 16, 2026): without the keyed worker nothing is ever sent, so the no-text check would prove nothing; this task depends on T536, which starts the worker with the keyed values and runs `j1_j2_web_email*` in the e2e late project, after `j1_full` has moved the clock by days. Every seed takes the app clock (`GET /__test/clock`), never the database's `now()` (`tests/e2e/keyed.ts:85` uses `now()`). Shared steps are imported from T222's helper modules `tests/e2e/j1_full.ts` and `tests/e2e/j2_full.ts`, `tests/e2e/j2.ts` and `tests/e2e/keyed.ts`, never from a `.spec.ts` and never copied, within 500 lines; iterate with `--no-deps`. Plan change D-4258 (closed scan lists, Nov 17, 2026): \"no call-window or who-lets-in question anywhere\" is now a closed check, one definition for worker and reviewer. The phrases are exactly the four of `tests/a11y/pick_forms.spec.ts:112` (\"What time\", \"call window\", \"Who will let\", \"lockbox\"), matched as a case-insensitive substring (stricter than that spec's case-sensitive `not.toContainText`, so a capitalised \"Call window:\" heading is caught). Playwright refuses importing a `.spec.ts` and this task does not own that file, so the list is copied exactly into this spec, and a test here reads `tests/a11y/pick_forms.spec.ts`, takes the array on the line holding `for (const asked of [`, and asserts it equals the copy. \"Anywhere\" is closed as: the `main` element's text of every page each journey loads (each navigation and each form answer) and the web chat's transcript after each homeowner turn. Must fail (planted, a page set to each text): \"What time works for a call?\", \"Your call window\", \"Who will let the business in?\", \"Is there a lockbox?\", \"Call window: 9 a.m. to noon\". Must pass: \"They never see your number.\" and each journey page as served. Passing the closed scans is the wording bar; an off-list phrasing that no file in scope contains is a note under 'Scan list notes (not findings)', not a finding (D-4038). Plan change D-5664 (outside pre-flight): TD-TXT-15's pick-code-by-email (D-3889 review round (a)), identity-code-by-email-or-letter (D-5551) and Resend email clauses (D-3750) are out of scope; the reviewer checks only the remaining clauses. Plan change D-5836 (Fable's scope decision): J1's web-chat start variant (CON-025) is this task's, moved from T222; shared steps come from T222's `tests/e2e/j1_full.ts` and T851's `tests/e2e/j2_full.ts`. The web chat runs the whole request on the page only after the T801 chain (T801 is its last task); T840 sends the async email. The pick code by email (Fable T1) arrives with the T801 plan change, which adds its task as a dependency here.",
+   "goal": "Plan change D-3889 (split from T222, Fable's pre-claim check, Nov 16, 2026; D-3263, D-3744): the web-and-email runs of J1 and J2 go in `tests/e2e/j1_j2_web_email.spec.ts`: signed in as the owner only through T303's shared `tests/e2e/owner_session.ts`, the spec sets the launch channel to web-and-email on the served owner home (T108, served by T310; `messaging::api::set_launch_channel`, `app/messaging/src/mode_state.rs:216`), then runs J1 and J2 with web-chat consent and intake, the safety text on screen, the pick code by email (PICK-029, D-5848: T863 sends it by Verify's email channel to the address she typed in the chat after T863's line on the chat page; read it from the Verify stand-in, `GET /_stand_in/twilio/code`, `stand_ins/server.py:446`, or the email stand-in, and assert no Verify SMS; a stand-in that does not keep the email channel's code is a `PLAN GAP:`), no call-window or who-lets-in question anywhere (D-440), a portal quote, Confirm, HOLD, Away, PAUSE and BUSY in the business portal, and the stand-in carrier recording no new text from the journey's start to its end (its count before and after, and none to the journey's homeowner or business phones; earlier specs' texts stay in the log); J2's sign-up takes its identity code by Verify text to the record phone (BIZ-002's first step; a Verify code is not a carrier message, D-313, TXT-037; `tests/e2e/j2.ts:94`), then verifies its notice email by the emailed code; a mode-aware email-first identity code (TXT-034's \"by email or letter\") is parked post-freeze (TD-TXT-15's 'identity code by email or letter' clause, `docs/test-design.md:408`, is parked with it, D-5551); the fake voice provider records no call to a business phone (`tests/e2e/j2.ts:192`, `callsTo`) (TD-TXT-15, BIZ-046, BIZ-002). Web-and-email also switches homeowner texting off and switching back to SMS leaves it off (`app/messaging/src/mode_state.rs:222` to `:228`), and the outbox sender sends no homeowner text while it is off, so an `afterAll` switches the launch channel back to SMS and homeowner texting back on (`messaging::api::switch_on`, `mode_state.rs:126`, through the same owner page) and asserts both. TD-TXT-15's Resend email checks stay parked (D-3750). Fake data only. Update `docs/decisions.md`. Plan change D-3892 (Opus pre-claim check, Nov 16, 2026): without the keyed worker nothing is ever sent, so the no-text check would prove nothing; this task depends on T536, which starts the worker with the keyed values and runs `j1_j2_web_email*` in the e2e late project, after `j1_full` has moved the clock by days. Every seed takes the app clock (`GET /__test/clock`), never the database's `now()` (`tests/e2e/keyed.ts:85` uses `now()`). Shared steps are imported from T222's helper modules `tests/e2e/j1_full.ts` and `tests/e2e/j2_full.ts`, `tests/e2e/j2.ts` and `tests/e2e/keyed.ts`, never from a `.spec.ts` and never copied, within 500 lines; iterate with `--no-deps`. Plan change D-4258 (closed scan lists, Nov 17, 2026): \"no call-window or who-lets-in question anywhere\" is now a closed check, one definition for worker and reviewer. The phrases are exactly the four of `tests/a11y/pick_forms.spec.ts:112` (\"What time\", \"call window\", \"Who will let\", \"lockbox\"), matched as a case-insensitive substring (stricter than that spec's case-sensitive `not.toContainText`, so a capitalised \"Call window:\" heading is caught). Playwright refuses importing a `.spec.ts` and this task does not own that file, so the list is copied exactly into this spec, and a test here reads `tests/a11y/pick_forms.spec.ts`, takes the array on the line holding `for (const asked of [`, and asserts it equals the copy. \"Anywhere\" is closed as: the `main` element's text of every page each journey loads (each navigation and each form answer) and the web chat's transcript after each homeowner turn. Must fail (planted, a page set to each text): \"What time works for a call?\", \"Your call window\", \"Who will let the business in?\", \"Is there a lockbox?\", \"Call window: 9 a.m. to noon\". Must pass: \"They never see your number.\" and each journey page as served. Passing the closed scans is the wording bar; an off-list phrasing that no file in scope contains is a note under 'Scan list notes (not findings)', not a finding (D-4038). Plan change D-5664 (outside pre-flight): TD-TXT-15's pick-code-by-email (D-3889 review round (a)), identity-code-by-email-or-letter (D-5551) and Resend email clauses (D-3750) are out of scope; the reviewer checks only the remaining clauses. Plan change D-5836 (Fable's scope decision): J1's web-chat start variant (CON-025) is this task's, moved from T222; shared steps come from T222's `tests/e2e/j1_full.ts` and T851's `tests/e2e/j2_full.ts`. The web chat runs the whole request on the page only after the T801 chain (T801 is its last task); T840 sends the async email. The pick code by email (Fable T1) arrives with the T801 plan change, which adds its task as a dependency here. Plan change D-5848: the pick code by email is back in scope (D-5664's exclusion of that clause is superseded); the web-chat request runs on the page with zero texts after T801.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -16550,7 +16552,8 @@
     "T536",
     "T851",
     "T801",
-    "T840"
+    "T840",
+    "T863"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -16570,13 +16573,15 @@
     "tests/e2e/fixtures.ts",
     "tests/e2e/j1_full.ts",
     "tests/e2e/j2_full.ts",
-    "docs/spec/consent.md"
+    "docs/spec/consent.md",
+    "docs/spec/quotes-pick.md"
    ],
    "requirements": [
     "TXT-021",
     "TXT-034",
     "WEB-009",
-    "CON-025"
+    "CON-025",
+    "PICK-029"
    ],
    "tests": [
     "TD-TXT-15"
@@ -16587,7 +16592,8 @@
     "D-4258",
     "D-5551",
     "D-5664",
-    "D-5836"
+    "D-5836",
+    "D-5848"
    ],
    "cites": [],
    "budget": {
@@ -31541,7 +31547,8 @@
     "T536",
     "T561",
     "T841",
-    "T801"
+    "T801",
+    "T861"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -31585,7 +31592,7 @@
    "budget": {
     "files": 4,
     "lines": 600,
-    "context_pct": 15
+    "context_pct": 19
    },
    "checks": [
     "Ci",
@@ -36876,7 +36883,7 @@
    "id": "T236",
    "slug": "ai-call-budgets",
    "title": "AI-call budgets per conversation and per job, and no AI call before the area check",
-   "goal": "Credit-drain defense for the war games (D-1154): AI-021's global daily cap stays, and below it AI-028's per-step budgets apply: no AI call before the consent text and the area check; 2 readings per inbound message, 1 reword per bank question (at most 8), 1 follow-up, card and project file 1 each plus 1 per EDIT (at most 3), 4 concept prompts, 2 screening calls a photo for at most 3 photos; backstops of 40 calls per conversation per Arizona day and 60 per job, with the card call always reserved so no budget lands on it; a verified web-chat session shares its phone's budget and an unverified one makes no call; quote reads 3 per business per job, outside the job's budget; only the first 1,600 characters of a scrubbed message are sent, while the AI-off card keeps her full scrubbed words. Past a budget the step runs on the AI-off path (INT-021) with nothing said and an `ai.call_stat` row with outcome `budget`; `models::calls_today` (`app/ai/src/models.rs`) excludes `budget` rows as it excludes `daily_cap` rows, so refused calls never use up the AI-021 cap. `IntakeCall` carries the conversation, job, step and (for quote reads) business it is for; the caller in `intake` passes them; the budgets are settings in `AiConfig`; the migration adds the `budget` outcome and the conversation, job, step and business columns to `ai.call_stat`. The global daily cap (AI-021, D-811) becomes an atomic admission: before the provider call, one statement reserves a slot for this Arizona day (a counter row per day updated with `... WHERE used < cap RETURNING`, or an equivalent single-statement reservation) on its own short transaction, so concurrent calls past the cap never reach the transport; a retry of one logical call uses its reservation, an abandoned or timed-out reservation still counts for that day, and the `ai.daily_cap` alert is raised once a day under the same race (D-1757). No database connection or open transaction is held across an AI provider await (AI-029, D-2038): the entry the app calls takes the pool, reads the AI-008 switch and makes the admission and the budget reservations each on its own short connection and releases it, awaits the provider (up to AI-023's timeout, retries and backoff included) with no connection held, then takes a connection again to record the call. With no connection held, every AI-028 budget check is a single-statement reservation like the AI-021 admission (only while the budget has room), so concurrent readings of one message (a duplicate or replayed webhook) cannot pass its 2-reading limit, the 1-reword limit or the per-day and per-job backstops together; a refused reservation makes no call and records outcome `budget`. Intake has no caller that applies a reading yet (`app/intake/src/question_bank.rs` calls only `accept_question`), so this task builds the first one in `app/intake/src/service.rs`: it reads one inbound message through the gated `read_intake` and applies the reading only if the step is still current on the new connection, which means the conversation has no inbound message and no `intake.intake_answer` row newer than the message the call was made for; otherwise the reading is recorded and discarded. Calling that function from the text and web-chat paths is T299's (IC-23, D-2065); the AI writing calls are IC-53's (no owner yet). `app/ai/src/switch.rs` (the gated `read_intake`) is this task's for that change. Other tasks' tests call `read_intake` with a `&mut PgConnection` (`app/ai/src/tests/adapter_calls.rs`, `tests/integration/tests/ai_zero_retention.rs`, `tests/integration/tests/prop_prompt_injection.rs`) and are not this task's to change: keep that form compiling for them as a thin wrapper that no app code calls. AI-029's other half, the inbound-text webhook committing before any AI call, is T299's, which wires the AI reading into the text path (IC-23, D-2065); that path makes no AI call yet. Ordering only: runs after T370, which changes one call in `app/intake/src/service.rs` (D-2703); its migration is `0210_ai_call_budget.sql` (V9, D-2707). Plan change D-3675: the migration is numbered 0209 (it was 0202; D-3881 moved it up one more, so T527's 0208 fits before it; D-3675 made it 0204, D-3722 moved it up one more, D-3750 one more, after T470's `0207_messaging_email_lease.sql`, D-3753 one more, after T480's `0208_messaging_spanish_switch.sql`, and D-3779 one more, because T486 took `0190_catalog_switched_on.sql` and every queued migration from 0190 up moved up one) because T456's `0205_picks_hold_away.sql` and `0206_businesses_away_busy.sql` run before this task in the serial order (`scripts/validate_tasks.py` V9). Plan change D-3883: this task's migration moved up one, to `0210_ai_call_budget.sql`, for T529's `0197_payments_refund_owner.sql` (V9); earlier numbers in this goal are history. Plan change D-4292: this task's migration moves to `migrations/0212_ai_call_budget.sql` for T645's `0210_messaging_web_chat_optout.sql` and `0211_intake_web_chat_language.sql`, which run earlier (V9); earlier numbers in this goal are history. Plan change D-4310: this task's migration moves to `migrations/0213_ai_call_budget.sql` for T653's `0212_licensing_btr_typed_unchecked.sql`, which runs earlier (V9); earlier numbers in this goal are history. Plan change D-4727: this task's migration moves to `migrations/0216_ai_call_budget.sql` for T729's `0215_update_email_choice.sql`, which runs earlier (V9); earlier numbers in this goal are history. Plan change D-5314: this task's migration moves to `migrations/0217_ai_call_budget.sql` for T812's `0216_businesses_step_up_session.sql`, which runs earlier (V9); earlier numbers in this goal are history. Plan change D-5336: this task's migration moves to `migrations/0218_ai_call_budget.sql` for T804's `0216_portals_data_request_link.sql`, which runs earlier (V9); earlier numbers in this goal are history. Plan change D-5676 (token efficiency and phase-2 pre-flight, checked on `main` 025855b2): The line budget is a guide, not a stop (as D-5331); do not stop for size or cut a case, and say the final count in the hand-in.",
+   "goal": "Credit-drain defense for the war games (D-1154): AI-021's global daily cap stays, and below it AI-028's per-step budgets apply: no AI call before the consent text and the area check; 2 readings per inbound message, 1 reword per bank question (at most 8), 1 follow-up, card and project file 1 each plus 1 per EDIT (at most 3), 4 concept prompts, 2 screening calls a photo for at most 3 photos; backstops of 40 calls per conversation per Arizona day and 60 per job, with the card call always reserved so no budget lands on it; a verified web-chat session shares its phone's budget and an unverified one makes no call; quote reads 3 per business per job, outside the job's budget; only the first 1,600 characters of a scrubbed message are sent, while the AI-off card keeps her full scrubbed words. Past a budget the step runs on the AI-off path (INT-021) with nothing said and an `ai.call_stat` row with outcome `budget`; `models::calls_today` (`app/ai/src/models.rs`) excludes `budget` rows as it excludes `daily_cap` rows, so refused calls never use up the AI-021 cap. `IntakeCall` carries the conversation, job, step and (for quote reads) business it is for; the caller in `intake` passes them; the budgets are settings in `AiConfig`; the migration adds the `budget` outcome and the conversation, job, step and business columns to `ai.call_stat`. The global daily cap (AI-021, D-811) becomes an atomic admission: before the provider call, one statement reserves a slot for this Arizona day (a counter row per day updated with `... WHERE used < cap RETURNING`, or an equivalent single-statement reservation) on its own short transaction, so concurrent calls past the cap never reach the transport; a retry of one logical call uses its reservation, an abandoned or timed-out reservation still counts for that day, and the `ai.daily_cap` alert is raised once a day under the same race (D-1757). No database connection or open transaction is held across an AI provider await (AI-029, D-2038): the entry the app calls takes the pool, reads the AI-008 switch and makes the admission and the budget reservations each on its own short connection and releases it, awaits the provider (up to AI-023's timeout, retries and backoff included) with no connection held, then takes a connection again to record the call. With no connection held, every AI-028 budget check is a single-statement reservation like the AI-021 admission (only while the budget has room), so concurrent readings of one message (a duplicate or replayed webhook) cannot pass its 2-reading limit, the 1-reword limit or the per-day and per-job backstops together; a refused reservation makes no call and records outcome `budget`. Intake has no caller that applies a reading yet (`app/intake/src/question_bank.rs` calls only `accept_question`), so this task builds the first one in `app/intake/src/service.rs`: it reads one inbound message through the gated `read_intake` and applies the reading only if the step is still current on the new connection, which means the conversation has no inbound message and no `intake.intake_answer` row newer than the message the call was made for; otherwise the reading is recorded and discarded. Calling that function from the text and web-chat paths is T299's (IC-23, D-2065); the AI writing calls are IC-53's (no owner yet). `app/ai/src/switch.rs` (the gated `read_intake`) is this task's for that change. Other tasks' tests call `read_intake` with a `&mut PgConnection` (`app/ai/src/tests/adapter_calls.rs`, `tests/integration/tests/ai_zero_retention.rs`, `tests/integration/tests/prop_prompt_injection.rs`) and are not this task's to change: keep that form compiling for them as a thin wrapper that no app code calls. AI-029's other half, the inbound-text webhook committing before any AI call, is T299's, which wires the AI reading into the text path (IC-23, D-2065); that path makes no AI call yet. Ordering only: runs after T370, which changes one call in `app/intake/src/service.rs` (D-2703); its migration is `0210_ai_call_budget.sql` (V9, D-2707). Plan change D-3675: the migration is numbered 0209 (it was 0202; D-3881 moved it up one more, so T527's 0208 fits before it; D-3675 made it 0204, D-3722 moved it up one more, D-3750 one more, after T470's `0207_messaging_email_lease.sql`, D-3753 one more, after T480's `0208_messaging_spanish_switch.sql`, and D-3779 one more, because T486 took `0190_catalog_switched_on.sql` and every queued migration from 0190 up moved up one) because T456's `0205_picks_hold_away.sql` and `0206_businesses_away_busy.sql` run before this task in the serial order (`scripts/validate_tasks.py` V9). Plan change D-3883: this task's migration moved up one, to `0210_ai_call_budget.sql`, for T529's `0197_payments_refund_owner.sql` (V9); earlier numbers in this goal are history. Plan change D-4292: this task's migration moves to `migrations/0212_ai_call_budget.sql` for T645's `0210_messaging_web_chat_optout.sql` and `0211_intake_web_chat_language.sql`, which run earlier (V9); earlier numbers in this goal are history. Plan change D-4310: this task's migration moves to `migrations/0213_ai_call_budget.sql` for T653's `0212_licensing_btr_typed_unchecked.sql`, which runs earlier (V9); earlier numbers in this goal are history. Plan change D-4727: this task's migration moves to `migrations/0216_ai_call_budget.sql` for T729's `0215_update_email_choice.sql`, which runs earlier (V9); earlier numbers in this goal are history. Plan change D-5314: this task's migration moves to `migrations/0217_ai_call_budget.sql` for T812's `0216_businesses_step_up_session.sql`, which runs earlier (V9); earlier numbers in this goal are history. Plan change D-5336: this task's migration moves to `migrations/0219_ai_call_budget.sql` for T804's `0216_portals_data_request_link.sql`, which runs earlier (V9); earlier numbers in this goal are history. Plan change D-5676 (token efficiency and phase-2 pre-flight, checked on `main` 025855b2): The line budget is a guide, not a stop (as D-5331); do not stop for size or cut a case, and say the final count in the hand-in. Plan change D-5848: the migration is `0219_ai_call_budget.sql` (T862 takes `0218`); earlier numbers are history.",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -36899,7 +36906,7 @@
     "app/ai/src/service.rs",
     "app/ai/src/models.rs",
     "app/ai/src/switch.rs",
-    "migrations/0218_ai_call_budget.sql",
+    "migrations/0219_ai_call_budget.sql",
     "tests/integration/tests/ai_budget.rs",
     "app/intake/src/service.rs"
    ],
@@ -36944,7 +36951,8 @@
     "D-4771",
     "D-5314",
     "D-5336",
-    "D-5676"
+    "D-5676",
+    "D-5848"
    ],
    "cites": [
     "BUILD_BRIEF.md:196",
@@ -47571,7 +47579,7 @@
    "id": "T685",
    "slug": "missed-cards-email",
    "title": "businesses, quotes and picks: the monthly missed-cards email goes, and the owner can switch it off",
-   "goal": "Plan change D-4361 (unwired sweep orphan 7 and its second pass, `main` 77a49d7cc; BIZ-044, BIZ-025; D-331, D-1994). `missed_email_due` (`app/messaging/src/missed_cards.rs:52`) and `missed_cards_line` (`app/picks/src/open_cards_email.rs:212`) have no caller, and D-1994 left two gaps: no column stores the owner's off switch, and no `quotes` reader gives last month's counts. (1) `migrations/0214_businesses_missed_cards_switch.sql` (headed `businesses`; after T236's `0213`, the dependency on T236 being for that order only, V9): the business's on/off switch for this email, default on; the read and the owner's write in the new `app/businesses/src/missed_cards_switch.rs` (the portal toggle is left to the settings page's owner, T306, noted in its decision). (2) The new `app/quotes/src/month_cards.rs`: last month's cards per business (got, quoted, ended without its quote), Arizona months. (3) The new `app/picks/src/missed_cards_run.rs`: a daily `picks.missed_cards_email` run (registered in the shared `app/server/src/lib.rs`, scheduled in the shared `app/server/src/bin/worker.rs`) that acts only when `first_of_month` holds and sends `missed_cards_line` once per business and month (dedupe key) when `missed_email_due` says so, as an account notice to the owner under the business's consent (CON-019), never marketing. `queue_email` renders only the closed `messaging::Notice` enum (`app/messaging/src/email.rs:151`), so this task adds a `Notice::MissedCards` variant there with its English and Spanish words (after T470 and T684, the queued owners of `email.rs`). Each email is stored with `messaging::api::queue_email` as `EmailClass::Bulk` (`app/messaging/src/email.rs:140` to `:146`, `:390`), never through the business-notice path, which stores every email as non-bulk (`app/messaging/src/business_notices.rs:409`), so above 90% of the day's email limit it waits for the reset (OPS-038). Tests in the new `tests/integration/tests/missed_cards_email.rs` (TD-BIZ-57), PostgreSQL, fake data only. Update `app/picks/NOTES.md`, `app/quotes/NOTES.md`, `app/businesses/NOTES.md` and `docs/decisions.md`. Plan change D-4727: this task's migration moves to `migrations/0217_businesses_missed_cards_switch.sql`, after T236's `0216` and T729's `0215` (V9), and it now follows T730, the owner of `app/messaging/src/email.rs` before it; earlier numbers in this goal are history. Plan change D-5314: this task's migration moves to `migrations/0218_businesses_missed_cards_switch.sql` for T812's `0216_businesses_step_up_session.sql`, which runs earlier (V9); earlier numbers in this goal are history. Plan change D-5336: this task's migration moves to `migrations/0219_businesses_missed_cards_switch.sql` for T804's `0216_portals_data_request_link.sql`, which runs earlier (V9); earlier numbers in this goal are history. Plan change D-5568 (Grok systemic check, verified on main bd3e4e9c): this task writes words a homeowner or business reads, so it is flagged `copy` and its prompt carries the copy steps instead of \"Customer copy: none changed ... stop and report\".",
+   "goal": "Plan change D-4361 (unwired sweep orphan 7 and its second pass, `main` 77a49d7cc; BIZ-044, BIZ-025; D-331, D-1994). `missed_email_due` (`app/messaging/src/missed_cards.rs:52`) and `missed_cards_line` (`app/picks/src/open_cards_email.rs:212`) have no caller, and D-1994 left two gaps: no column stores the owner's off switch, and no `quotes` reader gives last month's counts. (1) `migrations/0214_businesses_missed_cards_switch.sql` (headed `businesses`; after T236's `0213`, the dependency on T236 being for that order only, V9): the business's on/off switch for this email, default on; the read and the owner's write in the new `app/businesses/src/missed_cards_switch.rs` (the portal toggle is left to the settings page's owner, T306, noted in its decision). (2) The new `app/quotes/src/month_cards.rs`: last month's cards per business (got, quoted, ended without its quote), Arizona months. (3) The new `app/picks/src/missed_cards_run.rs`: a daily `picks.missed_cards_email` run (registered in the shared `app/server/src/lib.rs`, scheduled in the shared `app/server/src/bin/worker.rs`) that acts only when `first_of_month` holds and sends `missed_cards_line` once per business and month (dedupe key) when `missed_email_due` says so, as an account notice to the owner under the business's consent (CON-019), never marketing. `queue_email` renders only the closed `messaging::Notice` enum (`app/messaging/src/email.rs:151`), so this task adds a `Notice::MissedCards` variant there with its English and Spanish words (after T470 and T684, the queued owners of `email.rs`). Each email is stored with `messaging::api::queue_email` as `EmailClass::Bulk` (`app/messaging/src/email.rs:140` to `:146`, `:390`), never through the business-notice path, which stores every email as non-bulk (`app/messaging/src/business_notices.rs:409`), so above 90% of the day's email limit it waits for the reset (OPS-038). Tests in the new `tests/integration/tests/missed_cards_email.rs` (TD-BIZ-57), PostgreSQL, fake data only. Update `app/picks/NOTES.md`, `app/quotes/NOTES.md`, `app/businesses/NOTES.md` and `docs/decisions.md`. Plan change D-4727: this task's migration moves to `migrations/0217_businesses_missed_cards_switch.sql`, after T236's `0216` and T729's `0215` (V9), and it now follows T730, the owner of `app/messaging/src/email.rs` before it; earlier numbers in this goal are history. Plan change D-5314: this task's migration moves to `migrations/0218_businesses_missed_cards_switch.sql` for T812's `0216_businesses_step_up_session.sql`, which runs earlier (V9); earlier numbers in this goal are history. Plan change D-5336: this task's migration moves to `migrations/0220_businesses_missed_cards_switch.sql` for T804's `0216_portals_data_request_link.sql`, which runs earlier (V9); earlier numbers in this goal are history. Plan change D-5568 (Grok systemic check, verified on main bd3e4e9c): this task writes words a homeowner or business reads, so it is flagged `copy` and its prompt carries the copy steps instead of \"Customer copy: none changed ... stop and report\". Plan change D-5848: the migration is `0220_businesses_missed_cards_switch.sql` (T862 takes `0218`); earlier numbers are history.",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -47591,7 +47599,7 @@
    ],
    "owns": [
     "app/messaging/src/email.rs",
-    "migrations/0219_businesses_missed_cards_switch.sql",
+    "migrations/0220_businesses_missed_cards_switch.sql",
     "app/businesses/src/missed_cards_switch.rs",
     "app/quotes/src/month_cards.rs",
     "app/picks/src/missed_cards_run.rs",
@@ -47622,13 +47630,14 @@
     "D-5314",
     "D-5336",
     "D-5340",
-    "D-5568"
+    "D-5568",
+    "D-5848"
    ],
    "cites": [],
    "budget": {
     "files": 6,
     "lines": 510,
-    "context_pct": 22
+    "context_pct": 26
    },
    "checks": [
     "Ci",
@@ -48918,7 +48927,7 @@
    "id": "T840",
    "slug": "update-email-counts",
    "title": "intake and messaging: quote updates reach Email and web-and-email homeowners, and the count told is the count of the update last sent",
-   "goal": "Plan change D-5639 (with D-5617's reader rules, moved here from T730; two outside reviews of D-5617, each finding checked on main f27e052; Casey's go, Nov 23, 2026; TXT-017, TXT-018, TXT-021, TXT-034, CON-035). After T730 an Email homeowner's update is stored as an update email only, but nothing reads it back and the text gates stop it first. (1) Reader (D-5617): `last_quote_text` (`app/messaging/src/quote_text_sent.rs`, T582's, DONE) also reads `messaging.email_outbox` rows for the same recipient and job (`recipient_id`, `subject_ids`) whose `template_id` is `update.first_quote` or `update.quote_update` (T730's names); an email row with status `dropped`, and one with an `email.bounced`, `email.failed` or `email.suppressed` event in `messaging.email_event` (by `provider_id`, D-5640), is skipped and not counted as told, as the text side skips `blocked`, `failed` and `expired`, so after the reset to Text the next `quote_update` evaluation sends the current count by text, under the text gates; newer is measured by queue time, a text's `created_at` against an email's `queued_at`, and on a tie (Both: text and email queued in one transaction) the text row wins; the result is returned under the text template ID; an email row's `at` is its earliest `email.delivered` event time in `messaging.email_event` (joined by `provider_id`), else `sent_at`, else `queued_at` (TXT-017's 3 hours run from the previous update's delivery; a text's `at` stays delivered, else sent, else created). Update the `QuoteTextSent.id` doc comment, which then may hold an email row's ID. (2) Count: `QuoteTextSent` gains the quoted count, read from the selected row's `subject_ids` as the entry other than the job and, on an email row, her address row that T730 appends (`[job, Uuid(quoted)]` as `quote_updates::send` writes it, D-5640); a `first_quote` row's count is 1; any other row with no count in its `subject_ids`, such as those `tests/integration/tests/quote_count_event.rs` (T582's) writes, falls back to the existing `quote_told` answer and never fails, and that file passes unedited), and `previous()` (`app/intake/src/quote_updates.rs`) uses it in place of the `quote_told.<job>` answer, which is written at queue time, so a dropped, failed or expired newer update suppressed the next one; texts and emails alike. (3) Gates (through T730's `messaging::api::queue_update_email`; its `None` means the update is `Skipped`, never a fall back to `enqueue`): `quote_update_step` stops on no texting consent (`may_text`), `NotTextable` and `OptedOut` before any routing, and the `app/intake/src/job_texts.rs` path that sends `first_quote` and the closing updates has the same gate. Only for a template in T730's `UPDATE_TEMPLATES`: when the update channel is Email (web-and-email mode with no texting consent included, TXT-034), both paths skip the text gates and text quiet hours and call `queue_update_email` in the same transaction, so no text row is ever created; when the channel is Both and a text gate fails (no consent, `OptedOut`, `NotTextable`) the update goes by `queue_update_email` as email only and goes now, even in text quiet hours (`send_window` answers `OptedOut` before `Hold`, D-5640); text quiet hours hold a Both homeowner's whole update, email and text going together when the window opens, only when texting is possible; Text keeps every gate. Every other `job_texts` template keeps every text gate unchanged. STOP stops texts only (CON-035); the update email's unsubscribe link is the email off switch. (4) First quote: a bounced or dropped `update.first_quote` email does not count as told, so `previous()` is `None`; when the job has such an email, `quote_update_step` does not take `first_held` but queues `first_quote` at once through a new function in `job_texts.rs` that reuses `job_text_step`'s gates (`may_text`, `send_window`, the emergency exemption only) and, on `SendWindow::Hold`, holds exactly as `job_text_step` does (its `hold`), never skipping on a hold, before calling its `queue` with a `JobText` (D-5640), so after the reset to Text the first-quote text goes out. (5) `created` (`queue_update_email` returns `Option<(Uuid, bool)>`): `quote_told` is written and a send counted only when `created` is true. (6) `quote_text_sent.rs` may already hold D-5617's reader from T730's attempt branch (a bounced email counted as told, an email's time `sent_at` else `queued_at`); this task replaces those rules with the ones above. (7) T730 merged without `queue_update_email` (its routing is the internal `route` and `queue_update` in `app/messaging/src/update_emails.rs`) and keeps the update email's `subject_ids` as T730 built them: when `queue_update_email` is not on `main` at this task's start, this task adds it in `update_emails.rs`, re-exported by one `pub use` line in the shared `messaging::api`, with the D-5640 signature and meaning (`pub async fn queue_update_email(db: &mut PgConnection, secret: &SecretString, text: &NewText<'_>) -> Result<Option<(Uuid, bool)>, OutboxError>`: email only, never `enqueue` and never a `messaging.outbox` row, `None` unless the update channel is Email or Both at insert, the `bool` being `created`), built on T730's `route` and `queue_update`; it also returns `None` when the footer is unset, her address has bounced or the text carries no quote link, and an Email homeowner's update is then skipped (no text), the step reporting `Skipped`, never an error; and where T730 did not append her address row (`status.row`) to the update email's `subject_ids` with `bounced`'s current-address guard, this task does both there. Tests in the new `tests/integration/tests/update_email_counts.rs` (PostgreSQL and the email stand-in, fake data and 555 numbers only). Update the intake and messaging notes and `docs/decisions.md`.",
+   "goal": "Plan change D-5639 (with D-5617's reader rules, moved here from T730; two outside reviews of D-5617, each finding checked on main f27e052; Casey's go, Nov 23, 2026; TXT-017, TXT-018, TXT-021, TXT-034, CON-035). After T730 an Email homeowner's update is stored as an update email only, but nothing reads it back and the text gates stop it first. (1) Reader (D-5617): `last_quote_text` (`app/messaging/src/quote_text_sent.rs`, T582's, DONE) also reads `messaging.email_outbox` rows for the same recipient and job (`recipient_id`, `subject_ids`) whose `template_id` is `update.first_quote` or `update.quote_update` (T730's names); an email row with status `dropped`, and one with an `email.bounced`, `email.failed` or `email.suppressed` event in `messaging.email_event` (by `provider_id`, D-5640), is skipped and not counted as told, as the text side skips `blocked`, `failed` and `expired`, so after the reset to Text the next `quote_update` evaluation sends the current count by text, under the text gates; newer is measured by queue time, a text's `created_at` against an email's `queued_at`, and on a tie (Both: text and email queued in one transaction) the text row wins; the result is returned under the text template ID; an email row's `at` is its earliest `email.delivered` event time in `messaging.email_event` (joined by `provider_id`), else `sent_at`, else `queued_at` (TXT-017's 3 hours run from the previous update's delivery; a text's `at` stays delivered, else sent, else created). Update the `QuoteTextSent.id` doc comment, which then may hold an email row's ID. (2) Count: `QuoteTextSent` gains the quoted count, read from the selected row's `subject_ids` as the entry other than the job and, on an email row, her address row that T730 appends (`[job, Uuid(quoted)]` as `quote_updates::send` writes it, D-5640); a `first_quote` row's count is 1; any other row with no count in its `subject_ids`, such as those `tests/integration/tests/quote_count_event.rs` (T582's) writes, falls back to the existing `quote_told` answer and never fails, and that file passes unedited), and `previous()` (`app/intake/src/quote_updates.rs`) uses it in place of the `quote_told.<job>` answer, which is written at queue time, so a dropped, failed or expired newer update suppressed the next one; texts and emails alike. (3) Gates (through T730's `messaging::api::queue_update_email`; its `None` means the update is `Skipped`, never a fall back to `enqueue`): `quote_update_step` stops on no texting consent (`may_text`), `NotTextable` and `OptedOut` before any routing, and the `app/intake/src/job_texts.rs` path that sends `first_quote` and the closing updates has the same gate. Only for a template in T730's `UPDATE_TEMPLATES`: when the update channel is Email (web-and-email mode with no texting consent included, TXT-034), both paths skip the text gates and text quiet hours and call `queue_update_email` in the same transaction, so no text row is ever created; when the channel is Both and a text gate fails (no consent, `OptedOut`, `NotTextable`) the update goes by `queue_update_email` as email only and goes now, even in text quiet hours (`send_window` answers `OptedOut` before `Hold`, D-5640); text quiet hours hold a Both homeowner's whole update, email and text going together when the window opens, only when texting is possible; Text keeps every gate. Every other `job_texts` template keeps every text gate unchanged. STOP stops texts only (CON-035); the update email's unsubscribe link is the email off switch. (4) First quote: a bounced or dropped `update.first_quote` email does not count as told, so `previous()` is `None`; when the job has such an email, `quote_update_step` does not take `first_held` but queues `first_quote` at once through a new function in `job_texts.rs` that reuses `job_text_step`'s gates (`may_text`, `send_window`, the emergency exemption only) and, on `SendWindow::Hold`, holds exactly as `job_text_step` does (its `hold`), never skipping on a hold, before calling its `queue` with a `JobText` (D-5640), so after the reset to Text the first-quote text goes out. (5) `created` (`queue_update_email` returns `Option<(Uuid, bool)>`): `quote_told` is written and a send counted only when `created` is true. (6) `quote_text_sent.rs` may already hold D-5617's reader from T730's attempt branch (a bounced email counted as told, an email's time `sent_at` else `queued_at`); this task replaces those rules with the ones above. (7) T730 merged without `queue_update_email` (its routing is the internal `route` and `queue_update` in `app/messaging/src/update_emails.rs`) and keeps the update email's `subject_ids` as T730 built them: when `queue_update_email` is not on `main` at this task's start, this task adds it in `update_emails.rs`, re-exported by one `pub use` line in the shared `messaging::api`, with the D-5640 signature and meaning (`pub async fn queue_update_email(db: &mut PgConnection, secret: &SecretString, text: &NewText<'_>) -> Result<Option<(Uuid, bool)>, OutboxError>`: email only, never `enqueue` and never a `messaging.outbox` row, `None` unless the update channel is Email or Both at insert, the `bool` being `created`), built on T730's `route` and `queue_update`; it also returns `None` when the footer is unset, her address has bounced or the text carries no quote link, and an Email homeowner's update is then skipped (no text), the step reporting `Skipped`, never an error; and where T730 did not append her address row (`status.row`) to the update email's `subject_ids` with `bounced`'s current-address guard, this task does both there. Tests in the new `tests/integration/tests/update_email_counts.rs` (PostgreSQL and the email stand-in, fake data and 555 numbers only). Update the intake and messaging notes and `docs/decisions.md`. Plan change D-5848 (Fable's T2): the homeowner text gates `quote_updates.rs:115` and `job_texts.rs:282` ask T856's per-request predicate (`service::may_text_request` for the job's request) in place of the per-contact `may_text`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -48928,7 +48937,8 @@
     "T582",
     "T583",
     "T708",
-    "T816"
+    "T816",
+    "T856"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -48963,13 +48973,14 @@
     "D-5533",
     "D-5617",
     "D-5639",
-    "D-5640"
+    "D-5640",
+    "D-5848"
    ],
    "cites": [],
    "budget": {
     "files": 5,
     "lines": 600,
-    "context_pct": 10
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -49047,7 +49058,8 @@
    "module": "intake",
    "deps": [
     "T716",
-    "T717"
+    "T717",
+    "T858"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -50498,7 +50510,7 @@
    "id": "T742",
    "slug": "help-email-asker-address",
    "title": "intake, ops and privacy: a help email's sender address is sealed in the vault and tied to its help request, and purged with its words (D-4726)",
-   "goal": "Plan change D-4726 (Opus review round 2). OPS-036 (`docs/spec/ops-recovery.md:40`) answers a help email's asker by email, but nothing keeps the address: `privacy::api::read_inbound_email` returns no sender address by design (`InboundEmail`, `app/privacy/src/reader.rs:171` to `:184`; PRIV-026, only the blind index `sender`), `intake::api::receive_help_email` (`app/intake/src/handlers.rs:820`) opens the request as `Asker::Email` with no ID (`app/ops/src/help_requests.rs:45` to `:54`), and `ops.help_request` forces `asker_id` empty for `email` (`migrations/0194_help_requests.sql:13`). This task, before T740: (1) `app/privacy/src/reader.rs`: a new `privacy::api::help_sender(delivery, ctx) -> Result<SecretString, InboundError>` that verifies the delivery as `read_inbound_email` does (sharing its private parse, no second copy) and returns the `from` address as a `SecretString`, never logged or put in an error. (2) `app/intake/src/handlers.rs`: a new `intake::api::receive_help_email_from(db, vault, (email, sender), at)` for an authenticated help email only (an `OptOutOnly` sender opens nothing and stores nothing, PRIV-026): it stores the address as a new vault contact with `privacy::api::store_contact` (`app/privacy/src/vault.rs:383`; `NewContact { email: Some(sender), ..NewContact::default() }`, sealed like every contact field, PRIV-001; on a bare connection, before the help transaction) and opens the request as a new `ops::api::Asker::EmailFrom(contact)` (code `email`, ID the contact; it never joins another request, as `Email`); `receive_help_email` keeps its signature and behaviour for the help-page form (`app/portals/src/help.rs:384`, which collects no address, so its asker gets no email reply) until T740 moves the form to (6). (3) `migrations/0218_ops_help_email_sender.sql` replaces `ops.help_request`'s `asker_id` check with one that requires an ID for `homeowner` and `business` and allows one or none for `email` (check the next free migration number at claim time; `0215` to `0217` are taken on another plan branch). (4) Retention: the address is kept only as long as the request's words, the TXT-020 cut (`WORDS_KEPT_FOR`, 30 days, `app/privacy/src/message_body.rs:29`): a new daily task in `handlers.rs` (`intake.help_sender_purge`, registered in the shared `app/server/src/lib.rs`, deduplicated per Arizona day) clears, through `privacy::api::purge_contact` (`app/privacy/src/purge.rs:376`), the contact of every `email` request whose newest message is older than that window, and an audit row records each purge; in its transaction it calls `privacy::api::lock_retention_for_purge` first, as the retention purge does (`app/privacy/src/purge.rs:63` to `:69`, D-1839, lock (1) of the retention lock order); after it, T740's page has no address and refuses the email reply. (5) The signed inbound-email route T133 builds hands help emails to `receive_help_email` (D-3155); this task switches that one call to `receive_help_email_from` with `help_sender`'s address; if the call sits in a file this task does not own and that is not a shared path, it is a plan gap to report. Tests in the new `tests/integration/tests/help_email_sender.rs`, PostgreSQL, fake addresses at `example.com` only: an authenticated help email stores one sealed contact whose email reads back under an allowed purpose and opens one `email` request with that ID; an `OptOutOnly` one stores nothing; the help form still opens a request with no ID; no log line, audit row, notification or `privacy.message_body` row holds the address; the purge clears the address after 30 days and not before. The task checks whether `store_contact` writes a per-purpose email blind index for the new contact (on `main` it indexes only the phone, `app/privacy/src/vault.rs:418`); either way it stores the address with no email index, and a test shows that the email opt-out and business-reply lookups by `SenderIndex` never match a help-sender contact (R3, D-4726). `tests/integration/tests/help_requests.rs` passes unchanged. (6) Plan change D-4748 (Fable's decision (7)): the help-page form will collect a required email address (T740 adds the field), so this task also adds `intake::api::receive_help_form_from(db, vault, (email, address), at)`: an address that is not a valid email opens nothing and stores nothing; a valid one is stored exactly as (2) stores a help email's sender (a sealed vault contact with no email blind index, PRIV-001) and purged by (4), and the request opens as `Asker::EmailFrom(contact)`; its cases join `tests/integration/tests/help_email_sender.rs`. Update `app/intake/CLAUDE.md`, `app/privacy/CLAUDE.md`, `app/ops/CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`. Plan change D-5314: this task's migration moves to `migrations/0219_ops_help_email_sender.sql` for T812's `0216_businesses_step_up_session.sql`, which runs earlier (V9); earlier numbers in this goal are history. Plan change D-5336: this task's migration moves to `migrations/0220_ops_help_email_sender.sql` for T804's `0216_portals_data_request_link.sql`, which runs earlier (V9); earlier numbers in this goal are history.",
+   "goal": "Plan change D-4726 (Opus review round 2). OPS-036 (`docs/spec/ops-recovery.md:40`) answers a help email's asker by email, but nothing keeps the address: `privacy::api::read_inbound_email` returns no sender address by design (`InboundEmail`, `app/privacy/src/reader.rs:171` to `:184`; PRIV-026, only the blind index `sender`), `intake::api::receive_help_email` (`app/intake/src/handlers.rs:820`) opens the request as `Asker::Email` with no ID (`app/ops/src/help_requests.rs:45` to `:54`), and `ops.help_request` forces `asker_id` empty for `email` (`migrations/0194_help_requests.sql:13`). This task, before T740: (1) `app/privacy/src/reader.rs`: a new `privacy::api::help_sender(delivery, ctx) -> Result<SecretString, InboundError>` that verifies the delivery as `read_inbound_email` does (sharing its private parse, no second copy) and returns the `from` address as a `SecretString`, never logged or put in an error. (2) `app/intake/src/handlers.rs`: a new `intake::api::receive_help_email_from(db, vault, (email, sender), at)` for an authenticated help email only (an `OptOutOnly` sender opens nothing and stores nothing, PRIV-026): it stores the address as a new vault contact with `privacy::api::store_contact` (`app/privacy/src/vault.rs:383`; `NewContact { email: Some(sender), ..NewContact::default() }`, sealed like every contact field, PRIV-001; on a bare connection, before the help transaction) and opens the request as a new `ops::api::Asker::EmailFrom(contact)` (code `email`, ID the contact; it never joins another request, as `Email`); `receive_help_email` keeps its signature and behaviour for the help-page form (`app/portals/src/help.rs:384`, which collects no address, so its asker gets no email reply) until T740 moves the form to (6). (3) `migrations/0218_ops_help_email_sender.sql` replaces `ops.help_request`'s `asker_id` check with one that requires an ID for `homeowner` and `business` and allows one or none for `email` (check the next free migration number at claim time; `0215` to `0217` are taken on another plan branch). (4) Retention: the address is kept only as long as the request's words, the TXT-020 cut (`WORDS_KEPT_FOR`, 30 days, `app/privacy/src/message_body.rs:29`): a new daily task in `handlers.rs` (`intake.help_sender_purge`, registered in the shared `app/server/src/lib.rs`, deduplicated per Arizona day) clears, through `privacy::api::purge_contact` (`app/privacy/src/purge.rs:376`), the contact of every `email` request whose newest message is older than that window, and an audit row records each purge; in its transaction it calls `privacy::api::lock_retention_for_purge` first, as the retention purge does (`app/privacy/src/purge.rs:63` to `:69`, D-1839, lock (1) of the retention lock order); after it, T740's page has no address and refuses the email reply. (5) The signed inbound-email route T133 builds hands help emails to `receive_help_email` (D-3155); this task switches that one call to `receive_help_email_from` with `help_sender`'s address; if the call sits in a file this task does not own and that is not a shared path, it is a plan gap to report. Tests in the new `tests/integration/tests/help_email_sender.rs`, PostgreSQL, fake addresses at `example.com` only: an authenticated help email stores one sealed contact whose email reads back under an allowed purpose and opens one `email` request with that ID; an `OptOutOnly` one stores nothing; the help form still opens a request with no ID; no log line, audit row, notification or `privacy.message_body` row holds the address; the purge clears the address after 30 days and not before. The task checks whether `store_contact` writes a per-purpose email blind index for the new contact (on `main` it indexes only the phone, `app/privacy/src/vault.rs:418`); either way it stores the address with no email index, and a test shows that the email opt-out and business-reply lookups by `SenderIndex` never match a help-sender contact (R3, D-4726). `tests/integration/tests/help_requests.rs` passes unchanged. (6) Plan change D-4748 (Fable's decision (7)): the help-page form will collect a required email address (T740 adds the field), so this task also adds `intake::api::receive_help_form_from(db, vault, (email, address), at)`: an address that is not a valid email opens nothing and stores nothing; a valid one is stored exactly as (2) stores a help email's sender (a sealed vault contact with no email blind index, PRIV-001) and purged by (4), and the request opens as `Asker::EmailFrom(contact)`; its cases join `tests/integration/tests/help_email_sender.rs`. Update `app/intake/CLAUDE.md`, `app/privacy/CLAUDE.md`, `app/ops/CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`. Plan change D-5314: this task's migration moves to `migrations/0219_ops_help_email_sender.sql` for T812's `0216_businesses_step_up_session.sql`, which runs earlier (V9); earlier numbers in this goal are history. Plan change D-5336: this task's migration moves to `migrations/0221_ops_help_email_sender.sql` for T804's `0216_portals_data_request_link.sql`, which runs earlier (V9); earlier numbers in this goal are history. Plan change D-5848: the migration is `0221_ops_help_email_sender.sql` (T862 takes `0218`); earlier numbers are history.",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -50521,7 +50533,7 @@
     "app/intake/src/handlers.rs",
     "app/ops/src/help_requests.rs",
     "app/privacy/src/reader.rs",
-    "migrations/0220_ops_help_email_sender.sql",
+    "migrations/0221_ops_help_email_sender.sql",
     "tests/integration/tests/help_email_sender.rs"
    ],
    "reads": [
@@ -50544,7 +50556,8 @@
     "D-4726",
     "D-4748",
     "D-5314",
-    "D-5336"
+    "D-5336",
+    "D-5848"
    ],
    "cites": [],
    "budget": {
@@ -52175,7 +52188,7 @@
    "id": "T785",
    "slug": "dispute-without-due-date",
    "title": "payments: a dispute with no usable evidence date is still recorded and still blocks refunds",
-   "goal": "Plan change D-5081 (external code review of Nov 20, 2026, finding F26; FEE-026, FEE-027; D-2073 (1)). A `charge.dispute.created` whose `evidence_details.due_by` is null is read as unreadable (`app/payments/src/routes.rs`): one High alert with no subject, no `payments.dispute` row and no ledger entry, so FEE-026's refund block never applies and an automatic refund can go out on a disputed charge; D-2073 (1) said Casey records such a dispute by hand, but no screen or caller exists for that. A `due_by` of 0 or below is stored as 1970 and its tasks fire at once. The new `migrations/0219_payments_dispute_due_optional.sql` drops `NOT NULL` from `payments.dispute.due_at`. The webhook route now treats a null, zero, negative or already-past `due_by` as no date and still records the dispute: the dispute row, the ledger entry and the dispute alert are written exactly as for a dated one, so refunds on that pick are blocked and flagged, and only the submit task and the due reminders, which need a date, are skipped; the alert says the evidence date is missing and names the pick, so Casey can act in Stripe. `record_dispute`'s existing signature stays for dated disputes; the undated case is a new entry beside it in `app/payments/src/disputes.rs`, so no done test changes except TD-FEE-43's `td_fee_43_an_unreadable_event_alerts_casey_once`, by logged spec change (D-5164): its unreadable dispute becomes one with no `payment_intent`; the odd refund status, the alert count 2, the no-dispute-row and High assertions stay. Every reader of `payments.dispute.due_at` handles a missing date: the ones in these two files (in `disputes.rs`, `mark_auto_submit` (`:213` to `:224`) neither sets `auto_submit` nor queues a submit task for an undated dispute and answers as for one it did not mark, and `list_disputes` (`:414`) reads `(due_at IS NULL OR due_at >= $1)` so an undated open dispute stays in the digest), `DisputeView.due_at` (now `Option<Timestamp>`, `models.rs`), `dispute_row` in `app/portals/src/owner_portal.rs` (an undated dispute shows `date not given by Stripe` as `due` and, unless submitted, the standing 'You need to counter or accept this one in Stripe.', never the 2-days line; no template change), and `place_dispute_holds` in `app/payments/src/purge.rs`, which this task also owns for that read alone: an undated dispute's PRIV-007 hold counts from `opened_at` in place of the missing date, and the decision entry and `docs/for-casey-review.md` say so. Tests in the new `tests/integration/tests/dispute_no_due_date.rs`, PostgreSQL with the Stripe stand-in's signing, fake data only, the event bodies built in the test: `due_by` null makes one dispute row with no date and one ledger entry, and a later refund on that pick is blocked and flagged; `due_by` 0 and a past date do the same and queue no task due in the past; an undated dispute still places its retention hold; a dated dispute behaves as today; an undated open dispute is listed by `list_disputes` and gets no submit task from `mark_auto_submit`; a negative `due_by` is undated; a null `due_by` raises no `UNREADABLE_EVENT_ALERT`; `disputes_of` returns `None` for the date; the owner refund page line for an undated dispute; and the null, zero, negative and past `due_by` paths and the undated `purge.rs:41` read each get a case (95% branch floor). Every existing dispute and refund test passes unchanged except that one TD-FEE-43 case. It is money code under the `payments` 95% branch floor. The worker updates `td_fee_43_an_unreadable_event_alerts_casey_once`'s doc comment (\"a dispute with no evidence due date\") to match its new body. This task does not touch `kit/plan.lock`. Build notes go to the end of `app/payments/NOTES.md`; update `docs/architecture.md` and `docs/decisions.md`. Plan change D-5252 (job-5 money review findings 2 and 9, verified on `main`; FEE-026, FEE-027; D-2289): (2) a `charge.dispute.created` whose PaymentIntent a `payments.pick_intent` row holds but which has no `payments.charge_evidence` row is not an unknown charge: `record_dispute` (`app/payments/src/disputes.rs:97` to `:106`) answers a new `MoneyEventError::NoEvidence(pick)` there (`models.rs`), and the `Dispatch::Dispute` arm (`app/payments/src/routes.rs:329` to `:337`; `money` at `:431` is synchronous) raises one `raise_alert_once` per pick of a new High alert kind `payments.dispute_no_evidence` (subject the pick; not `FRAUD_WARNING_ALERT` and not `no_evidence_alert`) and answers `Acted::Retry` (500, Stripe resends), the same retry shape as the fraud-warning `NoEvidence` path (`routes.rs:473` to `:477`); a dispute no pick holds keeps today's answer (200, nothing written; TD-FEE-43, D-1754; `td_fee_43_an_unknown_object_changes_nothing`, `tests/integration/tests/stripe_webhook_dispatch.rs:451` to `:505`, passes unchanged), the nightly reconcile's `UNKNOWN_CHARGE_ALERT` already covering it. (9) in `run_dispute_submit` (`disputes.rs:361` to `:398`), after the existing `auto_submit AND submitted_at IS NULL` read finds the row, when its `due_at` is set and `now >= due_at` it makes no Stripe call, raises one High alert of a new kind `payments.dispute_deadline_missed` through `raise_alert_once` (subject the pick) and returns `Ok`. Their cases join `tests/integration/tests/dispute_no_due_date.rs` (a dispute with evidence missing is resent and alerted once; a submit task run after the deadline calls no Stripe and alerts once). Plan change D-5314: this task's migration moves to `migrations/0220_payments_dispute_due_optional.sql` for T812's `0216_businesses_step_up_session.sql`, which runs earlier (V9); earlier numbers in this goal are history. Plan change D-5336: this task's migration moves to `migrations/0221_payments_dispute_due_optional.sql` for T804's `0216_portals_data_request_link.sql`, which runs earlier (V9); earlier numbers in this goal are history.",
+   "goal": "Plan change D-5081 (external code review of Nov 20, 2026, finding F26; FEE-026, FEE-027; D-2073 (1)). A `charge.dispute.created` whose `evidence_details.due_by` is null is read as unreadable (`app/payments/src/routes.rs`): one High alert with no subject, no `payments.dispute` row and no ledger entry, so FEE-026's refund block never applies and an automatic refund can go out on a disputed charge; D-2073 (1) said Casey records such a dispute by hand, but no screen or caller exists for that. A `due_by` of 0 or below is stored as 1970 and its tasks fire at once. The new `migrations/0219_payments_dispute_due_optional.sql` drops `NOT NULL` from `payments.dispute.due_at`. The webhook route now treats a null, zero, negative or already-past `due_by` as no date and still records the dispute: the dispute row, the ledger entry and the dispute alert are written exactly as for a dated one, so refunds on that pick are blocked and flagged, and only the submit task and the due reminders, which need a date, are skipped; the alert says the evidence date is missing and names the pick, so Casey can act in Stripe. `record_dispute`'s existing signature stays for dated disputes; the undated case is a new entry beside it in `app/payments/src/disputes.rs`, so no done test changes except TD-FEE-43's `td_fee_43_an_unreadable_event_alerts_casey_once`, by logged spec change (D-5164): its unreadable dispute becomes one with no `payment_intent`; the odd refund status, the alert count 2, the no-dispute-row and High assertions stay. Every reader of `payments.dispute.due_at` handles a missing date: the ones in these two files (in `disputes.rs`, `mark_auto_submit` (`:213` to `:224`) neither sets `auto_submit` nor queues a submit task for an undated dispute and answers as for one it did not mark, and `list_disputes` (`:414`) reads `(due_at IS NULL OR due_at >= $1)` so an undated open dispute stays in the digest), `DisputeView.due_at` (now `Option<Timestamp>`, `models.rs`), `dispute_row` in `app/portals/src/owner_portal.rs` (an undated dispute shows `date not given by Stripe` as `due` and, unless submitted, the standing 'You need to counter or accept this one in Stripe.', never the 2-days line; no template change), and `place_dispute_holds` in `app/payments/src/purge.rs`, which this task also owns for that read alone: an undated dispute's PRIV-007 hold counts from `opened_at` in place of the missing date, and the decision entry and `docs/for-casey-review.md` say so. Tests in the new `tests/integration/tests/dispute_no_due_date.rs`, PostgreSQL with the Stripe stand-in's signing, fake data only, the event bodies built in the test: `due_by` null makes one dispute row with no date and one ledger entry, and a later refund on that pick is blocked and flagged; `due_by` 0 and a past date do the same and queue no task due in the past; an undated dispute still places its retention hold; a dated dispute behaves as today; an undated open dispute is listed by `list_disputes` and gets no submit task from `mark_auto_submit`; a negative `due_by` is undated; a null `due_by` raises no `UNREADABLE_EVENT_ALERT`; `disputes_of` returns `None` for the date; the owner refund page line for an undated dispute; and the null, zero, negative and past `due_by` paths and the undated `purge.rs:41` read each get a case (95% branch floor). Every existing dispute and refund test passes unchanged except that one TD-FEE-43 case. It is money code under the `payments` 95% branch floor. The worker updates `td_fee_43_an_unreadable_event_alerts_casey_once`'s doc comment (\"a dispute with no evidence due date\") to match its new body. This task does not touch `kit/plan.lock`. Build notes go to the end of `app/payments/NOTES.md`; update `docs/architecture.md` and `docs/decisions.md`. Plan change D-5252 (job-5 money review findings 2 and 9, verified on `main`; FEE-026, FEE-027; D-2289): (2) a `charge.dispute.created` whose PaymentIntent a `payments.pick_intent` row holds but which has no `payments.charge_evidence` row is not an unknown charge: `record_dispute` (`app/payments/src/disputes.rs:97` to `:106`) answers a new `MoneyEventError::NoEvidence(pick)` there (`models.rs`), and the `Dispatch::Dispute` arm (`app/payments/src/routes.rs:329` to `:337`; `money` at `:431` is synchronous) raises one `raise_alert_once` per pick of a new High alert kind `payments.dispute_no_evidence` (subject the pick; not `FRAUD_WARNING_ALERT` and not `no_evidence_alert`) and answers `Acted::Retry` (500, Stripe resends), the same retry shape as the fraud-warning `NoEvidence` path (`routes.rs:473` to `:477`); a dispute no pick holds keeps today's answer (200, nothing written; TD-FEE-43, D-1754; `td_fee_43_an_unknown_object_changes_nothing`, `tests/integration/tests/stripe_webhook_dispatch.rs:451` to `:505`, passes unchanged), the nightly reconcile's `UNKNOWN_CHARGE_ALERT` already covering it. (9) in `run_dispute_submit` (`disputes.rs:361` to `:398`), after the existing `auto_submit AND submitted_at IS NULL` read finds the row, when its `due_at` is set and `now >= due_at` it makes no Stripe call, raises one High alert of a new kind `payments.dispute_deadline_missed` through `raise_alert_once` (subject the pick) and returns `Ok`. Their cases join `tests/integration/tests/dispute_no_due_date.rs` (a dispute with evidence missing is resent and alerted once; a submit task run after the deadline calls no Stripe and alerts once). Plan change D-5314: this task's migration moves to `migrations/0220_payments_dispute_due_optional.sql` for T812's `0216_businesses_step_up_session.sql`, which runs earlier (V9); earlier numbers in this goal are history. Plan change D-5336: this task's migration moves to `migrations/0222_payments_dispute_due_optional.sql` for T804's `0216_portals_data_request_link.sql`, which runs earlier (V9); earlier numbers in this goal are history. Plan change D-5848: the migration is `0222_payments_dispute_due_optional.sql` (T862 takes `0218`); earlier numbers are history.",
    "type": "harness",
    "phase": 2,
    "stage": "6",
@@ -52197,7 +52210,7 @@
     "app/payments/src/disputes.rs",
     "app/payments/src/routes.rs",
     "app/payments/src/purge.rs",
-    "migrations/0221_payments_dispute_due_optional.sql",
+    "migrations/0222_payments_dispute_due_optional.sql",
     "tests/integration/tests/dispute_no_due_date.rs",
     "app/payments/src/models.rs",
     "app/portals/src/owner_portal.rs",
@@ -52220,13 +52233,14 @@
     "D-5164",
     "D-5252",
     "D-5314",
-    "D-5336"
+    "D-5336",
+    "D-5848"
    ],
    "cites": [],
    "budget": {
     "files": 8,
     "lines": 700,
-    "context_pct": 40
+    "context_pct": 44
    },
    "checks": [
     "Ci",
@@ -52661,7 +52675,7 @@
    "id": "T793",
    "slug": "email-quiet-drain",
    "title": "messaging: a non-emergency business notice email carries a quiet flag and the email drain holds it at night",
-   "goal": "Plan change D-5230 (outside code review 3, finding 3, verified by Opus; Fable decided; QH-005, TXT-014). A business notice email held by the night rule can still be sent at night by the email drain, which has no hour check (`drain_one`, `app/messaging/src/email_due.rs:238`). (1) `migrations/0220_messaging_email_quiet.sql` adds a stored per-row quiet flag to the email outbox row (default false; re-check the next free number at claim time against the migration-order rule). (2) A new function in `app/messaging/src/models.rs` sets it; the business-notice path (`app/messaging/src/business_notices.rs`) calls it for each non-emergency business notice email it queues, so `app/messaging/src/email.rs` is not changed and every other email (sign-in links, receipts and anything a person just asked for) is never flagged and never held. (3) `drain_one` holds a flagged row leased outside the 8 a.m. to 8 p.m. Arizona window until the next Arizona opening, without counting a failure (the drain knows no recipient zone, so a flagged row follows the Arizona rule T792 gives an email-only recipient). Emails a person asked for are never held, on QH-004's direct-reply exception. Tests in the new `tests/integration/tests/email_quiet_drain.rs`, PostgreSQL, fake addresses only: a flagged business notice email leased at 9 p.m. is held to the morning and then sent once; an unflagged sign-in email at 9 p.m. goes at once; an emergency notice email is never flagged. Every email drain test passes unchanged. Update `app/messaging/NOTES.md` and `docs/decisions.md`. Plan change D-5314: this task's migration moves to `migrations/0221_messaging_email_quiet.sql` for T812's `0216_businesses_step_up_session.sql`, which runs earlier (V9); earlier numbers in this goal are history. Plan change D-5336: this task's migration moves to `migrations/0222_messaging_email_quiet.sql` for T804's `0216_portals_data_request_link.sql`, which runs earlier (V9); earlier numbers in this goal are history.",
+   "goal": "Plan change D-5230 (outside code review 3, finding 3, verified by Opus; Fable decided; QH-005, TXT-014). A business notice email held by the night rule can still be sent at night by the email drain, which has no hour check (`drain_one`, `app/messaging/src/email_due.rs:238`). (1) `migrations/0220_messaging_email_quiet.sql` adds a stored per-row quiet flag to the email outbox row (default false; re-check the next free number at claim time against the migration-order rule). (2) A new function in `app/messaging/src/models.rs` sets it; the business-notice path (`app/messaging/src/business_notices.rs`) calls it for each non-emergency business notice email it queues, so `app/messaging/src/email.rs` is not changed and every other email (sign-in links, receipts and anything a person just asked for) is never flagged and never held. (3) `drain_one` holds a flagged row leased outside the 8 a.m. to 8 p.m. Arizona window until the next Arizona opening, without counting a failure (the drain knows no recipient zone, so a flagged row follows the Arizona rule T792 gives an email-only recipient). Emails a person asked for are never held, on QH-004's direct-reply exception. Tests in the new `tests/integration/tests/email_quiet_drain.rs`, PostgreSQL, fake addresses only: a flagged business notice email leased at 9 p.m. is held to the morning and then sent once; an unflagged sign-in email at 9 p.m. goes at once; an emergency notice email is never flagged. Every email drain test passes unchanged. Update `app/messaging/NOTES.md` and `docs/decisions.md`. Plan change D-5314: this task's migration moves to `migrations/0221_messaging_email_quiet.sql` for T812's `0216_businesses_step_up_session.sql`, which runs earlier (V9); earlier numbers in this goal are history. Plan change D-5336: this task's migration moves to `migrations/0223_messaging_email_quiet.sql` for T804's `0216_portals_data_request_link.sql`, which runs earlier (V9); earlier numbers in this goal are history. Plan change D-5848: the migration is `0223_messaging_email_quiet.sql` (T862 takes `0218`); earlier numbers are history.",
    "deps": [
     "T792"
    ],
@@ -52669,7 +52683,7 @@
     "app/messaging/src/email_due.rs",
     "app/messaging/src/models.rs",
     "app/messaging/src/business_notices.rs",
-    "migrations/0222_messaging_email_quiet.sql",
+    "migrations/0223_messaging_email_quiet.sql",
     "tests/integration/tests/email_quiet_drain.rs"
    ],
    "reads": [
@@ -52688,12 +52702,13 @@
     "D-5230",
     "D-5229",
     "D-5314",
-    "D-5336"
+    "D-5336",
+    "D-5848"
    ],
    "budget": {
     "files": 5,
     "lines": 450,
-    "context_pct": 27
+    "context_pct": 31
    },
    "branch": "claude/task/T793-email-quiet-drain",
    "prompt": "kit/prompts/T793.md",
@@ -53070,12 +53085,20 @@
     "T676",
     "T671",
     "T725",
-    "T831"
+    "T831",
+    "T856",
+    "T857",
+    "T858",
+    "T859",
+    "T860",
+    "T864"
    ],
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "tests": [
-    "TD-CON-10"
+    "TD-CON-10",
+    "TD-CON-36",
+    "TD-INT-43"
    ],
    "cites": [],
    "checks": [
@@ -53085,8 +53108,8 @@
    ],
    "id": "T801",
    "slug": "chat-code-not-optin",
-   "title": "intake and site (harness): with texting on, the web chat only shows the number and the SMS disclosures and asks her to text it; a chat consent record never permits a text",
-   "goal": "Plan change D-5279 (Fable's decision for Casey under D-305; CON-005, CON-007, CON-025 and TXT-034 as reworded; TXT-021, TXT-038). Review round 1 chose the narrow path, because the text path stops at every step without a consent record (`order_dispatch.rs:327`, `:431`, `service.rs:878`, `quote_updates.rs:115`). This task: (1) while homeowner texting is live: T725's `businesses::api::homeowner_texting_number` answers a number (the switch on, a number configured, texting not paused or suspended, WEB-007, and the Gate C launch date reached), the web chat (`app/intake/src/web_chat.rs`, `app/site/src/chat.rs`, `app/site/templates/request.html`) has no phone or code step and opens no request: its start screen shows the Laftly number with the SMS disclosures (message frequency, rates, HELP, STOP, the terms and privacy links) and the 18-or-older line, and says \"Text {number} from your phone to continue.\" (draft copy for the copy panel, WORD-028); a message typed there gets the same answer, except that a 911-list match still shows the INT-004 text and a business-intent message still shows `business_signup_reply` (shown, never texted); her first inbound text then opens the request and gets the full consent text as any first text does; (2) outside that state (in CI, before Gate C, while texting is paused or suspended, or in web-and-email mode) the chat keeps today's chat-run behaviour (the consent text above the chat box, the Verify code, a `web_chat` consent record and the chat-run request), so `tests/a11y/page_states.ts:446`, `tests/e2e/home_first_screen.spec.ts:117`, the tests of T645, T646, T649 and T656 and T299's pass unchanged; (3) a `web_chat` consent record never permits a text: `models::contact_consented` (`app/intake/src/models.rs`, read by `service::may_text`, `service.rs:890`) counts only consent records of the text channel, while `card_allowed` keeps counting any record, so a chat-run request keeps its steps and its number is texted only after it texts in. Done tests that run the chat while texting is live change by logged spec change (D-5279, `BUILD_BRIEF.md:69`) only to expect the new start screen or to set web-and-email mode where they test the chat-run request: `tests/integration/tests/web_chat.rs`, `app/server/tests/web_chat_route.rs`, `tests/e2e/web_chat.spec.ts`, `tests/integration/tests/consent_records.rs`, `app/server/tests/home_request_box.rs` and `tests/e2e/j1_homeowner.spec.ts`; the shared `tests/a11y/page_states.ts` `/request` entries are updated add-only for the new screen. Run every test that drives the chat (`grep -rln 'web_chat\\|/request' tests app/server/tests`) and report one this task does not own that fails as a plan gap. Consent: Opus worker, Opus consent and privacy review, two review rounds. Update `app/intake/CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`. Plan change D-5716: T119 will give the e2e worker a homeowner number, so the sender really sends and sets `messaging.outbox.body` to NULL on send (`app/messaging/src/models.rs:289`). The two reads of a queued text's body, `tests/e2e/j1_homeowner.spec.ts:172` (the consent text) and `tests/e2e/web_chat.spec.ts:159`, keep their assertions but take the text from the fake carrier's sent texts (`control.sentTexts()`, the same recipient and kind) when the row's body is already NULL, so neither races the sender. Reword the header comment of `tests/e2e/web_chat.spec.ts` (`:8` to `:10`, \"The keyed binary runs no worker, so no text reaches the stand-in's sent log\") to match.",
+   "title": "intake and site (harness): the served web chat runs the request on the page with zero texts; with texting live it shows the number and asks her to text it",
+   "goal": "Plan change D-5848 (task H of the T801 chain, after T856 to T860; Fable's scope decision section 1, design decisions b and c, and T3; supersedes the transport and test assumptions of D-5279's narrow path and moves D-5716's `j1_homeowner.spec.ts` clause to T861). (1) While homeowner texting is live (T725's `businesses::api::homeowner_texting_number` answers a number), the web chat has no phone or code step and opens no request: its start screen shows the Laftly number with the SMS disclosures and the 18-or-older line and says \"Text {number} from your phone to continue.\" (draft copy, WORD-028); a typed message gets the same answer, except the INT-004 text and `business_signup_reply`, shown and never texted (CON-005, CON-025). (2) Texting goes live mid-chat (Fable's b): an unverified session switches to that screen at once; a verified open web request finishes on the page with zero texts; if she texts in, T856's path appends the `sms` record and the request goes on by text. (3) Outside that state the chat-run request runs on the page through T857 to T860's web dispatch: `open_verified` (`web_chat.rs:764` to `:776`) queues no consent text or Spanish line (the consent text is shown above the chat box), writes the `web_chat` record and an audit event \"shown\", not `intake.consent_sent` (Fable's c; `consent_sent_at` means presented, no migration); `text_turn` (`web_chat.rs:448` to `:475`) goes to web dispatch; `chat.rs` shows the replies (no TEXTED, `chat.rs:436` to `:445`; OPEN loses \"We just sent you a text.\", `:153` to `:156`, but keeps \"got your request\" and \"we've got your request\", `app/server/tests/web_chat_client_ip.rs:35`, `tests/e2e/web_chat.spec.ts:153`); delete T856's named chat exemption, and leave no web-dispatch function reachable only from tests. (4) The old transport assertions change under this decision only (CLAUDE.md rule 6): T645's `app/server/tests/web_chat_stops.rs` (:502 to :506, :572 to :578, :592 to :607, matching TD-CON-36 as reworded), T649's `app/server/tests/web_chat_after_code.rs` (the fixture `ask()` at :216 to :235 asks through the chat, not the SMS API; :46, :319, :325 to :330, :368), T103's `tests/integration/tests/web_chat.rs` (:360 to :373, :501 to :505, :552, :631; the genuine SMS business-intent path at :202 to :211 stays), `tests/e2e/web_chat.spec.ts` (:154 to :161 read the page; reword the header, :8 to :10), `chat.rs`'s unit tests (:769, :852, :879), and `app/server/tests/web_chat_route.rs`, `app/server/tests/home_request_box.rs` and `tests/integration/tests/consent_records.rs` where they expect the old screen; the shared `tests/a11y/page_states.ts` `/request` entries (:544) are updated add-only. Run every test that drives the chat (`grep -rln 'web_chat\\|/request' tests app/server/tests`) and report one this task does not own that fails as a plan gap. Consent: Opus worker, Opus consent and privacy review, two review rounds. Fake data only. Update `app/intake/CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
    "type": "harness",
    "model": "claude-opus-5-5",
    "review_areas": [
@@ -53096,22 +53119,24 @@
    ],
    "owns": [
     "app/intake/src/web_chat.rs",
-    "app/intake/src/models.rs",
+    "app/intake/src/web_dispatch.rs",
     "app/site/src/chat.rs",
     "app/site/templates/request.html",
     "tests/integration/tests/web_chat.rs",
+    "app/server/tests/web_chat_stops.rs",
+    "app/server/tests/web_chat_after_code.rs",
     "app/server/tests/web_chat_route.rs",
     "tests/e2e/web_chat.spec.ts",
     "tests/integration/tests/consent_records.rs",
-    "app/server/tests/home_request_box.rs",
-    "tests/e2e/j1_homeowner.spec.ts"
+    "app/server/tests/home_request_box.rs"
    ],
    "reads": [
     "docs/architecture.md",
     "docs/code-docs.md",
     "docs/spec/consent.md",
     "docs/spec/messaging.md",
-    "docs/spec/intake.md"
+    "docs/spec/intake.md",
+    "docs/spec/website.md"
    ],
    "requirements": [
     "CON-005",
@@ -53119,19 +53144,22 @@
     "CON-025",
     "TXT-021",
     "TXT-034",
-    "TXT-038"
+    "TXT-038",
+    "WEB-009",
+    "CON-008"
    ],
    "decisions": [
     "D-5279",
     "D-470",
-    "D-5716"
+    "D-5716",
+    "D-5848"
    ],
    "budget": {
-    "files": 10,
+    "files": 11,
     "lines": 700,
-    "context_pct": 39
+    "context_pct": 44
    },
-   "acceptance": "Every test in the owned files passes with only the chat-with-texting-on assertions changed; while texting is live the chat opens no request and shows the number with the SMS disclosures; her first inbound text gets the consent text; outside that state the chat behaves as before; a `web_chat` consent record never lets `may_text` answer yes; Ally passes.",
+   "acceptance": "With texting live the chat opens no request and shows the number with the SMS disclosures; outside it a chat-run request runs on the page with zero texts and her first inbound text gets the consent text; only the listed transport assertions change; Ally passes.",
    "branch": "claude/task/T801-chat-code-not-optin",
    "prompt": "kit/prompts/T801.md"
   },
@@ -54193,7 +54221,7 @@
    "id": "T821",
    "slug": "consent-purge-start-help",
    "title": "messaging, ops and intake: the 5-year purge drops an old START and the number's help-keyword and help-request rows",
-   "goal": "Plan change D-5399 (privacy review job 14, findings P4 and P5, Fable's choices (b) and 5 years for Casey under D-305; CON-022, CON-036; supersedes D-3753 in part; TD-CON-30 gains cases). (1) P4: `messaging.purge_expired_optout_events` (`migrations/0195_messaging_consent_purge.sql:46` to `:62`) always keeps the number's newest event, so a START older than 5 years is kept for ever although CON-022 keeps STOP, HELP and START events only 5 years after the last message. The new `migrations/0223_consent_purge_start_help.sql` replaces the function (`CREATE OR REPLACE`, same signature, grants and strict database-clock comparisons) so the newest event is kept past the cut-off only when its `action` is `opt_out`; an event a suppression row references is kept as now. Every DONE TD-CON-30 case (`tests/integration/tests/consent_purge.rs`, T321 and T563) seeds only `opt_out` events and passes unchanged. (2) P5: `ops.help_keyword` and `ops.help_request` (`migrations/0194_help_requests.sql:10`, `:36`) keep a number's help rows for ever. The same migration adds a `SECURITY DEFINER` function `ops.forget_help_of_contact(uuid)` (set `search_path`, `REVOKE ALL ... FROM PUBLIC`, `GRANT EXECUTE` to `askhava_app` only, as `0195` does) that deletes the contact's `help_keyword` row and its homeowner `help_request` rows with the rows that reference them (`ops.help_message`, append-only for the app role, `0194:34`, and T742's `0220` table) and returns the deleted request IDs; the app role gets no DELETE grant (D-5399 round 1). A new `ops::api::forget_help_of_contact(conn, contact)` in the new `app/ops/src/help_forget.rs` (one line in the shared `ops::api`) calls it; `app/intake/src/consent_purge.rs`'s per-number purge calls it in its transaction (plan change D-5420, job 18 pre-flight: the function deletes only rows whose latest activity is before `now() - interval '1827 days'` on the database clock, and `sweep_number` calls it only when `phone_due` is true, `consent_purge.rs:111` to `:138`, though it calls `purge_rows` regardless, `:122`; a test keeps the help rows of a waiting contact, `intake.consent_phone_wait`, whose help request is a day old), so they go with the 5-year consent records, with audit rows of IDs only. Help requests asked by email (no contact) are not reached and are a logged gap. Check the next free migration number at claim (V9). Tests in the new `tests/integration/tests/consent_purge_start_help.rs` (PostgreSQL, database clock, fake data only): a newest START at 1,827 days and a minute goes, a newest opt-out stays, a START at 1,826 days stays; help rows go at 1,827 days and stay at 1,826; another number's rows stay. Privacy: Opus worker and review. Update the `messaging`, `ops` and `intake` notes and `docs/decisions.md`.",
+   "goal": "Plan change D-5399 (privacy review job 14, findings P4 and P5, Fable's choices (b) and 5 years for Casey under D-305; CON-022, CON-036; supersedes D-3753 in part; TD-CON-30 gains cases). (1) P4: `messaging.purge_expired_optout_events` (`migrations/0195_messaging_consent_purge.sql:46` to `:62`) always keeps the number's newest event, so a START older than 5 years is kept for ever although CON-022 keeps STOP, HELP and START events only 5 years after the last message. The new `migrations/0224_consent_purge_start_help.sql` replaces the function (`CREATE OR REPLACE`, same signature, grants and strict database-clock comparisons) so the newest event is kept past the cut-off only when its `action` is `opt_out`; an event a suppression row references is kept as now. Every DONE TD-CON-30 case (`tests/integration/tests/consent_purge.rs`, T321 and T563) seeds only `opt_out` events and passes unchanged. (2) P5: `ops.help_keyword` and `ops.help_request` (`migrations/0194_help_requests.sql:10`, `:36`) keep a number's help rows for ever. The same migration adds a `SECURITY DEFINER` function `ops.forget_help_of_contact(uuid)` (set `search_path`, `REVOKE ALL ... FROM PUBLIC`, `GRANT EXECUTE` to `askhava_app` only, as `0195` does) that deletes the contact's `help_keyword` row and its homeowner `help_request` rows with the rows that reference them (`ops.help_message`, append-only for the app role, `0194:34`, and T742's `0220` table) and returns the deleted request IDs; the app role gets no DELETE grant (D-5399 round 1). A new `ops::api::forget_help_of_contact(conn, contact)` in the new `app/ops/src/help_forget.rs` (one line in the shared `ops::api`) calls it; `app/intake/src/consent_purge.rs`'s per-number purge calls it in its transaction (plan change D-5420, job 18 pre-flight: the function deletes only rows whose latest activity is before `now() - interval '1827 days'` on the database clock, and `sweep_number` calls it only when `phone_due` is true, `consent_purge.rs:111` to `:138`, though it calls `purge_rows` regardless, `:122`; a test keeps the help rows of a waiting contact, `intake.consent_phone_wait`, whose help request is a day old), so they go with the 5-year consent records, with audit rows of IDs only. Help requests asked by email (no contact) are not reached and are a logged gap. Check the next free migration number at claim (V9). Tests in the new `tests/integration/tests/consent_purge_start_help.rs` (PostgreSQL, database clock, fake data only): a newest START at 1,827 days and a minute goes, a newest opt-out stays, a START at 1,826 days stays; help rows go at 1,827 days and stay at 1,826; another number's rows stay. Privacy: Opus worker and review. Update the `messaging`, `ops` and `intake` notes and `docs/decisions.md`. Plan change D-5848: the migration is `0224_consent_purge_start_help.sql` (T862 takes `0218`); earlier numbers are history.",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -54210,7 +54238,7 @@
     "compliance"
    ],
    "owns": [
-    "migrations/0223_consent_purge_start_help.sql",
+    "migrations/0224_consent_purge_start_help.sql",
     "app/ops/src/help_forget.rs",
     "app/intake/src/consent_purge.rs",
     "tests/integration/tests/consent_purge_start_help.rs"
@@ -54232,7 +54260,8 @@
     "D-2208",
     "D-3753",
     "D-5399",
-    "D-5420"
+    "D-5420",
+    "D-5848"
    ],
    "cites": [],
    "budget": {
@@ -55396,6 +55425,570 @@
    "branch": "claude/task/T854-clock-real-time-portals",
    "prompt": "kit/prompts/T854.md",
    "acceptance": "`cargo test --workspace` passes with no existing test edited; each listed site reads `real_now()` (or the report names the C5 fallback for a site); `admit_code_send` with a person and `send_page_code`'s cap stay on `now()`; production behaviour is unchanged."
+  },
+  {
+   "id": "T856",
+   "slug": "consent-per-request",
+   "title": "intake: a request may be texted only with an `sms` consent record of its own; the guard primitive",
+   "goal": "Plan change D-5848 (task A of the T801 chain; Fable's T2, scope decision section 1). (1) New `models::sms_consented(conversation)`, exposed as `service::may_text_request`: true only when an `sms` consent record exists for that request's conversation (`intake.consent_record.conversation_id`, no migration). It decides `rules::plan`'s consent input in `service::handle` (`service.rs:154`, `:182`, in place of `open.is_some()`) and the text uses of `card_allowed` (`tell`, `handlers.rs:350` to `:377`). `card_allowed` stays per request and keeps counting any record (CON-007's web-chat card). `models::contact_consented`, read by `service::may_text`, counts only `sms` records (R1-01); `may_text` stays for callers with no request in hand. (2) Every text-opened request gets its own `sms` record from its first inbound text, whether or not the consent text is queued again (`receive_answer`, `service.rs:222` to `:249`); her first text into a web-opened request queues the consent text and appends the `sms` record, then the request goes on by text (Fable's b); reword `app/intake/CLAUDE.md:16` (\"One consent record per request, none from a reply\") and NOTES never 27 to allow that appended record. (3) An `sms` record is written only from a carrier inbound: the chat's turn (`web_chat.rs:333` reads the open request before its transaction at `:337`) re-reads it under the transaction and never reaches the `sms` record path with a browser message ID (R2-02, R2-03), without editing `app/server/src/inbound_text.rs`. (4) A guard primitive for request texts: given the request and the text kind it answers Outbox, or refuses with an error (fail closed); named exemptions only: the consent text of a first inbound text, the INT-004 safety text, the carrier keyword replies and the business sign-up reply, plus one named exemption for the chat's old consent and reply texts that T801 deletes. Use it at this task's own call sites; T857 makes it the seam for every caller. Tests in the new `tests/integration/tests/consent_per_request.rs`: a returning number's second text-opened request is textable; a web-opened request is not textable until her first text, which gets the consent text and one `sms` record; a `web_chat` record never makes `may_text` or `may_text_request` true; the stale-read race writes no `sms` record; 911 before consent unchanged (INT-002). Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "intake",
+   "deps": [
+    "T103",
+    "T181",
+    "T645",
+    "T649",
+    "T725",
+    "T741",
+    "T745",
+    "T747",
+    "T839"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "compliance",
+    "privacy"
+   ],
+   "owns": [
+    "app/intake/src/models.rs",
+    "app/intake/src/service.rs",
+    "app/intake/src/rules.rs",
+    "app/intake/src/conversation.rs",
+    "app/intake/src/handlers.rs",
+    "app/intake/src/web_chat.rs",
+    "tests/integration/tests/consent_per_request.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/consent.md",
+    "docs/spec/intake.md",
+    "docs/spec/messaging.md"
+   ],
+   "requirements": [
+    "CON-005",
+    "CON-007",
+    "CON-021",
+    "CON-031",
+    "CON-001",
+    "INT-002"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-5848"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 7,
+    "lines": 450,
+    "context_pct": 44
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T856-consent-per-request",
+   "prompt": "kit/prompts/T856.md",
+   "acceptance": "Every existing test passes unchanged; the new consent_per_request tests pass; no `web_chat` record lets a request text go; `rules::plan` takes the per-request `sms` predicate; two Opus review rounds."
+  },
+  {
+   "id": "T857",
+   "slug": "guarded-enqueue-seam",
+   "title": "intake: the guarded enqueue is the seam: an `sms` request to the outbox, a web request to the page",
+   "goal": "Plan change D-5848 (task C, first half; Fable's section C.2; verification R1-05, R1-06). `queue_text` (`conversation.rs:585`) and `queue_body` (`handlers.rs:379`) and the direct callers `zip_step.rs:253`, `replies.rs:518` and `ask_name_address` (`conversation.rs:420`) deliver by the request's channel through T856's guard: an `sms` request to the outbox (unchanged), a web request's reply returned to the caller for the page (never an outbox row), anything else refused with an error (fail closed; T856's named exemptions only). The `order_dispatch` gates (`:371`, `:476`, `:522`) ask the same question per request (T856's `may_text_request` for a text, the web request for the page) with small edits only; `order.rs:399` and `cards_out.rs:582` keep compiling through the same seam. No caller is switched to the page here: every existing test passes unchanged. Tests in the new `tests/integration/tests/guarded_enqueue.rs`: an `sms` request's texts are unchanged; a web request's reply comes back for the page with zero outbox rows; a request with neither is refused. Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "intake",
+   "deps": [
+    "T856"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "compliance",
+    "privacy"
+   ],
+   "owns": [
+    "app/intake/src/conversation.rs",
+    "app/intake/src/handlers.rs",
+    "app/intake/src/zip_step.rs",
+    "app/intake/src/replies.rs",
+    "app/intake/src/order_dispatch.rs",
+    "tests/integration/tests/guarded_enqueue.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/consent.md",
+    "docs/spec/intake.md",
+    "docs/spec/messaging.md"
+   ],
+   "requirements": [
+    "CON-005",
+    "CON-007",
+    "CON-021",
+    "TXT-034",
+    "INT-043"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-5848"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 6,
+    "lines": 450,
+    "context_pct": 40
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T857-guarded-enqueue-seam",
+   "prompt": "kit/prompts/T857.md",
+   "acceptance": "Every existing test passes unchanged; through the seam an `sms` request's texts reach the outbox, a web request's replies come back for the page with zero outbox rows, and anything else is refused; two Opus review rounds."
+  },
+  {
+   "id": "T864",
+   "slug": "web-dispatch-zip",
+   "title": "intake: web dispatch after the code through ZIP, the replayed description and the coverage line",
+   "goal": "Plan change D-5848 (task C, second half; Fable's section C.2 and T4; verification V1, R1-04, R1-25). (1) The new `app/intake/src/web_dispatch.rs`: after the code a web request runs the shared steps of the Intake order table's web-chat column (`docs/spec/intake.md:60` to `:72`) through T857's seam: the ZIP and area check (INT-022), the trade check and the coverage line (INT-016, INT-017), every reply returned for the page; chat results carry no outbox ID (`Queued`/`Handled`, `service.rs:66` to `:86`). (2) Fable's T4: on the code POST her \"you\" lines from the hidden `said` field (`app/site/src/chat.rs:230` to `:233`) are untrusted input: a length cap, the same scrub as any chat message (vault name included), the 911 and INT-038 checks again, then `keep_description` under `first_message_id`, so a retried POST stores nothing twice (D-3189); a missing, empty or over-cap `said` gets one request for the description; the server never keeps pre-code words (`web_chat.rs:578` to `:579`, D-4292). The served chat is not switched here (T801 does it): the web path is reached through `intake::api` and this task's tests, and every existing test passes unchanged. Tests in the new `tests/integration/tests/web_dispatch_zip.rs`. Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "intake",
+   "deps": [
+    "T857"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "compliance",
+    "privacy"
+   ],
+   "owns": [
+    "app/intake/src/web_dispatch.rs",
+    "app/intake/src/web_chat.rs",
+    "app/intake/src/service.rs",
+    "tests/integration/tests/web_dispatch_zip.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/consent.md",
+    "docs/spec/intake.md",
+    "docs/spec/messaging.md",
+    "docs/spec/privacy.md"
+   ],
+   "requirements": [
+    "INT-043",
+    "INT-022",
+    "INT-016",
+    "INT-017",
+    "PRIV-008",
+    "INT-002",
+    "INT-038",
+    "TXT-034"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-5848"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 500,
+    "context_pct": 30
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T864-web-dispatch-zip",
+   "prompt": "kit/prompts/T864.md",
+   "acceptance": "Every existing test passes unchanged; a web request after the code reaches the coverage line with every reply returned for the page and zero outbox rows; the replayed description is scrubbed and kept once; two Opus review rounds."
+  },
+  {
+   "id": "T858",
+   "slug": "web-dispatch-questions",
+   "title": "intake: the web request answers the remaining question steps on the page in the table order (TD-INT-30)",
+   "goal": "Plan change D-5848 (task D; Fable's T5). On T857's web dispatch, a web request runs the remaining steps of the Intake order table's web-chat column in order (`docs/spec/intake.md:60` to `:72`): \"How soon?\" (INT-030), emergency or regular (INT-006) with the night count first (INT-033), the trade questions (INT-039), the design categories (INT-045, INT-046) and the first name and address (INT-027, the chat's name-and-address turn, `web_chat.rs:338` to `:342`), each shown on the page and none queued; `order_dispatch.rs` takes small edits only. TD-INT-30's behavioural proof is this task's: a golden test in the new `tests/integration/tests/web_chat_order_steps.rs` drives a web request through the served steps and fails if any two swap (the existing static check, `tests/integration/tests/web_chat.rs:471`, stays). Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "intake",
+   "deps": [
+    "T864"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "compliance",
+    "privacy"
+   ],
+   "owns": [
+    "app/intake/src/web_dispatch.rs",
+    "app/intake/src/order_dispatch.rs",
+    "app/intake/src/conversation.rs",
+    "app/intake/src/web_chat.rs",
+    "tests/integration/tests/web_chat_order_steps.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/intake.md",
+    "docs/spec/consent.md"
+   ],
+   "requirements": [
+    "INT-043",
+    "INT-030",
+    "INT-006",
+    "INT-033",
+    "INT-039",
+    "INT-027",
+    "INT-045",
+    "INT-046"
+   ],
+   "tests": [
+    "TD-INT-30"
+   ],
+   "decisions": [
+    "D-5848"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 5,
+    "lines": 500,
+    "context_pct": 35
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T858-web-dispatch-questions",
+   "prompt": "kit/prompts/T858.md",
+   "acceptance": "TD-INT-30's golden test passes on the served steps; every existing test passes unchanged; zero outbox rows for a web request; two Opus review rounds."
+  },
+  {
+   "id": "T859",
+   "slug": "web-photo-upload",
+   "title": "intake and site: photo upload on the chat page for a web request (step 9); no picture text",
+   "goal": "Plan change D-5848 (task E; R2-06). For a web request at step 9 (INT-044) the chat page offers a photo upload (the same checks, limits and confirm or remove steps as the photo step, `app/intake/src/photos.rs`), served from the chat's own router (`app/site/src/chat.rs:277` to `:287`), never from `app/server/src/homeowner_portal.rs` (T820's); `photo_text` (`photos.rs:217` to `:236`) queues no SMS for a web request, and `picture_text.rs:356` asks T856's per-request predicate. Session-bound to her verified chat; a cross-site POST is refused (SEC-042). Add the route's row to `docs/architecture.md` section 13 (Wired: T801). Reached through T857's web dispatch; T801 switches the served chat. Tests in the new `app/server/tests/web_chat_photos.rs`. Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "intake",
+   "deps": [
+    "T858",
+    "T783",
+    "T831",
+    "T609",
+    "T656"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "compliance",
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "app/intake/src/photos.rs",
+    "app/intake/src/picture_text.rs",
+    "app/intake/src/web_dispatch.rs",
+    "app/site/src/chat.rs",
+    "app/site/templates/request.html",
+    "app/server/tests/web_chat_photos.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/intake.md",
+    "docs/spec/security.md",
+    "app/server/src/homeowner_portal.rs",
+    "docs/spec/messaging.md",
+    "docs/spec/consent.md"
+   ],
+   "requirements": [
+    "INT-044",
+    "TXT-034",
+    "SEC-042",
+    "CON-021"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-5848"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 6,
+    "lines": 500,
+    "context_pct": 38
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T859-web-photo-upload",
+   "prompt": "kit/prompts/T859.md",
+   "acceptance": "A web request's step 9 takes an uploaded photo on the page with zero texts; an `sms` request is unchanged; every existing test passes unchanged; two Opus review rounds."
+  },
+  {
+   "id": "T860",
+   "slug": "web-card-on-page",
+   "title": "intake and site: the card on the chat page (step 12); the timer starts at render; cards-out shown",
+   "goal": "Plan change D-5848 (task F; Fable's d; R1-24, R2-05). For a web request the card (INT-041) is shown on the chat page: the 30-minute wait starts when the server renders that card revision to her verified session (no render, no timer), SEND and EDIT are typed on the page, and nothing waits on an outbox delivery status (`summary_step.rs:186` to `:193`, `:309` to `:310`); an `sms` request keeps today's timer. The card reaches the page through T857's seam, so `order_dispatch.rs` is not edited. The cards-out message (TXT-032) is shown on the page for a web request and `cards_out.rs:554` asks T856's per-request predicate. Tests in the new `tests/integration/tests/web_card_on_page.rs`. Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "intake",
+   "deps": [
+    "T859"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "compliance",
+    "privacy"
+   ],
+   "owns": [
+    "app/intake/src/summary_step.rs",
+    "app/intake/src/cards_out.rs",
+    "app/intake/src/web_dispatch.rs",
+    "app/site/src/chat.rs",
+    "app/site/templates/request.html",
+    "tests/integration/tests/web_card_on_page.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/intake.md",
+    "docs/spec/messaging.md",
+    "docs/spec/consent.md"
+   ],
+   "requirements": [
+    "INT-041",
+    "TXT-032",
+    "CON-007",
+    "TXT-034",
+    "CON-021"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-5848"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 6,
+    "lines": 500,
+    "context_pct": 30
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T860-web-card-on-page",
+   "prompt": "kit/prompts/T860.md",
+   "acceptance": "A web request's card is shown on the page, its timer starts at render and SEND or EDIT typed there acts on it, with zero texts; an `sms` request is unchanged; every existing test passes unchanged; two Opus review rounds."
+  },
+  {
+   "id": "T861",
+   "slug": "j1-observation-fix",
+   "title": "e2e (harness): J1 reads a sent text from the fake carrier once the sender has cleared its body",
+   "goal": "Plan change D-5848 (task I; R1-21, R2-15; D-5716's clause moved from T801). In `tests/e2e/j1_homeowner.spec.ts`, `queuedFor` (:87), `say` (:94), `quotePath` (:178) and the consent read (:236) keep their assertions but take the text from the fake carrier's sent texts (`control.sentTexts()`, the same recipient and kind) when `messaging.outbox.body` is already NULL (the sender clears it on send, `app/messaging/src/models.rs:289`), so none races the worker once T119 gives it a homeowner number. No assertion is loosened. Must not depend on T119. Fake data only.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T644",
+    "T671",
+    "T676"
+   ],
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness"
+   ],
+   "owns": [
+    "tests/e2e/j1_homeowner.spec.ts"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "tests/e2e/fixtures.ts",
+    "docs/spec/consent.md"
+   ],
+   "requirements": [
+    "CON-005"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-5848"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 1,
+    "lines": 120,
+    "context_pct": 8
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T861-j1-observation-fix",
+   "prompt": "kit/prompts/T861.md",
+   "acceptance": "J1's spec passes with the worker sending and with it idle; every assertion it had is still made."
+  },
+  {
+   "id": "T862",
+   "slug": "conversation-email",
+   "title": "privacy: the email she types in her own conversation is kept apart as her conversation address",
+   "goal": "Plan change D-5848 (PKE part 1; Fable's T1; D-1612's missing conversation address). No web-chat step of the Intake order table collects her email (`docs/spec/intake.md:60` to `:72`), and `privacy.contact.email` holds only the address shared at the page pick (`app/privacy/src/vault.rs:449`), which never gets a code (D-050). New migration `migrations/0218_privacy_conversation_email.sql`: `privacy.conversation_email`, one row per contact, sealed under `VAULT_KEY` bound to its row (as `privacy.update_email`, `app/privacy/src/update_email.rs`). An email address in a message she types in her own text or web-chat conversation (INT-012's \"my email is ...\") is taken where her raw words are scrubbed with her contact in hand (`privacy::api::read_inbound_for`, `app/privacy/src/scrub_context.rs`; the scrub already cuts it, `scrub.rs:745`) and stored there, replacing an earlier one, audited without the value; the scrubbed text is unchanged. New read for `picks` only under the `(Picks, PickCode)` grant, audited and counted; the contact purge deletes the row. No caller outside `privacy` is edited here. Tests in the new `tests/integration/tests/conversation_email.rs`: a typed address is stored once and sealed; a quote-page or page-pick address is never returned by the new read; the purge removes it. Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "privacy",
+   "deps": [
+    "T095",
+    "T729",
+    "T266",
+    "T658",
+    "T756",
+    "T757"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "migrations/0218_privacy_conversation_email.sql",
+    "app/privacy/src/conversation_email.rs",
+    "app/privacy/src/scrub_context.rs",
+    "app/privacy/src/scrub.rs",
+    "app/privacy/src/models.rs",
+    "app/privacy/src/purge.rs",
+    "tests/integration/tests/conversation_email.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/privacy.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/intake.md",
+    "app/privacy/src/update_email.rs",
+    "docs/spec/messaging.md"
+   ],
+   "requirements": [
+    "PICK-029",
+    "INT-012",
+    "PRIV-001",
+    "PRIV-002",
+    "PRIV-007",
+    "TXT-034"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-5848"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 7,
+    "lines": 450,
+    "context_pct": 30
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T862-conversation-email",
+   "prompt": "kit/prompts/T862.md",
+   "acceptance": "The conversation address is sealed in its own table, read only by `picks` under the pick-code grant, never filled from the quote page or the page pick, and purged with the contact; every existing test passes unchanged; two Opus review rounds."
+  },
+  {
+   "id": "T863",
+   "slug": "pick-code-by-email",
+   "title": "portals and site: the pick code goes by email when texting is off, suspended or web-and-email",
+   "goal": "Plan change D-5848 (PKE part 2; Fable's T1 and the narrowed decision e). `start_code` (`app/portals/src/pick_flow.rs:787` to `:838`) routes the pick code by the texting mode: while homeowner texting is switched off, suspended or in web-and-email mode (TXT-021, TXT-034), or the number is opted out (today `CANT_TEXT`, `:819` to `:824`), the code goes by Verify's email channel (`app/picks/src/email_code.rs`, T095: `code_route`, `send_email_code`, `check_email_code`) to her conversation address (T862's read), with PICK-013's limits; with no conversation address the page says the code cannot be sent; a Verify SMS to her typed number stays only while texting is not live for another reason (before the Gate C date, no number configured, or paused), and the opt-out list blocks it. An email typed on the quote page never gets a code (D-050). The chat page, while texting is switched off, suspended or in web-and-email mode and no conversation address is on file, adds one line to the cards-out message asking her to type her email there for her pick code (draft copy for the copy panel, WORD-028, English and Spanish); not a new step. Tests in the new `tests/integration/tests/pick_code_by_email.rs` (TD-PICK-13's served half). Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "portals",
+   "deps": [
+    "T862",
+    "T801",
+    "T854"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security",
+    "compliance"
+   ],
+   "owns": [
+    "app/portals/src/pick_flow.rs",
+    "app/picks/src/email_code.rs",
+    "app/site/src/chat.rs",
+    "tests/integration/tests/pick_code_by_email.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/messaging.md",
+    "docs/spec/consent.md"
+   ],
+   "requirements": [
+    "PICK-029",
+    "PICK-013",
+    "TXT-034",
+    "TXT-038",
+    "TXT-021",
+    "CON-013"
+   ],
+   "tests": [
+    "TD-PICK-13"
+   ],
+   "decisions": [
+    "D-5848"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 450,
+    "context_pct": 30
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T863-pick-code-by-email",
+   "prompt": "kit/prompts/T863.md",
+   "acceptance": "In web-and-email mode, texting off or suspended, or opted out, the code goes by email to her conversation address and no Verify SMS is sent; otherwise unchanged; two Opus review rounds."
   }
  ]
 }
