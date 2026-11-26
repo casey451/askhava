@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-26T22:08:02Z by runner 94a988623895 (actions).
+Updated 2026-11-26T22:08:38Z by runner 94a988623895 (actions).
 
 **Building: T854 in progress since 21:52Z; 674 of 788 done; week 5% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -23,7 +23,7 @@ Updated 2026-11-26T22:08:02Z by runner 94a988623895 (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T820 | server and portals: "Download my data" also holds withdrawn  | MERGE_PENDING | 3 | 102 min | 21:46Z | Hand-in time passed. Worker added unit tests in app/portals/src/data_download.rs (commit f4a102dca); portals-only covera |
-| T657 | quotes and portals: quote-form and sign-in errors mark the f | MERGE_PENDING | 1 | 75 min | 21:40Z |  |
+| T657 | quotes and portals: quote-form and sign-in errors mark the f | check_failed | 1 | 75 min | 21:40Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-26T |
 | T840 | intake and messaging: quote updates reach Email and web-and- | MERGE_PENDING | 1 | 2 h 10 min | 21:20Z |  |
 | T848 | core, payments, inbound text, security: `Clock::real_now()`  | done | 1 | 75 min | 21:12Z |  |
 | T847 | e2e: J3 step 5 seeds its refused pick at the app clock, so t | done | 1 | 94 min | 20:01Z |  |
