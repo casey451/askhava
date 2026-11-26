@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-26T21:20:30Z by runner f7b23c181041 (actions).
+Updated 2026-11-26T21:21:13Z by runner 9ed65ed10d21 (actions).
 
 **Building: T657 in progress since 20:24Z; 673 of 788 done; week 3% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-26T21:20:30Z by runner f7b23c181041 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T657 claimed 20:24Z, lease until 23:24Z; lane 3: T820 claimed 20:04Z, lease until 23:04Z; lane 4: T309 claimed 20:18Z, lease until 23:18Z; lane 5: T840 claimed 19:09Z, lease until 22:09Z
 - **Week:** 3% used, 183.9M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:14Z, 5 min before this update
+- **Last run:** 21:20Z, 0 min before this update
 - **Keeper:** last ran 21:14Z, next wake 22:12Z
 
 ## Needs attention
@@ -17,7 +17,7 @@ Updated 2026-11-26T21:20:30Z by runner f7b23c181041 (actions).
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 48% of the context window, over its 45% limit
-- Strict plan check red: 65 problem(s) on tasks still to run (+576 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 66 problem(s) on tasks still to run (+578 on DONE tasks); first: T704: stored context_pct 38% but it measures 42%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
