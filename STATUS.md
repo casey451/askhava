@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-26T21:41:42Z by runner 3005eff2378a (actions).
+Updated 2026-11-26T21:42:23Z by runner f7b23c181041 (actions).
 
 **Building: T820 in progress since 20:04Z; 673 of 788 done; week 4% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-26T21:41:42Z by runner 3005eff2378a (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T820 claimed 20:04Z, lease until 23:04Z; lane 4: T309 claimed 20:18Z, lease until 23:18Z
 - **Week:** 4% used, 183.9M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:41Z, 0 min before this update
-- **Keeper:** last ran 21:21Z, next wake 22:12Z
+- **Last run:** 21:42Z, 0 min before this update
+- **Keeper:** last ran 21:42Z, next wake 23:07Z
 
 ## Needs attention
 - BLOCKED T612: plan gap reported: PLAN GAP: app/site/static/site.css:96-99 (owner T613, not T612): the "DM Sans fallback" face names only local("Arial") and local("Roboto"); the CI image has Liberation Sans only, so with fonts blocked the 320x740 first-screen check in tests/e2e/site_speed.spec.ts fails (Get quotes bottom 771 of 740). Reviewer confirmed: with local("Liberation Sans") added in-browser the button bottom is 695 px. Smallest fix: add local("Liberation Sans") to that face's src with the same size-adjust figures. Reviewer also found: quote-page animation check at site_speed.spec.ts:321-329 reads getAnimations only af; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T612 --plan-fix D-### --reason "..."` (D-2859)
