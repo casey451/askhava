@@ -11223,3 +11223,4 @@
 - 2026-11-26T18:19:48Z runner 0f6466a20c23 (actions): {}
 - 2026-11-26T18:26:36Z runner 0f6466a20c23 (actions): {"T847": "QUEUED -> IN_PROGRESS"}; T847 estimated 258k tokens (calibrated); week has 186.7M left (no five-hour budget, D-3056) after 3.3M still running in another lane (session_reading 2026-11-26T18:19:06Z (week)); claimed
 - 2026-11-26T18:27:04Z runner 0f6466a20c23 (actions): {}
+- 2026-11-26T18:28:35Z runner a508df213427 (manual): {"T222": "BLOCKED -> QUEUED"}

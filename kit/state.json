@@ -21599,7 +21599,7 @@
     "T664",
     "T675"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 3,
    "slug": "journeys-full-variants",
    "type": "build",
@@ -21613,7 +21613,7 @@
     5644,
     5645
    ],
-   "last_failure": "Reviewer after the fix round still ended REVIEW-VERDICT: FINDINGS over 0aedbd3769e83a983d24d694c7abe05f8773a57a:\n1. docs/decisions.md:2887 (D-5641) falsely says T098's j1_homeowner.spec.ts runs the Spanish variant (it runs STOP and 911-list only; Spanish TXT-002/TXT-039 undriven anywhere).\n2. D-5641 not-driven list incomplete: J2 business-texting-switch (TXT-035/036); missed pick email reminder/lapse/\"1 YES\" (PICK-037/046); handyman $1,000.00 refusal (LIC-019); J1 step 2 AC request (TD-INT-03); two-photo ask and no own-or-rent question (D-437); TXT-016 free/LIST lines; TXT-018 no-updates question; urgent pipe-burst variant.\n3. D-5641 and tests/e2e/j1_full.spec.ts:99 overclaim: emails filtered only on first 3 sentinels, not her number or update email; steps 5-6 title overclaims.\n4. Minor: D-5641 \"set by SQL\" list omits the owner session (tests/e2e/j2_full.ts:24).\nWorker also reported PLAN GAP (verified real by reviewer): day-3 DONE needs the web binary's webhooks to use the test-control clock (app/server/src/lib.rs:895 SystemClock vs app/server/src/bin/worker.rs:50; app/intake/src/check_in_replies.rs:178-184).",
+   "last_failure": "Reviewer after the fix round still ended REVIEW-VERDICT: FINDINGS over 0aedbd3769e83a983d24d694c7abe05f8773a57a:\n1. docs/decisions.md:2887 (D-5641) falsely says T098's j1_homeowner.spec.ts runs the Spanish variant (it runs STOP and 911-list only; Spanish TXT-002/TXT-039 undriven anywhere).\n2. D-5641 not-driven list incomplete: J2 business-texting-switch (TXT-035/036); missed pick email reminder/lapse/\"1 YES\" (PICK-037/046); handyman $1,000.00 refusal (LIC-019); J1 step 2 AC request (TD-INT-03); two-photo ask and no own-or-rent question (D-437); TXT-016 free/LIST lines; TXT-018 no-updates question; urgent pipe-burst variant.\n3. D-5641 and tests/e2e/j1_full.spec.ts:99 overclaim: emails filtered only on first 3 sentinels, not her number or update email; steps 5-6 title overclaims.\n4. Minor: D-5641 \"set by SQL\" list omits the owner session (tests/e2e/j2_full.ts:24).\nWorker also reported PLAN GAP (verified real by reviewer): day-3 DONE needs the web binary's webhooks to use the test-control clock (app/server/src/lib.rs:895 SystemClock vs app/server/src/bin/worker.rs:50; app/intake/src/check_in_replies.rs:178-184).\nre-queued after plan fix D-5836: D-5836 (#1472): T222 rewritten as J1 full core after the test-clock composition tasks; one more attempt per D-677",
    "history": [
     {
      "attempt": 1,
@@ -21688,7 +21688,22 @@
      "wip_skipped": "457819c6bc47 changes .github"
     }
    ],
-   "reason": "Reviewer over 457819c6bc470ff6f69d271d7ab023fb3c0c25eb ended REVIEW-VERDICT: FINDINGS (hand_in_by too close for a fix round):\n1. tests/e2e/j2_full.ts:190 closingChecks omits no-duplicate-message, audit-row-per-status-change and no-sentinel-outside-vault (TD-PRIV-02); j2_full.spec.ts:8 title claims closing checks; D-5641 not-driven list does not name them.\n2. D-5641 falsely says no e2e file drives the web chat start (CON-025); tests/e2e/web_chat.spec.ts (T594) does. CON-025 is in T222's Goal and was left undone without valid reason.\n3. Worker's PLAN GAP (day-3 DONE / masked call) REFUTED by reviewer: app/server/src/main.rs and lib.rs are shared paths T222 may edit, and a masked-call driver can live in owned tests/e2e/j1_full.ts. Only the 600-line budget is a real limit, which the worker did not argue. D-5642 guesses at the cause.\n4. tests/e2e/j2_full.ts:4 cites D-5643, which does not exist in docs/decisions.md.\nReviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and prehandin.sh green."
+   "reason": null,
+   "requeues": [
+    {
+     "at": "2026-11-26T18:28:35Z",
+     "reason": "D-5836 (#1472): T222 rewritten as J1 full core after the test-clock composition tasks; one more attempt per D-677",
+     "by": "manual-67ea9ba8ca6e",
+     "was": "Reviewer over 457819c6bc470ff6f69d271d7ab023fb3c0c25eb ended REVIEW-VERDICT: FINDINGS (hand_in_by too close for a fix round):\n1. tests/e2e/j2_full.ts:190 closingChecks omits no-duplicate-message, audit-row-per-status-change and no-sentinel-outside-vault (TD-PRIV-02); j2_full.spec.ts:8 title claims closing checks; D-5641 not-driven list does not name them.\n2. D-5641 falsely says no e2e file drives the web chat start (CON-025); tests/e2e/web_chat.spec.ts (T594) does. CON-025 is in T222's Goal and was left undone without valid reason.\n3. Worker's PLAN GAP (day-3 DONE / masked call) REFUTED by reviewer: app/server/src/main.rs and lib.rs are shared paths T222 may edit, and a masked-call driver can live in owned tests/e2e/j1_full.ts. Only the 600-line budget is a real limit, which the worker did not argue. D-5642 guesses at the cause.\n4. tests/e2e/j2_full.ts:4 cites D-5643, which does not exist in docs/decisions.md.\nReviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and prehandin.sh green.",
+     "attempts": 3,
+     "plan_fix": "D-5836",
+     "plan_since": "2026-11-24T00:37:12Z",
+     "plan_base": "6f51aa49550be280143a97d58f2b92735516f666",
+     "plan_head": "a508df213427913227939906fb33559c5406f819",
+     "plan_then": "a653ec5d6286311de2962f905ed53a9163dd37045e338b4d36511f1ea52886fa",
+     "plan_now": "25c5e1df2d606d062d5571b650fbb9d96fedd0b4636af663fb4b28b8c19ae405"
+    }
+   ]
   },
   {
    "id": "T104",
@@ -129652,7 +129667,7 @@
    }
   }
  },
- "updated_at": "2026-11-26T18:27:04Z",
+ "updated_at": "2026-11-26T18:28:35Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -129750,8 +129765,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "0f6466a20c238af24aab3da3253b59d07616101f",
- "starter": "actions",
+ "runner_sha": "a508df213427913227939906fb33559c5406f819",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "0f6466a20c238af24aab3da3253b59d07616101f",
