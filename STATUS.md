@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-26T23:54:07Z by runner 214a81ebbf8d (actions).
+Updated 2026-11-26T23:54:43Z by runner 214a81ebbf8d (actions).
 
-**Building: T744 in progress since 22:15Z; 675 of 799 done; week 5% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Building: T854 in progress since 21:52Z; 675 of 799 done; week 5% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 675 of 799 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T744 claimed 22:15Z, lease until 01:15Z; lane 2: T854 claimed 21:52Z, lease until 00:52Z; lane 3: T309 claimed 22:19Z, lease until 01:19Z; lane 4: T783 claimed 22:18Z, lease until 01:18Z
+- **Lane:** lane 2: T854 claimed 21:52Z, lease until 00:52Z; lane 3: T309 claimed 22:19Z, lease until 01:19Z; lane 4: T783 claimed 22:18Z, lease until 01:18Z
 - **Week:** 5% used, 180.6M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:23Z, 30 min before this update
+- **Last run:** 23:23Z, 31 min before this update
 - **Keeper:** last ran 22:10Z, next wake 22:30Z
 
 ## Needs attention
@@ -40,6 +40,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T744 | picks: a job that reaches a final status ends its pick await | MERGE_PENDING | 1 | 98 min | 23:54Z |  |
 | T820 | server and portals: "Download my data" also holds withdrawn  | check_failed | 3 | 102 min | 21:46Z | Hand-in time passed. Worker added unit tests in app/portals/src/data_download.rs (commit f4a102dca); portals-only covera |
 | T657 | quotes and portals: quote-form and sign-in errors mark the f | check_failed | 1 | 75 min | 21:40Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-26T |
 | T840 | intake and messaging: quote updates reach Email and web-and- | done | 1 | 2 h 10 min | 21:20Z |  |
@@ -97,10 +98,10 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T744 (lease until 2026-11-27T01:15:11Z)
+- nothing
 - lane 2: T854 (lease until 2026-11-27T00:52:25Z)
 - lane 3: T309 (lease until 2026-11-27T01:19:36Z)
 - lane 4: T783 (lease until 2026-11-27T01:18:01Z)
 
 ## Last usage reading
-- {"task": "T820", "at": "2026-11-26T21:46:35Z", "cache_read_input_tokens": 3009018, "output_tokens": 20126, "input_tokens": 121, "cache_creation_input_tokens": 114789}
+- {"task": "T744", "at": "2026-11-26T23:54:05Z", "output_tokens": 56771, "cache_read_input_tokens": 9328611, "cache_creation_input_tokens": 196827, "input_tokens": 205}
