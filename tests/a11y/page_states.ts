@@ -802,6 +802,12 @@ const PHONES_STATES: readonly PageState[] = [
  * "Cards and quotes" member, so the role form and Remove button show (the unkeyed binary shows the
  * numbered fixed line in place of each address).
  */
+/** The business Get help form (T200, served by T309; BIZ-047): the owner, the empty form. */
+const GET_HELP_ROUTE = "/b/help";
+const GET_HELP_STATES: readonly PageState[] = [
+  ["get help, empty form", "What is it about?", "There is a problem", businessSql("")],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: GET_HELP_ROUTE, name, shows, hides, sql, statusRegions: [] }));
+
 const TEAM_ROUTE = "/b/team";
 const TEAM_MEMBER_SQL = `,
     mm AS (INSERT INTO businesses.team_member (business_id, mailbox_id, is_owner, cards_and_quotes,
@@ -998,6 +1004,7 @@ export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: PHONES_ROUTE, seed: portalSeed(false), states: PHONES_STATES },
   { route: OWNER_AI_ROUTE, seed: portalSeed(false), states: OWNER_AI_STATES },
   { route: TEAM_ROUTE, seed: portalSeed(false), states: TEAM_STATES },
+  { route: GET_HELP_ROUTE, seed: portalSeed(false), states: GET_HELP_STATES },
   { route: DATA_LINK_ROUTE, seed: dataLinkSeed, states: DATA_LINK_STATES },
   { route: SERVICE_AREA_SETTINGS_ROUTE, seed: portalSeed(false), states: SERVICE_AREA_SETTINGS_STATES },
 ];
