@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-26T23:18:52Z by runner 8d88d3d144c9 (manual).
+Updated 2026-11-26T23:23:17Z by runner eb870d353d81 (manual).
 
 **Building: T744 in progress since 22:15Z; 675 of 799 done; week 5% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-26T23:18:52Z by runner 8d88d3d144c9 (manual).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T744 claimed 22:15Z, lease until 01:15Z; lane 2: T854 claimed 21:52Z, lease until 00:52Z; lane 3: T309 claimed 22:19Z, lease until 01:19Z; lane 4: T783 claimed 22:18Z, lease until 01:18Z
 - **Week:** 5% used, 180.6M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:18Z, 0 min before this update
+- **Last run:** 23:22Z, 0 min before this update
 - **Keeper:** last ran 22:10Z, next wake 22:30Z
 
 ## Needs attention
@@ -36,7 +36,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 48% of the context window, over its 45% limit
-- Strict plan check red: 59 problem(s) on tasks still to run (+580 on DONE tasks); first: T704: stored context_pct 38% but it measures 42%; regenerate
+- Strict plan check red: 53 problem(s) on tasks still to run (+580 on DONE tasks); first: T704: stored context_pct 38% but it measures 42%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -55,7 +55,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 ## Progress (requirements verified)
 
 **Requirements verified:** 3 of 735 (0.4%) · partial 724 · unstarted 8
-**Tasks merged (throughput only):** 675 of 799
+**Tasks merged (throughput only):** 675 of 800
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
