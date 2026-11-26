@@ -8,12 +8,12 @@
   "named_mutants": "success",
   "stripe_ips": "success"
  },
- "started_at": "2026-11-25T19:16:53Z",
- "ran_at": "2026-11-25T19:39:40Z",
- "sha": "0f6466a20c238af24aab3da3253b59d07616101f",
+ "started_at": "2026-11-26T18:59:55Z",
+ "ran_at": "2026-11-26T19:30:02Z",
+ "sha": "a508df213427913227939906fb33559c5406f819",
  "last_green": {
-  "sha": "0f6466a20c238af24aab3da3253b59d07616101f",
-  "ran_at": "2026-11-25T19:39:40Z"
+  "sha": "a508df213427913227939906fb33559c5406f819",
+  "ran_at": "2026-11-26T19:30:02Z"
  },
  "failures_since_green": 0
 }
