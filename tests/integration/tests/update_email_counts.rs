@@ -19,7 +19,7 @@ use askhava_intake::api::{
 use askhava_jobs::api::{JobStatus, first_quote, move_to};
 use askhava_messaging::api::{
     DailyLimit, EmailSent, EmailTo, MailboxKind, PostalAddress, RevokeChannel, UpdateChannel,
-    send_email, set_update_channel, set_update_footer, suppress,
+    last_quote_text, send_email, set_update_channel, set_update_footer, suppress,
 };
 use askhava_ops::api::Actor;
 use askhava_privacy::api::{NewContact, UpdateAddress, Vault, store_contact, store_update_address};
@@ -427,8 +427,25 @@ async fn a_dropped_update_is_not_counted_as_told(pool: PgPool) {
     assert_eq!(sent[2].1[..2], [job, count(4)]);
 }
 
-/// TXT-016, D-5639, D-5640: a bounced `update.first_quote` email, then the reset to text: the next
-/// evaluation queues the first-quote text; with no texting consent (web-and-email) no text row.
+/// D-4419: the run times of the `quotes.count_update` retries queued for `job`.
+async fn retries(db: &mut PgConnection, job: Uuid) -> Vec<Timestamp> {
+    let rows: Vec<jiff_sqlx::Timestamp> = sqlx::query_scalar(
+        "SELECT run_at FROM core.task WHERE kind = 'quotes.count_update' \
+         AND payload->>'job' = $1::text AND (payload->>'retry')::boolean ORDER BY run_at",
+    )
+    .bind(job)
+    .fetch_all(db)
+    .await
+    .expect("retries");
+    rows.into_iter()
+        .map(jiff_sqlx::Timestamp::to_jiff)
+        .collect()
+}
+
+/// TXT-016, TXT-017, D-4419, D-5639, D-5640: a bounced `update.first_quote` email, then the reset
+/// to text: the next evaluation queues the first-quote text and, with 2 quotes shown, the one
+/// retry 15 minutes later that tells the count; with no texting consent (web-and-email) no text
+/// row and no retry.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn a_bounced_first_quote_email_becomes_the_first_quote_text(pool: PgPool) {
     let mut db = pool.acquire().await.expect("db");
@@ -446,11 +463,56 @@ async fn a_bounced_first_quote_email_becomes_the_first_quote_text(pool: PgPool) 
         if n == 7 {
             assert!(queued(&step), "{step:?}");
             assert_eq!(sent, [vec![job]]);
+            let retry = at(HOUR) + SignedDuration::from_mins(15);
+            assert_eq!(retries(&mut db, job).await, [retry]);
         } else {
             assert_eq!(step, QuoteUpdateStep::Skipped(JobTextSkip::NoConsent));
             assert!(sent.is_empty());
+            assert!(retries(&mut db, job).await.is_empty());
         }
     }
+}
+
+/// TXT-016, QH-001, D-4419, D-5640: the bounced first-quote email's text in quiet hours is held to
+/// the window's opening, and the count's retry is queued 15 minutes after it.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn a_bounced_first_quote_email_at_night_holds_the_text_and_queues_the_retry(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("db");
+    let (contact, _, job) = homeowner(&mut db, 10, UpdateChannel::Email).await;
+    first(&mut db, (contact, job), at(0)).await;
+    let email = emails(&mut db, contact, "first_quote").await[0].0;
+    bounce(&mut db, (contact, email), at(60)).await;
+    quote(&mut db, job, 2).await;
+    let step = evaluate(&mut db, (contact, job), at(NIGHT)).await;
+    let QuoteUpdateStep::Held(until) = step else {
+        panic!("{step:?}");
+    };
+    assert!(until > at(NIGHT));
+    assert!(texts(&mut db, contact, "first_quote").await.is_empty());
+    let retry = until + SignedDuration::from_mins(15);
+    assert_eq!(retries(&mut db, job).await, [retry]);
+}
+
+/// TXT-017, D-5639: a Both homeowner's first-quote text and email queued in one instant tie, and
+/// the reader gives the text.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn on_a_tie_the_text_wins(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("db");
+    let (contact, _, job) = homeowner(&mut db, 11, UpdateChannel::Both).await;
+    first(&mut db, (contact, job), at(0)).await;
+    assert_eq!(emails(&mut db, contact, "first_quote").await.len(), 1);
+    let text: Uuid = sqlx::query_scalar(
+        "SELECT id FROM messaging.outbox WHERE recipient_id = $1 AND template_id = 'first_quote'",
+    )
+    .bind(contact)
+    .fetch_one(&mut *db)
+    .await
+    .expect("text");
+    let last = last_quote_text(&mut db, contact, job)
+        .await
+        .expect("reader")
+        .expect("a quote update");
+    assert_eq!((last.id, last.template_id.as_str()), (text, "first_quote"));
 }
 
 /// Only `UPDATE_TEMPLATES` skip the text gates: a non-update job text to an Email homeowner with

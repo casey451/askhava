@@ -140,7 +140,7 @@ pub async fn quote_update_step(
         Notice::Update { quoted } => update(&mut tx, keys, (&her, job), quoted, (now, way)).await?,
         Notice::First if untold_first(&mut tx, &her, job).await? => {
             drop(tx);
-            return first_now(db, keys, job, now).await;
+            return first_now(db, keys, (job, retry), now).await;
         }
         Notice::First if !retry => {
             let opens = match way {
@@ -168,20 +168,33 @@ async fn untold_first(
         .map_err(|_| IntakeError::Outbox)
 }
 
-/// TXT-016, D-5639, D-5640: the first quote was never told (its email bounced or was dropped),
-/// so the first-quote text is queued now through `job_texts`' gates, or held to the window.
+/// TXT-016, TXT-017, D-4419, D-5639, D-5640: the first quote was never told (its email bounced or
+/// was dropped), so the first-quote text is queued now through `job_texts`' gates, or held to the
+/// window; the text carries no count, so unless this is the retry, a queued or held text also
+/// queues the event's one retry as [`first_held`] does (two or more shown quotes,
+/// [`RETRY_MINUTES`] after now or the window's opening).
 async fn first_now(
     db: &mut PgConnection,
     keys: &JobTextKeys,
-    job: Uuid,
+    (job, retry): (Uuid, bool),
     now: Timestamp,
 ) -> Result<QuoteUpdateStep, IntakeError> {
-    Ok(match first_quote_now(db, keys, job, now).await? {
-        JobTextStep::Queued(queued) => QuoteUpdateStep::Queued(queued),
-        JobTextStep::Held(until) => QuoteUpdateStep::Held(until),
-        JobTextStep::Skipped(JobTextSkip::AlreadyQueued) => QuoteUpdateStep::Nothing,
-        JobTextStep::Skipped(skip) => QuoteUpdateStep::Skipped(skip),
-    })
+    let (step, opens) = match first_quote_now(db, keys, job, now).await? {
+        JobTextStep::Queued(queued) => (QuoteUpdateStep::Queued(queued), now),
+        JobTextStep::Held(until) => (QuoteUpdateStep::Held(until), until),
+        JobTextStep::Skipped(JobTextSkip::AlreadyQueued) => return Ok(QuoteUpdateStep::Nothing),
+        JobTextStep::Skipped(skip) => return Ok(QuoteUpdateStep::Skipped(skip)),
+    };
+    if !retry {
+        let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
+        if matches!(
+            first_held(&mut tx, job, opens).await?,
+            QuoteUpdateStep::Held(_)
+        ) {
+            tx.commit().await.map_err(|_| IntakeError::Database)?;
+        }
+    }
+    Ok(step)
 }
 
 /// The question ID of the counts told on `job`: `quote_told.<job simple>` (never `job.`, which
