@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-26T20:10:28Z by runner a508df213427 (actions).
+Updated 2026-11-26T20:18:56Z by runner a508df213427 (actions).
 
-**Building: T848 in progress since 19:56Z; 672 of 788 done; week 3% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Building: T848 in progress since 19:56Z; 673 of 788 done; week 3% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 672 of 788 build tasks (owner gates not counted)
+- **Tasks done:** 673 of 788 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T848 claimed 19:56Z, lease until 22:56Z; lane 3: T820 claimed 20:04Z, lease until 23:04Z; lane 5: T840 claimed 19:09Z, lease until 22:09Z
 - **Week:** 3% used, 186.9M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:10Z, 0 min before this update
+- **Last run:** 20:11Z, 7 min before this update
 - **Keeper:** last ran 20:10Z, next wake 20:30Z
 
 ## Needs attention
@@ -22,7 +22,7 @@ Updated 2026-11-26T20:10:28Z by runner a508df213427 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T847 | e2e: J3 step 5 seeds its refused pick at the app clock, so t | MERGE_PENDING | 1 | 94 min | 20:01Z |  |
+| T847 | e2e: J3 step 5 seeds its refused pick at the app clock, so t | done | 1 | 94 min | 20:01Z |  |
 | T612 | harness: the WEB-029 and WEB-030 runtime checks on every sit | BLOCKED | 1 | 50 min | 18:35Z | PLAN GAP: app/site/static/site.css:96-99 (owner T613, not T612): the "DM Sans fallback" face names only local("Arial") a |
 
 ### Plan and harness merges on main
@@ -31,7 +31,7 @@ Updated 2026-11-26T20:10:28Z by runner a508df213427 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 478 of 735 (65.0%) · partial 249 · unstarted 8
-**Tasks merged (throughput only):** 672 of 788
+**Tasks merged (throughput only):** 673 of 788
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -67,7 +67,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 315 of 360 done
+- stage 5: 316 of 360 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
