@@ -91304,7 +91304,7 @@
     "T611",
     "T603"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "polish-speed-checks",
    "type": "harness",
@@ -91318,8 +91318,8 @@
     5841,
     5842
    ],
-   "reason": "plan gap reported: PLAN GAP: app/site/static/site.css:96-99 (owner T613, not T612): the \"DM Sans fallback\" face names only local(\"Arial\") and local(\"Roboto\"); the CI image has Liberation Sans only, so with fonts blocked the 320x740 first-screen check in tests/e2e/site_speed.spec.ts fails (Get quotes bottom 771 of 740). Reviewer confirmed: with local(\"Liberation Sans\") added in-browser the button bottom is 695 px. Smallest fix: add local(\"Liberation Sans\") to that face's src with the same size-adjust figures. Reviewer also found: quote-page animation check at site_speed.spec.ts:321-329 reads getAnimations only af; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T612 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: app/site/static/site.css:96-99 (owner T613, not T612): the \"DM Sans fallback\" face names only local(\"Arial\") and local(\"Roboto\"); the CI image has Liberation Sans only, so with fonts blocked the 320x740 first-screen check in tests/e2e/site_speed.spec.ts fails (Get quotes bottom 771 of 740). Reviewer confirmed: with local(\"Liberation Sans\") added in-browser the button bottom is 695 px. Smallest fix: add local(\"Liberation Sans\") to that face's src with the same size-adjust figures. Reviewer also found: quote-page animation check at site_speed.spec.ts:321-329 reads getAnimations only after 1200 ms and would miss finished no-fill animations (use animationstart recorder); dead condition at forced_colors.spec.ts:23.",
+   "reason": null,
+   "last_failure": "PLAN GAP: app/site/static/site.css:96-99 (owner T613, not T612): the \"DM Sans fallback\" face names only local(\"Arial\") and local(\"Roboto\"); the CI image has Liberation Sans only, so with fonts blocked the 320x740 first-screen check in tests/e2e/site_speed.spec.ts fails (Get quotes bottom 771 of 740). Reviewer confirmed: with local(\"Liberation Sans\") added in-browser the button bottom is 695 px. Smallest fix: add local(\"Liberation Sans\") to that face's src with the same size-adjust figures. Reviewer also found: quote-page animation check at site_speed.spec.ts:321-329 reads getAnimations only after 1200 ms and would miss finished no-fill animations (use animationstart recorder); dead condition at forced_colors.spec.ts:23.\nre-queued after plan fix D-5864: D-5864 (#1473): T612 may add Liberation Sans to the DM Sans fallback in site.css",
    "history": [
     {
      "attempt": 1,
@@ -91344,6 +91344,21 @@
       }
      },
      "wip_skipped": "PII scan: a commit message in a508df213427913227939906fb33559c5406f819"
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-26T23:18:52Z",
+     "reason": "D-5864 (#1473): T612 may add Liberation Sans to the DM Sans fallback in site.css",
+     "by": "manual-7d92564c14aa",
+     "was": "plan gap reported: PLAN GAP: app/site/static/site.css:96-99 (owner T613, not T612): the \"DM Sans fallback\" face names only local(\"Arial\") and local(\"Roboto\"); the CI image has Liberation Sans only, so with fonts blocked the 320x740 first-screen check in tests/e2e/site_speed.spec.ts fails (Get quotes bottom 771 of 740). Reviewer confirmed: with local(\"Liberation Sans\") added in-browser the button bottom is 695 px. Smallest fix: add local(\"Liberation Sans\") to that face's src with the same size-adjust figures. Reviewer also found: quote-page animation check at site_speed.spec.ts:321-329 reads getAnimations only af; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T612 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-5864",
+     "plan_since": "2026-11-26T17:45:16Z",
+     "plan_base": "0f6466a20c238af24aab3da3253b59d07616101f",
+     "plan_head": "8d88d3d144c9a37606e9518f12ab087bf59b0d31",
+     "plan_then": "98201e81a03ce7e526511689df1485042974cdfa87edf6fdb93941fd329fb707",
+     "plan_now": "baed9ae4974e93cbdc9f8267eb593644344d47f6c497ddf1df54987fe102a11f"
     }
    ]
   },
@@ -130467,7 +130482,7 @@
    }
   }
  },
- "updated_at": "2026-11-26T23:18:34Z",
+ "updated_at": "2026-11-26T23:18:52Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

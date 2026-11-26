@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-26T23:18:34Z by runner 8d88d3d144c9 (manual).
+Updated 2026-11-26T23:18:52Z by runner 8d88d3d144c9 (manual).
 
 **Building: T744 in progress since 22:15Z; 675 of 799 done; week 5% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -8,12 +8,11 @@ Updated 2026-11-26T23:18:34Z by runner 8d88d3d144c9 (manual).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T744 claimed 22:15Z, lease until 01:15Z; lane 2: T854 claimed 21:52Z, lease until 00:52Z; lane 3: T309 claimed 22:19Z, lease until 01:19Z; lane 4: T783 claimed 22:18Z, lease until 01:18Z
 - **Week:** 5% used, 180.6M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:03Z, 15 min before this update
+- **Last run:** 23:18Z, 0 min before this update
 - **Keeper:** last ran 22:10Z, next wake 22:30Z
 
 ## Needs attention
 - CLAIMS STOPPED: nightly success on a508df213427, failures_since_green 0; no stage passed its exit test
-- BLOCKED T612: plan gap reported: PLAN GAP: app/site/static/site.css:96-99 (owner T613, not T612): the "DM Sans fallback" face names only local("Arial") and local("Roboto"); the CI image has Liberation Sans only, so with fonts blocked the 320x740 first-screen check in tests/e2e/site_speed.spec.ts fails (Get quotes bottom 771 of 740). Reviewer confirmed: with local("Liberation Sans") added in-browser the button bottom is 695 px. Smallest fix: add local("Liberation Sans") to that face's src with the same size-adjust figures. Reviewer also found: quote-page animation check at site_speed.spec.ts:321-329 reads getAnimations only af; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T612 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T820: Ci: failure; Checks: failure
 Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS, D-3142)
 test td_sec_80_a_text_started_session_lasts_30_minutes ... ok
