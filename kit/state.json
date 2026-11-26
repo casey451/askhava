@@ -118819,12 +118819,12 @@
      }
     }
    ],
-   "reviewed_sha": "223703bc6e7bc23762e9ba1aecb903dbe34b7034",
+   "reviewed_sha": "2ac33054b50524d777d27d6f525d1071c1b5b6a1",
    "review_lease": {
     "task": "T820",
-    "session": "actions-45460371558",
-    "expires": "2026-11-24T21:38:24Z",
-    "lane": "4"
+    "session": "actions-45887510986",
+    "expires": "2026-11-26T23:04:34Z",
+    "lane": "3"
    },
    "branch": "claude/task/T820-data-download-contents",
    "auto_merge": {
@@ -118832,18 +118832,6 @@
     "why": "auto-merge on #1465 (gh pr merge)",
     "head": "223703bc6e7bc23762e9ba1aecb903dbe34b7034"
    },
-   "update_merges": [
-    {
-     "from": "81aee9d2fa3a6f22b0697e4f467fe29cdced7f5c",
-     "to": "223703bc6e7bc23762e9ba1aecb903dbe34b7034",
-     "main": "60b853b9b8e1787c79ad7743dc011827627c9bf7",
-     "how": "hand-in",
-     "at": "2026-11-24T19:49:25Z"
-    }
-   ],
-   "update_waiting_since": null,
-   "update_push_failures": null,
-   "merge_turn_since": "2026-11-24T19:51:50Z",
    "last_failure": "Hand-in time passed. Worker added unit tests in app/portals/src/data_download.rs (commit f4a102dca); portals-only coverage of data_download.rs measured 73.68 (floor 81.0), the full integration+portals+server measurement never finished (disk full). Smoke green. Ally: 3 failures in tests/a11y/j2_keyboard.spec.ts:149 (business sign-up, no h1 on /b/signup/start), not confirmed whether from main. Next attempt: free disk (target/debug 47G, /mnt/llvm-cov-target), run the llvm-cov for askhava-integration, askhava-portals, askhava-server in background, compare data_download.rs to 81.0, run j2_keyboard on main.",
    "runner_closed_prs": [
     1465
@@ -118851,7 +118839,19 @@
    "wip_claim": {
     "attempt": 3,
     "remote_sha": "223703bc6e7bc23762e9ba1aecb903dbe34b7034"
-   }
+   },
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "b4a057ce7f55ce600e7bc6f23711afd1e9506649",
+     "to": "2ac33054b50524d777d27d6f525d1071c1b5b6a1",
+     "main": "94a988623895e5dad1118f24c0ed275311dcdefa",
+     "how": "hand-in",
+     "at": "2026-11-26T21:46:37Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T821",
@@ -130166,7 +130166,7 @@
    }
   }
  },
- "updated_at": "2026-11-26T21:42:23Z",
+ "updated_at": "2026-11-26T21:46:37Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -130264,7 +130264,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "f7b23c181041870b735e82611ac2cd38e07d0f89",
+ "runner_sha": "b4a057ce7f55ce600e7bc6f23711afd1e9506649",
  "starter": "actions",
  "smoke_runs": [
   {
