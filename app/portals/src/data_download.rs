@@ -805,6 +805,10 @@ mod tests {
         download_file, open_request, resend_request_code,
     };
     use crate::homeowner_portal::OnFile;
+    use askhava_catalog::api::{Question, QuestionBank, QuestionSet};
+    use askhava_intake::api::JobAnswer;
+
+    use super::{answer_words, chosen, optout_words};
 
     const CODE: &str = "123456";
 
@@ -1101,5 +1105,111 @@ mod tests {
             .await
             .expect("no connection is held across Verify");
         assert_eq!(actions(&mut db).await.len(), 2);
+    }
+
+    /// A fake question: multiple choice with `options`, else free text.
+    fn question(id: &str, en: &str, options: Option<&[&str]>) -> Question {
+        let options = options.map(|o| o.iter().map(|s| (*s).to_owned()).collect::<Vec<_>>());
+        Question {
+            id: id.to_owned(),
+            en: en.to_owned(),
+            es: en.to_owned(),
+            options_en: options.clone(),
+            options_es: options,
+            card_field: false,
+            size_band: false,
+            band_floor: Vec::new(),
+            emergency: false,
+            ask_if: None,
+        }
+    }
+
+    fn set(questions: Vec<Question>) -> QuestionSet {
+        QuestionSet {
+            version: 1,
+            kb_trade: None,
+            photos: Vec::new(),
+            questions,
+        }
+    }
+
+    fn answer(question: &str, value: &str) -> JobAnswer {
+        JobAnswer {
+            question: question.to_owned(),
+            value: value.to_owned(),
+        }
+    }
+
+    /// CON-035, D-5399: a text reads "You texted ..."; every other channel names itself.
+    #[test]
+    fn td_priv_15_optout_words_name_the_channel() {
+        assert_eq!(optout_words(false, "text"), "You texted STOP");
+        assert_eq!(optout_words(true, "text"), "You texted START");
+        let channels = [
+            ("email", "by email"),
+            ("email_reply", "by a reply to one of our emails"),
+            ("help_form", "through the help form"),
+            ("portal", "in your account on our website"),
+            ("owner", "by our team when you asked"),
+            ("carrier", "by your phone carrier"),
+            ("web_chat", "in the web chat"),
+            ("fax", "(we have no note of how)"),
+        ];
+        for (channel, by) in channels {
+            assert_eq!(
+                optout_words(false, channel),
+                format!("Texts turned off {by}")
+            );
+            assert_eq!(optout_words(true, channel), format!("Texts turned on {by}"));
+        }
+    }
+
+    /// PRIV-031, D-5399: a stored code reads as the option, "Not sure" or a note; never a guess.
+    #[test]
+    fn td_priv_15_chosen_reads_the_stored_code() {
+        let pick = question("fixture", "Which fixture?", Some(&["Sink", "Toilet"]));
+        assert_eq!(chosen(&pick, "2"), "Toilet");
+        assert_eq!(chosen(&pick, "not_sure"), "Not sure");
+        for code in ["0", "3", "text"] {
+            assert_eq!(chosen(&pick, code), "You answered in your own words.");
+        }
+        let free = question("details", "Anything else?", None);
+        assert_eq!(chosen(&free, "1"), "You answered in your own words.");
+    }
+
+    /// PRIV-031, D-5399: the set holding most of her answers is used; a question no set holds,
+    /// and so the address row, is left out.
+    #[test]
+    fn td_priv_15_answer_words_use_the_best_set() {
+        let empty = QuestionBank {
+            version: 1,
+            sets: std::collections::BTreeMap::new(),
+        };
+        assert!(answer_words(&empty, &[answer("fixture", "1")]).is_empty());
+        let plumbing = set(vec![
+            question(
+                "fixture",
+                "Which fixture? (pick one)",
+                Some(&["Sink", "Toilet"]),
+            ),
+            question("leak", "Is it leaking?", Some(&["Yes", "No"])),
+        ]);
+        let roofing = set(vec![question("leak", "Roof leak?", Some(&["Yes"]))]);
+        let bank = QuestionBank {
+            version: 1,
+            sets: [("PLB".to_owned(), plumbing), ("ROF".to_owned(), roofing)].into(),
+        };
+        let answers = [
+            answer("fixture", "1"),
+            answer("leak", "not_sure"),
+            answer("address", "text"),
+        ];
+        assert_eq!(
+            answer_words(&bank, &answers),
+            [
+                "Which fixture? Your answer: Sink",
+                "Is it leaking? Your answer: Not sure",
+            ]
+        );
     }
 }
