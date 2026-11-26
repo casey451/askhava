@@ -116191,7 +116191,7 @@
     "T725",
     "T831"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "chat-code-not-optin",
    "type": "harness",
@@ -116205,8 +116205,8 @@
     5770,
     5771
    ],
-   "reason": "plan gap reported: PLAN GAP: app/server/tests/web_chat_stops.rs:572 and :592 (owned by T645) assert a consent text queued to a chat-verified number that never texted in; fixing review finding (web_chat consent must never permit a text, CON-005/CON-025) requires changing them. Also app/server/tests/web_chat_after_code.rs:46,:319,:368 (T649) for the \"We'll answer by text\" wording. Smallest plan change: let T801 own web_chat_stops.rs (and web_chat_after_code.rs). Prepared fix patch at /tmp/T801-fix-round.patch. Reviewer confirmed the gap for web_chat_stops.rs. Proof: cargo test --workspace --exclude askhava-integra; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T801 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: app/server/tests/web_chat_stops.rs:572 and :592 (owned by T645) assert a consent text queued to a chat-verified number that never texted in; fixing review finding (web_chat consent must never permit a text, CON-005/CON-025) requires changing them. Also app/server/tests/web_chat_after_code.rs:46,:319,:368 (T649) for the \"We'll answer by text\" wording. Smallest plan change: let T801 own web_chat_stops.rs (and web_chat_after_code.rs). Prepared fix patch at /tmp/T801-fix-round.patch. Reviewer confirmed the gap for web_chat_stops.rs. Proof: cargo test --workspace --exclude askhava-integration fails web_chat_stops.rs:572 (left [] right [\"consent\"]) and :592.",
+   "reason": null,
+   "last_failure": "PLAN GAP: app/server/tests/web_chat_stops.rs:572 and :592 (owned by T645) assert a consent text queued to a chat-verified number that never texted in; fixing review finding (web_chat consent must never permit a text, CON-005/CON-025) requires changing them. Also app/server/tests/web_chat_after_code.rs:46,:319,:368 (T649) for the \"We'll answer by text\" wording. Smallest plan change: let T801 own web_chat_stops.rs (and web_chat_after_code.rs). Prepared fix patch at /tmp/T801-fix-round.patch. Reviewer confirmed the gap for web_chat_stops.rs. Proof: cargo test --workspace --exclude askhava-integration fails web_chat_stops.rs:572 (left [] right [\"consent\"]) and :592.\nre-queued after plan fix D-5848: D-5848 (#1473): T801 rewritten as the switch-over task of the web-chat consent chain; one more attempt per D-677",
    "history": [
     {
      "attempt": 1,
@@ -116231,6 +116231,21 @@
       }
      },
      "wip_skipped": "PII scan: a commit message in 16fd7ee8aae9465dcb7bf75fd20984021425b001"
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-26T23:18:34Z",
+     "reason": "D-5848 (#1473): T801 rewritten as the switch-over task of the web-chat consent chain; one more attempt per D-677",
+     "by": "manual-7673f552ff96",
+     "was": "plan gap reported: PLAN GAP: app/server/tests/web_chat_stops.rs:572 and :592 (owned by T645) assert a consent text queued to a chat-verified number that never texted in; fixing review finding (web_chat consent must never permit a text, CON-005/CON-025) requires changing them. Also app/server/tests/web_chat_after_code.rs:46,:319,:368 (T649) for the \"We'll answer by text\" wording. Smallest plan change: let T801 own web_chat_stops.rs (and web_chat_after_code.rs). Prepared fix patch at /tmp/T801-fix-round.patch. Reviewer confirmed the gap for web_chat_stops.rs. Proof: cargo test --workspace --exclude askhava-integra; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T801 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-5848",
+     "plan_since": "2026-11-24T08:49:17Z",
+     "plan_base": "9c95956462af23f2968d71e0f2fec7bffa10a514",
+     "plan_head": "8d88d3d144c9a37606e9518f12ab087bf59b0d31",
+     "plan_then": "c66b783e1c33972e7433d4ab2a8fe2bf97c2ebd3f5511e9a3010c5613878029f",
+     "plan_now": "6c31216cdc82c90a79ff2a7e562ebc2e80cd22b373c26902c292730aab12b104"
     }
    ]
   },
@@ -130452,7 +130467,7 @@
    }
   }
  },
- "updated_at": "2026-11-26T23:02:51Z",
+ "updated_at": "2026-11-26T23:18:34Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -130550,7 +130565,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "64e9d80f06bd307ba582fe1ea01dcb8972141274",
+ "runner_sha": "8d88d3d144c9a37606e9518f12ab087bf59b0d31",
  "starter": "manual",
  "smoke_runs": [
   {
