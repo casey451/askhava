@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-26T19:02:02Z by runner 0f6466a20c23 (actions).
+Updated 2026-11-26T19:05:52Z by runner a508df213427 (actions).
 
 **Building: T847 in progress since 18:26Z; 672 of 788 done; week 3% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 672 of 788 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T847 claimed 18:26Z, lease until 21:26Z
-- **Week:** 3% used, 186.7M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:37Z, 24 min before this update
+- **Lane:** lane 1: T847 claimed 18:26Z, lease until 21:26Z; lane 3: T848 claimed 19:05Z, lease until 22:05Z
+- **Week:** 3% used, 187.7M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
+- **Last run:** 19:02Z, 3 min before this update
 - **Keeper:** last ran 18:37Z, next wake 18:57Z
 
 ## Needs attention
@@ -17,8 +17,7 @@ Updated 2026-11-26T19:02:02Z by runner 0f6466a20c23 (actions).
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 48% of the context window, over its 45% limit
-- PLAN GAP T848 (since 2026-11-26T18:54:36Z, no attempt used; a plan change fixes it): T848: prompt kit/prompts/T848.md is missing; run scripts/gen_prompts.py; T848: branch claude/task/T848-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
-- Strict plan check red: 67 problem(s) on tasks still to run (+576 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 65 problem(s) on tasks still to run (+576 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -30,36 +29,36 @@ Updated 2026-11-26T19:02:02Z by runner 0f6466a20c23 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 488 of 735 (66.4%) · partial 239 · unstarted 8
-**Tasks merged (throughput only):** 672 of 781
+**Requirements verified:** 478 of 735 (65.0%) · partial 249 · unstarted 8
+**Tasks merged (throughput only):** 672 of 788
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 28 | 7 | 0 | 35 |
 | ai | 11 | 15 | 3 | 29 |
-| businesses | 36 | 21 | 1 | 58 |
+| businesses | 35 | 22 | 1 | 58 |
 | calls | 17 | 8 | 0 | 25 |
 | consent | 23 | 12 | 0 | 35 |
-| fees | 29 | 23 | 0 | 52 |
+| fees | 27 | 25 | 0 | 52 |
 | intake | 14 | 29 | 0 | 43 |
 | job-cards | 17 | 7 | 0 | 24 |
 | licensing | 41 | 7 | 0 | 48 |
-| lifecycle | 23 | 5 | 0 | 28 |
-| messaging | 27 | 18 | 0 | 45 |
+| lifecycle | 22 | 6 | 0 | 28 |
+| messaging | 25 | 20 | 0 | 45 |
 | ops-recovery | 35 | 18 | 1 | 54 |
 | privacy | 15 | 16 | 0 | 31 |
 | quiet-hours | 4 | 5 | 0 | 9 |
-| quotes-pick | 40 | 16 | 0 | 56 |
+| quotes-pick | 39 | 17 | 0 | 56 |
 | recurring | 10 | 1 | 0 | 11 |
-| security | 25 | 27 | 3 | 55 |
+| security | 23 | 29 | 3 | 55 |
 | terms | 35 | 0 | 0 | 35 |
 | website | 27 | 3 | 0 | 30 |
-| wording | 31 | 1 | 0 | 32 |
+| wording | 30 | 2 | 0 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-26T18:19:06Z (week)): week: 7.3M used, 186.7M left, resets 2026-12-03T17:00:00Z; projected finish 2026-12-09T14:48:07Z.
+- Pacing (session_reading 2026-11-26T18:36:24Z (week)): week: 6.3M used, 187.7M left, resets 2026-12-03T17:00:00Z; projected finish 2026-12-09T20:03:22Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -75,6 +74,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T847 (lease until 2026-11-26T21:26:32Z)
+- lane 3: T848 (lease until 2026-11-26T22:05:46Z)
 
 ## Last usage reading
 - {"task": "T612", "at": "2026-11-26T18:35:36Z", "cache_read_input_tokens": 6573358, "cache_creation_input_tokens": 212492, "input_tokens": 129, "output_tokens": 64089}
