@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-26T21:48:39Z by runner a508df213427 (actions).
+Updated 2026-11-26T21:51:42Z by runner f7b23c181041 (actions).
 
-**Building: T309 in progress since 20:18Z; 673 of 788 done; week 4% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Building: T309 in progress since 20:18Z; 674 of 788 done; week 4% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 673 of 788 build tasks (owner gates not counted)
+- **Tasks done:** 674 of 788 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 4: T309 claimed 20:18Z, lease until 23:18Z
 - **Week:** 4% used, 183.9M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:48Z, 0 min before this update
+- **Last run:** 21:49Z, 2 min before this update
 - **Keeper:** last ran 21:48Z, next wake 23:21Z
 
 ## Needs attention
@@ -25,7 +25,7 @@ Updated 2026-11-26T21:48:39Z by runner a508df213427 (actions).
 | T820 | server and portals: "Download my data" also holds withdrawn  | MERGE_PENDING | 3 | 102 min | 21:46Z | Hand-in time passed. Worker added unit tests in app/portals/src/data_download.rs (commit f4a102dca); portals-only covera |
 | T657 | quotes and portals: quote-form and sign-in errors mark the f | MERGE_PENDING | 1 | 75 min | 21:40Z |  |
 | T840 | intake and messaging: quote updates reach Email and web-and- | MERGE_PENDING | 1 | 2 h 10 min | 21:20Z |  |
-| T848 | core, payments, inbound text, security: `Clock::real_now()`  | MERGE_PENDING | 1 | 75 min | 21:12Z |  |
+| T848 | core, payments, inbound text, security: `Clock::real_now()`  | done | 1 | 75 min | 21:12Z |  |
 | T847 | e2e: J3 step 5 seeds its refused pick at the app clock, so t | done | 1 | 94 min | 20:01Z |  |
 | T612 | harness: the WEB-029 and WEB-030 runtime checks on every sit | BLOCKED | 1 | 50 min | 18:35Z | PLAN GAP: app/site/static/site.css:96-99 (owner T613, not T612): the "DM Sans fallback" face names only local("Arial") a |
 
@@ -35,7 +35,7 @@ Updated 2026-11-26T21:48:39Z by runner a508df213427 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 478 of 735 (65.0%) · partial 249 · unstarted 8
-**Tasks merged (throughput only):** 673 of 788
+**Tasks merged (throughput only):** 674 of 788
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -71,7 +71,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 316 of 360 done
+- stage 5: 317 of 360 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
