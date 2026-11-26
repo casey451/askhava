@@ -11172,3 +11172,4 @@
 - 2026-11-25T18:26:23Z runner 0f6466a20c23 (actions): {}
 - 2026-11-26T01:43:38Z runner 0f6466a20c23 (actions): {}; T820 estimated 1.4M tokens (calibrated); week has -79.4M left (no five-hour budget, D-3056) (ledger; quota_probe: no token: CLAUDE_CODE_OAUTH_TOKEN unset and no credentials file); waiting until 2026-11-26T19:21:06Z
 - 2026-11-26T01:44:16Z runner 0f6466a20c23 (actions): {}
+- 2026-11-26T01:45:04Z runner 0f6466a20c23 (actions): {}; T820 estimated 1.4M tokens (calibrated); week has 0k left (no five-hour budget, D-3056) (session_reading 2026-11-26T01:44:15Z (week)); waiting until 2026-11-26T17:00:00Z

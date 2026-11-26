@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-26T01:44:16Z by runner 0f6466a20c23 (actions).
+Updated 2026-11-26T01:45:04Z by runner 0f6466a20c23 (actions).
 
-**Waiting for tokens until 19:21Z; 672 of 781 done; week 97% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Waiting for tokens until 17:00Z; 672 of 781 done; week 97% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 672 of 781 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** idle since 01:43Z (no task in progress)
-- **Week:** 97% used, -79.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Week:** 97% used, 0.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 01:44Z, 0 min before this update
 - **Keeper:** last ran 18:25Z, next wake 00:05Z
 
@@ -62,7 +62,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (ledger; quota_probe: no token: CLAUDE_CODE_OAUTH_TOKEN unset and no credentials file): week: 273.4M used, -79.4M left, resets 2026-11-26T19:21:06Z; projected finish 2026-12-08T22:05:05Z; waiting until 2026-11-26T19:21:06Z.
+- Pacing (session_reading 2026-11-26T01:44:15Z (week)): week: 194.0M used, 0k left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-08T22:06:30Z; waiting until 2026-11-26T17:00:00Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
