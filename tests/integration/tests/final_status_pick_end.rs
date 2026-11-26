@@ -14,9 +14,6 @@ use askhava_adapters::api::{
     WebhookVendor, verify_webhook,
 };
 use askhava_core::api::{Claimed, Guarded, MIGRATOR, WorkerId, claim};
-use askhava_jobs::api::JobStatus::{
-    AwaitingConfirm, Cancelled, Connected, Done, Intake, Open, PaymentPending, QuotesReady,
-};
 use askhava_jobs::api::{FINAL_STATUS_KIND, JobStatus, current, move_to};
 use askhava_messaging::api::{NewText, Relation, enqueue};
 use askhava_ops::api::Actor;
@@ -96,7 +93,18 @@ async fn picked(db: &mut PgConnection, status: &str) -> (Uuid, Uuid, Uuid) {
     let job = askhava_jobs::api::create(db, at(0), false, Actor::System)
         .await
         .expect("job");
-    walk(db, job, &[Intake, Open, QuotesReady, AwaitingConfirm], 1).await;
+    walk(
+        db,
+        job,
+        &[
+            JobStatus::Intake,
+            JobStatus::Open,
+            JobStatus::QuotesReady,
+            JobStatus::AwaitingConfirm,
+        ],
+        1,
+    )
+    .await;
     let business = askhava_businesses::api::create(db, false, at(0))
         .await
         .expect("business");
@@ -315,7 +323,13 @@ async fn a_cancel_awaiting_confirm_ends_the_pick_and_its_timers_act_on_nothing(p
     let mut db = pool.acquire().await.expect("db");
     let (job, _, pick) = picked(&mut db, "awaiting_confirm").await;
     let from = current(&mut db, job).await.expect("job").timer_from;
-    walk(&mut db, job, &[AwaitingConfirm, Cancelled], 50).await;
+    walk(
+        &mut db,
+        job,
+        &[JobStatus::AwaitingConfirm, JobStatus::Cancelled],
+        50,
+    )
+    .await;
     run(&pool, &final_task(&pool, job).await).await;
     let state = ("cancelled".to_owned(), Some("job_final".to_owned()), None);
     assert_eq!(pick_state(&pool, pick).await, state);
@@ -338,7 +352,11 @@ async fn a_cancel_awaiting_confirm_ends_the_pick_and_its_timers_act_on_nothing(p
 /// `payment_intent.succeeded` never releases and is refunded once.
 #[sqlx::test(migrator = "MIGRATOR")]
 async fn a_cancel_in_payment_pending_ends_the_intent_and_refunds_a_late_success(pool: PgPool) {
-    let path = [AwaitingConfirm, PaymentPending, Cancelled];
+    let path = [
+        JobStatus::AwaitingConfirm,
+        JobStatus::PaymentPending,
+        JobStatus::Cancelled,
+    ];
     let (_, pick, task) = closed_with_intent(&pool, &path).await;
     run(&pool, &task).await;
     run(&pool, &task).await;
@@ -359,7 +377,8 @@ async fn a_cancel_in_payment_pending_ends_the_intent_and_refunds_a_late_success(
 /// still succeeds, found by the check round, is refunded once.
 #[sqlx::test(migrator = "MIGRATOR")]
 async fn a_close_during_an_auto_confirm_charge_refunds_its_success(pool: PgPool) {
-    let (_, pick, task) = closed_with_intent(&pool, &[AwaitingConfirm, Cancelled]).await;
+    let (_, pick, task) =
+        closed_with_intent(&pool, &[JobStatus::AwaitingConfirm, JobStatus::Cancelled]).await;
     run(&pool, &task).await;
     assert_eq!(pick_state(&pool, pick).await, ended());
     let stripe = stripe(pick);
@@ -378,7 +397,12 @@ async fn a_paid_pick_is_untouched(pool: PgPool) {
     walk(
         &mut db,
         ids.0,
-        &[AwaitingConfirm, PaymentPending, Connected, Done],
+        &[
+            JobStatus::AwaitingConfirm,
+            JobStatus::PaymentPending,
+            JobStatus::Connected,
+            JobStatus::Done,
+        ],
         50,
     )
     .await;
@@ -393,7 +417,8 @@ async fn a_paid_pick_is_untouched(pool: PgPool) {
 /// time let through both survive it.
 #[sqlx::test(migrator = "MIGRATOR")]
 async fn a_replay_changes_nothing_and_keeps_the_held_notice(pool: PgPool) {
-    let (job, pick, task) = closed_with_intent(&pool, &[AwaitingConfirm, Cancelled]).await;
+    let (job, pick, task) =
+        closed_with_intent(&pool, &[JobStatus::AwaitingConfirm, JobStatus::Cancelled]).await;
     let mut db = pool.acquire().await.expect("db");
     let early = text(&mut db, job, "first_quote", Some(40)).await;
     assert_eq!(
@@ -421,7 +446,13 @@ async fn a_replay_changes_nothing_and_keeps_the_held_notice(pool: PgPool) {
 async fn a_payload_without_a_close_time_expires_nothing(pool: PgPool) {
     let mut db = pool.acquire().await.expect("db");
     let (job, _, pick) = picked(&mut db, "awaiting_confirm").await;
-    walk(&mut db, job, &[AwaitingConfirm, Cancelled], 50).await;
+    walk(
+        &mut db,
+        job,
+        &[JobStatus::AwaitingConfirm, JobStatus::Cancelled],
+        50,
+    )
+    .await;
     let early = text(&mut db, job, "first_quote", Some(40)).await;
     let mut task = final_task(&pool, job).await;
     task.payload.as_object_mut().expect("object").remove("at");
