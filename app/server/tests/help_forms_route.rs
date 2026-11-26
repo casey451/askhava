@@ -264,12 +264,20 @@ async fn newly_listed(pool: &PgPool, phone: &str) -> bool {
     listed.expect("suppress")
 }
 
-/// SEC-048: the stored `csrf_rejected` security events on `route`.
-async fn refusals(pool: &PgPool, route: &str) -> i64 {
-    let sql =
-        "SELECT count(*) FROM portals.security_event WHERE kind = 'csrf_rejected' AND route = $1";
-    let count = sqlx::query_scalar(sql).bind(route).fetch_one(pool).await;
-    count.expect("count")
+/// SEC-048: the stored `csrf_rejected` security events on `route`, read through `query_to_xml`
+/// as `opted_out_pick_route.rs`'s `value` reads (the same compiled query).
+async fn refusals(pool: &PgPool, route: &str) -> String {
+    let sql = format!(
+        "SELECT count(*)::text AS v FROM portals.security_event \
+         WHERE kind = 'csrf_rejected' AND route = '{route}'"
+    );
+    let v = sqlx::query_scalar!(
+        r#"SELECT coalesce((xpath('/row/v/text()', query_to_xml($1::text, false, true, '')))[1]::text, '') AS "v!""#,
+        sql
+    )
+    .fetch_one(pool)
+    .await;
+    v.expect("value")
 }
 
 /// TD-SEC-51 (SEC-004, SEC-034): signed out, an owner-portal session and a visitor's pre-session
@@ -486,7 +494,7 @@ async fn td_sec_51_cross_site_and_wrong_token_posts_are_refused(pool: PgPool) {
                 "{path} {site:?}: {reply:?}"
             );
         }
-        assert_eq!(refusals(&pool, path).await, 3, "{path}");
+        assert_eq!(refusals(&pool, path).await, "3", "{path}");
     }
     assert!(open_requests(&pool).await.is_empty(), "nothing opened");
 }
