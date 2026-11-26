@@ -402,5 +402,49 @@ mod enabled {
             real.saturating_add(SignedDuration::from_secs(self.offset()))
                 .unwrap_or(real)
         }
+
+        /// System time, whatever the offset, so a clock advance never stales a signature or
+        /// opens a rate-limit window (D-5836).
+        fn real_now(&self) -> Timestamp {
+            Timestamp::now()
+        }
+    }
+
+    #[cfg(test)]
+    mod tests {
+        //! The offset clock's two readings (D-5836).
+
+        use std::sync::atomic::AtomicI64;
+
+        use jiff::{SignedDuration, Timestamp};
+
+        use super::OffsetClock;
+        use crate::clock::{Clock, ManualClock};
+
+        const FORTY_DAYS: i64 = 40 * 24 * 3_600;
+
+        #[test]
+        fn an_advanced_offset_clock_keeps_real_now_at_system_time() {
+            let clock = OffsetClock {
+                file: None,
+                offset: AtomicI64::new(0),
+            };
+            clock.advance(FORTY_DAYS).expect("no file to write");
+            let system = Timestamp::now();
+            let real = clock.real_now().duration_since(system).as_secs().abs();
+            assert!(real < 5, "real_now is {real} s from system time");
+            let ahead = clock.now().duration_since(system).as_secs();
+            assert!(
+                (FORTY_DAYS..FORTY_DAYS + 5).contains(&ahead),
+                "now is {ahead} s ahead"
+            );
+        }
+
+        #[test]
+        fn a_manual_clock_reads_the_same_real_now_as_now() {
+            let clock = ManualClock::new(Timestamp::UNIX_EPOCH);
+            clock.advance(SignedDuration::from_secs(FORTY_DAYS));
+            assert_eq!(clock.real_now(), clock.now());
+        }
     }
 }
