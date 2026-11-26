@@ -11276,3 +11276,4 @@
 - 2026-11-26T21:48:19Z runner b4a057ce7f55 (actions): {}
 - 2026-11-26T21:48:39Z runner a508df213427 (actions): {}
 - 2026-11-26T21:51:42Z runner f7b23c181041 (actions): {"T848": "MERGE_PENDING -> DONE"}
+- 2026-11-26T21:52:39Z runner 94a988623895 (actions): {"T854": "QUEUED -> IN_PROGRESS"}; T854 estimated 820k tokens (calibrated); week has 184.4M left (no five-hour budget, D-3056) after 1.6M still running in another lane (session_reading 2026-11-26T21:47:51Z (week)); claimed
