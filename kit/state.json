@@ -129602,7 +129602,7 @@
    }
   }
  },
- "updated_at": "2026-11-26T17:24:56Z",
+ "updated_at": "2026-11-26T17:43:10Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -129701,15 +129701,8 @@
   ]
  },
  "runner_sha": "0f6466a20c238af24aab3da3253b59d07616101f",
- "starter": "manual",
+ "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "0f6466a20c238af24aab3da3253b59d07616101f",
-   "ok": true,
-   "at": "2026-11-25T05:47:35Z",
-   "why": "start routine (reused 2026-11-25T02:52:49Z)",
-   "reused": "2026-11-25T02:52:49Z"
-  },
   {
    "sha": "0f6466a20c238af24aab3da3253b59d07616101f",
    "ok": true,
@@ -129850,6 +129843,13 @@
    "why": "start routine (pre-session)",
    "seconds": 1500,
    "timed_out": true
+  },
+  {
+   "sha": "0f6466a20c238af24aab3da3253b59d07616101f",
+   "ok": false,
+   "at": "2026-11-26T17:43:03Z",
+   "why": "start routine (pre-session)",
+   "seconds": 677
   }
  ],
  "main_red": null,
@@ -129936,11 +129936,6 @@
  "smoke_env_problems": [
   {
    "sha": "ef7f7fc804232e7ded2fb112c6f77c7384c2c291",
-   "at": "2026-11-11T16:11:33Z",
-   "why": "smoke red while Ci, Twin and Ally were green on the head"
-  },
-  {
-   "sha": "ef7f7fc804232e7ded2fb112c6f77c7384c2c291",
    "at": "2026-11-11T16:24:17Z",
    "why": "smoke red while Ci, Twin and Ally were green on the head"
   },
@@ -129982,6 +129977,11 @@
   {
    "sha": "a2750b12e4d834c8a0a1392bbf5c1d35451aff06",
    "at": "2026-11-24T17:02:55Z",
+   "why": "smoke red while Ci, Twin and Ally were green on the head"
+  },
+  {
+   "sha": "0f6466a20c238af24aab3da3253b59d07616101f",
+   "at": "2026-11-26T17:43:03Z",
    "why": "smoke red while Ci, Twin and Ally were green on the head"
   }
  ],
