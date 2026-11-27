@@ -91463,8 +91463,8 @@
     "T613",
     "T846"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 1,
+   "status": "QUEUED",
+   "attempts": 2,
    "slug": "polish-speed-checks",
    "type": "harness",
    "stage": "5",
@@ -91478,7 +91478,7 @@
     5842
    ],
    "reason": null,
-   "last_failure": "PLAN GAP: app/site/static/site.css:96-99 (owner T613, not T612): the \"DM Sans fallback\" face names only local(\"Arial\") and local(\"Roboto\"); the CI image has Liberation Sans only, so with fonts blocked the 320x740 first-screen check in tests/e2e/site_speed.spec.ts fails (Get quotes bottom 771 of 740). Reviewer confirmed: with local(\"Liberation Sans\") added in-browser the button bottom is 695 px. Smallest fix: add local(\"Liberation Sans\") to that face's src with the same size-adjust figures. Reviewer also found: quote-page animation check at site_speed.spec.ts:321-329 reads getAnimations only after 1200 ms and would miss finished no-fill animations (use animationstart recorder); dead condition at forced_colors.spec.ts:23.\nre-queued after plan fix D-5864: D-5864 (#1473): T612 may add Liberation Sans to the DM Sans fallback in site.css",
+   "last_failure": "Reviewer on head 700f50e1fce2ee8fc4392587b89d7a82a956f72f still ended REVIEW-VERDICT: FINDINGS after the fix round:\n1. tests/e2e/site_speed.spec.ts:113,:120 (isCss filter in recordAnimations): the recorder sees only CSS animations; it drops CSS transitions listed by document.getAnimations() and has no transitionrun listener. Entrance motion built from transitions (@starting-style h1 {opacity:0; translate:0 20px} with h1 {transition: opacity 400ms, translate 400ms}) is never seen, so the home-page no-motion-on-load and the opacity-on-text rules pass wrongly. Fix: also record transitions via a transitionrun listener and in readAll, plus a planted @starting-style case.\nMinor: heroWeights (site_speed.spec.ts:250-251) reads img src but not img srcset (none today in home.html:26).",
    "history": [
     {
      "attempt": 1,
@@ -91503,6 +91503,30 @@
       }
      },
      "wip_skipped": "PII scan: a commit message in a508df213427913227939906fb33559c5406f819"
+    },
+    {
+     "attempt": 2,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 158,
+     "head_sha": "700f50e1fce2ee8fc4392587b89d7a82a956f72f",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-27T02:00:07Z",
+     "ended_at": "2026-11-27T03:36:43Z",
+     "result": "QUEUED",
+     "usage": {
+      "worker": {
+       "tokens": 8317748,
+       "turns": 90
+      },
+      "reviewer": {
+       "tokens": 1659811,
+       "turns": 35
+      }
+     },
+     "wip_skipped": "PII scan: a commit message in a546a2d2ec95bc47e2684b18bb3a9a9533492f72"
     }
    ],
    "requeues": [
@@ -91519,11 +91543,7 @@
      "plan_then": "98201e81a03ce7e526511689df1485042974cdfa87edf6fdb93941fd329fb707",
      "plan_now": "baed9ae4974e93cbdc9f8267eb593644344d47f6c497ddf1df54987fe102a11f"
     }
-   ],
-   "wip_claim": {
-    "attempt": 2,
-    "remote_sha": ""
-   }
+   ]
   },
   {
    "id": "T613",
@@ -123214,12 +123234,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T799",
-   "at": "2026-11-27T02:52:09Z",
-   "output_tokens": 18900,
-   "input_tokens": 83,
-   "cache_creation_input_tokens": 79105,
-   "cache_read_input_tokens": 1636158
+   "task": "T612",
+   "at": "2026-11-27T03:36:43Z",
+   "cache_read_input_tokens": 9621577,
+   "cache_creation_input_tokens": 275101,
+   "output_tokens": 80643,
+   "input_tokens": 238
   },
   "source": "session_reading 2026-11-27T03:20:30Z (week)",
   "by_task": {
@@ -131375,15 +131395,15 @@
     "estimated_bytes": 603063,
     "estimated_tokens": 707540,
     "usage_counting": "message_id",
-    "cache_read_input_tokens": 6573358,
-    "cache_creation_input_tokens": 212492,
-    "input_tokens": 129,
-    "output_tokens": 64089,
-    "worker_tokens": 6320998,
-    "worker_turns": 57,
-    "reviewer_tokens": 529070,
-    "reviewer_turns": 11,
-    "last_model": "claude-sonnet-5-5"
+    "cache_read_input_tokens": 16194935,
+    "cache_creation_input_tokens": 487593,
+    "input_tokens": 367,
+    "output_tokens": 144732,
+    "worker_tokens": 14638746,
+    "worker_turns": 147,
+    "reviewer_tokens": 2188881,
+    "reviewer_turns": 46,
+    "last_model": "claude-opus-5-5"
    },
    "T123": {
     "estimated_bytes": 441147,
@@ -131559,11 +131579,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-26T23:54:05Z",
-    "tokens": 8375523
+    "tokens": 9693662
    },
    "week": {
     "start": "2026-11-26T20:01:04Z",
-    "tokens": 11912658
+    "tokens": 13230797
    }
   },
   "session_reading": {
@@ -131574,7 +131594,7 @@
    }
   }
  },
- "updated_at": "2026-11-27T03:33:54Z",
+ "updated_at": "2026-11-27T03:36:50Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -131672,7 +131692,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "a546a2d2ec95bc47e2684b18bb3a9a9533492f72",
+ "runner_sha": "700f50e1fce2ee8fc4392587b89d7a82a956f72f",
  "starter": "actions",
  "smoke_runs": [
   {
