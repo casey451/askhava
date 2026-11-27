@@ -124277,7 +124277,7 @@
     "T854",
     "T847"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 4,
    "slug": "clock-composition",
    "type": "build",
@@ -124588,7 +124588,7 @@
     "why": "auto-merge on #1512 (gh pr merge)",
     "head": "50b1e164ae989fc426bb42e104fe126122342642"
    },
-   "last_failure": "PLAN GAP: outside ownership: tests/e2e/web_chat.spec.ts, tests/a11y/page_states.ts\nD-5836 puts inbound SMS and action links on the test-control clock. web_chat.spec.ts:64-68 (consentsSince with no contact, DB real clock_timestamp) and page_states.ts:249-250 (action link expires_at = now() + 2 hours in DB time) are not owned by T849. After j1_homeowner.spec.ts:219 advances the clock up to a day, 4 web_chat tests (:111,:131,:183,:206) and 3 site_speed.spec.ts:256 tests (404) fail. Reviewer confirmed. Fix: T849 owns web_chat.spec.ts and filters consentsSince by contact, and page_states.ts seeds link expiry from the control clock (or action links keep SystemClock).\nre-queued after plan fix D-5955: D-5955 (PR #1500, merged 703f1b5): j1_homeowner.spec.ts joins the late playwright project, so its clock advance no longer reaches web_chat.spec.ts or page_states.ts; T849 now owns tests/e2e/playwright.config.ts as a harness task",
+   "last_failure": "PLAN GAP: outside ownership: tests/e2e/web_chat.spec.ts, tests/a11y/page_states.ts\nD-5836 puts inbound SMS and action links on the test-control clock. web_chat.spec.ts:64-68 (consentsSince with no contact, DB real clock_timestamp) and page_states.ts:249-250 (action link expires_at = now() + 2 hours in DB time) are not owned by T849. After j1_homeowner.spec.ts:219 advances the clock up to a day, 4 web_chat tests (:111,:131,:183,:206) and 3 site_speed.spec.ts:256 tests (404) fail. Reviewer confirmed. Fix: T849 owns web_chat.spec.ts and filters consentsSince by contact, and page_states.ts seeds link expiry from the control clock (or action links keep SystemClock).\nre-queued after plan fix D-5955: D-5955 (PR #1500, merged 703f1b5): j1_homeowner.spec.ts joins the late playwright project, so its clock advance no longer reaches web_chat.spec.ts or page_states.ts; T849 now owns tests/e2e/playwright.config.ts as a harness task\nre-queued after plan fix D-5978: D-5978 (PR #1514): seedPick dates the ROC check at the given time; T849 owns keyed.ts and j3.ts; re-hand-in the kept branch claude/task/T849-clock-composition-a3",
    "runner_closed_prs": [
     1491,
     1494
@@ -124604,7 +124604,7 @@
      "at": "2026-11-27T07:44:33Z"
     }
    ],
-   "reason": "E2e: failure; Ally: failure\nAlly failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing)\n      335 |   await j.drive.press(page.getByRole(\"button\", { name: \"Confirm and pay $25\" }));\n    > 336 |   await expect(page.locator(\"#confirm-status\")).toHaveText(\"We can't take payments right now. Nothing was charged. Try again in a few minutes.\");\n          |                                                 ^\n      337 |   expect(await standInCharges(j.page.request, seeded.pick)).toEqual([]);\n      338 |   return page;\n      339 | }\n        at pressRefused (/home/runner/work/askhava/askhava/tests/e2e/j3.ts:336:49)\n        at step5SafeMode (/home/runner/work/askhava/askhava/tests/e2e/j3.ts:364:19)\n        at /home/runner/work/askhava/askhava/tests/a11y/j3_keyboard.spec.ts:152:3\n    Error Context: test-results/a11y/j3_keyboard-A11Y-005-A11Y--0a910-t-three-widths-on-each-page-late/error-context.md\n    Error Context: test-results/a11y/j3_keyboard-A11Y-005-A11Y--0a910-t-three-widths-on-each-page-late/error-context.md\n  1 failed\n    [late] \u203a tests/a11y/j3_keyboard.spec.ts:142:1 \u203a A11Y-005 A11Y-021 J3 keyboard-only: sign-in, pause, refund, fee mode, safe mode, audit log, closing checks; axe at three widths on each page \n  1564 passed (13.9m)\n##[error]Process completed with exit code 1.\nE2e failed at step: The journeys (npx playwright test tests/e2e)",
+   "reason": null,
    "requeues": [
     {
      "at": "2026-11-27T12:14:33Z",
@@ -124618,6 +124618,19 @@
      "plan_head": "703f1b55401fe152096746097375aa07db11f6ca",
      "plan_then": "de63f57598a7527627984ce56939978bc54ed07e69fffe357c09b84f8de3a4d5",
      "plan_now": "a0824f8393cda48f7b4b6519b3ff3f40f42ade3e61eba1609b2489df9007b9bf"
+    },
+    {
+     "at": "2026-11-27T17:03:49Z",
+     "reason": "D-5978 (PR #1514): seedPick dates the ROC check at the given time; T849 owns keyed.ts and j3.ts; re-hand-in the kept branch claude/task/T849-clock-composition-a3",
+     "by": "manual-de0c220f6e6c",
+     "was": "E2e: failure; Ally: failure\nAlly failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing)\n      335 |   await j.drive.press(page.getByRole(\"button\", { name: \"Confirm and pay $25\" }));\n    > 336 |   await expect(page.locator(\"#confirm-status\")).toHaveText(\"We can't take payments right now. Nothing was charged. Try again in a few minutes.\");\n          |                                                 ^\n      337 |   expect(await standInCharges(j.page.request, seeded.pick)).toEqual([]);\n      338 |   return page;\n      339 | }\n        at pressRefused (/home/runner/work/askhava/askhava/tests/e2e/j3.ts:336:49)\n        at step5SafeMode (/home/runner/work/askhava/askhava/tests/e2e/j3.ts:364:19)\n        at /home/runner/work/askhava/askhava/tests/a11y/j3_keyboard.spec.ts:152:3\n    Error Context: test-results/a11y/j3_keyboard-A11Y-005-A11Y--0a910-t-three-widths-on-each-page-late/error-context.md\n    Error Context: test-results/a11y/j3_keyboard-A11Y-005-A11Y--0a910-t-three-widths-on-each-page-late/error-context.md\n  1 failed\n    [late] \u203a tests/a11y/j3_keyboard.spec.ts:142:1 \u203a A11Y-005 A11Y-021 J3 keyboard-only: sign-in, pause, refund, fee mode, safe mode, audit log, closing checks; axe at three widths on each page \n  1564 passed (13.9m)\n##[error]Process completed with exit code 1.\nE2e failed at step: The journeys (npx playwright test tests/e2e)",
+     "attempts": 4,
+     "plan_fix": "D-5978",
+     "plan_since": "2026-11-27T13:29:16Z",
+     "plan_base": "febc73c2ddbc732b28ceed160a5dce512ae8d67e",
+     "plan_head": "12679cbd7990c6b73767ebccaa6bc74bb5c4cf21",
+     "plan_then": "a0824f8393cda48f7b4b6519b3ff3f40f42ade3e61eba1609b2489df9007b9bf",
+     "plan_now": "1af09bbda23e4fddba82ab853772da923f5804878547d95d0f15b990604fb24e"
     }
    ],
    "update_merges": [
@@ -134330,7 +134343,7 @@
    }
   }
  },
- "updated_at": "2026-11-27T17:03:08Z",
+ "updated_at": "2026-11-27T17:03:50Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

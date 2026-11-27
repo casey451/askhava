@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-27T17:03:08Z by runner 12679cbd7990 (manual).
+Updated 2026-11-27T17:03:50Z by runner 12679cbd7990 (manual).
 
 **Idle since 16:48Z; 693 of 804 done; week 17% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -12,24 +12,6 @@ Updated 2026-11-27T17:03:08Z by runner 12679cbd7990 (manual).
 - **Keeper:** last ran 16:51Z, next wake 22:31Z
 
 ## Needs attention
-- BLOCKED T849: E2e: failure; Ally: failure
-Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing)
-      335 |   await j.drive.press(page.getByRole("button", { name: "Confirm and pay $25" }));
-    > 336 |   await expect(page.locator("#confirm-status")).toHaveText("We can't take payments right now. Nothing was charged. Try again in a few minutes.");
-          |                                                 ^
-      337 |   expect(await standInCharges(j.page.request, seeded.pick)).toEqual([]);
-      338 |   return page;
-      339 | }
-        at pressRefused (/home/runner/work/askhava/askhava/tests/e2e/j3.ts:336:49)
-        at step5SafeMode (/home/runner/work/askhava/askhava/tests/e2e/j3.ts:364:19)
-        at /home/runner/work/askhava/askhava/tests/a11y/j3_keyboard.spec.ts:152:3
-    Error Context: test-results/a11y/j3_keyboard-A11Y-005-A11Y--0a910-t-three-widths-on-each-page-late/error-context.md
-    Error Context: test-results/a11y/j3_keyboard-A11Y-005-A11Y--0a910-t-three-widths-on-each-page-late/error-context.md
-  1 failed
-    [late] › tests/a11y/j3_keyboard.spec.ts:142:1 › A11Y-005 A11Y-021 J3 keyboard-only: sign-in, pause, refund, fee mode, safe mode, audit log, closing checks; axe at three widths on each page 
-  1564 passed (13.9m)
-##[error]Process completed with exit code 1.
-E2e failed at step: The journeys (npx playwright test tests/e2e)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 50% of the context window, over its 45% limit
