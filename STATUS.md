@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-27T15:52:07Z by runner 278d45f2f121 (manual).
+Updated 2026-11-27T16:03:45Z by runner 278d45f2f121 (actions).
 
 **Idle since 15:27Z; 693 of 802 done; week 15% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -8,12 +8,30 @@ Updated 2026-11-27T15:52:07Z by runner 278d45f2f121 (manual).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** idle since 15:27Z (no task in progress)
 - **Week:** 15% used, 164.1M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:51Z, 0 min before this update
+- **Last run:** 15:52Z, 11 min before this update
 - **Keeper:** last ran 15:29Z, next wake 15:49Z
 
 ## Needs attention
 - BLOCKED T734: plan gap reported: PLAN GAP: app/portals/templates/business_leave.html:25 owned by T228 and T410, not T734. Smallest plan change: let T734 own that template for one line, <link rel="stylesheet" href="/static/portals/forms.css"> at the top of {% block main %}, as get_help.html:9 and notice_settings.html:8 carry.
 Evidence: the six reason radios on /b/leave and /b/pause-reason have no visible edge without forms.css (FORMS_CSS, app/portals/src/feedback.rs:73), so the A11Y-007 edge check (tests/a11y/targets_contrast.spec.ts:80) fails at 320, 768 and 1280 px. The reviewer confirmed from kit/tasks.json that T734 does n; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T734 --plan-fix D-### --reason "..."` (D-2859)
+- BLOCKED T849: E2e: failure; Ally: failure
+Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing)
+      335 |   await j.drive.press(page.getByRole("button", { name: "Confirm and pay $25" }));
+    > 336 |   await expect(page.locator("#confirm-status")).toHaveText("We can't take payments right now. Nothing was charged. Try again in a few minutes.");
+          |                                                 ^
+      337 |   expect(await standInCharges(j.page.request, seeded.pick)).toEqual([]);
+      338 |   return page;
+      339 | }
+        at pressRefused (/home/runner/work/askhava/askhava/tests/e2e/j3.ts:336:49)
+        at step5SafeMode (/home/runner/work/askhava/askhava/tests/e2e/j3.ts:364:19)
+        at /home/runner/work/askhava/askhava/tests/a11y/j3_keyboard.spec.ts:152:3
+    Error Context: test-results/a11y/j3_keyboard-A11Y-005-A11Y--0a910-t-three-widths-on-each-page-late/error-context.md
+    Error Context: test-results/a11y/j3_keyboard-A11Y-005-A11Y--0a910-t-three-widths-on-each-page-late/error-context.md
+  1 failed
+    [late] › tests/a11y/j3_keyboard.spec.ts:142:1 › A11Y-005 A11Y-021 J3 keyboard-only: sign-in, pause, refund, fee mode, safe mode, audit log, closing checks; axe at three widths on each page 
+  1564 passed (13.9m)
+##[error]Process completed with exit code 1.
+E2e failed at step: The journeys (npx playwright test tests/e2e)
 - BLOCKED T862: plan gap reported: PLAN GAP: outside ownership: app/server/src/homeowner_portal.rs, app/portals/src/homeowner_portal.rs
 Evidence: her data download is assembled in app/server/src/homeowner_portal.rs:621-632 (held_file), which calls portals::more_held_items(&mut db, contact) with no vault or HomeownerSessionProof. OnFile::read (app/portals/src/homeowner_portal.rs:75-85) keeps only contact id and phone. Opening the sealed address under (PortalsHomeowner, OwnRecord) needs the vault and proof (privacy api.rs:317-322 read_own_contact). Neither file is owned or shared by T862 (kit/prompts/T862.md:35-44, :56). Smallest; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T862 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
@@ -26,7 +44,7 @@ Evidence: her data download is assembled in app/server/src/homeowner_portal.rs:6
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T849 | server: the e2e web binary serves J1/J2 business time from t | MERGE_PENDING | 4 | 118 min | 15:27Z | PLAN GAP: outside ownership: tests/e2e/web_chat.spec.ts, tests/a11y/page_states.ts / D-5836 puts inbound SMS and action  |
+| T849 | server: the e2e web binary serves J1/J2 business time from t | check_failed | 4 | 118 min | 15:27Z | PLAN GAP: outside ownership: tests/e2e/web_chat.spec.ts, tests/a11y/page_states.ts / D-5836 puts inbound SMS and action  |
 | T817 | messaging: a text re-checks the opt-out list after its claim | done | 1 | 67 min | 14:27Z |  |
 | T822 | docs: the privacy policy names the email link and the fuller | done | 1 | 54 min | 14:13Z |  |
 | T862 | privacy: the email she types in her own conversation is kept | BLOCKED | 1 | 4 min | 13:22Z | PLAN GAP: outside ownership: app/server/src/homeowner_portal.rs, app/portals/src/homeowner_portal.rs / Evidence: her dat |
@@ -74,31 +92,31 @@ Evidence: her data download is assembled in app/server/src/homeowner_portal.rs:6
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 312 of 735 (42.4%) · partial 415 · unstarted 8
+**Requirements verified:** 465 of 735 (63.3%) · partial 262 · unstarted 8
 **Tasks merged (throughput only):** 693 of 802
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 27 | 8 | 0 | 35 |
-| ai | 2 | 24 | 3 | 29 |
-| businesses | 28 | 29 | 1 | 58 |
-| calls | 16 | 9 | 0 | 25 |
-| consent | 7 | 28 | 0 | 35 |
-| fees | 21 | 31 | 0 | 52 |
-| intake | 2 | 41 | 0 | 43 |
-| job-cards | 6 | 18 | 0 | 24 |
-| licensing | 2 | 46 | 0 | 48 |
-| lifecycle | 7 | 21 | 0 | 28 |
-| messaging | 13 | 32 | 0 | 45 |
-| ops-recovery | 33 | 20 | 1 | 54 |
-| privacy | 12 | 19 | 0 | 31 |
-| quiet-hours | 0 | 9 | 0 | 9 |
-| quotes-pick | 33 | 23 | 0 | 56 |
-| recurring | 8 | 3 | 0 | 11 |
-| security | 8 | 44 | 3 | 55 |
-| terms | 32 | 3 | 0 | 35 |
+| accessibility | 28 | 7 | 0 | 35 |
+| ai | 11 | 15 | 3 | 29 |
+| businesses | 35 | 22 | 1 | 58 |
+| calls | 17 | 8 | 0 | 25 |
+| consent | 18 | 17 | 0 | 35 |
+| fees | 25 | 27 | 0 | 52 |
+| intake | 12 | 31 | 0 | 43 |
+| job-cards | 17 | 7 | 0 | 24 |
+| licensing | 40 | 8 | 0 | 48 |
+| lifecycle | 22 | 6 | 0 | 28 |
+| messaging | 24 | 21 | 0 | 45 |
+| ops-recovery | 35 | 18 | 1 | 54 |
+| privacy | 14 | 17 | 0 | 31 |
+| quiet-hours | 4 | 5 | 0 | 9 |
+| quotes-pick | 37 | 19 | 0 | 56 |
+| recurring | 10 | 1 | 0 | 11 |
+| security | 24 | 28 | 3 | 55 |
+| terms | 35 | 0 | 0 | 35 |
 | website | 27 | 3 | 0 | 30 |
-| wording | 28 | 4 | 0 | 32 |
+| wording | 30 | 2 | 0 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
