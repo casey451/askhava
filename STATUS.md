@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-27T12:11:21Z by runner 9e2f05934667 (actions).
+Updated 2026-11-27T12:12:04Z by runner 9e2f05934667 (actions).
 
 **Building: T820 in progress since 10:58Z; 689 of 802 done; week 14% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 689 of 802 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T820 claimed 10:58Z, lease until 13:58Z; lane 3: T867 claimed 11:15Z, lease until 14:15Z; lane 4: T734 claimed 09:27Z, lease until 12:27Z
+- **Lane:** lane 2: T820 claimed 10:58Z, lease until 13:58Z; lane 3: T867 claimed 11:15Z, lease until 14:15Z
 - **Week:** 14% used, 161.3M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:53Z, 17 min before this update
+- **Last run:** 11:53Z, 18 min before this update
 - **Keeper:** last ran 11:33Z, next wake 12:29Z
 
 ## Needs attention
@@ -44,11 +44,12 @@ D-5836 puts inbound SMS and action links on the test-control clock. web_chat.spe
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T734 | server and adapters: a business can leave in the portal, wit | MERGE_PENDING | 2 | 2 h 44 min | 12:11Z | session ended without handing in |
 | T778 | jobs, core and server: a dead Payment pending timer is reviv | done | 1 | 114 min | 11:24Z |  |
 | T867 | picks and payments (harness): an early fraud warning before  | check_failed | 1 | 60 min | 10:24Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
 | T868 | tests (harness): two DONE tests that can fail by chance are  | done | 1 | 85 min | 10:14Z |  |
 | T849 | server: the e2e web binary serves J1/J2 business time from t | BLOCKED | 3 | 7 min | 09:16Z | PLAN GAP: outside ownership: tests/e2e/web_chat.spec.ts, tests/a11y/page_states.ts / D-5836 puts inbound SMS and action  |
-| T734 | server and adapters: a business can leave in the portal, wit | QUEUED | 1 | 2 h 19 min | 09:14Z | session ended without handing in |
+| T734 | server and adapters: a business can leave in the portal, wit | QUEUED | 1 | 2 h 19 min | 09:14Z |  |
 | T869 | harness: the PII scan allows the Co-Authored-By no-reply add | done | 1 | 82 min | 08:53Z |  |
 | T849 | server: the e2e web binary serves J1/J2 business time from t | check_failed | 2 | 45 min | 08:29Z |  |
 | T688 | server: a call to the Laftly main number hears the greeting  | done | 1 | 85 min | 08:17Z |  |
@@ -130,7 +131,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 2: T820 (lease until 2026-11-27T13:58:44Z)
 - lane 3: T867 (lease until 2026-11-27T14:15:35Z)
-- lane 4: T734 (lease until 2026-11-27T12:27:02Z)
 
 ## Last usage reading
-- {"task": "T778", "at": "2026-11-27T11:24:12Z", "cache_read_input_tokens": 5756666, "input_tokens": 167, "output_tokens": 49927, "cache_creation_input_tokens": 176111}
+- {"task": "T734", "at": "2026-11-27T12:11:18Z", "cache_creation_input_tokens": 425083, "cache_read_input_tokens": 38766711, "input_tokens": 504, "output_tokens": 130409}
