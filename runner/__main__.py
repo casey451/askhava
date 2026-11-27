@@ -27,7 +27,8 @@ line of JSON with what changed.
                                     (the safety step, from `python3 -m runner.api_death`): with no hand-in
                                     and the task branch unmoved, QUEUED with attempts unchanged, at most 2
                                     in a row; 3 deaths within an hour write outbox item api-deaths (D-3443)
-  python3 -m runner --renew         renew this session's lease (every 30 minutes while working)
+  python3 -m runner --renew         renew this session's lease (at least every 30 minutes while working)
+  python3 -m runner --renew --note "TEXT"   also keep a short progress line on the task (D-5988)
   python3 -m runner --record-proof N --evidence TEXT
                                     record stage N's named proof for scripts/stage_exit.py
   python3 -m runner --requeue T### --reason TEXT
@@ -114,6 +115,7 @@ import re
 import subprocess
 import sys
 import tempfile
+import unicodedata
 import uuid
 from collections.abc import Callable
 from datetime import datetime, timedelta, timezone
@@ -131,6 +133,7 @@ import check_code_docs  # scripts/, standard library only
 import check_plan_lock  # scripts/, standard library only
 import check_state
 import pacing
+import pii_scan
 import plan_health
 import progress
 import stage_exit
@@ -148,6 +151,7 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     ap.add_argument("--session")
     ap.add_argument("--after", action="store_true")
     ap.add_argument("--renew", action="store_true")
+    ap.add_argument("--note", help="with --renew: one short progress line kept on the task's kit-state entry (D-5988)")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--state-ref", default="claude/kit-state")
     ap.add_argument("--lease-ref", default="claude/lease")
@@ -173,7 +177,10 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     ap.add_argument("--session-model", nargs="?", const="", default=None, metavar="STATE_FILE",
                     help="print the orchestrating session's model; STATE_FILE: kit/state.json as read from claude/kit-state (D-2225)")
     ap.add_argument("--model-refused", type=Path, help="the session's execution file: record a refused window model (D-2225)")
-    return ap.parse_args(argv)
+    args = ap.parse_args(argv)
+    if args.note is not None and not args.renew:
+        ap.error("--note needs --renew (D-5988)")
+    return args
 
 
 def git_out(*args: str) -> str:
@@ -624,15 +631,34 @@ def hold_red_gate(res: cycle.WorkerResult) -> str:
     return PREHANDIN_HELD
 
 
-def renew(cfg: cycle.Config, env: GitHubEnv) -> str:
+NOTE_SHAPES = (pii_scan.EMAIL, pii_scan.PHONE_PLUS, pii_scan.PHONE)  # redacted from a progress note (D-5988)
+
+
+def clean_note(text: str) -> str:
+    """A progress note safe to keep in kit-state (D-5988): control characters become spaces, every phone- or
+    email-shaped string (pii_scan's patterns) becomes "[redacted]", and the line is cut to st.NOTE_CHARS."""
+    line = "".join(" " if unicodedata.category(c).startswith("C") else c for c in text)
+    for shape in NOTE_SHAPES:
+        line = shape.sub("[redacted]", line)
+    return " ".join(line.split())[: st.NOTE_CHARS]
+
+
+def renew(cfg: cycle.Config, env: GitHubEnv, note: str | None = None) -> str:
     """Renew this session's lease on the fresh state (update_state, D-515): the lane it holds, lane "1"
-    when it holds none (which st.renew then refuses)."""
+    when it holds none (which st.renew then refuses). With `note` (`--note`, D-5988) the cleaned line joins
+    the task's `progress` in the same write; the lease is renewed exactly as without it."""
     state = env.read_state()
     held = st.leases_of(state)
     lane = next((n for n, lease in held.items() if lease and lease.get("session") == cfg.session), st.LANE_ONE)
     task = str((held.get(lane) or {}).get("task"))
+
+    def renewed_state(fresh: dict[str, Any]) -> dict[str, Any]:
+        now = cfg.clock()
+        out = st.renew(fresh, task, cfg.session, now, lane)
+        return out if note is None else st.with_progress(out, task, clean_note(note), now)
+
     try:
-        renewed = env.update_state(lambda fresh: st.renew(fresh, task, cfg.session, cfg.clock(), lane))
+        renewed = env.update_state(renewed_state)
     except st.LeaseError as err:
         return f"renew_refused: {err}"
     return "renewed" if renewed is not None else "lost_race"
@@ -811,7 +837,7 @@ def run(args: argparse.Namespace, cfg: cycle.Config, env: GitHubEnv) -> str:
     if args.after:
         return after(args, cfg, env)
     if args.renew:
-        return renew(cfg, env)
+        return renew(cfg, env, args.note)
     if args.record_proof:
         return record_proof(args, env)
     if args.requeue:
