@@ -2,7 +2,7 @@
 id: T776-plan-gap
 title: T776: plan gap reported, blocked for a plan fix
 kind: blocked
-dispatched: 2026-11-26
+dispatched: 2026-11-27
 ---
 T776's worker reported that only a plan change can unblock it; the task is BLOCKED and is not retried on its unchanged prompt.
 
