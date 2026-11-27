@@ -147,3 +147,16 @@ def test_td_ops_43_the_stored_ci_baseline_is_readable_and_never_fails(tmp_path) 
                           capture_output=True, text=True, check=False, env={"GITHUB_STEP_SUMMARY": str(summary)})
     assert done.returncode == 0
     assert done.stdout.count("::warning") == 1 and "the report stopped early (IsADirectoryError)" in done.stdout
+
+
+def test_t612_cls_aim_0_05_is_reported_on_home_and_quote_pages_and_never_warns(tmp_path, monkeypatch, capsys) -> None:
+    page = {"lcp_ms": 1600.0, "inp_ms": 40.0, "cls": 0.08}
+    planted = {"label": "lab, not field", "pages": {"home": page, "quote_page": page, "confirm": page}}
+    code, summary, warnings = run(tmp_path, monkeypatch, capsys, bench(10.0), planted, None)
+    assert (code, warnings) == (0, [])
+    for name in ("home", "quote_page"):
+        assert f"| {name} | CLS (lab, not field) | 0.08 | 0.1 | 0.05, missed |" in summary
+        assert f"| {name} | LCP ms (lab, not field) | 1600 | 2500 | 1500, missed |" in summary
+    assert "| confirm | CLS (lab, not field) | 0.08 | 0.1 | 0.05 |" in summary
+    _, summary, _ = run(tmp_path, monkeypatch, capsys, bench(10.0), {"pages": {"home": {"lcp_ms": 1400.0, "cls": 0.05}}}, None)
+    assert "| home | CLS (lab, not field) | 0.05 | 0.1 | 0.05 |" in summary
