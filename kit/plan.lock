@@ -43,9 +43,9 @@
   "docs/test-design.md": "7f4b1e88c04bc55b2e65cc4ab2d5ccfaf3c23cf747e2afdefa97ae294c4ac994",
   "docs/threat-model.md": "ee81538162787542bd0a4e8b969776e4d7410630a3900e51f943d853620247af",
   "kit/prompts/TEMPLATE.md": "c3b987973c53c5713f987d9ff7036b05a4ae89ab94102316e22f3aa4927976a4",
-  "kit/runner.json": "18fe4b3086e75d7fb03d3ffeb8cf4a34463a8f9f5d66bf6eb261fad2e5f7689a",
+  "kit/runner.json": "a78e09a4ee0ffdaa0293edfce5d909d9e535bec8744a160b2ed45cdbde6ece37",
   "kit/sources.sha256": "853b7f37d6e04259ad9d7b64e16e6cb0111ee4499e37af46aeb3183748c7f335",
-  "kit/tasks.json": "8aae7ea6316dbaadd6f7e167199cca8ca386390c98c71a129f1a96c9f7451670",
+  "kit/tasks.json": "ca9755043bb529957300c101d2d0aabf45ffe67318afca6c4ad4d8399d6ec9aa",
   "scripts/advisory_watch.py": "a40b4be1779ecca46765b3ec1c7daa3ca074727353a4c9f7c423c64f3e42d777",
   "scripts/brand.py": "13d78b9984835e09b072aa5386a2429ba9f65395a6c2ca03677f7ac8c1173d8d",
   "scripts/build_stage05.py": "05921fd2b89c9a1513a847613bbf3680cd78beb1e9f4463259999609aa6f5d4d",
@@ -83,7 +83,7 @@
   "scripts/split_crate_doc.py": "9a01aead037ba1c4249fc076dce86987b731defd23e5a68ee8f72e7ba8595a17",
   "scripts/stage_exit.py": "06d0c202d7e8850c5574e99c4286ba4bb97934541249409e2dd054e831ccf799",
   "scripts/trace_spec.py": "b02fc82e47428091cf86b6413fe86d782c23a81f45923aec1dec67b93701aacd",
-  "scripts/validate_tasks.py": "b41379cc4658317576450836368a96b440fac27109d3c46e3706582ae8d1be0c"
+  "scripts/validate_tasks.py": "789a5e81e5fdfd0ca3fe787cc11572bd96e4fb6d6149bdead1597d2088f44b60"
  },
  "note": "Fingerprints of the approved blueprint; see scripts/check_plan_lock.py and docs/governance.md.",
  "schema": 1
