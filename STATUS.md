@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-27T16:51:35Z by runner 84f4b331d069 (actions).
+Updated 2026-11-27T17:02:26Z by runner 12679cbd7990 (manual).
 
 **Idle since 16:48Z; 693 of 804 done; week 17% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-27T16:51:35Z by runner 84f4b331d069 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** idle since 16:48Z (no task in progress)
 - **Week:** 17% used, 164.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:51Z, 0 min before this update
+- **Last run:** 16:52Z, 10 min before this update
 - **Keeper:** last ran 16:51Z, next wake 22:31Z
 
 ## Needs attention
@@ -32,13 +32,10 @@ Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keybo
   1564 passed (13.9m)
 ##[error]Process completed with exit code 1.
 E2e failed at step: The journeys (npx playwright test tests/e2e)
-- BLOCKED T862: plan gap reported: PLAN GAP: outside ownership: app/server/src/homeowner_portal.rs, app/portals/src/homeowner_portal.rs
-Evidence: her data download is assembled in app/server/src/homeowner_portal.rs:621-632 (held_file), which calls portals::more_held_items(&mut db, contact) with no vault or HomeownerSessionProof. OnFile::read (app/portals/src/homeowner_portal.rs:75-85) keeps only contact id and phone. Opening the sealed address under (PortalsHomeowner, OwnRecord) needs the vault and proof (privacy api.rs:317-322 read_own_contact). Neither file is owned or shared by T862 (kit/prompts/T862.md:35-44, :56). Smallest; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T862 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 50% of the context window, over its 45% limit
 - PLAN GAP T856 (since 2026-11-27T07:31:36Z, no attempt used; a plan change fixes it): T856: measures 46% of the context window, over its 45% limit
-- PLAN GAP T862 (since 2026-11-27T13:22:09Z, no attempt used; a plan change fixes it): outside ownership: app/server/src/homeowner_portal.rs, app/portals/src/homeowner_portal.rs
 - Strict plan check red: 57 problem(s) on tasks still to run (+603 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
 
 ## Last 24 hours
@@ -86,6 +83,7 @@ Evidence: her data download is assembled in app/server/src/homeowner_portal.rs:6
 | T612 | harness: the WEB-029 and WEB-030 runtime checks on every sit | BLOCKED | 1 | 50 min | 18:35Z |  |
 
 ### Plan and harness merges on main
+- 17:02Z Plan: one task at a time, token use assessed after each (D-5980) (#1516)
 - 16:39Z Plan: pre-flight fixes before claim (D-5979) (#1515)
 - 16:31Z Plan: T849 seeds J3's licence check at the app clock (D-5978) (#1514)
 - 16:15Z Plan: efficiency fixes (D-5971); T734 owns its template line, T862 split with T870 (D-5972) (#1513)
