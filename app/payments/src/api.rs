@@ -202,6 +202,7 @@ pub use crate::service::{
     may_confirm, record_fee_at_confirm, save_card, switch_fee_mode,
 };
 pub use crate::status::{AttemptStatus, RefundStatus};
+pub use crate::stripe_errors::{StripeCall, StripeCallError, stripe_calls};
 pub use crate::three_ds::{
     ThreeDsStripe, record_three_ds, record_three_ds_pool, three_ds_authenticated,
 };
