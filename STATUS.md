@@ -1,20 +1,21 @@
 # Ask Hava build status
 
-Updated 2026-11-27T07:31:40Z by runner 37f92ed09311 (actions).
+Updated 2026-11-27T07:32:14Z by runner 37f92ed09311 (actions).
 
-**Building: T688 in progress since 06:52Z; 685 of 802 done; week 12% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Building: T869 in progress since 07:31Z; 685 of 802 done; week 12% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 685 of 802 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T688 claimed 06:52Z, lease until 09:52Z; lane 3: T734 claimed 06:54Z, lease until 09:54Z; lane 4: T657 claimed 06:50Z, lease until 09:50Z; lane 5: T849 claimed 05:54Z, lease until 08:54Z
-- **Week:** 12% used, 166.5M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:27Z, 4 min before this update
+- **Lane:** lane 1: T869 claimed 07:31Z, lease until 10:31Z; lane 2: T688 claimed 06:52Z, lease until 09:52Z; lane 3: T734 claimed 06:54Z, lease until 09:54Z; lane 4: T657 claimed 06:50Z, lease until 09:50Z; lane 5: T849 claimed 05:54Z, lease until 08:54Z
+- **Week:** 12% used, 164.5M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
+- **Last run:** 07:27Z, 5 min before this update
 - **Keeper:** last ran 07:07Z, next wake 08:57Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 50% of the context window, over its 45% limit
+- PLAN GAP T856 (since 2026-11-27T07:31:36Z, no attempt used; a plan change fixes it): T856: measures 46% of the context window, over its 45% limit
 - Strict plan check red: 61 problem(s) on tasks still to run (+594 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
 
 ## Last 24 hours
@@ -78,7 +79,7 @@ Updated 2026-11-27T07:31:40Z by runner 37f92ed09311 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-27T06:46:44Z (week)): week: 27.5M used, 166.5M left, resets 2026-12-03T17:00:00Z; projected finish 2026-12-10T18:25:01Z.
+- Pacing (session_reading 2026-11-27T07:06:23Z (week)): week: 29.5M used, 164.5M left, resets 2026-12-03T17:00:00Z; projected finish 2026-12-11T05:39:45Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -93,7 +94,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T869 (lease until 2026-11-27T10:31:36Z)
 - lane 2: T688 (lease until 2026-11-27T09:52:09Z)
 - lane 3: T734 (lease until 2026-11-27T09:54:33Z)
 - lane 4: T657 (lease until 2026-11-27T09:50:45Z)

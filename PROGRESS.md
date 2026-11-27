@@ -11447,3 +11447,4 @@
 - 2026-11-27T07:26:16Z runner 37f92ed09311 (manual): {"T856": "BLOCKED -> QUEUED"}
 - 2026-11-27T07:26:42Z runner 37f92ed09311 (manual): {"T820": "BLOCKED -> QUEUED"}
 - 2026-11-27T07:31:40Z runner 37f92ed09311 (actions): {"T867": "None -> QUEUED", "T868": "None -> QUEUED", "T869": "None -> QUEUED"}
+- 2026-11-27T07:32:14Z runner 37f92ed09311 (actions): {"T869": "QUEUED -> IN_PROGRESS"}; T869 estimated 254k tokens (calibrated); week has 164.5M left (no five-hour budget, D-3056) after 5.5M still running in another lane (session_reading 2026-11-27T07:06:23Z (week)); claimed
