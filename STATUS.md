@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-27T10:59:38Z by runner f3fc11156d59 (actions).
+Updated 2026-11-27T11:15:43Z by runner f3fc11156d59 (actions).
 
 **Building: T778 in progress since 09:29Z; 688 of 802 done; week 14% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-27T10:59:38Z by runner f3fc11156d59 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T778 claimed 09:29Z, lease until 12:29Z; lane 2: T820 claimed 10:58Z, lease until 13:58Z; lane 4: T734 claimed 09:27Z, lease until 12:27Z
 - **Week:** 14% used, 162.7M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:52Z, 7 min before this update
+- **Last run:** 11:00Z, 15 min before this update
 - **Keeper:** last ran 10:51Z, next wake 12:23Z
 
 ## Needs attention
@@ -44,7 +44,7 @@ D-5836 puts inbound SMS and action links on the test-control clock. web_chat.spe
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T867 | picks and payments (harness): an early fraud warning before  | MERGE_PENDING | 1 | 60 min | 10:24Z |  |
+| T867 | picks and payments (harness): an early fraud warning before  | check_failed | 1 | 60 min | 10:24Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
 | T868 | tests (harness): two DONE tests that can fail by chance are  | done | 1 | 85 min | 10:14Z |  |
 | T849 | server: the e2e web binary serves J1/J2 business time from t | BLOCKED | 3 | 7 min | 09:16Z | PLAN GAP: outside ownership: tests/e2e/web_chat.spec.ts, tests/a11y/page_states.ts / D-5836 puts inbound SMS and action  |
 | T734 | server and adapters: a business can leave in the portal, wit | QUEUED | 1 | 2 h 19 min | 09:14Z | session ended without handing in |
