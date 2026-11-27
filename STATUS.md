@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-27T09:33:58Z by runner 9fc6bfae88cb (manual).
+Updated 2026-11-27T10:06:24Z by runner dd27521cb889 (actions).
 
 **Building: T778 in progress since 09:29Z; 687 of 802 done; week 13% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 687 of 802 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T778 claimed 09:29Z, lease until 12:29Z; lane 2: T868 claimed 08:48Z, lease until 11:48Z; lane 3: T820 claimed 09:21Z, lease until 12:21Z; lane 4: T734 claimed 09:27Z, lease until 12:27Z; lane 5: T867 claimed 09:23Z, lease until 12:23Z
+- **Lane:** lane 1: T778 claimed 09:29Z, lease until 12:29Z; lane 2: T868 claimed 08:48Z, lease until 13:06Z; lane 3: T820 claimed 09:21Z, lease until 12:21Z; lane 4: T734 claimed 09:27Z, lease until 12:27Z; lane 5: T867 claimed 09:23Z, lease until 12:23Z
 - **Week:** 13% used, 161.2M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:33Z, 0 min before this update
+- **Last run:** 09:34Z, 32 min before this update
 - **Keeper:** last ran 09:20Z, next wake 09:40Z
 
 ## Needs attention
@@ -80,31 +80,31 @@ D-5836 puts inbound SMS and action links on the test-control clock. web_chat.spe
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 139 of 735 (18.9%) · partial 588 · unstarted 8
+**Requirements verified:** 464 of 735 (63.1%) · partial 263 · unstarted 8
 **Tasks merged (throughput only):** 687 of 802
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 5 | 30 | 0 | 35 |
-| ai | 1 | 25 | 3 | 29 |
-| businesses | 2 | 55 | 1 | 58 |
-| calls | 1 | 24 | 0 | 25 |
-| consent | 3 | 32 | 0 | 35 |
-| fees | 1 | 51 | 0 | 52 |
-| intake | 2 | 41 | 0 | 43 |
-| job-cards | 2 | 22 | 0 | 24 |
-| licensing | 0 | 48 | 0 | 48 |
-| lifecycle | 0 | 28 | 0 | 28 |
-| messaging | 2 | 43 | 0 | 45 |
-| ops-recovery | 32 | 21 | 1 | 54 |
-| privacy | 2 | 29 | 0 | 31 |
-| quiet-hours | 0 | 9 | 0 | 9 |
-| quotes-pick | 1 | 55 | 0 | 56 |
-| recurring | 3 | 8 | 0 | 11 |
-| security | 3 | 49 | 3 | 55 |
-| terms | 32 | 3 | 0 | 35 |
-| website | 24 | 6 | 0 | 30 |
-| wording | 23 | 9 | 0 | 32 |
+| accessibility | 28 | 7 | 0 | 35 |
+| ai | 11 | 15 | 3 | 29 |
+| businesses | 35 | 22 | 1 | 58 |
+| calls | 17 | 8 | 0 | 25 |
+| consent | 18 | 17 | 0 | 35 |
+| fees | 25 | 27 | 0 | 52 |
+| intake | 12 | 31 | 0 | 43 |
+| job-cards | 17 | 7 | 0 | 24 |
+| licensing | 40 | 8 | 0 | 48 |
+| lifecycle | 22 | 6 | 0 | 28 |
+| messaging | 24 | 21 | 0 | 45 |
+| ops-recovery | 35 | 18 | 1 | 54 |
+| privacy | 14 | 17 | 0 | 31 |
+| quiet-hours | 4 | 5 | 0 | 9 |
+| quotes-pick | 37 | 19 | 0 | 56 |
+| recurring | 10 | 1 | 0 | 11 |
+| security | 23 | 29 | 3 | 55 |
+| terms | 35 | 0 | 0 | 35 |
+| website | 27 | 3 | 0 | 30 |
+| wording | 30 | 2 | 0 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -125,7 +125,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T778 (lease until 2026-11-27T12:29:44Z)
-- lane 2: T868 (lease until 2026-11-27T11:48:44Z)
+- lane 2: T868 (lease until 2026-11-27T13:06:24Z)
 - lane 3: T820 (lease until 2026-11-27T12:21:05Z)
 - lane 4: T734 (lease until 2026-11-27T12:27:02Z)
 - lane 5: T867 (lease until 2026-11-27T12:23:39Z)
