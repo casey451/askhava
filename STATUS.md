@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-27T00:22:13Z by runner 5ca4c08df875 (actions).
+Updated 2026-11-27T00:25:15Z by runner 5ca4c08df875 (actions).
 
-**Building: T309 in progress since 22:19Z; 676 of 799 done; week 7% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Building: T856 in progress since 00:24Z; 676 of 799 done; week 7% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 676 of 799 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T309 claimed 22:19Z, lease until 01:19Z; lane 4: T783 claimed 22:18Z, lease until 01:18Z
-- **Week:** 7% used, 180.6M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:07Z, 14 min before this update
+- **Lane:** lane 1: T856 claimed 00:24Z, lease until 03:24Z; lane 3: T309 claimed 22:19Z, lease until 01:19Z; lane 4: T783 claimed 22:18Z, lease until 01:18Z
+- **Week:** 7% used, 177.2M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
+- **Last run:** 00:22Z, 2 min before this update
 - **Keeper:** last ran 00:07Z, next wake 00:27Z
 
 ## Needs attention
@@ -84,7 +84,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-26T22:09:15Z (week)): week: 13.4M used, 180.6M left, resets 2026-12-03T17:00:00Z; projected finish 2026-12-09T23:01:19Z.
+- Pacing (session_reading 2026-11-27T00:06:32Z (week)): week: 16.8M used, 177.2M left, resets 2026-12-03T17:00:00Z; projected finish 2026-12-10T15:40:28Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -99,7 +99,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T856 (lease until 2026-11-27T03:24:55Z)
 - lane 3: T309 (lease until 2026-11-27T01:19:36Z)
 - lane 4: T783 (lease until 2026-11-27T01:18:01Z)
 
