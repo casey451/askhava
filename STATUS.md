@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-27T07:38:41Z by runner 71a7f5f83c4f (actions).
+Updated 2026-11-27T07:44:43Z by runner 37f92ed09311 (actions).
 
 **Building: T869 in progress since 07:31Z; 685 of 802 done; week 12% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-27T07:38:41Z by runner 71a7f5f83c4f (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T869 claimed 07:31Z, lease until 10:31Z; lane 2: T688 claimed 06:52Z, lease until 09:52Z; lane 3: T734 claimed 06:54Z, lease until 09:54Z; lane 4: T657 claimed 06:50Z, lease until 09:50Z
 - **Week:** 12% used, 164.5M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:38Z, 0 min before this update
+- **Last run:** 07:39Z, 5 min before this update
 - **Keeper:** last ran 07:38Z, next wake 09:53Z
 
 ## Needs attention
@@ -16,12 +16,12 @@ Updated 2026-11-27T07:38:41Z by runner 71a7f5f83c4f (actions).
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 50% of the context window, over its 45% limit
 - PLAN GAP T856 (since 2026-11-27T07:31:36Z, no attempt used; a plan change fixes it): T856: measures 46% of the context window, over its 45% limit
-- Strict plan check red: 64 problem(s) on tasks still to run (+591 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
+- Strict plan check red: 61 problem(s) on tasks still to run (+594 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T849 | server: the e2e web binary serves J1/J2 business time from t | MERGE_PENDING | 2 | 102 min | 07:36Z | E2e: failure; Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflo |
+| T849 | server: the e2e web binary serves J1/J2 business time from t | resync | 2 | 102 min | 07:36Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
 | T612 | harness: the WEB-029 and WEB-030 runtime checks on every sit | done | 3 | 2 h 5 min | 05:50Z | Reviewer on head 700f50e1fce2ee8fc4392587b89d7a82a956f72f still ended REVIEW-VERDICT: FINDINGS after the fix round: / 1. |
 | T518 | server, ops and payments: the Stripe-or-webhook-errors alert | done | 1 | 51 min | 05:34Z |  |
 | T657 | quotes and portals: quote-form and sign-in errors mark the f | QUEUED | 2 | 25 min | 05:11Z | Worker stopped with no edits: start smoke exceeded ~20 min. Finding: J3 step 5 owner sign-in (signInOwner, tests/e2e/own |
@@ -51,8 +51,8 @@ Updated 2026-11-27T07:38:41Z by runner 71a7f5f83c4f (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 467 of 735 (63.5%) · partial 260 · unstarted 8
-**Tasks merged (throughput only):** 685 of 799
+**Requirements verified:** 464 of 735 (63.1%) · partial 263 · unstarted 8
+**Tasks merged (throughput only):** 685 of 802
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -61,10 +61,10 @@ Updated 2026-11-27T07:38:41Z by runner 71a7f5f83c4f (actions).
 | businesses | 35 | 22 | 1 | 58 |
 | calls | 17 | 8 | 0 | 25 |
 | consent | 18 | 17 | 0 | 35 |
-| fees | 27 | 25 | 0 | 52 |
+| fees | 25 | 27 | 0 | 52 |
 | intake | 12 | 31 | 0 | 43 |
 | job-cards | 17 | 7 | 0 | 24 |
-| licensing | 41 | 7 | 0 | 48 |
+| licensing | 40 | 8 | 0 | 48 |
 | lifecycle | 22 | 6 | 0 | 28 |
 | messaging | 24 | 21 | 0 | 45 |
 | ops-recovery | 35 | 18 | 1 | 54 |
