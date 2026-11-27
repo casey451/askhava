@@ -18,7 +18,16 @@ import type { ControlOptions } from "./fixtures";
 import { controlSecret, webPort } from "./webserver";
 
 /** The clock-advancing journeys, run last in the `late` project (D-3892). */
-const LATE = ["**/j1_full*.spec.ts", "**/j2_full*.spec.ts", "**/j1_j2_web_email*.spec.ts", "**/j3_*.spec.ts", "**/j4_*.spec.ts"];
+// D-5955: j1_homeowner advances the clock, which since D-5836 also times the web binary's links
+// and texts; it sorts before j3_* within `late`, so its real-time visit date is still ahead.
+const LATE = [
+  "**/j1_full*.spec.ts",
+  "**/j1_homeowner.spec.ts",
+  "**/j2_full*.spec.ts",
+  "**/j1_j2_web_email*.spec.ts",
+  "**/j3_*.spec.ts",
+  "**/j4_*.spec.ts",
+];
 
 export default defineConfig<ControlOptions>({
   testDir: ".",

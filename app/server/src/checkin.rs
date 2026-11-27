@@ -4,17 +4,18 @@
 //! which shows the answer and changes nothing; only its `POST`, with the pre-session CSRF token,
 //! records the answer, once. The page and its rules are `portals::api::checkin_routes` (a test crate
 //! may not depend on `server`, D-736, so the authorization matrix merges the same router); this
-//! module gives it the system clock, and [`build_router`](crate::build_router) merges it. Every
+//! module gives it the router's clock (the test-control clock in the e2e web binary, else the
+//! system clock, D-5836), and [`build_router`](crate::build_router) merges it. Every
 //! response is `no-store` and `noindex`, and the `POST` passes `refuse_cross_site` first.
 
 use std::sync::Arc;
 
-use askhava_core::api::SystemClock;
+use askhava_core::api::Clock;
 use askhava_portals::api::checkin_routes;
 use axum::Router;
 use sqlx::PgPool;
 
-/// TXT-034, SEC-026: the check-in answer page's routes over `pool`, timed by the system clock.
-pub fn routes(pool: PgPool) -> Router {
-    checkin_routes(pool, Arc::new(SystemClock))
+/// TXT-034, SEC-026: the check-in answer page's routes over `pool`, timed by `clock`.
+pub fn routes(pool: PgPool, clock: Arc<dyn Clock>) -> Router {
+    checkin_routes(pool, clock)
 }

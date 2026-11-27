@@ -142,13 +142,16 @@ pub struct RouterParts {
 }
 
 /// The site pages' parts: the home page's settings (T102), the environment the AI switch is read
-/// in (T221, T201, T489) and the web chat's code-step keys (T489).
+/// in (T221, T201, T489), the web chat's code-step keys (T489) and the pages' clock (D-5836).
 struct SiteParts {
     pages: askhava_site::api::SitePages,
     environment: Environment,
     chat: Option<chat_codes::ChatParts>,
     link_codes: Option<action_links::LinkCodes>,
     quote_keys: Option<(Vault, IdSecret)>,
+    /// The pick flow's, quote page's, feedback's, check-in's and action links' clock: the system
+    /// clock unless [`build_router_with_clock`] sets it (D-5836).
+    clock: Arc<dyn Clock>,
 }
 
 impl Default for SiteParts {
@@ -159,6 +162,7 @@ impl Default for SiteParts {
             chat: None,
             link_codes: None,
             quote_keys: None,
+            clock: Arc::new(SystemClock),
         }
     }
 }
@@ -614,7 +618,8 @@ fn vault_pages(
 /// the chat's code-step keys and the intake settings the SMS path uses (`webhooks`'), behind
 /// [`chat_codes::guard`]'s request checks (D-3882). Its fallback, `site::api::not_found`, answers
 /// every path no route serves with the styled 404 page (T615, D-4252). `GET /help` gets the help
-/// form's pre-session token from [`help_forms::guard`] (T309, D-3890).
+/// form's pre-session token from [`help_forms::guard`] (T309, D-3890). The feedback, check-in and
+/// action-link pages run on `clock` (D-5836).
 fn link_and_site_pages(
     pool: &PgPool,
     statics: &StaticRoot,
@@ -628,16 +633,16 @@ fn link_and_site_pages(
         chat,
         link_codes,
         quote_keys: _,
+        clock,
     } = site;
-    let clock: Arc<dyn Clock> = Arc::new(SystemClock);
     let not_found = askhava_site::api::not_found(pool.clone());
     let chat = askhava_site::api::chat_routes(
         pool.clone(),
         (environment, intake),
         (chat_codes::scrubbed, chat),
     );
-    feedback_routes(pool.clone(), Arc::new(SystemClock))
-        .merge(checkin::routes(pool.clone()))
+    feedback_routes(pool.clone(), Arc::clone(&clock))
+        .merge(checkin::routes(pool.clone(), Arc::clone(&clock)))
         .merge(action_links::routes_with(pool.clone(), clock, link_codes))
         .merge(static_files::router(statics))
         .merge(askhava_site::api::site_routes())
@@ -746,10 +751,11 @@ pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterP
         mut site,
         main_number: main,
     } = parts.into();
+    let clock = Arc::clone(&site.clock);
     let (webhooks, voice, pick_keys, stripe) = hooks;
     let business = business_pages(business, pool.clone(), (&webhooks, &voice, &stripe));
     let quote_page = quote_routes(&pool, &mut site);
-    let pick_flow = pick_flow_routes(pool.clone(), Arc::new(SystemClock), pick_keys);
+    let pick_flow = pick_flow_routes(pool.clone(), clock, pick_keys);
     let pages = link_and_site_pages(&pool, &statics, site, webhooks.as_deref());
     let webhooks = webhook_routes(&pool, webhooks, voice, stripe, main);
     let health = healthz::routes(pool.clone());
@@ -775,6 +781,23 @@ pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterP
         .layer(PropagateRequestIdLayer::x_request_id())
         .layer(SetRequestIdLayer::x_request_id(MakeRequestUuid))
         .layer(axum::middleware::from_fn(security_headers))
+}
+
+/// [`build_router`] on `clock` (D-5836): the web binary passes `TestControl::clock()`, the
+/// system clock in the release build (SEC-035). The pick flow, quote page, feedback, check-in and
+/// action-link pages read it; the webhooks and Stripe hooks carry their own (built with
+/// [`webhooks_with_clock`] and [`release_sink::stripe_webhook_with_clock`]). The business
+/// portal, owner pages, help, digest, job page, sign-in, sign-up and the refusal log stay on the
+/// system clock.
+pub fn build_router_with_clock(
+    pool: PgPool,
+    test_control: Router,
+    parts: impl Into<RouterParts>,
+    clock: Arc<dyn Clock>,
+) -> Router {
+    let mut parts = parts.into();
+    parts.site.clock = clock;
+    build_router(pool, test_control, parts)
 }
 
 /// The Confirm route's settings part from `settings` and `pairs` (T261, D-3813, D-3717): the
@@ -896,9 +919,11 @@ where
     Ok(Some(keys.with_client_ip(client_ip)))
 }
 
-/// The quote page's routes with the parts' update keys, taken out of `site` (T729, TXT-018).
+/// The quote page's routes on `clock` with the parts' update keys, taken out of `site` (T729,
+/// TXT-018, D-5836).
 fn quote_routes(pool: &PgPool, site: &mut SiteParts) -> Router {
-    quote_page_routes_with(pool.clone(), Arc::new(SystemClock), site.quote_keys.take())
+    let clock = Arc::clone(&site.clock);
+    quote_page_routes_with(pool.clone(), clock, site.quote_keys.take())
 }
 
 /// The quote page's update keys (T729, TXT-018, D-5340): the vault from [`vault_from`] and
@@ -998,6 +1023,25 @@ pub fn webhooks<I>(
 where
     I: IntoIterator<Item = (String, String)>,
 {
+    webhooks_with_clock(settings, pool, pairs, Arc::new(SystemClock))
+}
+
+/// [`webhooks`] on `clock` (D-5836): the web binary passes the test-control clock, which the
+/// inbound-text, voice, voice-status and call-status routes share through the one `Arc`; the
+/// release build's clock is the system clock (SEC-035).
+///
+/// # Errors
+///
+/// As [`webhooks`].
+pub fn webhooks_with_clock<I>(
+    settings: &Settings,
+    pool: PgPool,
+    pairs: I,
+    clock: Arc<dyn Clock>,
+) -> io::Result<Option<Arc<inbound_text::Webhooks>>>
+where
+    I: IntoIterator<Item = (String, String)>,
+{
     let Some(base) = settings.public_base_url() else {
         return match settings.environment() {
             Environment::Dev | Environment::Ci => Ok(None),
@@ -1023,7 +1067,7 @@ where
     let vault = Vault::new(&seal, &index, settings.database_url()).map_err(io::Error::other)?;
     Ok(Some(Arc::new(inbound_text::Webhooks {
         pool,
-        clock: Arc::new(SystemClock),
+        clock,
         public_base: base.to_owned(),
         auth_token: twilio.auth_token().clone(),
         id_secret,
@@ -3014,7 +3058,8 @@ fn register_daily_purges(registry: &mut Registry, clock: &Arc<dyn Clock>) {
 
 /// SEC-004, SEC-014, SEC-040, D-2207, D-2306 (T436): `portals`' daily sweep of sessions expired
 /// more than a day earlier and `core`'s daily prune of rate-limit windows older than the longest
-/// window plus a day, both at `clock`'s now; each queues the next day's run first, and
+/// window plus a day, both scheduled at `clock`'s now with their cutoff at its `real_now()`
+/// (D-5836); each queues the next day's run first, and
 /// `schedule_start` in `worker.rs` seeds both. OPS-046, D-3883 (T531): `messaging`'s daily
 /// deferral check the same way; CON-024, D-3881 (T107): its weekly opt-out rate check.
 fn register_daily_sweeps(registry: &mut Registry, clock: &Arc<dyn Clock>) {
@@ -3031,12 +3076,16 @@ fn register_daily_sweeps(registry: &mut Registry, clock: &Arc<dyn Clock>) {
     let at = Arc::clone(clock);
     registry.register(
         askhava_portals::api::SESSION_SWEEP_KIND,
-        move |pool, task| askhava_portals::api::run_session_sweep_at(pool, task, at.now()),
+        move |pool, task| {
+            askhava_portals::api::run_session_sweep_on(pool, task, (at.now(), at.real_now()))
+        },
     );
     let at = Arc::clone(clock);
     registry.register(
         askhava_core::api::RATE_LIMIT_PRUNE_KIND,
-        move |pool, task| askhava_core::api::run_rate_limit_prune_at(pool, task, at.now()),
+        move |pool, task| {
+            askhava_core::api::run_rate_limit_prune_on(pool, task, (at.now(), at.real_now()))
+        },
     );
 }
 

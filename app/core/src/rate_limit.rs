@@ -329,17 +329,30 @@ pub async fn schedule_prune(db: &mut PgConnection, now: Timestamp) -> Result<(),
 /// # Errors
 ///
 /// A fixed [`HandlerError`] when a database call fails.
-pub async fn run_prune_at(
+pub async fn run_prune_at(pool: PgPool, task: Claimed, now: Timestamp) -> Result<(), HandlerError> {
+    run_prune_on(pool, task, (now, now)).await
+}
+
+/// SEC-014, SEC-040, D-2306, D-5836: [`run_prune_at`] with the next run scheduled from
+/// `schedule_now` (the worker's clock, so the daily dedupe chain stays on it) and the
+/// [`prune_cutoff`] from `cutoff_now` (the clock's `real_now()`, the time windows are counted at).
+///
+/// # Errors
+///
+/// A fixed [`HandlerError`] when a database call fails.
+pub async fn run_prune_on(
     pool: PgPool,
     _task: Claimed,
-    now: Timestamp,
+    (schedule_now, cutoff_now): (Timestamp, Timestamp),
 ) -> Result<(), HandlerError> {
     let failed = HandlerError("rate-limit prune database call failed");
     {
         let mut conn = pool.acquire().await.map_err(|_| failed)?;
-        schedule_prune(&mut conn, now).await.map_err(|_| failed)?;
+        schedule_prune(&mut conn, schedule_now)
+            .await
+            .map_err(|_| failed)?;
     }
-    let before = prune_cutoff(now);
+    let before = prune_cutoff(cutoff_now);
     let full = u64::try_from(PRUNE_BATCH).unwrap_or(u64::MAX);
     loop {
         let deleted = prune_batch(&pool, before, PRUNE_BATCH)

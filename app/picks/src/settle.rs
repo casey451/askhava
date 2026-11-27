@@ -91,6 +91,20 @@ pub enum Settled {
 /// [`PicksError::Database`], [`PicksError::Audit`], [`PicksError::Job`] or
 /// [`PicksError::MovedOn`]; nothing is moved then.
 pub async fn settle(tx: &mut PgConnection, cleared: &Releasable) -> Result<Settled, PicksError> {
+    settle_at(tx, cleared, Timestamp::now()).await
+}
+
+/// [`settle`] at `at` (PICK-022, D-5836): the job's Connected instant, a `payment_failed` end and
+/// the accepted-quote task's `run_at` all read `at`, the release instant the caller's clock gave,
+/// so a test-control advance reaches day 3's check-in through Connected's `status_at`.
+///
+/// # Errors
+/// As [`settle`].
+pub async fn settle_at(
+    tx: &mut PgConnection,
+    cleared: &Releasable,
+    at: Timestamp,
+) -> Result<Settled, PicksError> {
     let (pick, want) = (cleared.pick(), release_status(cleared.basis()));
     let row = sqlx::query!(
         r#"SELECT job_id, business_id, status, ended_at IS NOT NULL AS "ended!", tier_index
@@ -111,8 +125,8 @@ pub async fn settle(tx: &mut PgConnection, cleared: &Releasable) -> Result<Settl
         SettleStep::Was => return Ok(Settled::Was(row.job_id)),
         SettleStep::Leave => return Ok(Settled::Left),
     }
-    if !connect_on_settle(tx, row.job_id, Timestamp::now()).await? {
-        let by = (Actor::System, Timestamp::now());
+    if !connect_on_settle(tx, row.job_id, at).await? {
+        let by = (Actor::System, at);
         end_pending(tx, (pick, row.job_id), PendingEnd::PaymentFailed, by).await?;
         return Ok(Settled::Left);
     }
@@ -133,7 +147,7 @@ pub async fn settle(tx: &mut PgConnection, cleared: &Releasable) -> Result<Settl
     };
     audit(tx, &entry).await.map_err(|_| PicksError::Audit)?;
     let parties = (row.job_id, row.business_id);
-    after_move(tx, pick, parties, row.tier_index).await?;
+    after_move(tx, pick, (parties, at), row.tier_index).await?;
     Ok(Settled::Moved(row.job_id))
 }
 
@@ -143,10 +157,10 @@ pub async fn settle(tx: &mut PgConnection, cleared: &Releasable) -> Result<Settl
 async fn after_move(
     tx: &mut PgConnection,
     pick: Uuid,
-    (job, business): (Uuid, Uuid),
+    ((job, business), at): ((Uuid, Uuid), Timestamp),
     tier: Option<i16>,
 ) -> Result<(), PicksError> {
-    queue_accepted_quote(tx, pick, (job, business)).await?;
+    queue_accepted_quote(tx, pick, (job, business), at).await?;
     let tier = tier.map(usize::try_from).and_then(Result::ok);
     lost_notices(tx, pick, tier, LossSettings::default())
         .await
@@ -154,14 +168,15 @@ async fn after_move(
 }
 
 /// PICK-042, D-3074: queues the accepted-quote email's task for `pick` of `job` and `business` in
-/// the settle's transaction, IDs only (PRIV-002), once per pick.
+/// the settle's transaction, IDs only (PRIV-002), once per pick, due at `at`.
 async fn queue_accepted_quote(
     tx: &mut PgConnection,
     pick: Uuid,
     (job, business): (Uuid, Uuid),
+    at: Timestamp,
 ) -> Result<(), PicksError> {
     let payload = json!({"pick": pick, "job": job, "business": business});
-    let mut task = NewTask::new(ACCEPTED_QUOTE_KIND, payload, Timestamp::now());
+    let mut task = NewTask::new(ACCEPTED_QUOTE_KIND, payload, at);
     task.dedupe_key = Some(format!("{ACCEPTED_QUOTE_KIND}.{pick}"));
     enqueue(tx, &task)
         .await
