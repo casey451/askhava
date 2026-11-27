@@ -204,8 +204,9 @@ async fn a_request_line_holds_the_route_template_not_the_path(pool: PgPool) {
         .to_str()
         .expect("id")
         .to_owned();
+    let sql = "SELECT left(payload->>'at', 10) FROM core.task WHERE payload->>'stream' = 'request'";
+    let today: String = sqlx::query_scalar(sql).fetch_one(&pool).await.expect("day");
     assert_eq!(run_due(&pool, &stream, &registry).await, 1);
-    let today = Timestamp::now().to_zoned(jiff::tz::TimeZone::UTC).date();
     let day = std::fs::read_dir(root.join(format!("request/{today}"))).expect("today's folder");
     let files: Vec<_> = day.map(|entry| entry.expect("entry").path()).collect();
     assert_eq!(files.len(), 1, "one line per request");
