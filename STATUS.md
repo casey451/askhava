@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-27T00:07:19Z by runner 8d88d3d144c9 (actions).
+Updated 2026-11-27T00:22:13Z by runner 5ca4c08df875 (actions).
 
-**Building: T309 in progress since 22:19Z; 675 of 799 done; week 7% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Building: T309 in progress since 22:19Z; 676 of 799 done; week 7% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 675 of 799 build tasks (owner gates not counted)
+- **Tasks done:** 676 of 799 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T309 claimed 22:19Z, lease until 01:19Z; lane 4: T783 claimed 22:18Z, lease until 01:18Z
 - **Week:** 7% used, 180.6M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:07Z, 0 min before this update
+- **Last run:** 00:07Z, 14 min before this update
 - **Keeper:** last ran 00:07Z, next wake 00:27Z
 
 ## Needs attention
@@ -35,13 +35,13 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 48% of the context window, over its 45% limit
-- Strict plan check red: 59 problem(s) on tasks still to run (+580 on DONE tasks); first: T704: stored context_pct 38% but it measures 42%; regenerate
+- Strict plan check red: 62 problem(s) on tasks still to run (+582 on DONE tasks); first: T704: stored context_pct 38% but it measures 42%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T854 | portals and action links: sessions and admissions on `real_n | MERGE_PENDING | 1 | 2 h 5 min | 23:58Z |  |
-| T744 | picks: a job that reaches a final status ends its pick await | MERGE_PENDING | 1 | 98 min | 23:54Z |  |
+| T744 | picks: a job that reaches a final status ends its pick await | done | 1 | 98 min | 23:54Z |  |
 | T820 | server and portals: "Download my data" also holds withdrawn  | check_failed | 3 | 102 min | 21:46Z | Hand-in time passed. Worker added unit tests in app/portals/src/data_download.rs (commit f4a102dca); portals-only covera |
 | T657 | quotes and portals: quote-form and sign-in errors mark the f | check_failed | 1 | 75 min | 21:40Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-26T |
 | T840 | intake and messaging: quote updates reach Email and web-and- | done | 1 | 2 h 10 min | 21:20Z |  |
@@ -56,7 +56,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 ## Progress (requirements verified)
 
 **Requirements verified:** 467 of 735 (63.5%) · partial 260 · unstarted 8
-**Tasks merged (throughput only):** 675 of 799
+**Tasks merged (throughput only):** 676 of 799
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -92,7 +92,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 318 of 371 done
+- stage 5: 319 of 371 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
