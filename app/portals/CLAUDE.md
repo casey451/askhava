@@ -33,6 +33,7 @@ The layer-8 crate for the homeowner, business and owner portals (`docs/architect
 - AI-008, SEC-043, D-5688: every `/owner/ai` change (both records and both switch directions) needs `OwnerAction::AiSwitch`'s fresh factor and records nothing without it: `app/server/tests/owner_ai_switch_route.rs` (TD-AI-32).
 - PRIV-031, SEC-026, D-5339: a data-request link's `GET` changes nothing, its `POST` acts once, a copy answers no data, and only a confirmed update address gets one: `tests/integration/tests/data_request_opted_out.rs` (TD-PRIV-32).
 - BIZ-047, D-3155: every page served behind the business session extends `business_layout.html` and joins `BUSINESS_PAGES`; no other template fills `get_help` or links the form: `src/tests/get_help_link.rs` (TD-BIZ-23).
+- SEC-027, D-5315: `send_link_code` never emails a code while the person's inbox is marked shared, and no Confirm code goes by a call: `tests/integration/tests/link_code_email.rs`.
 
 ## Detail
 Everything else about this crate (what it owns, the code behind each requirement ID, change recipes, the tests that guard it, decisions and history) is in `app/portals/NOTES.md`, one entry per line, each starting with its requirement IDs. Grep it by requirement ID, file or word (`grep -n 'FEE-039' app/portals/NOTES.md`); never read it whole. Add your own entries at its end, one line each (`docs/code-docs.md` section 2).
