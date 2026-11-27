@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-27T10:14:38Z by runner dd27521cb889 (actions).
+Updated 2026-11-27T10:15:13Z by runner dd27521cb889 (actions).
 
 **Building: T778 in progress since 09:29Z; 687 of 802 done; week 13% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 687 of 802 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T778 claimed 09:29Z, lease until 12:29Z; lane 2: T868 claimed 08:48Z, lease until 13:06Z; lane 3: T820 claimed 09:21Z, lease until 12:21Z; lane 4: T734 claimed 09:27Z, lease until 12:27Z; lane 5: T867 claimed 09:23Z, lease until 12:23Z
+- **Lane:** lane 1: T778 claimed 09:29Z, lease until 12:29Z; lane 3: T820 claimed 09:21Z, lease until 12:21Z; lane 4: T734 claimed 09:27Z, lease until 12:27Z; lane 5: T867 claimed 09:23Z, lease until 12:23Z
 - **Week:** 13% used, 161.2M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:07Z, 7 min before this update
+- **Last run:** 10:07Z, 8 min before this update
 - **Keeper:** last ran 09:20Z, next wake 09:40Z
 
 ## Needs attention
@@ -44,6 +44,7 @@ D-5836 puts inbound SMS and action links on the test-control clock. web_chat.spe
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T868 | tests (harness): two DONE tests that can fail by chance are  | MERGE_PENDING | 1 | 85 min | 10:14Z |  |
 | T849 | server: the e2e web binary serves J1/J2 business time from t | BLOCKED | 3 | 7 min | 09:16Z | PLAN GAP: outside ownership: tests/e2e/web_chat.spec.ts, tests/a11y/page_states.ts / D-5836 puts inbound SMS and action  |
 | T734 | server and adapters: a business can leave in the portal, wit | QUEUED | 1 | 2 h 19 min | 09:14Z | session ended without handing in |
 | T869 | harness: the PII scan allows the Co-Authored-By no-reply add | done | 1 | 82 min | 08:53Z |  |
@@ -125,10 +126,9 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T778 (lease until 2026-11-27T12:29:44Z)
-- lane 2: T868 (lease until 2026-11-27T13:06:24Z)
 - lane 3: T820 (lease until 2026-11-27T12:21:05Z)
 - lane 4: T734 (lease until 2026-11-27T12:27:02Z)
 - lane 5: T867 (lease until 2026-11-27T12:23:39Z)
 
 ## Last usage reading
-- {"task": "T849", "at": "2026-11-27T09:16:18Z", "cache_creation_input_tokens": 74439, "input_tokens": 79, "output_tokens": 13527, "cache_read_input_tokens": 1468350}
+- {"task": "T868", "at": "2026-11-27T10:14:36Z", "output_tokens": 19472, "cache_read_input_tokens": 1502686, "input_tokens": 89, "cache_creation_input_tokens": 86703}
