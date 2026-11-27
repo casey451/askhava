@@ -341,6 +341,17 @@ def renew(state: State, task_id: str, session: str, now: datetime, lane: str = L
     return with_lease(state, lane, _lease_for(task_id, session, now))
 
 
+PROGRESS_KEEP = 6  # progress notes kept per task, newest last (D-5988)
+NOTE_CHARS = 200  # a progress note's length cap (D-5988)
+
+
+def with_progress(state: State, task_id: str, note: str, now: datetime) -> State:
+    """Append one already-cleaned progress note `{"at", "note"}` to the task's `progress`, keeping the last
+    PROGRESS_KEEP (D-5988: the worker's short update, sent with `--renew --note`)."""
+    kept = list(entry(state, task_id).get("progress", [])) + [{"at": iso(now), "note": note[:NOTE_CHARS]}]
+    return with_task(state, task_id, progress=kept[-PROGRESS_KEEP:])
+
+
 def renewal_due(state: State, now: datetime, lane: str = LANE_ONE) -> bool:
     """True once 30 minutes have passed since the lease was last set (it lasts 3 hours)."""
     lease = lease_in(state, lane)

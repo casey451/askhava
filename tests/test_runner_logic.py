@@ -69,6 +69,19 @@ def test_renewal_refused_for_other_session_or_after_expiry() -> None:
     assert not st.renewal_due(st.new_state(), NOW)
 
 
+def test_progress_keeps_the_last_six_notes_each_capped() -> None:
+    """D-5988: `--renew --note` keeps at most six notes per task, newest last, each at most 200 characters."""
+    s = st.claim(st.new_state(), "T001", "a", NOW)
+    for n in range(8):
+        s = st.with_progress(s, "T001", f"note {n}", NOW + timedelta(minutes=10 * n))
+    kept = st.entry(s, "T001")["progress"]
+    assert [p["note"] for p in kept] == [f"note {n}" for n in range(2, 8)]
+    assert kept[-1]["at"] == st.iso(NOW + timedelta(minutes=70))
+    s = st.with_progress(s, "T001", "x" * 250, NOW)
+    assert len(st.entry(s, "T001")["progress"][-1]["note"]) == 200
+    assert s["lease"] == st.claim(st.new_state(), "T001", "a", NOW)["lease"]
+
+
 def test_expired_lease_returns_task_and_keeps_evidence() -> None:
     s = st.claim(st.new_state(), "T001", "a", NOW)
     assert st.release_expired(s, NOW + timedelta(hours=2)) == s

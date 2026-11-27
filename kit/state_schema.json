@@ -643,6 +643,25 @@
           },
           "api_death_requeues": {
             "type": "integer"
+          },
+          "progress": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "at",
+                "note"
+              ],
+              "properties": {
+                "at": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "note": {
+                  "type": "string"
+                }
+              }
+            }
           }
         }
       }
