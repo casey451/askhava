@@ -349,6 +349,50 @@ def test_test_only_work_in_a_sensitive_area_may_run_on_sonnet(tmp_path: Path) ->
     assert not [e for e in errors if "runs on Opus" in e]
 
 
+def sonnet_privacy_build(tasks: list[dict[str, Any]], reviewer: str = OPUS) -> None:
+    """T001 as privacy application code on a Sonnet worker, the case D-5981's trial lets through."""
+    task(tasks, "T001").update(review_areas=["privacy"], model=SONNET, reviewer_model=reviewer, effort="medium")
+
+
+def test_a_sonnet_trial_task_with_an_opus_reviewer_passes(tmp_path: Path) -> None:
+    """D-5981: a listed task may write sensitive application code on Sonnet under an Opus reviewer."""
+    tasks = valid_tasks()
+    sonnet_privacy_build(tasks)
+    trial = {"decision": "D-001", "tasks": ["T001"]}
+    assert errors_for(tmp_path, tasks, sonnet_trial=trial) == []
+
+
+def test_a_task_not_in_the_sonnet_trial_still_needs_opus(tmp_path: Path) -> None:
+    tasks = valid_tasks()
+    sonnet_privacy_build(tasks)
+    trial = {"decision": "D-001", "tasks": ["T002"]}
+    assert_error(errors_for(tmp_path, tasks, sonnet_trial=trial), "runs on Opus (BUILD_BRIEF.md:498)")
+    assert_error(errors_for(tmp_path / "none", tasks), "runs on Opus (BUILD_BRIEF.md:498)")
+
+
+def test_a_sonnet_trial_task_without_an_opus_reviewer_fails(tmp_path: Path) -> None:
+    tasks = valid_tasks()
+    sonnet_privacy_build(tasks, reviewer=SONNET)
+    errors = errors_for(tmp_path, tasks, sonnet_trial={"decision": "D-001", "tasks": ["T001"]})
+    assert_error(errors, "runs on Opus (BUILD_BRIEF.md:498)")
+    assert_error(errors, "need an Opus reviewer")
+
+
+def test_a_sonnet_trial_task_on_another_non_opus_model_fails(tmp_path: Path) -> None:
+    tasks = valid_tasks()
+    sonnet_privacy_build(tasks)
+    task(tasks, "T001")["model"] = HAIKU
+    errors = errors_for(tmp_path, tasks, sonnet_trial={"decision": "D-001", "tasks": ["T001"]})
+    assert_error(errors, "runs on Opus (BUILD_BRIEF.md:498)")
+
+
+def test_a_sonnet_trial_lists_at_most_three_tasks(tmp_path: Path) -> None:
+    tasks = valid_tasks()
+    trial = {"decision": "D-001", "tasks": ["T001", "T002", "T003", "T004"]}
+    assert_error(errors_for(tmp_path, tasks, sonnet_trial=trial), "'sonnet_trial' must be")
+    assert_error(errors_for(tmp_path / "bad", tasks, sonnet_trial={"tasks": ["T001"]}), "'sonnet_trial' must be")
+
+
 def test_harness_tasks_need_an_opus_reviewer(tmp_path: Path) -> None:
     tasks = valid_tasks()
     task(tasks, "T004")["reviewer_model"] = SONNET
