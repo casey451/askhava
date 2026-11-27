@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-27T12:13:46Z by runner 02eda79e70d5 (actions).
+Updated 2026-11-27T12:14:34Z by runner 703f1b55401f (manual).
 
 **Building: T820 in progress since 10:58Z; 689 of 802 done; week 14% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-27T12:13:46Z by runner 02eda79e70d5 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T820 claimed 10:58Z, lease until 13:58Z; lane 3: T867 claimed 11:15Z, lease until 14:15Z
 - **Week:** 14% used, 161.3M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:13Z, 0 min before this update
+- **Last run:** 12:14Z, 0 min before this update
 - **Keeper:** last ran 12:13Z, next wake 12:33Z
 
 ## Needs attention
@@ -32,12 +32,9 @@ error: process didn't exit successfully: `/home/runner/.rustup/toolchains/nightl
 Ci failed at step: All five jobs passed
 Checks: success, Lint and slow tests: success, Python: success, Coverage: failure, E2e: success
 ##[error]Process completed with exit code 1.
-- BLOCKED T849: plan gap reported: PLAN GAP: outside ownership: tests/e2e/web_chat.spec.ts, tests/a11y/page_states.ts
-D-5836 puts inbound SMS and action links on the test-control clock. web_chat.spec.ts:64-68 (consentsSince with no contact, DB real clock_timestamp) and page_states.ts:249-250 (action link expires_at = now() + 2 hours in DB time) are not owned by T849. After j1_homeowner.spec.ts:219 advances the clock up to a day, 4 web_chat tests (:111,:131,:183,:206) and 3 site_speed.spec.ts:256 tests (404) fail. Reviewer confirmed. Fix: T849 owns web_chat.spec.ts and filters consentsSince by contact, and page_states.ts seeds l; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T849 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 50% of the context window, over its 45% limit
-- PLAN GAP T849 (since 2026-11-27T09:16:18Z, no attempt used; a plan change fixes it): outside ownership: tests/e2e/web_chat.spec.ts, tests/a11y/page_states.ts
 - PLAN GAP T856 (since 2026-11-27T07:31:36Z, no attempt used; a plan change fixes it): T856: measures 46% of the context window, over its 45% limit
 - Strict plan check red: 62 problem(s) on tasks still to run (+596 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
 
@@ -78,37 +75,38 @@ D-5836 puts inbound SMS and action links on the test-control clock. web_chat.spe
 | T612 | harness: the WEB-029 and WEB-030 runtime checks on every sit | BLOCKED | 1 | 50 min | 18:35Z |  |
 
 ### Plan and harness merges on main
+- 12:14Z Plan: T657 waits on T811 (D-5954); T849 moves j1_homeowner into the late project (D-5955) (#1500)
 - 07:26Z Plan: fraud-refund fix (D-5888), T820 fix (D-5889), T865 draft (D-5900), template line and T868 (D-5901), compliance (D-5907), T856 plan fix (D-5918) (#1
 - 23:18Z Plan: T801 web-chat consent chain re-split, per-request SMS consent, pick code by email (D-5848); T612 font fallback (D-5864); pre-flight fixes (D-5876, 
 - 18:27Z Plan: test clock for the J1/J2 journeys, T222 as J1 core, T799's Spanish wording (D-5836, D-5837) (#1472)
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 464 of 735 (63.1%) · partial 263 · unstarted 8
+**Requirements verified:** 312 of 735 (42.4%) · partial 415 · unstarted 8
 **Tasks merged (throughput only):** 689 of 802
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 28 | 7 | 0 | 35 |
-| ai | 11 | 15 | 3 | 29 |
-| businesses | 35 | 22 | 1 | 58 |
-| calls | 17 | 8 | 0 | 25 |
-| consent | 18 | 17 | 0 | 35 |
-| fees | 25 | 27 | 0 | 52 |
-| intake | 12 | 31 | 0 | 43 |
-| job-cards | 17 | 7 | 0 | 24 |
-| licensing | 40 | 8 | 0 | 48 |
-| lifecycle | 22 | 6 | 0 | 28 |
-| messaging | 24 | 21 | 0 | 45 |
-| ops-recovery | 35 | 18 | 1 | 54 |
-| privacy | 14 | 17 | 0 | 31 |
-| quiet-hours | 4 | 5 | 0 | 9 |
-| quotes-pick | 37 | 19 | 0 | 56 |
-| recurring | 10 | 1 | 0 | 11 |
-| security | 23 | 29 | 3 | 55 |
-| terms | 35 | 0 | 0 | 35 |
+| accessibility | 27 | 8 | 0 | 35 |
+| ai | 2 | 24 | 3 | 29 |
+| businesses | 28 | 29 | 1 | 58 |
+| calls | 16 | 9 | 0 | 25 |
+| consent | 7 | 28 | 0 | 35 |
+| fees | 21 | 31 | 0 | 52 |
+| intake | 2 | 41 | 0 | 43 |
+| job-cards | 6 | 18 | 0 | 24 |
+| licensing | 2 | 46 | 0 | 48 |
+| lifecycle | 7 | 21 | 0 | 28 |
+| messaging | 13 | 32 | 0 | 45 |
+| ops-recovery | 33 | 20 | 1 | 54 |
+| privacy | 12 | 19 | 0 | 31 |
+| quiet-hours | 0 | 9 | 0 | 9 |
+| quotes-pick | 33 | 23 | 0 | 56 |
+| recurring | 8 | 3 | 0 | 11 |
+| security | 8 | 44 | 3 | 55 |
+| terms | 32 | 3 | 0 | 35 |
 | website | 27 | 3 | 0 | 30 |
-| wording | 30 | 2 | 0 | 32 |
+| wording | 28 | 4 | 0 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 

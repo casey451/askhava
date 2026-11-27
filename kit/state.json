@@ -123736,7 +123736,7 @@
     "T707",
     "T854"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 3,
    "slug": "clock-composition",
    "type": "build",
@@ -123981,7 +123981,7 @@
     "why": "auto-merge on #1497 (gh pr merge)",
     "head": "38f8ff006ba078169eb38b9edd319e12f5789666"
    },
-   "last_failure": "PLAN GAP: outside ownership: tests/e2e/web_chat.spec.ts, tests/a11y/page_states.ts\nD-5836 puts inbound SMS and action links on the test-control clock. web_chat.spec.ts:64-68 (consentsSince with no contact, DB real clock_timestamp) and page_states.ts:249-250 (action link expires_at = now() + 2 hours in DB time) are not owned by T849. After j1_homeowner.spec.ts:219 advances the clock up to a day, 4 web_chat tests (:111,:131,:183,:206) and 3 site_speed.spec.ts:256 tests (404) fail. Reviewer confirmed. Fix: T849 owns web_chat.spec.ts and filters consentsSince by contact, and page_states.ts seeds link expiry from the control clock (or action links keep SystemClock).",
+   "last_failure": "PLAN GAP: outside ownership: tests/e2e/web_chat.spec.ts, tests/a11y/page_states.ts\nD-5836 puts inbound SMS and action links on the test-control clock. web_chat.spec.ts:64-68 (consentsSince with no contact, DB real clock_timestamp) and page_states.ts:249-250 (action link expires_at = now() + 2 hours in DB time) are not owned by T849. After j1_homeowner.spec.ts:219 advances the clock up to a day, 4 web_chat tests (:111,:131,:183,:206) and 3 site_speed.spec.ts:256 tests (404) fail. Reviewer confirmed. Fix: T849 owns web_chat.spec.ts and filters consentsSince by contact, and page_states.ts seeds link expiry from the control clock (or action links keep SystemClock).\nre-queued after plan fix D-5955: D-5955 (PR #1500, merged 703f1b5): j1_homeowner.spec.ts joins the late playwright project, so its clock advance no longer reaches web_chat.spec.ts or page_states.ts; T849 now owns tests/e2e/playwright.config.ts as a harness task",
    "runner_closed_prs": [
     1491,
     1494
@@ -123997,17 +123997,22 @@
      "at": "2026-11-27T07:44:33Z"
     }
    ],
-   "reason": "plan gap reported: PLAN GAP: outside ownership: tests/e2e/web_chat.spec.ts, tests/a11y/page_states.ts\nD-5836 puts inbound SMS and action links on the test-control clock. web_chat.spec.ts:64-68 (consentsSince with no contact, DB real clock_timestamp) and page_states.ts:249-250 (action link expires_at = now() + 2 hours in DB time) are not owned by T849. After j1_homeowner.spec.ts:219 advances the clock up to a day, 4 web_chat tests (:111,:131,:183,:206) and 3 site_speed.spec.ts:256 tests (404) fail. Reviewer confirmed. Fix: T849 owns web_chat.spec.ts and filters consentsSince by contact, and page_states.ts seeds l; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T849 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "plan_gap": {
-    "at": "2026-11-27T09:16:18Z",
-    "problems": [
-     "outside ownership: tests/e2e/web_chat.spec.ts, tests/a11y/page_states.ts"
-    ],
-    "paths": [
-     "tests/e2e/web_chat.spec.ts",
-     "tests/a11y/page_states.ts"
-    ]
-   }
+   "reason": null,
+   "requeues": [
+    {
+     "at": "2026-11-27T12:14:33Z",
+     "reason": "D-5955 (PR #1500, merged 703f1b5): j1_homeowner.spec.ts joins the late playwright project, so its clock advance no longer reaches web_chat.spec.ts or page_states.ts; T849 now owns tests/e2e/playwright.config.ts as a harness task",
+     "by": "manual-a66c28ddd5db",
+     "was": "plan gap reported: PLAN GAP: outside ownership: tests/e2e/web_chat.spec.ts, tests/a11y/page_states.ts\nD-5836 puts inbound SMS and action links on the test-control clock. web_chat.spec.ts:64-68 (consentsSince with no contact, DB real clock_timestamp) and page_states.ts:249-250 (action link expires_at = now() + 2 hours in DB time) are not owned by T849. After j1_homeowner.spec.ts:219 advances the clock up to a day, 4 web_chat tests (:111,:131,:183,:206) and 3 site_speed.spec.ts:256 tests (404) fail. Reviewer confirmed. Fix: T849 owns web_chat.spec.ts and filters consentsSince by contact, and page_states.ts seeds l; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T849 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 3,
+     "plan_fix": "D-5955",
+     "plan_since": "2026-11-27T09:09:15Z",
+     "plan_base": "02eda79e70d59b4c6cc85798f22738a632a2f9a4",
+     "plan_head": "703f1b55401fe152096746097375aa07db11f6ca",
+     "plan_then": "de63f57598a7527627984ce56939978bc54ed07e69fffe357c09b84f8de3a4d5",
+     "plan_now": "a0824f8393cda48f7b4b6519b3ff3f40f42ade3e61eba1609b2489df9007b9bf"
+    }
+   ]
   },
   {
    "id": "T850",
@@ -133456,7 +133461,7 @@
    }
   }
  },
- "updated_at": "2026-11-27T12:13:46Z",
+ "updated_at": "2026-11-27T12:14:34Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -133554,8 +133559,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "02eda79e70d59b4c6cc85798f22738a632a2f9a4",
- "starter": "actions",
+ "runner_sha": "703f1b55401fe152096746097375aa07db11f6ca",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "bccc571c6527b16015f2f9b3721476c3961f6f9b",
