@@ -277,7 +277,8 @@ async fn read_page(
         let fields = PriceFields::default();
         quote_form(&form, csrf, None, &price_form(form.rules, &fields, ""))
     } else {
-        let signed_in = session_check(&mut tx, (kind, object), &token, jar, now).await?;
+        let at = (now, links.clock.real_now());
+        let signed_in = session_check(&mut tx, (kind, object), &token, jar, at).await?;
         plain_page(kind, signed_in, csrf)
     };
     tx.rollback().await.map_err(failed)?;
@@ -313,15 +314,16 @@ fn away_form<'a>(hours: Option<&'a str>, refused: Option<&'a str>) -> AwayForm<'
 
 /// SEC-004, SEC-025, D-3614: whether a business is signed in; for a session kind opened while one
 /// is, the link must be that person's own (named by `use_action_link` in the caller's
-/// transaction, which the caller rolls back), else not found.
+/// transaction, which the caller rolls back), else not found. The session is read at `real`
+/// (`real_now()`), the link at `now` (D-5836).
 async fn session_check(
     tx: &mut PgConnection,
     (kind, object): (ActionKind, Uuid),
     token: &str,
     jar: &CookieJar,
-    now: Timestamp,
+    (now, real): (Timestamp, Timestamp),
 ) -> Result<bool, Stop> {
-    let principal = business_principal(tx, jar, now).await.map_err(failed)?;
+    let principal = business_principal(tx, jar, real).await.map_err(failed)?;
     let Some(principal) = principal else {
         return Ok(false);
     };
@@ -610,7 +612,7 @@ async fn replay(
         }
         UseBy::LinkAlone => Ok(page(jar, action_done_page().ok())),
         UseBy::Session => {
-            let principal = business_principal(&mut db, &jar, now).await;
+            let principal = business_principal(&mut db, &jar, links.clock.real_now()).await;
             let own = principal
                 .map_err(failed)?
                 .is_some_and(|p| p.member() == used.member && p.business() == used.business);
@@ -690,7 +692,7 @@ async fn session_post(
 ) -> Result<Response, Stop> {
     let now = links.clock.now();
     let mut tx = links.pool.begin().await.map_err(failed)?;
-    let principal = business_principal(&mut tx, jar, now)
+    let principal = business_principal(&mut tx, jar, links.clock.real_now())
         .await
         .map_err(failed)?;
     let Some(principal) = principal else {
@@ -781,12 +783,12 @@ async fn confirm_post(
     jar: CookieJar,
     code: Option<&str>,
 ) -> Result<Response, Stop> {
-    let now = links.clock.now();
+    let (now, real) = (links.clock.now(), links.clock.real_now());
     let kind_pick = (ActionKind::Confirm, pick);
     let mut tx = links.pool.begin().await.map_err(failed)?;
     let grant = use_action_link(&mut tx, kind_pick, token, None, now).await;
     let grant = grant.map_err(link_stop)?;
-    let principal = business_principal(&mut tx, &jar, now).await;
+    let principal = business_principal(&mut tx, &jar, real).await;
     let signed_in = principal
         .map_err(failed)?
         .is_some_and(|p| grant.same_person(&p));
@@ -804,9 +806,11 @@ async fn confirm_post(
         },
         (Some(codes), None) => code_sent(links, codes, (ip, grant.member(), pick), now).await?,
         (Some(codes), Some(code)) => {
-            let checked = check_confirm_code(codes, &links.pool, who, code, now).await;
+            let checked = check_confirm_code(codes, &links.pool, who, code, real).await;
             match checked.map_err(failed)? {
-                CodeCheck::Right => return code_passed(links, (pick, token), jar, now).await,
+                CodeCheck::Right => {
+                    return code_passed(links, (pick, token), jar, (now, real)).await;
+                }
                 wrong => CodeStep {
                     line: None,
                     error: wrong.error(),
@@ -846,17 +850,18 @@ async fn code_sent(
 
 /// SEC-004, SEC-026, D-3675: after a right code, one transaction uses the link and starts its
 /// person's business session on this device, then 303 to the Confirm page; a link used or ended
-/// meanwhile is the one not-found answer and signs nobody in.
+/// meanwhile is the one not-found answer and signs nobody in. The link is used at `now`, the
+/// session started at `real` (`real_now()`, D-5836).
 async fn code_passed(
     links: &Links,
     (pick, token): (Uuid, &str),
     jar: CookieJar,
-    now: Timestamp,
+    (now, real): (Timestamp, Timestamp),
 ) -> Result<Response, Stop> {
     let mut tx = links.pool.begin().await.map_err(failed)?;
     let grant = use_action_link(&mut tx, (ActionKind::Confirm, pick), token, None, now).await;
     let grant = grant.map_err(link_stop)?;
-    let jar = confirm_link_session(&mut tx, jar, &grant, now).await;
+    let jar = confirm_link_session(&mut tx, jar, &grant, real).await;
     let jar = jar.map_err(failed)?;
     tx.commit().await.map_err(failed)?;
     Ok((jar, Redirect::to(&confirm_path(pick))).into_response())
@@ -1000,7 +1005,8 @@ async fn away_post(
     let now = links.clock.now();
     let mut tx = links.pool.begin().await.map_err(failed)?;
     let target = (ActionKind::Away, object, token);
-    let Some(by) = acting_by_link(&mut tx, target, jar, now).await? else {
+    let at = (now, links.clock.real_now());
+    let Some(by) = acting_by_link(&mut tx, target, jar, at).await? else {
         return Ok(signed_out());
     };
     let set = away_set(&mut tx, by, hours, now).await?;
@@ -1020,14 +1026,14 @@ async fn away_post(
 /// SEC-004, SEC-025, SEC-026: the signed-in person acting on their own business through the
 /// session link `kind` on `object`, used in `tx`: `None` when signed out (before any token read);
 /// another person's link, one naming another business or a kind `session_may` refuses is the
-/// one not-found answer.
+/// one not-found answer. The session is read at `real` (`real_now()`), the link at `now` (D-5836).
 async fn acting_by_link(
     tx: &mut PgConnection,
     (kind, object, token): (ActionKind, Uuid, &str),
     jar: &CookieJar,
-    now: Timestamp,
+    (now, real): (Timestamp, Timestamp),
 ) -> Result<Option<Acting>, Stop> {
-    let principal = business_principal(tx, jar, now).await.map_err(failed)?;
+    let principal = business_principal(tx, jar, real).await.map_err(failed)?;
     let Some(principal) = principal else {
         return Ok(None);
     };
@@ -1058,7 +1064,8 @@ async fn busy_post(
     let now = links.clock.now();
     let mut tx = links.pool.begin().await.map_err(failed)?;
     let target = (ActionKind::Busy, object, token);
-    let Some(by) = acting_by_link(&mut tx, target, jar, now).await? else {
+    let at = (now, links.clock.real_now());
+    let Some(by) = acting_by_link(&mut tx, target, jar, at).await? else {
         return Ok(signed_out());
     };
     let Some(n) = busy_days(days) else {
@@ -1245,7 +1252,7 @@ async fn approve_post(
 ) -> Result<Response, Stop> {
     let now = links.clock.now();
     let mut conn = links.pool.acquire().await.map_err(failed)?;
-    let principal = business_principal(&mut conn, jar, now)
+    let principal = business_principal(&mut conn, jar, links.clock.real_now())
         .await
         .map_err(failed)?;
     let Some(principal) = principal else {
@@ -1339,7 +1346,7 @@ async fn link_phone_post(
 ) -> Result<Response, Stop> {
     let now = links.clock.now();
     let mut tx = links.pool.begin().await.map_err(failed)?;
-    let principal = business_principal(&mut tx, jar, now).await;
+    let principal = business_principal(&mut tx, jar, links.clock.real_now()).await;
     let Some(principal) = principal.map_err(failed)? else {
         return Ok(signed_out());
     };
@@ -1419,7 +1426,7 @@ async fn send_quote(
     let mut tx = links.pool.begin().await.map_err(failed)?;
     let grant = use_action_link(&mut tx, (ActionKind::Quote, job), token, None, now).await;
     let business = grant.map_err(link_stop)?.business();
-    let admitted = admit_quote(&links.pool, (business, Some(ip)), now).await;
+    let admitted = admit_quote(&links.pool, (business, Some(ip)), links.clock.real_now()).await;
     if !matches!(admitted, Ok(Admission::Admitted)) {
         return Ok(Sent::TryLater);
     }
@@ -1581,4 +1588,86 @@ async fn done_page(
         concept: None,
     };
     Ok(job_details_page_choice(&shown, &links, None, choice).ok())
+}
+
+#[cfg(test)]
+mod real_time_tests {
+    //! D-5836: the action links read sessions at `real_now()` under an advanced test-control
+    //! clock. Fake values only.
+
+    use std::sync::Arc;
+
+    use askhava_businesses::api::{add_owner, create};
+    use askhava_portals::api::{ActionTarget, mint_action_link};
+    use jiff::SignedDuration;
+    use secrecy::ExposeSecret;
+
+    use super::*;
+
+    /// `now()` 40 days ahead and `real_now()` at system time, as the test-control offset clock
+    /// (`ManualClock`'s `real_now()` equals its `now()`).
+    struct Ahead;
+
+    impl Clock for Ahead {
+        fn now(&self) -> Timestamp {
+            let real = Timestamp::now();
+            real.saturating_add(SignedDuration::from_hours(960))
+                .unwrap_or(real)
+        }
+
+        fn real_now(&self) -> Timestamp {
+            Timestamp::now()
+        }
+    }
+
+    /// An owner signed in at real time through a used Confirm link (a 30-day session).
+    async fn signed_in(pool: &PgPool, at: Timestamp) -> CookieJar {
+        let mut tx = pool.begin().await.expect("tx");
+        let business = create(&mut tx, false, at).await.expect("business");
+        let member = add_owner(&mut tx, business, Uuid::new_v4(), at).await;
+        let (kind, object) = (ActionKind::Confirm, Uuid::new_v4());
+        let target = ActionTarget {
+            kind,
+            object,
+            member: member.expect("owner"),
+            business,
+        };
+        let span = (
+            at,
+            at.saturating_add(SignedDuration::from_hours(2))
+                .expect("end"),
+        );
+        let link = mint_action_link(&mut tx, target, None, span)
+            .await
+            .expect("link");
+        let token = link
+            .expose_secret()
+            .rsplit('/')
+            .next()
+            .unwrap_or_default()
+            .to_owned();
+        let grant = use_action_link(&mut tx, (kind, object), &token, None, at).await;
+        let grant = grant.expect("grant");
+        let jar = confirm_link_session(&mut tx, CookieJar::new(), &grant, at).await;
+        let jar = jar.expect("session");
+        tx.commit().await.expect("commit");
+        jar
+    }
+
+    /// SEC-004, SEC-025: a session started at real time is still read on a clock whose `now()`
+    /// is past its end, so an unknown session link is the not-found answer, never signed out.
+    #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+    async fn a_session_issued_at_real_time_is_still_accepted(pool: PgPool) {
+        let jar = signed_in(&pool, Timestamp::now()).await;
+        let clock: Arc<dyn Clock> = Arc::new(Ahead);
+        let links = Links {
+            security: WebSecurity::new(pool.clone(), Arc::clone(&clock)),
+            pool,
+            clock,
+            codes: None,
+        };
+        let away = (ActionKind::Away, Uuid::new_v4(), "not-a-token");
+        let posted = session_post(&links, away, &jar).await;
+        assert!(matches!(posted, Err(Stop::NotFound)));
+    }
 }

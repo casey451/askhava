@@ -96,7 +96,7 @@
 
 @font-face {
   font-family: "DM Sans fallback";
-  src: local("Arial"), local("Roboto");
+  src: local("Arial"), local("Liberation Sans"), local("Roboto");
   size-adjust: 105.07%;
   ascent-override: 94.41%;
   descent-override: 29.5%;

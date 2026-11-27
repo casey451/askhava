@@ -286,7 +286,7 @@ async fn td_int_11_the_name_and_address_question_and_its_vault_answer(mut db: Db
         let line = if language == Language::En {
             "Only the business you pick gets this, after you pick it. We never ask about immigration status or ID."
         } else {
-            "Solo el negocio que usted elija la recibe, después de que lo elija."
+            "Solo el negocio que usted elija recibe estos datos, después de que lo elija."
         };
         assert!(text.contains(line), "{text}");
         for word in ["own", "rent", "landlord", "alquil", "propietario"] {

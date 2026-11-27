@@ -35,6 +35,14 @@ pub enum ClockError {
 pub trait Clock: Send + Sync {
     /// The current instant.
     fn now(&self) -> Timestamp;
+
+    /// The current real instant, which no test-control advance moves (D-5836). Signature
+    /// freshness, rate limits, security events and sessions read this; business time (timers,
+    /// deadlines, stored dates) reads [`Clock::now`]. Equal to `now()` for every clock except the
+    /// test-control offset clock, so production is unchanged (SEC-035).
+    fn real_now(&self) -> Timestamp {
+        self.now()
+    }
 }
 
 /// The real clock the binaries use.

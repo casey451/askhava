@@ -41,6 +41,13 @@
 //! [`JobTextKeys::with_postal`]; without it the step sends nothing and logs why. A text that can
 //! go goes as above, never both.
 //!
+//! T840 (TXT-018, TXT-034, CON-035, D-5639, D-5640): for a template in `UPDATE_TEMPLATES` only,
+//! [`way`] reads her update channel: `Email`, or `Both` when a text gate fails, skips the text
+//! gates and quiet hours and stores her update email alone (`messaging::api::queue_update_email`,
+//! no text row; none stored is [`JobTextSkip::NoUpdateEmail`]); `Both` in quiet hours with texting
+//! possible holds the whole update. [`first_quote_now`] sends the first-quote text through the
+//! same gates when her first-quote email never reached her.
+//!
 //! T471 (PICK-047, QH-004, D-3750): `picks` queues `pick_moved` with `{job, pick, moved, business}`
 //! when an ended pick moved to her backup. Its body is `picks::api::backup_text` with the ended
 //! business's and the backup's public names (the backup's business read through
@@ -55,12 +62,13 @@ use askhava_core::api::{
 };
 use askhava_jobs::api::quote_token::issue;
 use askhava_jobs::api::{
-    CHECK_IN_DAY3, CHECK_IN_DAY14, FEEDBACK_REQUEST, PROBLEM_REPLY, TEXT_KIND, current, text_due,
+    CHECK_IN_DAY3, CHECK_IN_DAY14, FEEDBACK_REQUEST, PROBLEM_REPLY, TEXT_KIND, current, job_number,
+    text_due,
 };
 use askhava_messaging::api::{
     Audience, EmailClass, Exemption, Language, NewEmail, NewText, Notice, OnDomain, PostalAddress,
-    Recipient, Relation, SendWindow, enqueue_exempt, homeowner_has_email, queue_email, render,
-    send_window,
+    Recipient, Relation, SendWindow, UPDATE_TEMPLATES, UpdateChannel, enqueue_exempt,
+    homeowner_has_email, queue_email, queue_update_email, render, send_window, update_channel,
 };
 use askhava_picks::api::{
     PICK_LAPSED_TEMPLATE, PICK_MOVED_TEMPLATE, backup_text, ended_businesses, lapse_plan,
@@ -210,6 +218,9 @@ pub enum JobTextSkip {
     NotTextable,
     /// The same text is already in the outbox (TXT-011).
     AlreadyQueued,
+    /// The update could go only by email and none could be stored: no footer, her address
+    /// bounced or no quote link (TXT-018, TXT-034, D-5640).
+    NoUpdateEmail,
 }
 
 /// What [`job_text_step`] did.
@@ -279,25 +290,162 @@ pub async fn job_text_step(
     let Some((contact, language)) = homeowner_of(db, text.job).await? else {
         return Ok(JobTextStep::Skipped(JobTextSkip::NoRequest));
     };
+    let way = match way(db, keys, (contact, text.template), now).await? {
+        Ok(way) => way,
+        Err(skip) => {
+            lapsed_by_email(db, keys, text, (contact, &language), now).await?;
+            return Ok(JobTextStep::Skipped(skip));
+        }
+    };
+    match way {
+        Way::EmailOnly => email_update(db, keys, text, (contact, &language), now).await,
+        Way::Text(_) if exempt(db, text).await? => {
+            let exemption = Some(Exemption::EmergencyJob);
+            queue(db, keys, text, (contact, &language), (now, exemption)).await
+        }
+        Way::Text(None) => queue(db, keys, text, (contact, &language), (now, None)).await,
+        Way::Text(Some(until)) => hold(db, text, until).await,
+    }
+}
+
+/// How an update or job text goes after the text gates (TXT-018, TXT-034, CON-021, CON-028,
+/// QH-001, D-5639).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum Way {
+    /// By text (with the shared insert's email for `Both`), now or held to the window's opening.
+    Text(Option<Timestamp>),
+    /// By `messaging::api::queue_update_email` alone, now: no text row.
+    EmailOnly,
+}
+
+/// TXT-018, TXT-034, CON-021, CON-028, QH-001, QH-003, CON-035, D-5639, D-5640: how `template` to
+/// homeowner `contact` goes at `now`. Only a template in `UPDATE_TEMPLATES` reads her update
+/// channel: `Email` goes by email now, without the text gates or text quiet hours; `Both` goes by
+/// email now when a text gate fails (STOP stops texts only), else as a text, held whole in quiet
+/// hours. Every other channel and template keeps every text gate, the failed gate being the `Err`.
+/// Call it outside a transaction (the vault read).
+pub(crate) async fn way(
+    db: &mut PgConnection,
+    keys: &JobTextKeys,
+    (contact, template): (Uuid, &str),
+    now: Timestamp,
+) -> Result<Result<Way, JobTextSkip>, IntakeError> {
+    let channel = if UPDATE_TEMPLATES.contains(&template) {
+        update_channel(db, contact)
+            .await
+            .map_err(|_| IntakeError::Outbox)?
+    } else {
+        UpdateChannel::Text
+    };
+    if channel == UpdateChannel::Email {
+        return Ok(Ok(Way::EmailOnly));
+    }
+    Ok(match text_gate(db, keys, contact, now).await? {
+        Err(_) if channel == UpdateChannel::Both => Ok(Way::EmailOnly),
+        gate => gate.map(Way::Text),
+    })
+}
+
+/// CON-021, CON-028, QH-001, QH-003, QH-006: the text gates for `contact` at `now`: her consent
+/// record, then `send_window` (opted out, not textable, now or held until the window opens).
+async fn text_gate(
+    db: &mut PgConnection,
+    keys: &JobTextKeys,
+    contact: Uuid,
+    now: Timestamp,
+) -> Result<Result<Option<Timestamp>, JobTextSkip>, IntakeError> {
     if !may_text(db, contact).await? {
-        lapsed_by_email(db, keys, text, (contact, &language), now).await?;
-        return Ok(JobTextStep::Skipped(JobTextSkip::NoConsent));
+        return Ok(Err(JobTextSkip::NoConsent));
     }
     let window = send_window(db, &keys.vault, contact, now)
         .await
         .map_err(|_| IntakeError::Outbox)?;
-    let skip = match window {
-        SendWindow::Now | SendWindow::Hold { .. } if exempt(db, text).await? => {
-            let exemption = Some(Exemption::EmergencyJob);
-            return queue(db, keys, text, (contact, &language), (now, exemption)).await;
-        }
-        SendWindow::Now => return queue(db, keys, text, (contact, &language), (now, None)).await,
-        SendWindow::Hold { until } => return hold(db, text, until).await,
-        SendWindow::OptedOut => JobTextSkip::OptedOut,
-        SendWindow::NotTextable => JobTextSkip::NotTextable,
+    Ok(match window {
+        SendWindow::OptedOut => Err(JobTextSkip::OptedOut),
+        SendWindow::NotTextable => Err(JobTextSkip::NotTextable),
+        SendWindow::Now => Ok(None),
+        SendWindow::Hold { until } => Ok(Some(until)),
+    })
+}
+
+/// TXT-018, TXT-034, SEC-037, D-5639, D-5640: renders the update as [`queue`] does and stores it
+/// only as her update email (`messaging::api::queue_update_email`), in one transaction with its
+/// link token; never a text row. No email stored gives [`JobTextSkip::NoUpdateEmail`] and one
+/// already stored [`JobTextSkip::AlreadyQueued`] (the new token rolls back).
+async fn email_update(
+    db: &mut PgConnection,
+    keys: &JobTextKeys,
+    text: &JobText,
+    (contact, language): (Uuid, &str),
+    now: Timestamp,
+) -> Result<JobTextStep, IntakeError> {
+    let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
+    if !due(&mut tx, text).await? {
+        return Ok(JobTextStep::Skipped(JobTextSkip::MovedOn));
+    }
+    let body = body_of(&mut tx, keys, text, language_from_code(language), now).await?;
+    let new = NewText {
+        template_id: text.template,
+        subject: &[text.job],
+        recipient: contact,
+        relation: Relation::OpenRequest,
+        body: &body,
     };
-    lapsed_by_email(db, keys, text, (contact, &language), now).await?;
+    let queued = queue_update_email(&mut tx, &keys.outbox, &new).await;
+    let skip = match queued.map_err(|_| IntakeError::Outbox)? {
+        None => JobTextSkip::NoUpdateEmail,
+        Some((_, false)) => JobTextSkip::AlreadyQueued,
+        Some((outbox_id, true)) => {
+            tx.commit().await.map_err(|_| IntakeError::Database)?;
+            let template = text.template;
+            return Ok(JobTextStep::Queued(Queued {
+                outbox_id,
+                template,
+            }));
+        }
+    };
     Ok(JobTextStep::Skipped(skip))
+}
+
+/// TXT-016, TXT-018, CON-021, CON-028, QH-001, QH-004, D-5639, D-5640: the first-quote text of
+/// `job` now, for a homeowner whose `update.first_quote` email never reached her: the job's
+/// current version, the gates of [`job_text_step`] (consent, `send_window`, an emergency job going
+/// at any hour) and, in quiet hours, its hold, never a skip for the hour. Call it outside a
+/// transaction (the vault read).
+///
+/// # Errors
+///
+/// [`IntakeError::Job`], [`IntakeError::Outbox`], [`IntakeError::Template`] or
+/// [`IntakeError::Database`].
+pub(crate) async fn first_quote_now(
+    db: &mut PgConnection,
+    keys: &JobTextKeys,
+    job: Uuid,
+    now: Timestamp,
+) -> Result<JobTextStep, IntakeError> {
+    let Some((contact, language)) = homeowner_of(db, job).await? else {
+        return Ok(JobTextStep::Skipped(JobTextSkip::NoRequest));
+    };
+    let row = current(&mut *db, job).await.map_err(|_| IntakeError::Job)?;
+    let number = job_number(&mut *db, job)
+        .await
+        .map_err(|_| IntakeError::Job)?;
+    let text = JobText {
+        job,
+        version: row.version,
+        template: FIRST_QUOTE_TEMPLATE,
+        values: json!({ "job": number }),
+    };
+    let to = (contact, language.as_str());
+    match text_gate(db, keys, contact, now).await? {
+        Err(skip) => Ok(JobTextStep::Skipped(skip)),
+        Ok(_) if row.emergency => {
+            let exemption = Some(Exemption::EmergencyJob);
+            queue(db, keys, &text, to, (now, exemption)).await
+        }
+        Ok(None) => queue(db, keys, &text, to, (now, None)).await,
+        Ok(Some(until)) => hold(db, &text, until).await,
+    }
 }
 
 /// PICK-046, CON-028, CON-021, PRIV-004, D-3579, D-3880: PICK-046's text could not go, so with

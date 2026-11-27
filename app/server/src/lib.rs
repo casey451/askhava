@@ -57,6 +57,7 @@ pub mod email_due;
 pub mod email_provider;
 pub mod health_watch;
 pub mod healthz;
+pub mod help_forms;
 pub mod homeowner_portal;
 pub mod inbound_retry;
 pub mod inbound_text;
@@ -78,6 +79,8 @@ pub mod release_sink;
 pub mod request_timeout;
 pub mod rotate_keys;
 pub mod static_files;
+pub mod text_consent;
+pub mod vendor_alerts;
 pub mod voice_status;
 pub mod watch_checks;
 pub mod webhook_refusals;
@@ -175,6 +178,7 @@ struct BusinessParts {
     photos: Option<homeowner_portal::PhotoParts>,
     data_link_postal: Option<askhava_messaging::api::PostalAddress>,
     business_number: Option<askhava_messaging::api::SendingNumber>,
+    help_mail: Option<help_forms::HelpMail>,
     report: owner_tools::SecretReport,
     reports: owner_reports::ReportSettings,
     owner_flags: OwnerFlagLimits,
@@ -251,6 +255,14 @@ impl RouterParts {
         number: Option<askhava_messaging::api::SendingNumber>,
     ) -> Self {
         self.business.business_number = number;
+        self
+    }
+
+    /// Adds the Get help answer email's key and postal line (T309, BIZ-047; [`help_forms::help_mail`]);
+    /// without it the help forms are served and a checked Get help post answers 500.
+    #[must_use]
+    pub fn with_help_mail(mut self, mail: Option<help_forms::HelpMail>) -> Self {
+        self.business.help_mail = mail;
         self
     }
 
@@ -497,8 +509,9 @@ fn owner_pages(
 /// settings, shared-inbox switch and contact card ([`business_settings_routes`], T733, the card
 /// with the voice hooks' pool numbers), and the notice and
 /// backup address changes ([`address_changes`], T542, changing only with their part), and the
-/// owner's waiting-phones page ([`phone_approval`], T397, with the portal's vault), always; and the
-/// owner's sign-in, step-up and sign-out routes ([`owner_signin`], T303) and home, settings and
+/// owner's waiting-phones page ([`phone_approval`], T397, with the portal's vault), and the Get
+/// help form and the site help form's post ([`help_forms`], T309, with the portal's vault and the
+/// parts' help mail), always; and the owner's sign-in, step-up and sign-out routes ([`owner_signin`], T303) and home, settings and
 /// switches ([`owner_portal`], T310, the opt-out with the portal's vault), AI page
 /// ([`owner_ai_routes`], T737) and refund review, audit
 /// log and health page ([`owner_tools`], T304, refunding only with the Stripe hooks and the
@@ -530,7 +543,6 @@ fn business_pages(
         (parts.vault.clone(), parts.reports, parts.owner_flags),
     );
     let tools = owner_tools::routes(pool.clone(), stripe, &parts.confirm, parts.report);
-    let cant_take = cant_take_route::routes(pool.clone());
     let links = webhooks.filter(|_| parts.photos.is_some());
     let job_page = job_page_route::routes(pool.clone(), links.map(|hooks| &hooks.id_secret));
     let homeowner = homeowner_portal::routes(
@@ -542,16 +554,17 @@ fn business_pages(
     let step_up = business_step_up::routes(pool.clone(), parts.step_up, parts.vault.clone())
         .merge(business_guarded_changes::routes(pool.clone()))
         .merge(address_changes::routes(pool.clone(), parts.address))
-        .merge(phone_approval::routes(
-            pool.clone(),
-            parts.vault.clone(),
-            webhooks,
+        .merge(vault_pages(
+            &pool,
+            (parts.vault.clone(), webhooks),
+            parts.help_mail,
         ))
-        .merge(business_settings_routes::served(pool.clone(), voice));
+        .merge(business_settings_routes::served(pool.clone(), voice))
+        .merge(cant_take_route::routes(pool.clone()))
+        .merge(text_consent::routes(pool.clone()));
     let portal_parts = (parts.vault, parts.business_number);
     let portal = business_portal::served(pool, portal_parts, (webhooks, voice))
         .merge(confirm)
-        .merge(cant_take)
         .merge(job_page)
         .merge(step_up);
     (parts.signin)
@@ -567,13 +580,29 @@ fn business_pages(
         .merge(homeowner)
 }
 
+/// The owner's waiting-phones page ([`phone_approval`], T397) and the help forms ([`help_forms`],
+/// T309), each reading the portal's `vault`, else the webhooks'; the Get help answer email is
+/// queued with `mail`.
+fn vault_pages(
+    pool: &PgPool,
+    (vault, webhooks): (Option<Arc<Vault>>, Option<&Arc<inbound_text::Webhooks>>),
+    mail: Option<help_forms::HelpMail>,
+) -> Router {
+    phone_approval::routes(pool.clone(), vault.clone(), webhooks).merge(help_forms::routes(
+        pool.clone(),
+        vault,
+        (webhooks, mail),
+    ))
+}
+
 /// The feedback page (T230), the check-in answer page (T231), the email action links (T301), the
 /// built browser files (T362), the site's stylesheet (T101), the site pages with `site`'s
 /// settings (T102), and the legal, data, services, coverage and help pages (T221, T201) with the AI
 /// switch read in `environment`, each over `pool`; and the request page and web chat (T489) with
 /// the chat's code-step keys and the intake settings the SMS path uses (`webhooks`'), behind
 /// [`chat_codes::guard`]'s request checks (D-3882). Its fallback, `site::api::not_found`, answers
-/// every path no route serves with the styled 404 page (T615, D-4252).
+/// every path no route serves with the styled 404 page (T615, D-4252). `GET /help` gets the help
+/// form's pre-session token from [`help_forms::guard`] (T309, D-3890).
 fn link_and_site_pages(
     pool: &PgPool,
     statics: &StaticRoot,
@@ -605,9 +634,43 @@ fn link_and_site_pages(
             site,
         )))
         .merge(askhava_site::api::legal_routes(pool.clone(), environment))
-        .merge(askhava_site::api::help_routes(pool.clone(), environment))
+        .merge(help_forms::guard(askhava_site::api::help_routes(
+            pool.clone(),
+            environment,
+        )))
         .merge(chat_codes::guard(chat, pool.clone()))
         .fallback(not_found)
+}
+
+/// The five `/webhooks` routers merged, each Twilio and Stripe route under its refusal log and all
+/// under [`vendor_alerts::layer`], which audits each 5xx answer and each route's first 2xx in a
+/// 5-minute window (OPS-004, D-3877, D-4880). `None` hooks add no routes.
+fn webhook_routes(
+    pool: &PgPool,
+    webhooks: Option<Arc<inbound_text::Webhooks>>,
+    voice: Option<Arc<inbound_voice::VoiceHooks>>,
+    stripe: Option<release_sink::StripeHooks>,
+) -> Router {
+    // Each 403 of these four is a source or signature refusal, recorded as a capped
+    // `webhook_signature_failed` security event (SEC-048, SEC-016, T319).
+    let refusals = webhook_refusals::RefusalLog::new(pool.clone(), Arc::new(SystemClock));
+    let refused = |router| webhook_refusals::layer(router, refusals.clone());
+    let calls = webhooks
+        .clone()
+        .map_or_else(Router::new, |h| refused(voice_status::routes(h)));
+    let twilio = webhooks.map_or_else(Router::new, |h| refused(inbound_text::routes(h)));
+    let dialed = voice.as_ref().map_or_else(Router::new, |v| {
+        call_status::routes(Arc::clone(&v.hooks), refusals.clone())
+    });
+    let voice = voice.map_or_else(Router::new, |v| refused(inbound_voice::routes(v)));
+    let stripe = stripe.map_or_else(Router::new, |s| refused(stripe_webhook_routes(s)));
+    let routes = Router::new()
+        .merge(twilio)
+        .merge(voice)
+        .merge(dialed)
+        .merge(calls)
+        .merge(stripe);
+    vendor_alerts::layer(routes, pool.clone(), Arc::new(SystemClock))
 }
 
 /// The app's router: every module's routes, merged once here (D-481), under
@@ -635,7 +698,7 @@ fn link_and_site_pages(
 /// the home and how-it-works pages and the old directory paths are `site::api::page_routes`, with
 /// the parts' site settings ([`RouterParts::with_site_pages`], T102); the services, coverage, help
 /// and ROC complaint pages are `site::api::help_routes`, with the AI switch read in the parts'
-/// environment (T201); the request page and web chat at `/request` are `site::api::chat_routes`
+/// environment (T201), `GET /help` behind [`help_forms::guard`]'s pre-session token (T309); the request page and web chat at `/request` are `site::api::chat_routes`
 /// behind [`chat_codes::guard`], with the parts' chat keys ([`RouterParts::with_chat_codes`],
 /// T489) and the webhooks' intake settings (default without them). A path no route serves gets
 /// `site::api::not_found`, the router's one fallback (set on the site pages' router, kept by every
@@ -671,19 +734,7 @@ pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterP
     let quote_page = quote_routes(&pool, &mut site);
     let pick_flow = pick_flow_routes(pool.clone(), Arc::new(SystemClock), pick_keys);
     let pages = link_and_site_pages(&pool, &statics, site, webhooks.as_deref());
-    // Each 403 of these four is a source or signature refusal, recorded as a capped
-    // `webhook_signature_failed` security event (SEC-048, SEC-016, T319).
-    let refusals = webhook_refusals::RefusalLog::new(pool.clone(), Arc::new(SystemClock));
-    let refused = |router| webhook_refusals::layer(router, refusals.clone());
-    let calls = webhooks
-        .clone()
-        .map_or_else(Router::new, |h| refused(voice_status::routes(h)));
-    let twilio = webhooks.map_or_else(Router::new, |h| refused(inbound_text::routes(h)));
-    let dialed = voice.as_ref().map_or_else(Router::new, |v| {
-        call_status::routes(Arc::clone(&v.hooks), refusals.clone())
-    });
-    let voice = voice.map_or_else(Router::new, |v| refused(inbound_voice::routes(v)));
-    let stripe = stripe.map_or_else(Router::new, |s| refused(stripe_webhook_routes(s)));
+    let webhooks = webhook_routes(&pool, webhooks, voice, stripe);
     let health = healthz::routes(pool.clone());
     let (log, _writer) = offdb_stream::RequestLog::spawn(pool);
     Router::new()
@@ -692,11 +743,7 @@ pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterP
         .merge(quote_page)
         .merge(pick_flow)
         .merge(pages)
-        .merge(twilio)
-        .merge(voice)
-        .merge(dialed)
-        .merge(calls)
-        .merge(stripe)
+        .merge(webhooks)
         .merge(business)
         .layer(request_timeout::catch_panic())
         .layer(axum::middleware::from_fn_with_state(
@@ -1560,8 +1607,8 @@ impl askhava_intake::api::PictureSource for ServerPictures {
     }
 }
 
-/// INT-044 (T675, D-5251, D-5337): `intake.picture_text` over [`ServerPictures`]; with no
-/// `VAULT_KEY` (dev and CI only) nothing is registered.
+/// INT-044 (T675, D-5251, D-5337): `intake.picture_text` and T783's `intake.picture_delete` over
+/// [`ServerPictures`]; with no `VAULT_KEY` (dev and CI only) nothing is registered.
 fn register_picture_text(
     registry: &mut Registry,
     (twilio, sms): (&TwilioConfig, TwilioSms),
@@ -1582,6 +1629,10 @@ fn register_picture_text(
     let secret = id_secret.clone();
     let keys = Arc::new(askhava_intake::api::PictureKeys { source, secret });
     let at = Arc::clone(clock);
+    let deletes = Arc::clone(&keys);
+    registry.register(askhava_intake::api::PICTURE_DELETE_KIND, move |_, task| {
+        askhava_intake::api::run_picture_delete(Arc::clone(&deletes), task)
+    });
     registry.register(askhava_intake::api::PICTURE_TEXT_KIND, move |pool, task| {
         askhava_intake::api::run_picture_text_at(pool, Arc::clone(&keys), task, at.now())
     });
@@ -2622,7 +2673,8 @@ fn register_business_clocked(registry: &mut Registry, clock: &Arc<dyn Clock>) {
 }
 
 /// The 5-minute health check ([`health_watch`], T624, D-4280) with its `/healthz` limits from
-/// `pairs`, then the hourly dead-letter check ([`no_handler_alert`]); both raise only in test and
+/// `pairs`, the hourly dead-letter check ([`no_handler_alert`]) and the 5-minute
+/// Stripe-or-webhook-errors check ([`vendor_alerts`], T518, D-3877); all raise only in test and
 /// live (OPS-004).
 ///
 /// # Errors
@@ -2637,6 +2689,7 @@ fn register_alert_checks(
     let limits = healthz::HealthLimits::from_pairs(pairs)?;
     health_watch::register(registry, settings.environment(), limits, Arc::clone(clock));
     no_handler_alert::register(registry, settings.environment(), Arc::clone(clock));
+    vendor_alerts::register(registry, settings.environment(), Arc::clone(clock));
     Ok(())
 }
 
