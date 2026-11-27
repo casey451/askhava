@@ -220,7 +220,7 @@ fn td_txt_10_td_txt_13_the_no_call_reminders() {
         let body = render(template, Language::En, false, &job)
             .expect("en")
             .body;
-        assert!(body.contains("Call between 8 a.m. and 8 p.m. Arizona time (any hour on an emergency job). Your 2 attempts can be on different days."));
+        assert!(body.contains("Call between 8 a.m. and 8 p.m. Arizona time (any hour on an emergency job). Your 2 attempts must be at least 3 hours apart and can be on different days."));
         assert!(!body.contains("window"));
         let email_line =
             "The homeowner chose email; your 2 call attempts still count for the refund.";
