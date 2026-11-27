@@ -27,8 +27,8 @@ use askhava_portals::api::{
 };
 use askhava_privacy::api::{SessionMint, Vault};
 use askhava_recovery::api::{RESTORE_FAILED_ACTION, RESTORE_PASSED_ACTION};
-use axum::Router;
 use axum::body::Body;
+use axum::{Extension, Router};
 use secrecy::SecretString;
 use sqlx::PgPool;
 use sqlx::types::Uuid;
@@ -138,6 +138,7 @@ pub struct RouterParts {
     statics: StaticRoot,
     business: BusinessParts,
     site: SiteParts,
+    main_number: Extension<inbound_voice::MainNumber>,
 }
 
 /// The site pages' parts: the home page's settings (T102), the environment the AI switch is read
@@ -366,6 +367,14 @@ impl RouterParts {
         self
     }
 
+    /// Adds the Laftly main number, whose callers hear the greeting (T688, CALL-020, D-5534);
+    /// `None` (the default) means no main number, so a call to it hangs up.
+    #[must_use]
+    pub fn with_main_number(mut self, number: Option<String>) -> Self {
+        self.main_number = Extension(number.into());
+        self
+    }
+
     /// [`Self::with_confirm_settings`] with [`confirm_settings`]'s answer; `None` adds nothing.
     #[must_use]
     pub fn with_confirm_part(self, part: Option<(String, jiff::Timestamp, SecretString)>) -> Self {
@@ -384,6 +393,7 @@ impl From<Hooks> for RouterParts {
             statics: StaticRoot::default(),
             business: BusinessParts::default(),
             site: SiteParts::default(),
+            main_number: Extension::default(),
         }
     }
 }
@@ -397,6 +407,7 @@ impl From<(Hooks, RequestTimeout)> for RouterParts {
             statics,
             business: BusinessParts::default(),
             site: SiteParts::default(),
+            main_number: Extension::default(),
         }
     }
 }
@@ -409,6 +420,7 @@ impl From<(Hooks, RequestTimeout, StaticRoot)> for RouterParts {
             statics,
             business: BusinessParts::default(),
             site: SiteParts::default(),
+            main_number: Extension::default(),
         }
     }
 }
@@ -644,12 +656,14 @@ fn link_and_site_pages(
 
 /// The five `/webhooks` routers merged, each Twilio and Stripe route under its refusal log and all
 /// under [`vendor_alerts::layer`], which audits each 5xx answer and each route's first 2xx in a
-/// 5-minute window (OPS-004, D-3877, D-4880). `None` hooks add no routes.
+/// 5-minute window (OPS-004, D-3877, D-4880). `None` hooks add no routes; `main`, the main
+/// number's extension, is layered on the voice route alone (CALL-020, D-5534).
 fn webhook_routes(
     pool: &PgPool,
     webhooks: Option<Arc<inbound_text::Webhooks>>,
     voice: Option<Arc<inbound_voice::VoiceHooks>>,
     stripe: Option<release_sink::StripeHooks>,
+    main: Extension<inbound_voice::MainNumber>,
 ) -> Router {
     // Each 403 of these four is a source or signature refusal, recorded as a capped
     // `webhook_signature_failed` security event (SEC-048, SEC-016, T319).
@@ -662,7 +676,9 @@ fn webhook_routes(
     let dialed = voice.as_ref().map_or_else(Router::new, |v| {
         call_status::routes(Arc::clone(&v.hooks), refusals.clone())
     });
-    let voice = voice.map_or_else(Router::new, |v| refused(inbound_voice::routes(v)));
+    let voice = voice.map_or_else(Router::new, |v| {
+        refused(inbound_voice::routes(v)).layer(main)
+    });
     let stripe = stripe.map_or_else(Router::new, |s| refused(stripe_webhook_routes(s)));
     let routes = Router::new()
         .merge(twilio)
@@ -728,13 +744,14 @@ pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterP
         statics,
         business,
         mut site,
+        main_number: main,
     } = parts.into();
     let (webhooks, voice, pick_keys, stripe) = hooks;
     let business = business_pages(business, pool.clone(), (&webhooks, &voice, &stripe));
     let quote_page = quote_routes(&pool, &mut site);
     let pick_flow = pick_flow_routes(pool.clone(), Arc::new(SystemClock), pick_keys);
     let pages = link_and_site_pages(&pool, &statics, site, webhooks.as_deref());
-    let webhooks = webhook_routes(&pool, webhooks, voice, stripe);
+    let webhooks = webhook_routes(&pool, webhooks, voice, stripe, main);
     let health = healthz::routes(pool.clone());
     let (log, _writer) = offdb_stream::RequestLog::spawn(pool);
     Router::new()
