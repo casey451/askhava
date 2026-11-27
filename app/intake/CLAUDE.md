@@ -13,7 +13,8 @@ The layer-7 crate that turns a homeowner's inbound text into a request (`docs/ar
 - The AI flag never sends the 911 text: `tests::emergency::td_int_10_the_ai_flag_never_stands_in_for_the_stem_match`.
 - No card before SAFE, and an emergency is released once: `tests/integration/tests/emergency_flow.rs`, `emergency_choice_flag.rs`. More: `(never 26)` in NOTES.md.
 - Consent records cannot be updated, deleted or truncated by the app role: `consent_records_are_append_only_for_the_app_role`. Guarded by `td_con_01_concurrent_first_texts_queue_one_consent_text`. More: `(never 9)` in NOTES.md.
-- One consent record per request, none from a reply: `tests/integration/tests/consent_records.rs`. More: `(never 27)` in NOTES.md.
+- One consent record per channel per request, none from a reply, except the `sms` record her first text appends to a web-opened request (D-5848): `tests/integration/tests/consent_records.rs`, `consent_per_request.rs`. More: `(never 27)` in NOTES.md.
+- No chat turn writes a consent record; a request text needs its own `sms` record or T856's chat exemption (`consent_guard`): `tests/integration/tests/consent_per_request.rs`.
 - With the skip threshold unset no question is skipped: `tests::question_bank::td_int_21_*`. More: `(never 28)` in NOTES.md.
 - The INT-019 closing text equals the spec: `tests::intake_timeouts::td_pick_33_*`, `tests/integration/tests/intake_timeouts.rs`. More: `(never 29)` in NOTES.md.
 - "cancel" alone never closes; two open jobs get "Close which?": `tests::close_cancel::td_job_05_*`, `tests/integration/tests/close_which.rs`; a 911-list reply never reaches `answer_close`: `close_by_text.rs`. More: `(never 30)` in NOTES.md.

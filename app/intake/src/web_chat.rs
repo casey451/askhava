@@ -12,9 +12,10 @@
 //! [`check_code`] calls [`CodeStep::check`] only when the number's blind index is the session's
 //! own contact; the right code admits SEC-014's new-request limit on the opening transaction,
 //! opens the request (`first_inbox_id` is the first chat message's ID, the source stored),
-//! queues the consent text as its first text and records consent (channel `web_chat`, this
-//! session). After that each chat message runs the text path ([`crate::service::receive_text`])
-//! with its chat message ID, and a message in a request with a job is kept through
+//! records consent (channel `web_chat`, this session), then queues the consent text as its first
+//! text under T856's chat exemption (`consent_guard`, D-5848). After that each chat message runs
+//! the chat's own service entry ([`crate::service::receive_chat`], which never writes a consent
+//! record or queues a consent text, D-5918) with its chat message ID, and a message in a request with a job is kept through
 //! `keep_description` under that ID, so a retried POST stores nothing twice (D-3189). Once the
 //! session's request closes, its next message sends it back to before the code, so a new request
 //! opens only through [`check_code`] (D-4056). A number on the suppression list gets
@@ -25,13 +26,13 @@
 //! the code an opt-out word or phrase lists the session's number by its stored blind-index digests
 //! (`privacy::api::phone_digests`, `messaging::api::suppress_indexed`, channel `web_chat`) and
 //! shows CON-009's words; nothing else runs. INT-038's stop runs on the pre-code screen (after the
-//! 911 check) and after `receive_text` (`conversation::stop_if_under_18`; under 13 the session row
+//! 911 check) and after `receive_chat` (`conversation::stop_if_under_18`; under 13 the session row
 //! goes in the same transaction). The first message's language code is kept on the session and
 //! decides the consent text's language, and TXT-041's line, in [`check_code`].
 //!
 //! T649 (INT-027, PRIV-005, PRIV-008, AI-003, AI-020, D-4294): [`chat_raw_message`], the
 //! composition's entry, also holds the raw words, the vault and the LIST's names; while her
-//! name-and-address question is open the turn goes to `replies::receive_raw_reply`, so her answer
+//! name-and-address question is open the turn goes to `replies::receive_chat_reply`, so her answer
 //! lands on her vault contact and never in the kept description. [`chat_contact`] gives the
 //! composition the verified session's contact for its vault-name scrub, and [`chat_opt_out`] is
 //! the turn after a vault read that failed (D-2088).
@@ -54,6 +55,7 @@ use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
 use thiserror::Error;
 
+use crate::consent_guard::{TextKind, request_text};
 use crate::conversation::{
     BUSINESS_SIGNUP_TEMPLATE, name_address_open, queue_text, shows_business_intent,
     stop_if_under_18,
@@ -62,12 +64,12 @@ use crate::emergency::{Check, check};
 use crate::limits::{Admission, admit_new_request};
 use crate::models::{self, IntakeError};
 use crate::order::{Path, SPANISH_NOT_YET_TEMPLATE, Step, keep_words, order};
-use crate::replies::{RawReply, Reply, receive_raw_reply};
+use crate::replies::{RawReply, Reply, receive_chat_reply};
 use crate::rules::{
     AgeStop, Inbound, SAFETY_TEMPLATE, Settings, UNDER_18_TEMPLATE, age_stop, consent_language,
     consent_template, language_code, language_from_code, wanted_language,
 };
-use crate::service::{Handled, Queued, TextIn, audit_action, consent_version, receive_text};
+use crate::service::{Asked, Handled, Queued, TextIn, audit_action, consent_version, receive_chat};
 
 /// Wrong code tries one session may make; past it [`check_code`] calls nothing (CON-025).
 pub const MAX_CODE_TRIES: i32 = 5;
@@ -297,7 +299,7 @@ pub async fn chat_message(
 
 /// INT-027, PRIV-001, PRIV-005, D-4294, D-5387: [`chat_message`] with her raw words, the vault
 /// and the LIST's public names. After the code, while her name-and-address question is open
-/// (`name_address_open`), the turn goes to `replies::receive_raw_reply` as a text would (LIST
+/// (`name_address_open`), the turn goes to `replies::receive_chat_reply` as a text would (LIST
 /// and CLOSE keep their paths; `reads_as_address` decides the screen): the answer lands on her
 /// own vault contact and its words are never kept as the job description. The opt-out check
 /// stays first and INT-038's stop runs once, inside the reply path; under 13 the session row
@@ -305,7 +307,7 @@ pub async fn chat_message(
 ///
 /// # Errors
 ///
-/// As [`chat_message`], and `receive_raw_reply`'s; nothing is kept on an error.
+/// As [`chat_message`], and `receive_chat_reply`'s; nothing is kept on an error.
 pub async fn chat_raw_message(
     db: &mut PgConnection,
     (secret, key): (&SecretString, &SecretString),
@@ -330,11 +332,12 @@ async fn chat_turn(
     if let Some(how) = detect_opt_out(msg.words) {
         return opt_out(db, (contact, &s), how, msg.received_at).await;
     }
-    if models::open_conversation(db, contact).await? != Some(request) {
-        start_again(db, s.id, msg).await?;
+    let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
+    if !still_open(&mut tx, contact, request).await? {
+        start_again(&mut tx, s.id, msg).await?;
+        tx.commit().await.map_err(|_| IntakeError::Database)?;
         return screen(msg.words, settings).map_err(ChatError::from);
     }
-    let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
     let answer = match raw {
         Some(raw) if name_address_open(&mut tx, contact).await? => {
             raw_turn(&mut tx, (secret, s.id, contact), (msg, raw), settings).await?
@@ -343,6 +346,19 @@ async fn chat_turn(
     };
     tx.commit().await.map_err(|_| IntakeError::Database)?;
     Ok(answer)
+}
+
+/// Whether `request` is still `contact`'s open request, read in the turn's transaction with its
+/// conversation row locked (`SELECT ... FOR UPDATE`, D-5848), so it cannot close under the turn.
+async fn still_open(
+    tx: &mut PgConnection,
+    contact: Uuid,
+    request: Uuid,
+) -> Result<bool, IntakeError> {
+    Ok(
+        models::open_conversation(tx, contact).await? == Some(request)
+            && models::lock_conversation(tx, request).await?,
+    )
 }
 
 /// D-2088, CON-008, D-4294: the turn of a message whose vault read failed (a value that will not
@@ -406,7 +422,7 @@ fn text_in<'a>(contact: Uuid, msg: &ChatIn<'a>) -> TextIn<'a> {
 }
 
 /// INT-027, INT-038, PRIV-005, PRIV-007, PRIV-008, D-4294: the turn while her name-and-address
-/// question is open: `receive_raw_reply` with the raw text and the vault, nothing kept as the
+/// question is open: `receive_chat_reply` with the raw text and the vault, nothing kept as the
 /// job description. An INT-038 stop (its `Reply::UnderAge`, or its text last in `Handled`)
 /// shows INT-038's reply; under 13 the session row goes in this transaction too.
 async fn raw_turn(
@@ -416,7 +432,7 @@ async fn raw_turn(
     settings: Settings,
 ) -> Result<ChatAnswer, ChatError> {
     let text = text_in(contact, msg);
-    let reply = receive_raw_reply(tx, secret, (&text, raw), (settings, names)).await?;
+    let reply = receive_chat_reply(tx, secret, (&text, raw), (settings, names)).await?;
     let stop = match &reply {
         Reply::UnderAge(stop, _) => Some(*stop),
         Reply::Handled(h)
@@ -453,7 +469,7 @@ async fn text_turn(
     settings: Settings,
 ) -> Result<ChatAnswer, ChatError> {
     let text = text_in(contact, msg);
-    let handled = receive_text(tx, secret, &text, settings).await?;
+    let handled = receive_chat(tx, secret, &text, settings, Asked::Other).await?;
     let spanish_on = settings.spanish_conversations_on;
     if let Some(conversation) = handled.conversation
         && let Some((stop, _)) =
@@ -721,8 +737,9 @@ async fn wrong_try(db: &mut PgConnection, id: Uuid) -> Result<(), IntakeError> {
 }
 
 /// The right code, in one transaction: SEC-014's limit first (a refusal opens nothing), then the
-/// request (or her open one, with no second consent text, CON-027), its source, the consent text
-/// and the consent record (channel `web_chat`, this session, the text's version; CON-005). The
+/// request (or her open one, with no second consent text, CON-027), its source, the consent record
+/// (channel `web_chat`, this session, the text's version; CON-005), then the consent text the
+/// consent guard lets go under T856's chat exemption (D-5848). The
 /// language is Spanish when the session's first message read as Spanish (TXT-002, D-4292), else
 /// the page's (D-4057, D-4468); with Spanish conversations off, a Spanish first message gets
 /// TXT-041's line right after the consent text, as `order::spanish_line` queues it (same subject,
@@ -759,18 +776,19 @@ async fn open_verified(
         verified(tx, s.id, id, now).await?;
         return Ok(Checked::Verified(id, Vec::new()));
     };
-    let text = (template, language);
     let spanish = settings.spanish_conversations_on;
-    let mut queued = vec![queue_text(tx, secret, contact, text, &[id], spanish).await?];
-    if !spanish && first_spanish {
-        let not_yet = (SPANISH_NOT_YET_TEMPLATE, Language::Es);
-        queued.push(queue_text(tx, secret, contact, not_yet, &[id], false).await?);
-    }
     let body = render(template, language, spanish, &[])
         .map_err(|_| IntakeError::Template)?
         .body;
     let version = consent_version(template, language, &body);
     record(tx, (homeowner, id, s), &version, now).await?;
+    request_text(tx, Some(id), TextKind::Request).await?;
+    let text = (template, language);
+    let mut queued = vec![queue_text(tx, secret, contact, text, &[id], spanish).await?];
+    if !spanish && first_spanish {
+        let not_yet = (SPANISH_NOT_YET_TEMPLATE, Language::Es);
+        queued.push(queue_text(tx, secret, contact, not_yet, &[id], false).await?);
+    }
     verified(tx, s.id, id, now).await?;
     audit_action(tx, Actor::Homeowner(homeowner), "intake.consent_sent", id).await?;
     Ok(Checked::Verified(id, queued))
