@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-27T08:31:53Z by runner 37f92ed09311 (actions).
+Updated 2026-11-27T08:46:27Z by runner 02eda79e70d5 (actions).
 
-**Building: T869 in progress since 07:31Z; 685 of 802 done; week 12% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Building: T869 in progress since 07:31Z; 686 of 802 done; week 12% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 685 of 802 build tasks (owner gates not counted)
+- **Tasks done:** 686 of 802 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T869 claimed 07:31Z, lease until 10:31Z; lane 3: T734 claimed 06:54Z, lease until 09:54Z
 - **Week:** 12% used, 165.2M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:31Z, 0 min before this update
+- **Last run:** 08:32Z, 14 min before this update
 - **Keeper:** last ran 08:31Z, next wake 09:56Z
 
 ## Needs attention
@@ -16,13 +16,13 @@ Updated 2026-11-27T08:31:53Z by runner 37f92ed09311 (actions).
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 50% of the context window, over its 45% limit
 - PLAN GAP T856 (since 2026-11-27T07:31:36Z, no attempt used; a plan change fixes it): T856: measures 46% of the context window, over its 45% limit
-- Strict plan check red: 61 problem(s) on tasks still to run (+594 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
+- Strict plan check red: 63 problem(s) on tasks still to run (+595 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T849 | server: the e2e web binary serves J1/J2 business time from t | MERGE_PENDING | 2 | 45 min | 08:29Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
-| T688 | server: a call to the Laftly main number hears the greeting  | MERGE_PENDING | 1 | 85 min | 08:17Z |  |
+| T688 | server: a call to the Laftly main number hears the greeting  | done | 1 | 85 min | 08:17Z |  |
 | T657 | quotes and portals: quote-form and sign-in errors mark the f | MERGE_PENDING | 3 | 75 min | 08:05Z | Worker stopped with no edits: start smoke exceeded ~20 min. Finding: J3 step 5 owner sign-in (signInOwner, tests/e2e/own |
 | T849 | server: the e2e web binary serves J1/J2 business time from t | resync | 2 | 102 min | 07:36Z |  |
 | T612 | harness: the WEB-029 and WEB-030 runtime checks on every sit | done | 3 | 2 h 5 min | 05:50Z | Reviewer on head 700f50e1fce2ee8fc4392587b89d7a82a956f72f still ended REVIEW-VERDICT: FINDINGS after the fix round: / 1. |
@@ -55,7 +55,7 @@ Updated 2026-11-27T08:31:53Z by runner 37f92ed09311 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 464 of 735 (63.1%) · partial 263 · unstarted 8
-**Tasks merged (throughput only):** 685 of 802
+**Tasks merged (throughput only):** 686 of 802
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -91,7 +91,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 328 of 374 done
+- stage 5: 329 of 374 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
