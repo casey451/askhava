@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-27T08:29:57Z by runner 38f8ff006ba0 (actions).
+Updated 2026-11-27T08:30:33Z by runner 38f8ff006ba0 (actions).
 
 **Building: T869 in progress since 07:31Z; 685 of 802 done; week 12% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 685 of 802 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T869 claimed 07:31Z, lease until 10:31Z; lane 3: T734 claimed 06:54Z, lease until 09:54Z; lane 5: T849 claimed 07:44Z, lease until 10:44Z
+- **Lane:** lane 1: T869 claimed 07:31Z, lease until 10:31Z; lane 3: T734 claimed 06:54Z, lease until 09:54Z
 - **Week:** 12% used, 165.2M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:27Z, 2 min before this update
+- **Last run:** 08:27Z, 3 min before this update
 - **Keeper:** last ran 08:26Z, next wake 09:56Z
 
 ## Needs attention
@@ -21,9 +21,10 @@ Updated 2026-11-27T08:29:57Z by runner 38f8ff006ba0 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T849 | server: the e2e web binary serves J1/J2 business time from t | MERGE_PENDING | 2 | 45 min | 08:29Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
 | T688 | server: a call to the Laftly main number hears the greeting  | MERGE_PENDING | 1 | 85 min | 08:17Z |  |
 | T657 | quotes and portals: quote-form and sign-in errors mark the f | MERGE_PENDING | 3 | 75 min | 08:05Z | Worker stopped with no edits: start smoke exceeded ~20 min. Finding: J3 step 5 owner sign-in (signInOwner, tests/e2e/own |
-| T849 | server: the e2e web binary serves J1/J2 business time from t | resync | 2 | 102 min | 07:36Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
+| T849 | server: the e2e web binary serves J1/J2 business time from t | resync | 2 | 102 min | 07:36Z |  |
 | T612 | harness: the WEB-029 and WEB-030 runtime checks on every sit | done | 3 | 2 h 5 min | 05:50Z | Reviewer on head 700f50e1fce2ee8fc4392587b89d7a82a956f72f still ended REVIEW-VERDICT: FINDINGS after the fix round: / 1. |
 | T518 | server, ops and payments: the Stripe-or-webhook-errors alert | done | 1 | 51 min | 05:34Z |  |
 | T657 | quotes and portals: quote-form and sign-in errors mark the f | QUEUED | 2 | 25 min | 05:11Z |  |
@@ -99,7 +100,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T869 (lease until 2026-11-27T10:31:36Z)
 - lane 3: T734 (lease until 2026-11-27T09:54:33Z)
-- lane 5: T849 (lease until 2026-11-27T10:44:33Z)
 
 ## Last usage reading
-- {"task": "T688", "at": "2026-11-27T08:17:52Z", "output_tokens": 29534, "cache_creation_input_tokens": 120223, "cache_read_input_tokens": 2881759, "input_tokens": 136}
+- {"task": "T849", "at": "2026-11-27T08:29:56Z", "output_tokens": 9320, "cache_creation_input_tokens": 67290, "input_tokens": 67, "cache_read_input_tokens": 989721}
