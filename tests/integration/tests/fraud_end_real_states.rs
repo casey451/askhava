@@ -226,6 +226,34 @@ async fn a_waiting_pick_before_payment_pending_is_left(pool: PgPool) {
     assert_eq!(job_status(&pool, case.job).await, "awaiting_confirm");
 }
 
+/// FEE-052, D-5888: a paid pick whose job already left Connected for a final status (Done) is
+/// refunded but not ended, and its job does not move; a warning naming another job for the pick
+/// ends nothing either.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn a_paid_pick_on_a_final_job_or_another_job_is_left(pool: PgPool) {
+    let case = seeded(&pool, (JobStatus::Connected, "paid"), "pi_FakeT867g").await;
+    let mut db = pool.acquire().await.expect("conn");
+    let arrow = (JobStatus::Connected, JobStatus::Done);
+    let moved = move_to(&mut db, case.job, arrow, az(2, 9), Actor::System).await;
+    assert_eq!(moved, Ok(Guarded::Applied(())));
+    drop(db);
+    assert_eq!(warn(&pool, case, az(3, 9)).await, Ok(false));
+    assert_eq!(count(&pool, REFUNDED, case.pick).await, 1);
+    assert_eq!(pick_status(&pool, case.pick).await, "paid");
+    assert_eq!(job_status(&pool, case.job).await, "done");
+    assert_eq!(count(&pool, INTENT_ENDED, case.pick).await, 0);
+    let other = seeded(&pool, (JobStatus::Connected, "paid"), "pi_FakeT867h").await;
+    let wrong = Case {
+        pick: other.pick,
+        job: case.job,
+    };
+    assert_eq!(warn(&pool, wrong, az(3, 9)).await, Ok(false));
+    assert_eq!(count(&pool, REFUNDED, other.pick).await, 1);
+    assert_eq!(pick_status(&pool, other.pick).await, "paid");
+    assert_eq!(job_status(&pool, other.job).await, "connected");
+    assert_eq!(count(&pool, INTENT_ENDED, other.pick).await, 0);
+}
+
 /// FEE-052, D-5888: a success whose refund succeeded while its PaymentIntent is open holds the
 /// Payment pending wait (`Held`, never `Success`), so no release task is queued and the pick is not
 /// ended as `payment_failed`; the same success unrefunded is `Success` and queues one.
