@@ -5,13 +5,15 @@
 //! their one HTTP client each (SEC-032); the payments, AI (stand-in only,
 //! AI-009), email (with suppression removal, BIZ-056), letters, license-source
 //! and storage adapters (with `StorageDelete` and `SmsBodyDelete`, D-1841), the sent-log listing for the replay (`SmsSentLog`, D-3155); the guarded fetch of untrusted URLs (SEC-041); and the inbound webhook
-//! signature and Stripe source-address checks (SEC-016, SEC-039, SEC-049).
+//! signature and Stripe source-address checks (SEC-016, SEC-039, SEC-049); the Stripe card
+//! detach a leaving business's saved cards go through (BIZ-051, T734).
 
 pub use crate::ai::{AiAdapter, StandInAi};
 pub use crate::base::{
     AdapterError, FetchError, FetchPolicy, IdempotencyKey, MAX_REDIRECTS, TWILIO_MEDIA_HOSTS,
     fetch_untrusted, is_public_address, twilio_clients,
 };
+pub use crate::card_detach::StripeCardDetach;
 pub use crate::config::{AdapterMode, DEFAULT_POOL_SIZE, MaskedPool, PoolNumber, TwilioConfig};
 pub use crate::email::{Email, EmailAdapter, ResendEmail};
 pub use crate::letters::{LettersAdapter, LobLetters, SentLetter};

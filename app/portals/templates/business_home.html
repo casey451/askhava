@@ -6,7 +6,8 @@
     switch (SEC-027), which needs a fresh code and, to turn on, a phone that gets texts. T483: the
     review and dispute lines with the owner's away date (OPS-026) and the Google and Yelp links
     form (BIZ-052), whose refusal shows its reason beside the field, focused. T733: the "Service
-    area" link to the base ZIP and radius settings (BIZ-010, BIZ-058). -#}
+    area" link to the base ZIP and radius settings (BIZ-010, BIZ-058). T734: the "Leave" link and
+    the pause question's link, both shown to every member (BIZ-051, BIZ-054, D-5670). -#}
 {% block title %}{% if too_many || link_error.is_some() %}Error: {% endif %}Your business account{% endblock %}
 {% block main %}
 <link rel="stylesheet" href="/static/portals/forms.css">
@@ -69,4 +70,7 @@
 {% endif %}{% endif %}<input type="url" id="link-{{ field }}" name="{{ field }}" value="{{ value }}" autocomplete="url" aria-describedby="links-hint{% if let Some((bad, _)) = link_error %}{% if bad == field %} link-{{ field }}-error{% endif %}{% endif %}"></p>
 {% endfor %}<button type="submit">Save links</button>
 </form>
+<h2 id="pause-or-leave">Paused or leaving {{ askhava_core::api::brand().display_name() }}</h2>
+<p><a href="{{ crate::business_left::PAUSE_REASON_ROUTE }}">Paused over 2 weeks? Answer one optional question</a></p>
+<p><a href="{{ crate::business_left::LEAVE_ROUTE }}">Leave {{ askhava_core::api::brand().display_name() }}</a>: see what leaving does before you choose.</p>
 {% endblock %}

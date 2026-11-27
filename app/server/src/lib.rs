@@ -41,6 +41,7 @@ pub mod action_links;
 pub mod address_changes;
 pub mod business_contacts;
 pub mod business_guarded_changes;
+pub mod business_leave_routes;
 pub mod business_portal;
 pub mod business_settings_routes;
 pub mod business_signin;
@@ -183,6 +184,7 @@ struct BusinessParts {
     report: owner_tools::SecretReport,
     reports: owner_reports::ReportSettings,
     owner_flags: OwnerFlagLimits,
+    card_detach: business_leave_routes::ServedDetach,
 }
 
 impl RouterParts {
@@ -197,6 +199,15 @@ impl RouterParts {
     #[must_use]
     pub fn with_sign_up(mut self, signup: business_signup::ServedSignUp) -> Self {
         self.business.signup = Some(signup);
+        self
+    }
+
+    /// Adds the leave button's Stripe card detach (T734, D-5670;
+    /// `business_leave_routes::card_detach`); without it the leave is served and every detach is
+    /// counted as failed.
+    #[must_use]
+    pub fn with_card_detach(mut self, detach: business_leave_routes::ServedDetach) -> Self {
+        self.business.card_detach = detach;
         self
     }
 
@@ -509,6 +520,13 @@ fn owner_pages(
         ))
 }
 
+/// The step-up-guarded changes (T565) and the leave and pause-question routes with their card
+/// detach (T734, BIZ-051).
+fn guarded_pages(pool: &PgPool, detach: business_leave_routes::ServedDetach) -> Router {
+    business_guarded_changes::routes(pool.clone())
+        .merge(business_leave_routes::routes(pool.clone(), detach))
+}
+
 /// The served business sign-in (T280) and sign-up (T302) routes, each only when its part is given,
 /// the business portal (T300) over `pool`, always (`business_portal::served`), and the Confirm
 /// route (T261) from the Stripe hooks, with the parts' Confirm settings, else none; the "Can't
@@ -564,7 +582,7 @@ fn business_pages(
         parts.photos,
     );
     let step_up = business_step_up::routes(pool.clone(), parts.step_up, parts.vault.clone())
-        .merge(business_guarded_changes::routes(pool.clone()))
+        .merge(guarded_pages(&pool, parts.card_detach))
         .merge(address_changes::routes(pool.clone(), parts.address))
         .merge(vault_pages(
             &pool,

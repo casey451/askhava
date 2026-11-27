@@ -50,6 +50,10 @@
 //! sign-in link ([`judge_unissued`]); a live token is T674's test. `{job}` is filled like `{j}`
 //! with the side's own job number, and the other side's number and [`UNKNOWN_NUMBER`] must be the
 //! one not-found answer (on `/h/requests/{job}/photos`).
+//!
+//! T734 (D-5876; BIZ-054, SEC-034): strict `GET` also admits a `no-store` 303 whose `Location` is
+//! `/b` for `GET /b/pause-reason` alone (the question is not due for the fixture's unpaused
+//! business); the refusal, leak, no-store and CSRF checks are unchanged.
 
 #[path = r"door_matrix/released_pick.rs"]
 mod released_pick;
@@ -399,6 +403,9 @@ struct Reply {
     no_store: bool,
     text: String,
     csrf_refused: bool,
+    /// T734, D-5876: a `no-store` 303 to `/b` answering `GET /b/pause-reason` (the question is
+    /// not due for the fixture's unpaused business), which strict `GET` admits on that row alone.
+    pause_home: bool,
 }
 
 /// How a request reaches the app (D-4292, TD-SEC-73): `Own` and `WrongToken` as a browser sends
@@ -489,6 +496,7 @@ async fn answer(app: &Router, request: Request<Body>) -> (Reply, Vec<String>) {
         no_store: value(header::CACHE_CONTROL).contains("no-store"),
         text: format!("{text}{}", value(header::LOCATION)),
         csrf_refused: parts.status == StatusCode::FORBIDDEN || csrf_logged(id),
+        pause_home: false,
     };
     (reply, set)
 }
@@ -501,9 +509,15 @@ async fn send(
     site: Site,
     id: Uuid,
 ) -> Reply {
-    answer(app, request((method, path, ""), jar, site, id))
+    let mut reply = answer(app, request((method, path, ""), jar, site, id))
         .await
-        .0
+        .0;
+    reply.pause_home = *method == Method::GET
+        && path == "/b/pause-reason"
+        && reply.status == 303
+        && reply.no_store
+        && reply.text == "/b";
+    reply
 }
 
 /// The first of `secrets` that `text` shows.
@@ -551,7 +565,7 @@ fn judge(
     let strict = method == Method::GET && door != Door::Owner;
     let refused = method == Method::POST && reply.csrf_refused;
     let admitted = if strict {
-        status == 200
+        status == 200 || reply.pause_home
     } else {
         !refusal(door, reply) && status < 500 && !refused
     };
@@ -1912,6 +1926,7 @@ fn td_sec_61_the_csrf_judge() {
         no_store: true,
         text: String::new(),
         csrf_refused: status == 403,
+        pause_home: false,
     };
     let event = |route: &str| ["csrf_rejected".to_owned(), route.to_owned()];
     let t = "/b/notices";
@@ -1920,6 +1935,23 @@ fn td_sec_61_the_csrf_judge() {
     assert!(judge_csrf(&reply(403), &[event(t), event(t)], t).is_err());
     assert!(judge_csrf(&reply(403), &[event("unmatched")], t).is_err());
     assert!(judge_csrf(&reply(200), &[event(t)], t).is_err());
+}
+
+/// T734, D-5876: strict `GET` admits a 303 only with `send`'s pause-question mark; the same 303
+/// without it is not admitted.
+#[test]
+fn t734_strict_get_admits_only_the_pause_question_303() {
+    let fx = planted_fixtures();
+    let reply = |pause_home| Reply {
+        status: 303,
+        no_store: true,
+        text: "/b".to_owned(),
+        csrf_refused: false,
+        pause_home,
+    };
+    let as_x = (Actor::BusinessX, &Method::GET);
+    assert_eq!(judge(Door::Business, as_x, &reply(true), &fx), Ok(()));
+    assert!(judge(Door::Business, as_x, &reply(false), &fx).is_err());
 }
 
 /// TD-SEC-73 (SEC-042, SEC-048, D-4292, D-3706): an own-site `POST` on the public door, an
@@ -1933,6 +1965,7 @@ fn td_sec_73_an_own_post_fails_on_a_csrf_refusal() {
         no_store: true,
         text: String::new(),
         csrf_refused,
+        pause_home: false,
     };
     let post = &Method::POST;
     for (got, ok) in [

@@ -26,6 +26,7 @@ use std::io;
 use std::net::Ipv4Addr;
 
 use askhava_core::api::TestControl;
+use askhava_server::business_leave_routes::card_detach;
 use askhava_server::help_forms::help_mail;
 use tokio::net::TcpListener;
 
@@ -112,7 +113,7 @@ fn liveness_limit() -> io::Result<askhava_server::liveness::LivenessLimit> {
 /// T261), the step-up page's Verify part (T364), the quote page's update keys (T729), the homeowner sign-in's Verify part (T307), the web chat's code-step keys (T489) and the
 /// site pages' settings (T102) with the business number for the business page's WEB-024 line
 /// (T769, D-4931) and the homeowner number with the Gate C launch date for the home pages' texting
-/// number (T725, WEB-017, D-4709) and the owner reports' settings (T305, D-5775) and the Get help answer email's key (T309) and the main number its callers' greeting needs (T688, CALL-020); each errors as its own builder does, naming a key, never a value.
+/// number (T725, WEB-017, D-4709) and the owner reports' settings (T305, D-5775) and the Get help answer email's key (T309) and the main number its callers' greeting needs (T688, CALL-020), with [`with_report_and_detach`]'s two parts; each errors as its own builder does, naming a key, never a value.
 fn business_parts(
     settings: &askhava_core::api::Settings,
     pool: &sqlx::PgPool,
@@ -144,7 +145,7 @@ fn business_parts(
     let quote_keys = askhava_server::quote_page_keys(settings, std::env::vars())?;
     let reports = askhava_server::owner_reports::ReportSettings::from_settings(settings)
         .map_err(io::Error::other)?;
-    Ok(parts
+    Ok(with_report_and_detach(settings, parts)?
         .with_sign_in(signin)
         .with_sign_up(signup)
         .with_step_up(step_up)
@@ -162,13 +163,21 @@ fn business_parts(
         .with_chat_codes(chat)
         .with_site_pages(pages.with_business_number(number))
         .with_environment(settings.environment())
-        .with_secret_report(askhava_server::owner_tools::SecretReport::from_settings(
-            settings,
-            std::env::vars(),
-        ))
         .with_report_settings(reports)
         .with_owner_flag_limits(settings.owner_flag_limits())
         .with_main_number(settings.main_number().map(str::to_owned)))
+}
+
+/// `parts` with the owner health page's secret report (T304, OPS-008) and the leave button's
+/// Stripe card detach (T734, BIZ-051, D-5930).
+fn with_report_and_detach(
+    settings: &askhava_core::api::Settings,
+    parts: askhava_server::RouterParts,
+) -> io::Result<askhava_server::RouterParts> {
+    let report =
+        askhava_server::owner_tools::SecretReport::from_settings(settings, std::env::vars());
+    let detach = card_detach(settings, std::env::vars())?;
+    Ok(parts.with_secret_report(report).with_card_detach(detach))
 }
 
 /// Applies every pending migration over `ASKHAVA_MIGRATION_DATABASE_URL`, never the app

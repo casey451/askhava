@@ -849,6 +849,26 @@ const TEXT_CONSENT_STATES: readonly PageState[] = [
   ["text consent, texting off", "We aren't texting businesses right now", "Phones you added", textConsentSql(false, false)],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: TEXT_CONSENT_ROUTE, name, shows, hides, sql, statusRegions: ["texts-said"] }));
 
+/**
+ * The leave screen and the pause question (T734; BIZ-051, BIZ-054, D-5670): the owner signed in;
+ * the leave screen with the question (never asked) and without it (answered after a pause); the
+ * pause question for a business that paused itself 15 days ago.
+ */
+const LEAVE_ROUTE = "/b/leave";
+const PAUSE_REASON_ROUTE = "/b/pause-reason";
+const ASKED_SQL = `,
+    r AS (INSERT INTO businesses.leave_reason (business_id, asked_by, choice, answered_at)
+      SELECT business_id, 'paused', 'busy', now() FROM m)`;
+const PAUSED_SQL = businessSql("").replace(
+  "(status, created_at, status_changed_at)\n      VALUES ('active', now(), now())",
+  "(status, pause_reason, created_at, status_changed_at)\n      VALUES ('paused', 'self', now() - interval '20 days', now() - interval '15 days')",
+);
+const LEAVE_STATES: readonly PageState[] = [
+  [LEAVE_ROUTE, "leave screen with the reason question", "Can you tell us why?", "You've left", businessSql("")],
+  [LEAVE_ROUTE, "leave screen, reason already asked", "You can't undo this.", "Can you tell us why?", businessSql(ASKED_SQL)],
+  [PAUSE_REASON_ROUTE, "pause question after a 15-day pause", "Can you tell us why?", "You can't undo this.", PAUSED_SQL],
+].map(([route = "", name = "", shows = "", hides = "", sql = ""]) => ({ route, name, shows, hides, sql, statusRegions: [] }));
+
 /** The homeowner sign-in form (T307, SEC-008): no seed, the plain path. */
 const HOMEOWNER_SIGNIN_ROUTE = "/h/sign-in";
 const HOMEOWNER_SIGNIN_STATES: readonly PageState[] = [
@@ -1034,6 +1054,8 @@ export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: DATA_LINK_ROUTE, seed: dataLinkSeed, states: DATA_LINK_STATES },
   { route: SERVICE_AREA_SETTINGS_ROUTE, seed: portalSeed(false), states: SERVICE_AREA_SETTINGS_STATES },
   { route: TEXT_CONSENT_ROUTE, seed: portalSeed(false), states: TEXT_CONSENT_STATES },
+  { route: LEAVE_ROUTE, seed: portalSeed(false), states: LEAVE_STATES.filter((s) => s.route === LEAVE_ROUTE) },
+  { route: PAUSE_REASON_ROUTE, seed: portalSeed(false), states: LEAVE_STATES.filter((s) => s.route === PAUSE_REASON_ROUTE) },
 ];
 
 /** Every state of every page, in entry order. */

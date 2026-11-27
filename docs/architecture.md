@@ -778,10 +778,10 @@ Every HTTP route the `web` process serves or a queued task's goal says it will s
 | POST | /b/settings/service-area | portals | yes |
 | POST | /b/shared-inbox | portals | yes |
 | GET | /b/contact-card.vcf | portals | yes |
-| GET | /b/leave | portals | T734 |
-| POST | /b/leave | portals | T734 |
-| GET | /b/pause-reason | portals | T734 |
-| POST | /b/pause-reason | portals | T734 |
+| GET | /b/leave | portals | yes |
+| POST | /b/leave | portals | yes |
+| GET | /b/pause-reason | portals | yes |
+| POST | /b/pause-reason | portals | yes |
 | GET | /b/settings/towns-hours | portals | T735 |
 | POST | /b/settings/towns-hours | portals | T735 |
 | GET | /owner/ai | portals | yes |

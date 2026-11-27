@@ -10,6 +10,7 @@
 mod ai;
 pub mod api;
 mod base;
+mod card_detach;
 mod config;
 mod email;
 mod letters;
