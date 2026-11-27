@@ -21598,7 +21598,8 @@
     "T663",
     "T664",
     "T675",
-    "T850"
+    "T850",
+    "T861"
    ],
    "status": "QUEUED",
    "attempts": 3,
@@ -26214,7 +26215,8 @@
     "T536",
     "T561",
     "T841",
-    "T801"
+    "T801",
+    "T861"
    ],
    "status": "QUEUED",
    "attempts": 1,
@@ -81259,7 +81261,8 @@
     "T536",
     "T851",
     "T801",
-    "T840"
+    "T840",
+    "T863"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -91302,7 +91305,9 @@
    "id": "T612",
    "deps": [
     "T611",
-    "T603"
+    "T603",
+    "T613",
+    "T846"
    ],
    "status": "QUEUED",
    "attempts": 1,
@@ -105831,7 +105836,8 @@
    "id": "T723",
    "deps": [
     "T716",
-    "T717"
+    "T717",
+    "T858"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -107878,7 +107884,8 @@
     "T746",
     "T766",
     "T813",
-    "T829"
+    "T829",
+    "T734"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -116248,7 +116255,16 @@
     "T676",
     "T671",
     "T725",
-    "T831"
+    "T831",
+    "T856",
+    "T857",
+    "T858",
+    "T859",
+    "T860",
+    "T864",
+    "T865",
+    "T840",
+    "T866"
    ],
    "status": "QUEUED",
    "attempts": 1,
@@ -119094,7 +119110,8 @@
   {
    "id": "T824",
    "deps": [
-    "T759"
+    "T759",
+    "T865"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -122268,6 +122285,157 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null
+  },
+  {
+   "id": "T866",
+   "deps": [
+    "T860",
+    "T725",
+    "T593",
+    "T595"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "chat-live-handoff",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T856",
+   "deps": [
+    "T103",
+    "T181",
+    "T645",
+    "T649",
+    "T725",
+    "T741",
+    "T745",
+    "T747",
+    "T839"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "consent-per-request",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T857",
+   "deps": [
+    "T856"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "guarded-enqueue-seam",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T865",
+   "deps": [
+    "T857",
+    "T759",
+    "T840"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "direct-enqueue-callers",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T864",
+   "deps": [
+    "T865",
+    "T656",
+    "T609",
+    "T831"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "web-dispatch-zip",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T858",
+   "deps": [
+    "T864"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "web-dispatch-questions",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T859",
+   "deps": [
+    "T858",
+    "T783",
+    "T831",
+    "T609",
+    "T656"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "web-photo-upload",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T860",
+   "deps": [
+    "T859"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "web-card-on-page",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T861",
+   "deps": [
+    "T644",
+    "T671",
+    "T676"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "j1-observation-fix",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T862",
+   "deps": [
+    "T095",
+    "T729",
+    "T266",
+    "T658",
+    "T756",
+    "T757",
+    "T820"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "conversation-email",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T863",
+   "deps": [
+    "T862",
+    "T801",
+    "T854"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "pick-code-by-email",
+   "type": "build",
+   "stage": "5"
   }
  ],
  "owner_waits": [],
@@ -130591,7 +130759,7 @@
    }
   }
  },
- "updated_at": "2026-11-27T00:00:16Z",
+ "updated_at": "2026-11-27T00:02:01Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -130689,7 +130857,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "94a988623895e5dad1118f24c0ed275311dcdefa",
+ "runner_sha": "8d88d3d144c9a37606e9518f12ab087bf59b0d31",
  "starter": "actions",
  "smoke_runs": [
   {
