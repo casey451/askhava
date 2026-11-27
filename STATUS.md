@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-27T16:26:53Z by runner 8df89e31f515 (manual).
+Updated 2026-11-27T16:37:13Z by runner 5de506af5c92 (actions).
 
 **Building: T749 in progress since 16:03Z; 693 of 804 done; week 16% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-27T16:26:53Z by runner 8df89e31f515 (manual).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T749 claimed 16:03Z, lease until 19:03Z
 - **Week:** 16% used, 164.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:24Z, 2 min before this update
+- **Last run:** 16:27Z, 9 min before this update
 - **Keeper:** last ran 16:24Z, next wake 19:06Z
 
 ## Needs attention
@@ -85,6 +85,7 @@ Evidence: her data download is assembled in app/server/src/homeowner_portal.rs:6
 | T612 | harness: the WEB-029 and WEB-030 runtime checks on every sit | BLOCKED | 1 | 50 min | 18:35Z |  |
 
 ### Plan and harness merges on main
+- 16:31Z Plan: T849 seeds J3's licence check at the app clock (D-5978) (#1514)
 - 16:15Z Plan: efficiency fixes (D-5971); T734 owns its template line, T862 split with T870 (D-5972) (#1513)
 - 12:14Z Plan: T657 waits on T811 (D-5954); T849 moves j1_homeowner into the late project (D-5955) (#1500)
 - 07:26Z Plan: fraud-refund fix (D-5888), T820 fix (D-5889), T865 draft (D-5900), template line and T868 (D-5901), compliance (D-5907), T856 plan fix (D-5918) (#1
