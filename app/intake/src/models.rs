@@ -55,6 +55,10 @@ pub enum IntakeError {
     /// The card sender found no stored card to send, so its task fails and retries (T251, D-3189).
     #[error("intake found no stored card to send")]
     NoStoredCard,
+    /// The consent guard refused a request text: no consent record lets it go (CON-005, CON-021,
+    /// D-5848); nothing is queued.
+    #[error("intake request has no consent for this text")]
+    NoConsent,
 }
 
 /// `intake.homeowner`: one person by vault contact ID.
@@ -108,7 +112,8 @@ pub struct ConversationRow {
     pub closed_at: Option<Timestamp>,
 }
 
-/// `intake.consent_record`: one consent (CON-005, CON-022), append-only; `receive_text` writes it.
+/// `intake.consent_record`: one consent (CON-005, CON-022), append-only; `receive_text` writes its
+/// `sms` rows (carrier inbound only) and the web chat's code check its `web_chat` row.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ConsentRecordRow {
     /// Row ID.
@@ -344,18 +349,53 @@ pub(crate) async fn consent_records(
         .collect())
 }
 
-/// Whether vault contact `contact` is a homeowner with a consent record (CON-021).
+/// Whether vault contact `contact` is a homeowner with an `sms` consent record, her own first
+/// inbound text; a `web_chat` record never counts (CON-021, CON-005, D-5848 R1-01).
 pub(crate) async fn contact_consented(
     db: &mut PgConnection,
     contact: Uuid,
 ) -> Result<bool, IntakeError> {
     sqlx::query_scalar!(
         "SELECT EXISTS (SELECT 1 FROM intake.consent_record r \
-         JOIN intake.homeowner h ON h.id = r.homeowner_id WHERE h.contact_id = $1) AS \"ok!\"",
+         JOIN intake.homeowner h ON h.id = r.homeowner_id \
+         WHERE h.contact_id = $1 AND r.channel = 'sms') AS \"ok!\"",
         contact
     )
     .fetch_one(db)
     .await
+    .map_err(|_| IntakeError::Database)
+}
+
+/// Whether request `conversation` has an `sms` consent record of its own, the one predicate that
+/// lets a request be texted (CON-005, CON-007, CON-021, D-5848); a `web_chat` record never counts.
+pub(crate) async fn sms_consented(
+    db: &mut PgConnection,
+    conversation: Uuid,
+) -> Result<bool, IntakeError> {
+    sqlx::query_scalar!(
+        "SELECT EXISTS (SELECT 1 FROM intake.consent_record \
+         WHERE conversation_id = $1 AND channel = 'sms') AS \"ok!\"",
+        conversation
+    )
+    .fetch_one(db)
+    .await
+    .map_err(|_| IntakeError::Database)
+}
+
+/// Locks request `conversation`'s row until the transaction ends (`SELECT ... FOR UPDATE`), so two
+/// racing first texts into a web-opened request append one `sms` record (D-5848); true while it
+/// is still open.
+pub(crate) async fn lock_conversation(
+    db: &mut PgConnection,
+    conversation: Uuid,
+) -> Result<bool, IntakeError> {
+    sqlx::query_scalar!(
+        "SELECT closed_at IS NULL AS \"open!\" FROM intake.conversation WHERE id = $1 FOR UPDATE",
+        conversation
+    )
+    .fetch_optional(db)
+    .await
+    .map(|open| open.unwrap_or(false))
     .map_err(|_| IntakeError::Database)
 }
 

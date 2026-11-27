@@ -31,6 +31,7 @@ use sha2::{Digest, Sha256};
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
 
+use crate::consent_guard::{TextKind, request_text};
 use crate::conversation::{BUSINESS_SIGNUP_TEMPLATE, shows_business_intent};
 use crate::emergency::{self, Check, Choice, Hazard, Urgency, beep_is_alarm, is_safe_reply};
 use crate::emergency_count;
@@ -123,7 +124,17 @@ pub async fn on_text(
     msg: &TextIn<'_>,
     settings: Settings,
 ) -> Result<Handled, IntakeError> {
-    handle(db, secret, msg, settings, Asked::Other).await
+    handle(db, secret, msg, settings, (Asked::Other, Via::Carrier)).await
+}
+
+/// Where a message came from (CON-005, D-5848): only a carrier inbound text may give a request its
+/// `sms` consent record; a web-chat turn never does.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Via {
+    /// An inbound text from the carrier (`receive_text`, `receive_answer`).
+    Carrier,
+    /// A web-chat turn after the code ([`receive_chat`]).
+    Chat,
 }
 
 /// One message being handled, with what the 911-list screen found.
@@ -137,13 +148,15 @@ struct Step<'s, 'm> {
 /// The screen and first reply (INT-002, INT-003, CON-001, D-008): the 911-list stem match runs
 /// first and alone decides the 911 text (the caller's `emergency` flag is replaced, INT-026); a new
 /// request gets the 911 text on a match, then the consent text; a reply in an open request goes
-/// to [`screen_reply`]. Opt-outs and HELP were answered by `messaging` and get nothing.
+/// to [`screen_reply`]. Opt-outs and HELP were answered by `messaging` and get nothing. The plan's
+/// consent input is [`consent_sent`] (D-5848): a carrier text into a request with no `sms` record
+/// of its own goes to [`first_text_in`].
 async fn handle(
     db: &mut PgConnection,
     secret: &SecretString,
     msg: &TextIn<'_>,
     settings: Settings,
-    asked: Asked,
+    (asked, via): (Asked, Via),
 ) -> Result<Handled, IntakeError> {
     let check = emergency::check(msg.inbound.words, asked == Asked::NameAndAddress);
     let inbound = Inbound {
@@ -151,9 +164,13 @@ async fn handle(
         ..msg.inbound
     };
     let open = models::open_conversation(db, msg.contact).await?;
-    let decided = plan(open.is_some(), &inbound, settings);
+    let sent = consent_sent(db, open, via).await?;
+    let decided = plan(sent, &inbound, settings);
     if decided.then == Then::Nothing {
         return Ok(handled(open, Vec::new(), decided.then, Screened::Clear));
+    }
+    if open.is_none() && via == Via::Chat {
+        return Err(IntakeError::NoConsent);
     }
     let step = Step {
         secret,
@@ -167,6 +184,7 @@ async fn handle(
     let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
     let done = match open {
         None => open_request(&mut tx, &step, &decided).await?,
+        Some(id) if !sent => Some(first_text_in(&mut tx, &step, id, &inbound).await?),
         Some(id) => Some(screen_reply(&mut tx, &step, id, decided.then).await?),
     };
     tx.commit().await.map_err(|_| IntakeError::Database)?;
@@ -178,9 +196,67 @@ async fn handle(
     let id = models::open_conversation(db, msg.contact)
         .await?
         .ok_or(IntakeError::Database)?;
+    let sent = consent_sent(db, Some(id), via).await?;
     let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
-    let done = screen_reply(&mut tx, &step, id, plan(true, &inbound, settings).then).await?;
+    let done = screen_reply(&mut tx, &step, id, plan(sent, &inbound, settings).then).await?;
     tx.commit().await.map_err(|_| IntakeError::Database)?;
+    Ok(done)
+}
+
+/// `rules::plan`'s consent input (CON-001, CON-005, CON-027, D-5848): for a carrier text, whether
+/// the open request has an `sms` record of its own ([`may_text_request`]), so a web-opened request
+/// (`web_chat` records only) gets the consent text and its record from her first text; a chat
+/// turn's input stays "request open", so it never queues a consent text or writes a record. A
+/// request with no record at all, which only this crate's tests' [`on_text`] opens (every other
+/// opening writes its record in its own transaction), keeps "consent sent" (D-5890).
+async fn consent_sent(
+    db: &mut PgConnection,
+    open: Option<Uuid>,
+    via: Via,
+) -> Result<bool, IntakeError> {
+    match (open, via) {
+        (None, _) => Ok(false),
+        (Some(_), Via::Chat) => Ok(true),
+        (Some(id), Via::Carrier) => Ok(models::sms_consented(db, id).await?
+            || models::consent_records(db, id).await?.is_empty()),
+    }
+}
+
+/// Her first carrier text into an open request with no `sms` record, a web-opened one (CON-001,
+/// CON-005, INT-004, D-5848, Fable's b): the conversation row is locked (`SELECT ... FOR UPDATE`)
+/// and the record checked again, so of two racing first texts only one queues the consent text
+/// (under this text's ID, after the INT-004 text on a 911-list match) and gets the `sms` record
+/// [`receive_answer`] appends; then the text goes on as a reply. The loser is a plain reply.
+async fn first_text_in(
+    tx: &mut PgConnection,
+    step: &Step<'_, '_>,
+    id: Uuid,
+    inbound: &Inbound<'_>,
+) -> Result<Handled, IntakeError> {
+    if !models::lock_conversation(tx, id).await? {
+        return Err(IntakeError::UnknownRequest);
+    }
+    let then = plan(true, inbound, step.settings).then;
+    if models::sms_consented(tx, id).await? {
+        return screen_reply(tx, step, id, then).await;
+    }
+    let consent = plan(false, inbound, step.settings);
+    let (template, language) = consent_of(&consent);
+    let matched = matches!(step.check, Check::Match(_));
+    let mut done = if matched {
+        screen_reply(tx, step, id, then).await?
+    } else {
+        handled(Some(id), Vec::new(), then, Screened::Clear)
+    };
+    request_text(tx, Some(id), TextKind::CarrierConsent).await?;
+    let subject = [id, step.msg.inbox_id];
+    done.texts
+        .push(queue(tx, step, (template, language), &subject, &[]).await?);
+    if !matched {
+        let rest = screen_reply(tx, step, id, then).await?;
+        done.texts.extend(rest.texts);
+        done.screened = rest.screened;
+    }
     Ok(done)
 }
 
@@ -225,7 +301,7 @@ pub async fn receive_answer(
     asked: Asked,
 ) -> Result<Handled, IntakeError> {
     let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
-    let handled = handle(&mut tx, secret, msg, settings, asked).await?;
+    let handled = handle(&mut tx, secret, msg, settings, (asked, Via::Carrier)).await?;
     let sent = handled.texts.iter().find(|q| is_consent(q.template));
     if let (Some(consent), Some(id)) = (sent, handled.conversation) {
         let row = models::conversation(&mut tx, id)
@@ -248,6 +324,28 @@ pub async fn receive_answer(
     Ok(handled)
 }
 
+/// The chat's own service entry (CON-005, CON-025, D-5848, D-5918): a web-chat turn after the code
+/// in its open request, screened as [`receive_answer`] screens a reply to `asked`, with
+/// `rules::plan`'s input "request open". It never reaches [`receive_text`] or [`receive_answer`],
+/// so it queues no consent text and writes no consent record; with no open request it opens
+/// nothing ([`IntakeError::NoConsent`]).
+///
+/// # Errors
+///
+/// As [`on_text`], and [`IntakeError::NoConsent`]; nothing is kept on an error.
+pub async fn receive_chat(
+    db: &mut PgConnection,
+    secret: &SecretString,
+    msg: &TextIn<'_>,
+    settings: Settings,
+    asked: Asked,
+) -> Result<Handled, IntakeError> {
+    let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
+    let handled = handle(&mut tx, secret, msg, settings, (asked, Via::Chat)).await?;
+    tx.commit().await.map_err(|_| IntakeError::Database)?;
+    Ok(handled)
+}
+
 /// INT-020, CON-001, D-132: a would-be first message showing business intent gets one text, the
 /// sign-up link with the brand and the STOP/HELP line, and opens no request, queues no consent
 /// text and records no consent (`Then::Nothing`).
@@ -259,6 +357,7 @@ async fn business_reply(
     let wanted = wanted_language(inbound.words, inbound.ai_spanish);
     let language = consent_language(wanted, step.settings.spanish_conversations_on);
     let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
+    request_text(&mut tx, None, TextKind::BusinessSignup).await?;
     let subject = [step.msg.inbox_id];
     let text = (BUSINESS_SIGNUP_TEMPLATE, language);
     let queued = queue(&mut tx, step, text, &subject, &[]).await?;
@@ -289,10 +388,18 @@ async fn open_request(
     };
     let mut texts = Vec::with_capacity(decided.texts.len() + 1);
     for send in &decided.texts {
-        let (template, language, subject) = match *send {
-            Send::Safety(language) => (SAFETY_TEMPLATE, language, vec![id, msg.inbox_id]),
-            Send::Consent { template, language } => (template, language, vec![id]),
+        let (template, language, subject, kind) = match *send {
+            Send::Safety(language) => (
+                SAFETY_TEMPLATE,
+                language,
+                vec![id, msg.inbox_id],
+                TextKind::CarrierSafety,
+            ),
+            Send::Consent { template, language } => {
+                (template, language, vec![id], TextKind::CarrierConsent)
+            }
         };
+        request_text(tx, Some(id), kind).await?;
         texts.push(queue(tx, step, (template, language), &subject, &[]).await?);
     }
     let screened = match step.check {
@@ -880,7 +987,9 @@ pub async fn card_allowed(db: &mut PgConnection, conversation: Uuid) -> Result<b
 }
 
 /// Whether vault contact `contact` may be texted as a homeowner: only someone who wrote first and
-/// so has a consent record; a tenant or on-site contact never has one (CON-021). It covers
+/// so has an `sms` consent record (a `web_chat` record never counts, D-5848 R1-01); a tenant or
+/// on-site contact never has one (CON-021). Only for a caller with no request in hand, the
+/// owner's help reply; request texts use [`may_text_request`]. It covers
 /// homeowner request texts only and ignores opt-outs: required HELP and opt-out confirmations
 /// and the suppression list are decided by the send path, not by this gate.
 ///
@@ -889,6 +998,21 @@ pub async fn card_allowed(db: &mut PgConnection, conversation: Uuid) -> Result<b
 /// [`IntakeError::Database`].
 pub async fn may_text(db: &mut PgConnection, contact: Uuid) -> Result<bool, IntakeError> {
     models::contact_consented(db, contact).await
+}
+
+/// Whether request `conversation` may be texted (CON-005, CON-007, CON-021, D-5848): only with an
+/// `sms` consent record of its own, from her own inbound text; a `web_chat` record never counts.
+/// It decides `rules::plan`'s consent input; the chat exemption is the consent guard's
+/// (`consent_guard::request_text`), not this predicate's.
+///
+/// # Errors
+///
+/// [`IntakeError::Database`].
+pub async fn may_text_request(
+    db: &mut PgConnection,
+    conversation: Uuid,
+) -> Result<bool, IntakeError> {
+    models::sms_consented(db, conversation).await
 }
 
 /// How a pick accepted the homeowner terms (TERMS-001, TERMS-033).

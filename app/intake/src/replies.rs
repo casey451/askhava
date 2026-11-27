@@ -72,7 +72,7 @@ use crate::rules::{
     AgeStop, CloseReading, Settings, age_stop, close_reading, language_from_code,
     split_name_address,
 };
-use crate::service::{Asked, Handled, Queued, Screened, TextIn, receive_answer, receive_text};
+use crate::service::{Asked, Handled, Queued, Screened, TextIn, receive_answer, receive_chat};
 use crate::text_pick_reply::text_pick_reply;
 
 /// What [`receive_reply`] did with one inbound text.
@@ -140,7 +140,7 @@ pub async fn receive_reply(
     msg: &TextIn<'_>,
     (settings, names): (Settings, &[(Uuid, String)]),
 ) -> Result<Reply, IntakeError> {
-    reply_in(db, secret, (msg, None), (settings, names)).await
+    reply_in(db, secret, (msg, None), (settings, names), Entry::Carrier).await
 }
 
 /// As [`receive_reply`], with the raw text and the vault, so an answer to her open
@@ -157,7 +157,55 @@ pub async fn receive_raw_reply(
     (msg, raw): (&TextIn<'_>, RawReply<'_>),
     (settings, names): (Settings, &[(Uuid, String)]),
 ) -> Result<Reply, IntakeError> {
-    reply_in(db, secret, (msg, Some(raw)), (settings, names)).await
+    reply_in(
+        db,
+        secret,
+        (msg, Some(raw)),
+        (settings, names),
+        Entry::Carrier,
+    )
+    .await
+}
+
+/// The web chat's entry (CON-005, D-5848, D-5918): as [`receive_raw_reply`] for a chat turn in
+/// its open request, whose screen runs `service::receive_chat`, so the chat path never reaches
+/// `receive_text` or `receive_answer`'s consent write: no chat turn writes a consent record or
+/// passes a browser message ID as an `inbox_id` to one.
+///
+/// # Errors
+///
+/// As [`receive_raw_reply`], and `receive_chat`'s.
+pub(crate) async fn receive_chat_reply(
+    db: &mut PgConnection,
+    secret: &SecretString,
+    (msg, raw): (&TextIn<'_>, RawReply<'_>),
+    (settings, names): (Settings, &[(Uuid, String)]),
+) -> Result<Reply, IntakeError> {
+    reply_in(db, secret, (msg, Some(raw)), (settings, names), Entry::Chat).await
+}
+
+/// Which service entry a reply's 911 screen runs through (D-5918): only a carrier text's may
+/// write an `sms` consent record.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Entry {
+    /// A carrier inbound text: `receive_answer`.
+    Carrier,
+    /// A web-chat turn: `receive_chat`, which writes no consent record.
+    Chat,
+}
+
+/// The screen of a reply to `asked` through `entry`'s service entry (CON-005, INT-002, D-5918).
+async fn screen(
+    tx: &mut PgConnection,
+    secret: &SecretString,
+    msg: &TextIn<'_>,
+    (settings, asked): (Settings, Asked),
+    entry: Entry,
+) -> Result<Handled, IntakeError> {
+    match entry {
+        Entry::Carrier => receive_answer(tx, secret, msg, settings, asked).await,
+        Entry::Chat => receive_chat(tx, secret, msg, settings, asked).await,
+    }
 }
 
 /// The one body of [`receive_reply`] and [`receive_raw_reply`], in one transaction. A text that
@@ -172,6 +220,7 @@ async fn reply_in(
     secret: &SecretString,
     (msg, raw): (&TextIn<'_>, Option<RawReply<'_>>),
     (settings, names): (Settings, &[(Uuid, String)]),
+    entry: Entry,
 ) -> Result<Reply, IntakeError> {
     let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
     let answered_elsewhere = msg.inbound.opt_out || msg.inbound.help;
@@ -193,7 +242,7 @@ async fn reply_in(
     let (mut step_11, mut mention) = (None, None);
     if let Some(conversation) = open.filter(|_| !answered_elsewhere) {
         let request = (conversation, settings, names);
-        let (ended, said) = in_request(&mut tx, secret, (msg, raw), request).await?;
+        let (ended, said) = in_request(&mut tx, secret, (msg, raw), request, entry).await?;
         if let Some(reply) = ended {
             tx.commit().await.map_err(|_| IntakeError::Database)?;
             return Ok(reply);
@@ -201,7 +250,7 @@ async fn reply_in(
         mention = said;
         step_11 = (!closes(msg.inbound.words)).then_some(conversation);
     }
-    let mut handled = receive_text(&mut tx, secret, msg, settings).await?;
+    let mut handled = screen(&mut tx, secret, msg, (settings, Asked::Other), entry).await?;
     handled.texts.extend(mention);
     let spanish_on = settings.spanish_conversations_on;
     let stopped =
@@ -227,6 +276,7 @@ async fn in_request(
     secret: &SecretString,
     (msg, raw): (&TextIn<'_>, Option<RawReply<'_>>),
     (conversation, settings, names): (Uuid, Settings, &[(Uuid, String)]),
+    entry: Entry,
 ) -> Result<(Option<Reply>, Option<Queued>), IntakeError> {
     let spanish_on = settings.spanish_conversations_on;
     if list_ask(msg.inbound.words).is_some() {
@@ -255,7 +305,7 @@ async fn in_request(
         && let Some(raw) = raw.filter(|_| list_ask(msg.inbound.words).is_none())
         && name_address_open(tx, msg.contact).await?
     {
-        let mut reply = answer_name_address(tx, secret, (msg, raw), settings).await?;
+        let mut reply = answer_name_address(tx, secret, (msg, raw), (settings, entry)).await?;
         if let Reply::Handled(handled) = &mut reply {
             stop_after(tx, secret, msg, handled, spanish_on).await?;
         }
@@ -357,14 +407,14 @@ async fn answer_name_address(
     tx: &mut PgConnection,
     secret: &SecretString,
     (msg, raw): (&TextIn<'_>, RawReply<'_>),
-    settings: Settings,
+    (settings, entry): (Settings, Entry),
 ) -> Result<Reply, IntakeError> {
     let asked = if reads_as_address(raw.raw.expose_secret()) {
         Asked::NameAndAddress
     } else {
         Asked::Other
     };
-    let mut handled = receive_answer(tx, secret, msg, settings, asked).await?;
+    let mut handled = screen(tx, secret, msg, (settings, asked), entry).await?;
     let Some(conversation) = handled.conversation else {
         return Ok(Reply::Handled(handled));
     };

@@ -40,6 +40,7 @@ pub use crate::closing::{
     CLOSE_MENTION_TEMPLATE, CLOSE_WHICH_TEMPLATE, Closing, JOB_CLOSED_TEMPLATE,
     JOBS_CLOSED_TEMPLATE, answer_close, close_from_page,
 };
+pub use crate::consent_guard::{Delivery, TextKind, request_text};
 pub use crate::consent_purge::{
     CONSENT_PURGED, CONSENT_SWEEP_KIND, DueNumber, SweepStep, due_number, run_consent_sweep_at,
     schedule_consent_sweep, sweep_consent, sweep_number,
@@ -155,6 +156,7 @@ pub use crate::service::{
     receive_text, record_terms_acceptance, release_emergency, safe_hold, sole_cancel,
     terms_acceptances,
 };
+pub use crate::service::{may_text_request, receive_chat};
 pub use crate::summary_step::{
     APPROVED_ACTION, AUTO_SEND_AFTER, AUTO_SENT_ACTION, CARD_EDIT_TEMPLATE, CARD_LINK_TEMPLATE,
     CARD_SHOWN_TEMPLATE, CARD_SLOT, CARD_TIMER_KIND, CARDS_APPROVED_KIND, CardReply, CardStep,

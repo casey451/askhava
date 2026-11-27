@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT EXISTS (SELECT 1 FROM intake.consent_record r JOIN intake.homeowner h ON h.id = r.homeowner_id WHERE h.contact_id = $1) AS \"ok!\"",
+  "query": "SELECT EXISTS (SELECT 1 FROM intake.consent_record r JOIN intake.homeowner h ON h.id = r.homeowner_id WHERE h.contact_id = $1 AND r.channel = 'sms') AS \"ok!\"",
   "describe": {
     "columns": [
       {
@@ -19,5 +19,5 @@
       null
     ]
   },
-  "hash": "828df130eaae8cde797124999a353a0421063ec598dbf3100a37aaf9e68a6737"
+  "hash": "d63a66d38dc4a85d84c823b0fc1416530b1646d14f485a399c91a780a18159b2"
 }
