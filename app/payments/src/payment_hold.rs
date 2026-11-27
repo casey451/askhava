@@ -24,8 +24,9 @@ pub enum PaymentHold {
     /// Nothing holds the pick: no running or stopped pay timer, no attempt in flight or
     /// succeeded, no $0 decision and charges not paused; the wait may end it.
     Free,
-    /// A pay timer runs or is stopped, an attempt is `sent`, `processing` or `needs_action`, or
-    /// charges are paused (safe mode or the owner's charging switch, FEE-038).
+    /// A pay timer runs or is stopped, an attempt is `sent`, `processing` or `needs_action`,
+    /// charges are paused (safe mode or the owner's charging switch, FEE-038), or a `succeeded`
+    /// attempt's refund has succeeded while its PaymentIntent is unended (FEE-052, D-5888).
     Held,
     /// A `succeeded` attempt or a recorded $0 decision: the pick is to be settled and released
     /// (PICK-022), never ended as failed.
@@ -34,9 +35,12 @@ pub enum PaymentHold {
 
 /// JOB-014, FEE-018, FEE-020, FEE-038, OPS-024, PICK-022, D-4349: what `payments` holds for pick
 /// `pick`. A recorded $0 decision or a `succeeded` attempt on an unended PaymentIntent is
-/// [`PaymentHold::Success`]; then paused charges, an unended pay timer (running or stopped) or an
-/// attempt still `sent`, `processing` or `needs_action` is [`PaymentHold::Held`]; anything else,
-/// an intent `payments` already ended included, is [`PaymentHold::Free`].
+/// [`PaymentHold::Success`], unless that attempt's refund has succeeded (FEE-052, D-5888): the
+/// fraud end is the pick's, so it is [`PaymentHold::Held`] (never `Success`, which would queue a
+/// release refused each hour, nor `Free`, which would end it as `payment_failed`), and a stuck one
+/// is caught by `picks`' 24-hour held alert. Then paused charges, an unended pay timer (running or
+/// stopped) or an attempt still `sent`, `processing` or `needs_action` is [`PaymentHold::Held`];
+/// anything else, an intent `payments` already ended included, is [`PaymentHold::Free`].
 ///
 /// # Errors
 /// [`ChargeError::Database`].
@@ -51,15 +55,21 @@ pub async fn payment_held(conn: &mut PgConnection, pick: Uuid) -> Result<Payment
              EXISTS (SELECT 1 FROM payments.charge_attempt a WHERE a.pick_id = i.pick_id
                      AND a.status IN ('sent', 'processing', 'needs_action')) AS "in_flight!",
              EXISTS (SELECT 1 FROM payments.pay_timer t
-                     WHERE t.pick_id = i.pick_id AND t.ended_at IS NULL) AS "timer!"
+                     WHERE t.pick_id = i.pick_id AND t.ended_at IS NULL) AS "timer!",
+             EXISTS (SELECT 1 FROM payments.refund r
+                     WHERE r.pick_id = i.pick_id AND r.status = 'succeeded') AS "refunded!"
            FROM payments.pick_intent i WHERE i.pick_id = $1 AND i.ended_at IS NULL"#,
         pick
     )
     .fetch_optional(&mut *conn)
     .await
     .map_err(|_| ChargeError::Database)?;
-    if row.as_ref().is_some_and(|r| r.paid) {
-        return Ok(PaymentHold::Success);
+    if let Some(r) = row.as_ref().filter(|r| r.paid) {
+        return Ok(if r.refunded {
+            PaymentHold::Held
+        } else {
+            PaymentHold::Success
+        });
     }
     if charges_paused(conn).await? || row.is_some_and(|r| r.in_flight || r.timer) {
         return Ok(PaymentHold::Held);

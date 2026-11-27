@@ -282,6 +282,18 @@ async fn seeded(pool: &PgPool, status: JobStatus, intent: &str) -> ReleasedPick<
     }
 }
 
+/// A charged pick still waiting for its settle on a job in Payment pending (D-5888): the seed
+/// with its pick back to `awaiting_confirm`.
+async fn waiting(pool: &PgPool, intent: &str) -> ReleasedPick<'static> {
+    let case = seeded(pool, JobStatus::PaymentPending, intent).await;
+    sqlx::query("UPDATE picks.pick SET status = 'awaiting_confirm' WHERE id = $1")
+        .bind(case.pick)
+        .execute(pool)
+        .await
+        .expect("waiting");
+    case
+}
+
 /// The job's stored status code.
 async fn status(db: &mut sqlx::PgConnection, job: Uuid) -> &'static str {
     current(db, job).await.expect("job").status.code()
@@ -465,14 +477,16 @@ async fn td_fee_39_auto_submit(pool: PgPool) {
     );
 }
 
-/// TD-FEE-39: an early fraud warning on an unreleased charge refunds it once (a `fraud-warning`
+/// TD-FEE-39 (D-5888): an early fraud warning on an unreleased charge (its pick waiting in Payment
+/// pending, the state a charge succeeds in before the settle) refunds it once (a `fraud-warning`
 /// refund row), ends the pick as fraud-refunded and returns the job to Quotes ready; a released
-/// pick, a disputed (blocked) or failed refund and a job past Payment pending change nothing.
+/// pick (a caller's `true`, or a Connected job's `picks.release` row), a disputed (blocked) or
+/// failed refund change nothing.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_fee_39_the_fraud_warning(pool: PgPool) {
     let secret = SecretString::from(SECRET.to_owned());
     let (up, down) = ((&FakeStripe(true), &secret), (&FakeStripe(false), &secret));
-    let disputed = seeded(&pool, JobStatus::PaymentPending, INTENT).await;
+    let disputed = waiting(&pool, INTENT).await;
     let opened = DisputeOpened {
         dispute: "dp_FakeT191",
         payment_intent: INTENT,
@@ -484,7 +498,7 @@ async fn td_fee_39_the_fraud_warning(pool: PgPool) {
     assert_eq!(fraud_warning(&pool, up, ids, az(5, 9, 0)).await, Ok(false));
     let ended = "SELECT count(*) FROM picks.pick WHERE id = $1 AND status = 'fraud_refunded'";
     assert_eq!(count(&pool, ended, disputed.pick).await, 0);
-    let fresh = seeded(&pool, JobStatus::PaymentPending, "pi_FakeT191b").await;
+    let fresh = waiting(&pool, "pi_FakeT191b").await;
     let released = fraud_warning(&pool, up, (fresh.pick, fresh.job, true), az(5, 9, 0)).await;
     assert_eq!(released, Ok(false));
     let ids = (fresh.pick, fresh.job, false);
@@ -501,6 +515,9 @@ async fn td_fee_39_the_fraud_warning(pool: PgPool) {
     let refunds = "SELECT count(*) FROM payments.refund WHERE pick_id = $1 AND trigger = 'fraud-warning' AND status = 'succeeded'";
     assert_eq!(count(&pool, refunds, fresh.pick).await, 1);
     let connected = seeded(&pool, JobStatus::Connected, "pi_FakeT191d").await;
+    sqlx::query("INSERT INTO picks.release (pick_id, job_id, business_id, basis, released_at, contact_id, mail_chosen) VALUES ($1, $2, $3, 'paid', $4, $5, false)")
+        .bind(connected.pick).bind(connected.job).bind(BUSINESS).bind(az(2, 9, 0).to_sqlx()).bind(HOMEOWNER)
+        .execute(&pool).await.expect("release row");
     let ids = (connected.pick, connected.job, false);
     assert_eq!(fraud_warning(&pool, up, ids, az(5, 9, 0)).await, Ok(false));
     assert_eq!(status(&mut db, connected.job).await, "connected");

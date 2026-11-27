@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT DISTINCT business_id FROM picks.pick WHERE job_id = $1 AND (status IN ($2, $3) OR (status = $4 AND end_reason IN ('cant_take', 'fee_terms_changed')))",
+  "query": "SELECT DISTINCT business_id FROM picks.pick WHERE job_id = $1 AND (status IN ($2, $3, $5) OR (status = $4 AND end_reason IN ('cant_take', 'fee_terms_changed')))",
   "describe": {
     "columns": [
       {
@@ -20,6 +20,7 @@
         "Uuid",
         "Text",
         "Text",
+        "Text",
         "Text"
       ]
     },
@@ -27,5 +28,5 @@
       false
     ]
   },
-  "hash": "7ace69ab8a5fe6d4afcb042d9a0179f09a8259d39eab7c15effb31c495496251"
+  "hash": "c7f28acac89638fea10c2051475f5ffafb7af2c8f91f43007d9498f3ced8f89d"
 }

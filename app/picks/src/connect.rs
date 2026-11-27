@@ -9,7 +9,10 @@
 //! pressed before this change) gets both moves. [`end_pending`] is the one ending of a waiting pick
 //! whose job is in Payment pending: it ends the pick and its PaymentIntent through `payments`' own
 //! pick end (so a success before or after it is refunded once, FEE-021, D-2958), returns the job to
-//! Quotes ready and offers her backup (PICK-047) or sends PICK-046's text.
+//! Quotes ready and offers her backup (PICK-047) or sends PICK-046's text. T867 (FEE-052, D-5888):
+//! the early fraud warning's two real unreleased states end here, a waiting pick in Payment
+//! pending through [`end_pending`] with [`PendingEnd::FraudRefunded`] and a `paid` pick on a
+//! Connected job through [`end_connected_fraud`], both ending the pick as `fraud_refunded`.
 //!
 //! [`run_payment_returned`] handles `jobs`' `picks.payment_returned` task (`jobs::payment_wait`):
 //! while `payments::api::payment_held` holds the pick it restarts the wait and leaves the job; a
@@ -25,6 +28,7 @@ use askhava_jobs::api::{JobStatus, current, move_to, restart_timer};
 use askhava_ops::api::{Actor, AuditEntry, Change, NewAlert, Severity, audit_once, raise_alert};
 use askhava_payments::api::{PaymentHold, end_pick_intent, payment_held};
 use jiff::{SignedDuration, Timestamp};
+use jiff_sqlx::ToSqlx;
 use serde_json::json;
 use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
@@ -33,7 +37,7 @@ use crate::aftermath::refused_after_confirm;
 use crate::backup_choice::Backup;
 use crate::models::{self, PicksError};
 use crate::pick_ended::{after_end, end_unpaid};
-use crate::status::{awaits_charge, awaits_confirm};
+use crate::status::{PickStatus, awaits_charge, awaits_confirm};
 
 /// The task a held success queues, with T408's held-release payload `{pick, run_at}`; `server`
 /// runs `run_held_release` on it (PICK-022, OPS-024, D-3263, D-4349).
@@ -70,6 +74,9 @@ pub enum PendingEnd {
     Ineligible,
     /// The job reached a final status: cancelled with `job_final` (FEE-021, D-4748).
     JobFinal,
+    /// An early fraud warning's refund succeeded before any release: the pick ends as
+    /// `fraud_refunded` with no `end_reason` (FEE-052, JOB-014, D-5888).
+    FraudRefunded,
 }
 
 /// Locks pick `pick` and answers its business only while it waits for Confirm, has not ended and
@@ -163,7 +170,9 @@ async fn system_move(
 /// there, one recorded after it by `record`), and a job in Payment pending returns to Quotes
 /// ready with her backup (PICK-047) or PICK-046's text. An `ineligible` end tells its business "This
 /// job is no longer active." at once (`aftermath::refused_after_confirm`, PICK-026, D-043, D-4361).
-/// A job in a final status only has the pick ended ([`Backup::Done`]).
+/// A job in a final status only has the pick ended ([`Backup::Done`]). A
+/// [`PendingEnd::FraudRefunded`] end gets its `fraud_refunded` status after the backup step, in the
+/// same transaction (FEE-052, D-5944).
 ///
 /// # Errors
 /// [`PicksError::Database`], [`PicksError::Job`], [`PicksError::MovedOn`] (roll back) or the
@@ -185,19 +194,93 @@ pub async fn end_pending(
             models::end_pick(tx, pick, "ineligible", at).await?;
             refused_after_confirm(tx, job, business).await?;
         }
+        PendingEnd::FraudRefunded => {
+            end_for_backup(tx, pick, PickStatus::AwaitingConfirm, at).await?
+        }
     }
     end_pick_intent(tx, pick, at)
         .await
         .map_err(|_| PicksError::Database)?;
-    if current(tx, job)
-        .await
-        .map_err(|_| PicksError::Job)?
-        .status
-        .is_final()
-    {
-        return Ok(Backup::Done);
+    let status = current(tx, job).await.map_err(|_| PicksError::Job)?.status;
+    let backup = if status.is_final() {
+        Backup::Done
+    } else {
+        after_end(tx, (job, pick, business), (actor, at)).await?
+    };
+    if reason == PendingEnd::FraudRefunded {
+        mark_fraud_refunded(tx, pick).await?;
     }
-    after_end(tx, (job, pick, business), (actor, at)).await
+    Ok(backup)
+}
+
+/// FEE-052, JOB-014, PICK-047, D-5888: the fraud end of pick `pick` of `business`, `paid` and
+/// unreleased, whose job `job` is Connected, at `at`, in the caller's transaction under the pick's
+/// row lock: the job moves Connected to Quotes ready, the pick ends as `fraud_refunded`, its
+/// PaymentIntent ends through `payments`' own pick end (the late-success path sees the refund and
+/// does nothing) and her backup is offered, or PICK-046's text queued, through [`after_end`].
+///
+/// # Errors
+/// [`PicksError::MovedOn`] (roll back) when the job or pick moved on, [`PicksError::Job`],
+/// [`PicksError::Database`] or the backup move's errors.
+pub(crate) async fn end_connected_fraud(
+    tx: &mut PgConnection,
+    (pick, job, business): (Uuid, Uuid, Uuid),
+    at: Timestamp,
+) -> Result<Backup, PicksError> {
+    system_move(tx, job, (JobStatus::Connected, JobStatus::QuotesReady), at).await?;
+    end_for_backup(tx, pick, PickStatus::Paid, at).await?;
+    end_pick_intent(tx, pick, at)
+        .await
+        .map_err(|_| PicksError::Database)?;
+    let backup = after_end(tx, (job, pick, business), (Actor::System, at)).await?;
+    mark_fraud_refunded(tx, pick).await?;
+    Ok(backup)
+}
+
+/// D-5888: ends pick `pick` while it is `from`, at `at`, as `cancelled` with no `end_reason`, the
+/// end `backup_choice` offers a backup for; [`mark_fraud_refunded`] gives it its real status in
+/// the same transaction, after the backup step, so no other session ever sees the `cancelled`
+/// row. [`PicksError::MovedOn`] when the pick is no longer `from` (roll back).
+async fn end_for_backup(
+    tx: &mut PgConnection,
+    pick: Uuid,
+    from: PickStatus,
+    at: Timestamp,
+) -> Result<(), PicksError> {
+    let ended = sqlx::query!(
+        "UPDATE picks.pick SET status = $2, end_reason = NULL, ended_at = $3 \
+         WHERE id = $1 AND status = $4 AND ended_at IS NULL",
+        pick,
+        PickStatus::Cancelled.code(),
+        at.to_sqlx() as _,
+        from.code(),
+    )
+    .execute(tx)
+    .await
+    .map_err(|_| PicksError::Database)?;
+    if ended.rows_affected() == 0 {
+        return Err(PicksError::MovedOn);
+    }
+    Ok(())
+}
+
+/// FEE-052, D-5888: gives pick `pick`, ended by [`end_for_backup`] in this transaction, its status
+/// `fraud_refunded`; [`PicksError::MovedOn`] (roll back) when it is not that ended row.
+async fn mark_fraud_refunded(tx: &mut PgConnection, pick: Uuid) -> Result<(), PicksError> {
+    let marked = sqlx::query!(
+        "UPDATE picks.pick SET status = $2 \
+         WHERE id = $1 AND status = $3 AND end_reason IS NULL AND ended_at IS NOT NULL",
+        pick,
+        PickStatus::FraudRefunded.code(),
+        PickStatus::Cancelled.code(),
+    )
+    .execute(tx)
+    .await
+    .map_err(|_| PicksError::Database)?;
+    if marked.rows_affected() == 0 {
+        return Err(PicksError::MovedOn);
+    }
+    Ok(())
 }
 
 /// The `picks.payment_returned` handler (JOB-006, JOB-014, FEE-020, FEE-038, D-4349):
