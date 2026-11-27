@@ -14,6 +14,9 @@ import pytest
 
 from runner import cycle, state as st
 from tests.test_failure_drills import NOW, FakeEnv, config, green_pr, make_task
+from tests import test_runner_wip_env as wip_env
+
+git_world = wip_env.world  # the real-git clone with main's scanners (T726's fixture)
 
 HEAD = "a" * 40
 OTHER = "b" * 40
@@ -269,3 +272,10 @@ def test_check_state_reads_states_with_and_without_the_wip_keys(tmp_path: Path) 
     for state in (plain, kept, env.store):
         assert cs.check(state, lanes=1, now=NOW) == []
     assert "wip" in st.entry(kept, "T001") and "continued_from" in st.entry(env.store, "T001")["history"][-1]
+
+
+def test_a_wip_save_whose_commit_carries_the_co_authored_by_trailer_passes_the_scan(git_world: dict[str, Any]) -> None:
+    """D-5934: every worker commit ends with Anthropic's no-reply trailer; main's PII scan must not refuse it."""
+    message = "Fake change\n\nCo-Authored-By: Claude Opus 5.5 <noreply" + "@anthropic.com>"
+    head = wip_env.commit(git_world["root"], {"app/demo/notes.txt": "start\nok\n"}, message)
+    assert git_world["env"].wip_check(head) == ""

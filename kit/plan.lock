@@ -68,7 +68,7 @@
   "scripts/gen_prompts.py": "f07bdf464f66e48b1c4aa3a51d10a112a18d3a6e7c2587fa970ce8f7e60197ee",
   "scripts/npm_audit.py": "8a31f6985a5b3fe1e5fd833002c322b5fae394be8f10a51dfee8fd3978a6d25c",
   "scripts/pacing.py": "64fbda8e50778f579a2772f19af510e9b9d9c7336904183675426ac3b81bdf03",
-  "scripts/pii_scan.py": "0b65cdf5311ce3923101e91bc60f6a90f36c37dafa58d6622944306f0738d6ab",
+  "scripts/pii_scan.py": "e228b1e4018d3003bff0392bb241eaa54a5f827130b61d21757940c4a1b4cecb",
   "scripts/plan_health.py": "2448d0d3b1932ac7f1deb43ec9b8142fc299821eb0c53048e023fb6086c7f8f4",
   "scripts/plan_pages.py": "714c045b4117f0019cf83493c60e2b2e1b206cb8eaddcf7d0e4bc931a42c298f",
   "scripts/plan_pins.py": "582c52c071b58cdba5dc0933ff8e714855aa87ce4e6e623885f85d9c85cd61fb",
