@@ -3,19 +3,14 @@
  "leases": {
   "1": null,
   "2": null,
-  "3": {
-   "task": "T612",
-   "session": "actions-45935237759",
-   "expires": "2026-11-27T06:44:20Z",
-   "lane": "3"
-  },
+  "3": null,
   "4": null,
   "5": null,
   "6": null,
   "7": null,
   "fix": null
  },
- "seq": 11367,
- "runner_sha": "71a7f5f83c4fa26aac55ae18d2c6c8c1d18e3eda",
+ "seq": 11368,
+ "runner_sha": "a5560a0b9856a760bea55ea083ee2bc107781409",
  "starter": "actions"
 }
