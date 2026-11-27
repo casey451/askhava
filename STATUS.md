@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-27T10:51:53Z by runner f3fc11156d59 (actions).
+Updated 2026-11-27T10:58:49Z by runner f3fc11156d59 (actions).
 
 **Building: T778 in progress since 09:29Z; 688 of 802 done; week 14% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 688 of 802 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T778 claimed 09:29Z, lease until 12:29Z; lane 3: T820 claimed 09:21Z, lease until 12:21Z; lane 4: T734 claimed 09:27Z, lease until 12:27Z
+- **Lane:** lane 1: T778 claimed 09:29Z, lease until 12:29Z; lane 4: T734 claimed 09:27Z, lease until 12:27Z
 - **Week:** 14% used, 161.2M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:51Z, 0 min before this update
+- **Last run:** 10:52Z, 6 min before this update
 - **Keeper:** last ran 10:51Z, next wake 12:23Z
 
 ## Needs attention
@@ -127,7 +127,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T778 (lease until 2026-11-27T12:29:44Z)
-- lane 3: T820 (lease until 2026-11-27T12:21:05Z)
 - lane 4: T734 (lease until 2026-11-27T12:27:02Z)
 
 ## Last usage reading
