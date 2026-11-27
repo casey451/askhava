@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-27T15:27:51Z by runner ecb8e6fc2be5 (actions).
+Updated 2026-11-27T15:28:27Z by runner ecb8e6fc2be5 (actions).
 
-**Building: T849 in progress since 13:29Z; 692 of 802 done; week 15% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Idle since 15:27Z; 692 of 802 done; week 15% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 692 of 802 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T849 claimed 13:29Z, lease until 16:29Z
+- **Lane:** idle since 15:27Z (no task in progress)
 - **Week:** 15% used, 164.1M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:19Z, 7 min before this update
+- **Last run:** 15:19Z, 8 min before this update
 - **Keeper:** last ran 15:19Z, next wake 16:31Z
 
 ## Needs attention
@@ -26,6 +26,7 @@ Evidence: her data download is assembled in app/server/src/homeowner_portal.rs:6
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T849 | server: the e2e web binary serves J1/J2 business time from t | MERGE_PENDING | 4 | 118 min | 15:27Z | PLAN GAP: outside ownership: tests/e2e/web_chat.spec.ts, tests/a11y/page_states.ts / D-5836 puts inbound SMS and action  |
 | T817 | messaging: a text re-checks the opt-out list after its claim | MERGE_PENDING | 1 | 67 min | 14:27Z |  |
 | T822 | docs: the privacy policy names the email link and the fuller | done | 1 | 54 min | 14:13Z |  |
 | T862 | privacy: the email she types in her own conversation is kept | BLOCKED | 1 | 4 min | 13:22Z | PLAN GAP: outside ownership: app/server/src/homeowner_portal.rs, app/portals/src/homeowner_portal.rs / Evidence: her dat |
@@ -36,7 +37,7 @@ Evidence: her data download is assembled in app/server/src/homeowner_portal.rs:6
 | T778 | jobs, core and server: a dead Payment pending timer is reviv | done | 1 | 114 min | 11:24Z |  |
 | T867 | picks and payments (harness): an early fraud warning before  | check_failed | 1 | 60 min | 10:24Z |  |
 | T868 | tests (harness): two DONE tests that can fail by chance are  | done | 1 | 85 min | 10:14Z |  |
-| T849 | server: the e2e web binary serves J1/J2 business time from t | BLOCKED | 3 | 7 min | 09:16Z | PLAN GAP: outside ownership: tests/e2e/web_chat.spec.ts, tests/a11y/page_states.ts / D-5836 puts inbound SMS and action  |
+| T849 | server: the e2e web binary serves J1/J2 business time from t | BLOCKED | 3 | 7 min | 09:16Z |  |
 | T734 | server and adapters: a business can leave in the portal, wit | QUEUED | 1 | 2 h 19 min | 09:14Z |  |
 | T869 | harness: the PII scan allows the Co-Authored-By no-reply add | done | 1 | 82 min | 08:53Z |  |
 | T849 | server: the e2e web binary serves J1/J2 business time from t | check_failed | 2 | 45 min | 08:29Z |  |
@@ -118,7 +119,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T849 (lease until 2026-11-27T16:29:16Z)
 
 ## Last usage reading
-- {"task": "T817", "at": "2026-11-27T14:27:53Z", "input_tokens": 200, "output_tokens": 69086, "cache_read_input_tokens": 9600085, "cache_creation_input_tokens": 213971}
+- {"task": "T849", "at": "2026-11-27T15:27:49Z", "cache_read_input_tokens": 13144721, "output_tokens": 82348, "cache_creation_input_tokens": 319898, "input_tokens": 314}
