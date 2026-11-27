@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-27T05:34:15Z by runner f3227dc57502 (actions).
+Updated 2026-11-27T05:34:49Z by runner f3227dc57502 (actions).
 
-**Building: T518 in progress since 04:42Z; 683 of 799 done; week 11% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Building: T612 in progress since 03:44Z; 683 of 799 done; week 11% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 683 of 799 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T518 claimed 04:42Z, lease until 07:42Z; lane 3: T612 claimed 03:44Z, lease until 06:44Z
+- **Lane:** lane 3: T612 claimed 03:44Z, lease until 06:44Z
 - **Week:** 11% used, 167.9M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:27Z, 6 min before this update
+- **Last run:** 05:27Z, 7 min before this update
 - **Keeper:** last ran 05:17Z, next wake 05:37Z
 
 ## Needs attention
@@ -42,10 +42,11 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T518 | server, ops and payments: the Stripe-or-webhook-errors alert | MERGE_PENDING | 1 | 51 min | 05:34Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
 | T657 | quotes and portals: quote-form and sign-in errors mark the f | QUEUED | 2 | 25 min | 05:11Z | Worker stopped with no edits: start smoke exceeded ~20 min. Finding: J3 step 5 owner sign-in (signInOwner, tests/e2e/own |
 | T849 | server: the e2e web binary serves J1/J2 business time from t | MERGE_PENDING | 1 | 103 min | 05:09Z |  |
 | T843 | runner (harness): a 35-minute pre-session smoke cap, and a p | done | 1 | 78 min | 04:51Z |  |
-| T518 | server, ops and payments: the Stripe-or-webhook-errors alert | resync | 1 | 2 h 9 min | 04:13Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
+| T518 | server, ops and payments: the Stripe-or-webhook-errors alert | resync | 1 | 2 h 9 min | 04:13Z |  |
 | T522 | server and portals: the business text-consent box is served  | done | 1 | 104 min | 04:07Z |  |
 | T612 | harness: the WEB-029 and WEB-030 runtime checks on every sit | QUEUED | 2 | 96 min | 03:36Z | Reviewer on head 700f50e1fce2ee8fc4392587b89d7a82a956f72f still ended REVIEW-VERDICT: FINDINGS after the fix round: / 1. |
 | T799 | Templates and tests (harness): copy review fixes (refund att | done | 2 | 31 min | 02:52Z | PLAN GAP: contradiction: D-5401 requires es.json text "dentro de 72 horas de recibir los datos del cliente" (5 keys), bu |
@@ -112,8 +113,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T518 (lease until 2026-11-27T07:42:44Z)
+- nothing
 - lane 3: T612 (lease until 2026-11-27T06:44:20Z)
 
 ## Last usage reading
-- {"task": "T657", "at": "2026-11-27T05:11:52Z", "cache_read_input_tokens": 2959203, "cache_creation_input_tokens": 82039, "input_tokens": 95, "output_tokens": 17943}
+- {"task": "T518", "at": "2026-11-27T05:34:14Z", "cache_creation_input_tokens": 73367, "input_tokens": 65, "output_tokens": 11950, "cache_read_input_tokens": 1030508}
