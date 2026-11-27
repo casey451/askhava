@@ -185,10 +185,15 @@ async fn td_ops_41_a_held_connection_makes_the_second_acquire_wait(test_pool: Pg
     let (capture, _guard) = install(&metrics, &pool).await;
     let before = metrics.snapshot();
     let held = pool.acquire().await.expect("first acquire");
+    let (started, waiting) = tokio::sync::oneshot::channel();
     let waiter = tokio::spawn({
         let pool = pool.clone();
-        async move { pool.acquire().await.map(drop) }
+        async move {
+            started.send(()).expect("the test awaits the start");
+            pool.acquire().await.map(drop)
+        }
     });
+    waiting.await.expect("the waiter starts its acquire");
     tokio::time::sleep(HOLD).await;
     drop(held);
     waiter.await.expect("waiter joins").expect("second acquire");

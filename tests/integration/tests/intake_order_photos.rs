@@ -538,7 +538,21 @@ async fn td_int_49_a_picture_text_is_stored_confirmed_and_put_on_the_card(pool: 
     assert_eq!(keys, ["inbox", "media", "message"], "IDs only");
     assert_eq!(payload["message"], message.as_str());
     assert_eq!(payload["media"], serde_json::json!([media]));
-    assert!(!payload.to_string().contains("http") && !payload.to_string().contains("555"));
+    let inbox: Uuid = sqlx::query_scalar("SELECT id FROM messaging.inbox WHERE message_sid = $1")
+        .bind(&message)
+        .fetch_one(&kit.pool)
+        .await
+        .expect("the inbox row");
+    let whole =
+        serde_json::json!({"inbox": inbox.to_string(), "media": [media], "message": message});
+    assert_eq!(*payload, whole, "the payload is exactly the IDs");
+    let text = payload.to_string();
+    assert!(!text.contains("http"));
+    let ten = format!("928555{:04}", 402);
+    assert!(
+        !text.contains(&format!("+1{ten}")) && !text.contains(&ten),
+        "no phone"
+    );
     assert_eq!(texts(&kit, NAME_ADDRESS_TEMPLATE).await, 0, "step 9 waits");
     assert!(kit.fetched().is_empty(), "nothing fetched in the webhook");
     kit.serve(&media, png(640, 480));
