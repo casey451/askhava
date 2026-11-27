@@ -60,6 +60,7 @@ use askhava_adapters::api::{
     PaymentsAdapter, SetUpIntent, VerifyAdapter,
 };
 use askhava_businesses::api::{ConfirmTerms, confirm_assent_line, members, record_confirm_terms};
+use askhava_core::api::Clock;
 use askhava_intake::api::{Admission, job_homeowner, jobs_of_contact, paused_by_homeowner};
 use askhava_jobs::api::job_number;
 use askhava_messaging::api::{NoticeKind, notice_log, record_first_open};
@@ -1053,28 +1054,30 @@ struct Mine {
 
 /// PICK-033, SEC-004, SEC-019, SEC-048: the signed-in owner or "Confirm and billing" member of
 /// `pick`'s business, else the answer to send; a signed-in person's refusal is an `authz_denied`
-/// event.
+/// event. The session and the event cap read `clock.real_now()`, never a test-control advance
+/// (D-5836).
 async fn mine(
     pool: &PgPool,
     jar: &CookieJar,
     (pick, site): (&str, Site),
-    now: Timestamp,
+    clock: &dyn Clock,
 ) -> Result<Mine, Box<Response>> {
+    let real = clock.real_now();
     let mut db = pool.acquire().await.map_err(|_| Box::new(failed()))?;
-    let who = match business_principal(&mut db, jar, now).await {
+    let who = match business_principal(&mut db, jar, real).await {
         Ok(Some(who)) => who,
         Ok(None) => return Err(Box::new(signed_out())),
         Err(_) => return Err(Box::new(failed())),
     };
     let Ok(pick) = Uuid::try_parse(pick) else {
-        return Err(Box::new(denied(&mut db, site, &who, now).await));
+        return Err(Box::new(denied(&mut db, site, &who, real).await));
     };
     let fee = pick_fee(&mut db, pick)
         .await
         .map_err(|_| Box::new(failed()))?;
     match fee.filter(|f| may_confirm(Some(&who), f.business.0)) {
         Some(fee) => Ok(Mine { who, pick, fee }),
-        None => Err(Box::new(denied(&mut db, site, &who, now).await)),
+        None => Err(Box::new(denied(&mut db, site, &who, real).await)),
     }
 }
 
@@ -1149,7 +1152,7 @@ where
 {
     let route = &served.route;
     let now = route.hooks.clock.now();
-    let mine = match mine(&route.hooks.pool, &jar, (&pick, site), now).await {
+    let mine = match mine(&route.hooks.pool, &jar, (&pick, site), &*route.hooks.clock).await {
         Ok(mine) => mine,
         Err(answer) => return *answer,
     };
@@ -1463,7 +1466,7 @@ where
 {
     let route = &served.route;
     let now = route.hooks.clock.now();
-    let mine = match mine(&route.hooks.pool, &jar, (&pick, site), now).await {
+    let mine = match mine(&route.hooks.pool, &jar, (&pick, site), &*route.hooks.clock).await {
         Ok(mine) => mine,
         Err(answer) => return *answer,
     };
@@ -1473,7 +1476,7 @@ where
     let Some(settings) = &route.settings else {
         return Json(said("try_later", CARD_OFF_REPLY, None)).into_response();
     };
-    let code_passed = match code_gate(&served, &mine, (site, &form.code), now).await {
+    let code_passed = match code_gate(&served, &mine, (site, &form.code)).await {
         Ok(Ok(passed)) => passed,
         Ok(Err(reply)) => return Json(reply).into_response(),
         Err(()) => return failed(),
@@ -1503,11 +1506,11 @@ where
 /// call, the press's own code when one is owed: `Ok(false)` when none is owed, `Ok(true)` when
 /// Verify answered [`CodeCheck::Right`]; else the reply that charges nothing: that answer's
 /// error, or with no codes configured the shared-inbox line. No connection is held across Verify.
+/// The try admission counts at the route clock's `real_now()` (D-5836).
 async fn code_gate<S, R>(
     served: &Served<S, R>,
     mine: &Mine,
     (site, code): (Site, &str),
-    now: Timestamp,
 ) -> Result<Result<bool, PressReply>, ()> {
     let pool = &served.route.hooks.pool;
     let mut db = pool.acquire().await.map_err(|_| ())?;
@@ -1520,7 +1523,10 @@ async fn code_gate<S, R>(
         return Ok(Err(said("ended", CODE_LINE, None)));
     };
     let who = (site.client, mine.who.member(), mine.fee.business.0);
-    let checked = codes.check(pool, who, code, now).await.map_err(|_| ())?;
+    let checked = codes
+        .check(pool, who, code, served.route.hooks.clock.real_now())
+        .await
+        .map_err(|_| ())?;
     Ok(match checked.error() {
         None => Ok(true),
         Some(error) => Err(said("declined", error, None)),
@@ -1544,7 +1550,7 @@ where
 {
     let route = &served.route;
     let now = route.hooks.clock.now();
-    let mine = match mine(&route.hooks.pool, &jar, (&pick, site), now).await {
+    let mine = match mine(&route.hooks.pool, &jar, (&pick, site), &*route.hooks.clock).await {
         Ok(mine) => mine,
         Err(answer) => return *answer,
     };
@@ -2258,5 +2264,61 @@ mod tests {
             .expect("body");
         let page = String::from_utf8(bytes.to_vec()).expect("utf-8");
         assert!(page.contains(&format!("<a href=\"{SIGNIN_ROUTE}\">Sign in</a>")));
+    }
+}
+
+#[cfg(test)]
+pub(crate) mod real_time_tests {
+    //! D-5836: the Confirm route reads its session at `real_now()` under an advanced
+    //! test-control clock. Fake values only.
+
+    use askhava_businesses::api::{add_owner, create};
+    use jiff::SignedDuration;
+
+    use super::*;
+    use crate::business_auth::BUSINESS_SESSION_LIFE;
+    use crate::models::insert_business_session;
+    use crate::session::{Realm, current_session, start_session};
+
+    /// `now()` 40 days ahead and `real_now()` at system time, as the test-control offset clock
+    /// (`ManualClock`'s `real_now()` equals its `now()`).
+    pub(crate) struct Ahead;
+
+    impl Clock for Ahead {
+        fn now(&self) -> Timestamp {
+            let real = Timestamp::now();
+            real.saturating_add(SignedDuration::from_hours(960))
+                .unwrap_or(real)
+        }
+
+        fn real_now(&self) -> Timestamp {
+            Timestamp::now()
+        }
+    }
+
+    /// SEC-004: a 30-day session started at real time still signs its owner in on a clock
+    /// whose `now()` is past its end, so an unknown pick is the signed-in not-found answer.
+    #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+    async fn a_session_issued_at_real_time_is_still_accepted(pool: PgPool) {
+        let mut db = pool.acquire().await.expect("db");
+        let at = Timestamp::now();
+        let business = create(&mut db, false, at).await.expect("business");
+        let owner = add_owner(&mut db, business, Uuid::new_v4(), at).await;
+        let login = (Realm::Business, owner.expect("owner"));
+        let jar = start_session(&mut db, CookieJar::new(), login, BUSINESS_SESSION_LIFE, at).await;
+        let jar = jar.expect("session");
+        let session = current_session(&mut db, &jar, at).await.expect("read");
+        let session = session.expect("live").id();
+        insert_business_session(&mut db, session, business)
+            .await
+            .expect("named");
+        drop(db);
+        let site = Site {
+            request_id: None,
+            client: IpAddr::from([192, 0, 2, 8]),
+        };
+        let answer = mine(&pool, &jar, ("not-a-pick", site), &Ahead).await;
+        let status = answer.err().map(|r| r.status());
+        assert_eq!(status, Some(StatusCode::NOT_FOUND));
     }
 }
