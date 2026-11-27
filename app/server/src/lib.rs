@@ -498,7 +498,8 @@ fn owner_pages(
 
 /// The served business sign-in (T280) and sign-up (T302) routes, each only when its part is given,
 /// the business portal (T300) over `pool`, always (`business_portal::served`), and the Confirm
-/// route (T261) from the Stripe hooks, with the parts' Confirm settings, else none; the "Can't
+/// route (T261) from the Stripe hooks on the system clock (`release_sink::confirm_hooks`,
+/// D-5903), with the parts' Confirm settings, else none; the "Can't
 /// take it" page and button ([`cant_take_route`], T472), always; the business job page
 /// ([`job_page_route`], T666, with photo links only with the photo parts and the webhooks' ID
 /// secret), always; the business step-up page
@@ -530,7 +531,7 @@ fn business_pages(
     let (webhooks, voice) = (webhooks.as_ref(), voice.as_ref());
     let confirm = stripe.as_ref().map_or_else(Router::new, |hooks| {
         let route = ConfirmRoute {
-            hooks: Arc::clone(hooks),
+            hooks: release_sink::confirm_hooks(hooks),
             settings: parts.confirm.clone(),
             approval: Arc::new(StripeApproval(hooks.stripe.clone())),
         };
@@ -698,8 +699,8 @@ pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterP
 /// feedback, check-in and action-link pages on `clock` (D-5836): the web binary passes its
 /// test-control clock, the one it gives [`webhooks_with_clock`] and
 /// [`release_sink::stripe_webhook_with_clock`], so an e2e clock advance moves them all. The business
-/// portal, owner pages, help, digest, job page, sign-in, sign-up and the refusal log stay on the
-/// system clock.
+/// portal, owner pages, help, digest, job page, sign-in, sign-up, the refusal log and the Confirm
+/// route (its PICK-020 re-check, D-5903) stay on the system clock.
 pub fn build_router_with_clock(
     pool: PgPool,
     test_control: Router,

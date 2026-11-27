@@ -87,10 +87,11 @@ const STRIPE_API: &str = "https://api.stripe.com";
 pub type StripeHooks = Arc<StripeWebhook<StripePayments, PickReleaser>>;
 
 /// The release sink: the pool, the vault the release reads, the masked pool its line comes from
-/// and the clock (PICK-022, CALL-001).
+/// and the clock (PICK-022, CALL-001); a clone shares the vault (D-5903).
+#[derive(Clone)]
 pub struct PickReleaser {
     pool: PgPool,
-    vault: Vault,
+    vault: Arc<Vault>,
     masked: MaskedPool,
     clock: Arc<dyn Clock>,
 }
@@ -101,7 +102,7 @@ impl PickReleaser {
     pub fn new(pool: PgPool, vault: Vault, masked: MaskedPool, clock: Arc<dyn Clock>) -> Self {
         Self {
             pool,
-            vault,
+            vault: Arc::new(vault),
             masked,
             clock,
         }
@@ -174,7 +175,7 @@ impl PickReleaser {
             moved_on_success(&mut tx, cleared.pick(), at).await?;
         }
         tx.commit().await.map_err(|_| ReleaseError::Database)?;
-        let keys = (&self.vault, &self.masked);
+        let keys = (&*self.vault, &self.masked);
         release_settled(&self.pool, keys, (cleared, settled), at).await
     }
 }
@@ -471,8 +472,8 @@ where
 }
 
 /// [`stripe_webhook`] on `clock` (D-5836): the web binary passes the test-control clock, so the
-/// event cap and signature window read its `real_now()` and the [`PickReleaser`]'s settle,
-/// release and Confirm its `now()`.
+/// event cap and signature window read its `real_now()` and the [`PickReleaser`]'s settle and
+/// release its `now()`; the Confirm route takes [`confirm_hooks`] of them (D-5903).
 ///
 /// # Errors
 /// As [`stripe_webhook`].
@@ -527,6 +528,27 @@ where
         clock,
         sink,
     })))
+}
+
+/// The Confirm route's copy of `hooks` (PICK-020, D-5903): the same client, secret, account,
+/// mode, address policy and release sink (whose release instant stays on the webhook's clock), but
+/// on the system clock, because the press's re-check compares the stored ROC check's `checked_at`,
+/// stamped with database time, against `now()` (a database-time floor, as the statement's,
+/// D-5836 C5), so a test-control advance over 24 hours would end every pick as `ineligible`.
+/// On [`stripe_webhook`]'s hooks it changes nothing: their clock is already the system clock.
+#[must_use]
+pub fn confirm_hooks(hooks: &StripeHooks) -> StripeHooks {
+    Arc::new(StripeWebhook {
+        pool: hooks.pool.clone(),
+        stripe: hooks.stripe.clone(),
+        secret: hooks.secret.clone(),
+        account: hooks.account.clone(),
+        mode: hooks.mode,
+        stand_in_host: hooks.stand_in_host,
+        client_ip: hooks.client_ip.clone(),
+        clock: Arc::new(SystemClock),
+        sink: hooks.sink.clone(),
+    })
 }
 
 fn missing(key: &str) -> io::Error {

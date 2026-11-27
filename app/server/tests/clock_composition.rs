@@ -5,7 +5,8 @@
 //! test-control offset clock's is (`ManualClock`'s `real_now()` equals its `now()`). A signed text
 //! is stored at the advanced instant; with no webhook keys the router still composes; a Stripe
 //! event signed at real time is accepted and settles once, the job Connected at the release
-//! instant; a business session issued at real time still opens Confirm and its charge shows in
+//! instant; a Confirm press after an advance re-checks at real time (D-5903); a business session
+//! issued at real time still opens Confirm and its charge shows in
 //! this month's statement; the worker's sweep keeps a session live in real time. The Stripe calls
 //! go to the stand-in (`python3 -m stand_ins.server`, started per test). Fake data only.
 
@@ -391,8 +392,8 @@ async fn picked(pool: &PgPool, business: Uuid, now: Timestamp) -> (Uuid, Uuid) {
 
 /// A business signed in at real time, its Stripe customer at the stand-in and the card
 /// authorization accepted, then a pick of its quote pressed through Confirm on `app`:
-/// `(business, job, pick, jar)`, all at real time, before any advance (the ROC check is stamped
-/// by the database, so PICK-020's 24-hour freshness holds only then).
+/// `(business, job, pick, jar)`, all at real time (the ROC check is stamped by the database, so
+/// the Confirm route keeps PICK-020's 24-hour freshness on the system clock, D-5903).
 async fn confirmed(pool: &PgPool, app: &Router, stripe: &str) -> Confirmed {
     let (business, mailbox) = business(pool).await;
     let (job, pick) = picked(pool, business, Timestamp::now()).await;
@@ -554,6 +555,18 @@ async fn a_stripe_event_signed_at_real_time_settles_once_at_the_release_instant(
     );
     let runs = value(&pool, queued).await;
     assert_eq!(runs, at, "settled once, its email due from the release");
+}
+
+/// PICK-020, OPS-024, D-5903: after a 2-day advance a Confirm press on a fresh real-time ROC
+/// check still waits for Stripe, never ending the pick as `ineligible`.
+#[sqlx::test(migrator = "MIGRATOR")]
+async fn a_confirm_press_after_an_advance_rechecks_at_real_time(pool: PgPool) {
+    let stand_in = stand_in();
+    let clock = Ahead::by(2);
+    let app = app(&pool, &clock, Some(&stand_in.1));
+    let (_, _, pick, _) = confirmed(&pool, &app, &stand_in.1).await;
+    let status = format!("SELECT status AS v FROM picks.pick WHERE id = '{pick}'");
+    assert_eq!(value(&pool, status).await, "awaiting_confirm");
 }
 
 /// SEC-004, BIZ-015, FEE-030, D-5836: after a 100-day advance a session issued at real time
