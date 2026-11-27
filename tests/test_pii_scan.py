@@ -150,6 +150,7 @@ def test_only_the_anthropic_no_reply_trailer_address_is_a_service_identity() -> 
     assert rules("pat" + "@anthropic.com") == ["email"]
     assert rules("noreply" + "@mail.anthropic.com") == ["email"]
     assert rules("noreply" + "@anthropic.co") == ["email"]
+    assert rules("noreply" + "@anthropic.com" + ".evil.net") == ["email"]
     assert rules("noreply" + "@havasu-mail.net") == ["email"]
     assert rules("xnoreply" + "@anthropic.com") == ["email"]
 
