@@ -80,6 +80,7 @@ mod rules;
 mod scorecard_inputs;
 mod service;
 mod status;
+mod stripe_errors;
 mod three_ds;
 
 #[cfg(test)]

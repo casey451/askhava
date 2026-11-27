@@ -80,6 +80,7 @@ pub mod request_timeout;
 pub mod rotate_keys;
 pub mod static_files;
 pub mod text_consent;
+pub mod vendor_alerts;
 pub mod voice_status;
 pub mod watch_checks;
 pub mod webhook_refusals;
@@ -641,6 +642,37 @@ fn link_and_site_pages(
         .fallback(not_found)
 }
 
+/// The five `/webhooks` routers merged, each Twilio and Stripe route under its refusal log and all
+/// under [`vendor_alerts::layer`], which audits each 5xx answer and each route's first 2xx in a
+/// 5-minute window (OPS-004, D-3877, D-4880). `None` hooks add no routes.
+fn webhook_routes(
+    pool: &PgPool,
+    webhooks: Option<Arc<inbound_text::Webhooks>>,
+    voice: Option<Arc<inbound_voice::VoiceHooks>>,
+    stripe: Option<release_sink::StripeHooks>,
+) -> Router {
+    // Each 403 of these four is a source or signature refusal, recorded as a capped
+    // `webhook_signature_failed` security event (SEC-048, SEC-016, T319).
+    let refusals = webhook_refusals::RefusalLog::new(pool.clone(), Arc::new(SystemClock));
+    let refused = |router| webhook_refusals::layer(router, refusals.clone());
+    let calls = webhooks
+        .clone()
+        .map_or_else(Router::new, |h| refused(voice_status::routes(h)));
+    let twilio = webhooks.map_or_else(Router::new, |h| refused(inbound_text::routes(h)));
+    let dialed = voice.as_ref().map_or_else(Router::new, |v| {
+        call_status::routes(Arc::clone(&v.hooks), refusals.clone())
+    });
+    let voice = voice.map_or_else(Router::new, |v| refused(inbound_voice::routes(v)));
+    let stripe = stripe.map_or_else(Router::new, |s| refused(stripe_webhook_routes(s)));
+    let routes = Router::new()
+        .merge(twilio)
+        .merge(voice)
+        .merge(dialed)
+        .merge(calls)
+        .merge(stripe);
+    vendor_alerts::layer(routes, pool.clone(), Arc::new(SystemClock))
+}
+
 /// The app's router: every module's routes, merged once here (D-481), under
 /// the request-ID and tracing layers, so every request log line carries the
 /// request ID and the matched route template, never the URI (PRIV-016,
@@ -702,19 +734,7 @@ pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterP
     let quote_page = quote_routes(&pool, &mut site);
     let pick_flow = pick_flow_routes(pool.clone(), Arc::new(SystemClock), pick_keys);
     let pages = link_and_site_pages(&pool, &statics, site, webhooks.as_deref());
-    // Each 403 of these four is a source or signature refusal, recorded as a capped
-    // `webhook_signature_failed` security event (SEC-048, SEC-016, T319).
-    let refusals = webhook_refusals::RefusalLog::new(pool.clone(), Arc::new(SystemClock));
-    let refused = |router| webhook_refusals::layer(router, refusals.clone());
-    let calls = webhooks
-        .clone()
-        .map_or_else(Router::new, |h| refused(voice_status::routes(h)));
-    let twilio = webhooks.map_or_else(Router::new, |h| refused(inbound_text::routes(h)));
-    let dialed = voice.as_ref().map_or_else(Router::new, |v| {
-        call_status::routes(Arc::clone(&v.hooks), refusals.clone())
-    });
-    let voice = voice.map_or_else(Router::new, |v| refused(inbound_voice::routes(v)));
-    let stripe = stripe.map_or_else(Router::new, |s| refused(stripe_webhook_routes(s)));
+    let webhooks = webhook_routes(&pool, webhooks, voice, stripe);
     let health = healthz::routes(pool.clone());
     let (log, _writer) = offdb_stream::RequestLog::spawn(pool);
     Router::new()
@@ -723,11 +743,7 @@ pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterP
         .merge(quote_page)
         .merge(pick_flow)
         .merge(pages)
-        .merge(twilio)
-        .merge(voice)
-        .merge(dialed)
-        .merge(calls)
-        .merge(stripe)
+        .merge(webhooks)
         .merge(business)
         .layer(request_timeout::catch_panic())
         .layer(axum::middleware::from_fn_with_state(
@@ -2657,7 +2673,8 @@ fn register_business_clocked(registry: &mut Registry, clock: &Arc<dyn Clock>) {
 }
 
 /// The 5-minute health check ([`health_watch`], T624, D-4280) with its `/healthz` limits from
-/// `pairs`, then the hourly dead-letter check ([`no_handler_alert`]); both raise only in test and
+/// `pairs`, the hourly dead-letter check ([`no_handler_alert`]) and the 5-minute
+/// Stripe-or-webhook-errors check ([`vendor_alerts`], T518, D-3877); all raise only in test and
 /// live (OPS-004).
 ///
 /// # Errors
@@ -2672,6 +2689,7 @@ fn register_alert_checks(
     let limits = healthz::HealthLimits::from_pairs(pairs)?;
     health_watch::register(registry, settings.environment(), limits, Arc::clone(clock));
     no_handler_alert::register(registry, settings.environment(), Arc::clone(clock));
+    vendor_alerts::register(registry, settings.environment(), Arc::clone(clock));
     Ok(())
 }
 
