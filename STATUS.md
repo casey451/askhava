@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-27T02:06:02Z by runner 404e829ae740 (actions).
+Updated 2026-11-27T02:15:07Z by runner c3beeeb4ca4c (actions).
 
-**Building: T856 in progress since 00:24Z; 679 of 799 done; week 9% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Building: T849 in progress since 01:34Z; 679 of 799 done; week 9% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 679 of 799 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T856 claimed 00:24Z, lease until 03:24Z; lane 2: T849 claimed 01:34Z, lease until 04:34Z; lane 3: T612 claimed 02:00Z, lease until 05:00Z; lane 4: T518 claimed 02:04Z, lease until 05:04Z
+- **Lane:** lane 2: T849 claimed 01:34Z, lease until 04:34Z; lane 3: T612 claimed 02:00Z, lease until 05:00Z; lane 4: T518 claimed 02:04Z, lease until 05:04Z
 - **Week:** 9% used, 172.5M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:05Z, 0 min before this update
+- **Last run:** 02:06Z, 8 min before this update
 - **Keeper:** last ran 02:06Z, next wake 03:27Z
 
 ## Needs attention
@@ -32,14 +32,17 @@ error: test failed, to rerun pass `-p askhava-server --test action_links_route`
 Ci failed at step: All five jobs passed
 Checks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success
 ##[error]Process completed with exit code 1.
+- BLOCKED T856: plan gap reported: PLAN GAP: outside ownership: app/intake/src/replies.rs:367 (and replies.rs:204). The chat raw path web_chat::raw_turn -> replies::receive_raw_reply -> answer_name_address -> receive_answer (replies.rs:367) and reply_in's receive_text call (replies.rs:204) reach models::record_consent; T856 does not own replies.rs, TextIn has ~100 unowned builders, so only a runtime flag (set_chat_turn, D-5891) is possible in owned files. Reviewer (agent aec58822cf2c18f01) confirmed the gap with evidence at head c3beeeb4ca4cae1ff578a5f1aa7ea50d5c8e35e3; its only finding is that D-5891 should also cite replies.r; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T856 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 50% of the context window, over its 45% limit
-- Strict plan check red: 62 problem(s) on tasks still to run (+585 on DONE tasks); first: T704: stored context_pct 38% but it measures 42%; regenerate
+- PLAN GAP T856 (since 2026-11-27T02:15:00Z, no attempt used; a plan change fixes it): outside ownership: app/intake/src/replies.rs:367 (and replies.rs:204). The chat raw path web_chat::raw_turn -> replies::receive_raw_reply -> answer_name_address -> receive_answer (replies.rs:367) and reply_in's receive_text call (replies.rs:204) reach models::record_consent; T856 does not own replies.rs, TextIn has ~100 unowned builders, so only a runtime flag (set_chat_turn, D-5891) is possible in owned files. Reviewer (agent aec58822cf2c18f01) confirmed the gap with evidence at head c3beeeb4ca4cae1ff578a5f1aa7ea50d5c8e35e3; its only finding is that D-5891 should also cite replies.rs:204.
+- Strict plan check red: 63 problem(s) on tasks still to run (+585 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T856 | intake: a request may be texted only with an `sms` consent r | BLOCKED | 1 | 110 min | 02:15Z | PLAN GAP: outside ownership: app/intake/src/replies.rs:367 (and replies.rs:204). The chat raw path web_chat::raw_turn -> |
 | T861 | e2e (harness): J1 reads a sent text from the fake carrier on | MERGE_PENDING | 1 | 42 min | 01:13Z |  |
 | T783 | intake: a picture text's media is deleted at the provider af | done | 1 | 2 h 19 min | 00:37Z |  |
 | T309 | server and portals: the business Get help form and the site  | done | 1 | 2 h 8 min | 00:28Z |  |
@@ -102,10 +105,10 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T856 (lease until 2026-11-27T03:24:55Z)
+- nothing
 - lane 2: T849 (lease until 2026-11-27T04:34:33Z)
 - lane 3: T612 (lease until 2026-11-27T05:00:07Z)
 - lane 4: T518 (lease until 2026-11-27T05:04:26Z)
 
 ## Last usage reading
-- {"task": "T861", "at": "2026-11-27T01:13:59Z", "input_tokens": 109, "cache_creation_input_tokens": 103504, "cache_read_input_tokens": 2261887, "output_tokens": 18238}
+- {"task": "T856", "at": "2026-11-27T02:15:00Z", "cache_creation_input_tokens": 346961, "cache_read_input_tokens": 14868527, "input_tokens": 350, "output_tokens": 103657}

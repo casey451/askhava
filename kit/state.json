@@ -122746,8 +122746,8 @@
     "T747",
     "T839"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "BLOCKED",
+   "attempts": 1,
    "slug": "consent-per-request",
    "type": "build",
    "stage": "5",
@@ -122759,10 +122759,46 @@
     5893,
     5894
    ],
-   "wip_claim": {
-    "attempt": 1,
-    "remote_sha": ""
-   }
+   "reason": "plan gap reported: PLAN GAP: outside ownership: app/intake/src/replies.rs:367 (and replies.rs:204). The chat raw path web_chat::raw_turn -> replies::receive_raw_reply -> answer_name_address -> receive_answer (replies.rs:367) and reply_in's receive_text call (replies.rs:204) reach models::record_consent; T856 does not own replies.rs, TextIn has ~100 unowned builders, so only a runtime flag (set_chat_turn, D-5891) is possible in owned files. Reviewer (agent aec58822cf2c18f01) confirmed the gap with evidence at head c3beeeb4ca4cae1ff578a5f1aa7ea50d5c8e35e3; its only finding is that D-5891 should also cite replies.r; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T856 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: outside ownership: app/intake/src/replies.rs:367 (and replies.rs:204). The chat raw path web_chat::raw_turn -> replies::receive_raw_reply -> answer_name_address -> receive_answer (replies.rs:367) and reply_in's receive_text call (replies.rs:204) reach models::record_consent; T856 does not own replies.rs, TextIn has ~100 unowned builders, so only a runtime flag (set_chat_turn, D-5891) is possible in owned files. Reviewer (agent aec58822cf2c18f01) confirmed the gap with evidence at head c3beeeb4ca4cae1ff578a5f1aa7ea50d5c8e35e3; its only finding is that D-5891 should also cite replies.rs:204.",
+   "plan_gap": {
+    "at": "2026-11-27T02:15:00Z",
+    "problems": [
+     "outside ownership: app/intake/src/replies.rs:367 (and replies.rs:204). The chat raw path web_chat::raw_turn -> replies::receive_raw_reply -> answer_name_address -> receive_answer (replies.rs:367) and reply_in's receive_text call (replies.rs:204) reach models::record_consent; T856 does not own replies.rs, TextIn has ~100 unowned builders, so only a runtime flag (set_chat_turn, D-5891) is possible in owned files. Reviewer (agent aec58822cf2c18f01) confirmed the gap with evidence at head c3beeeb4ca4cae1ff578a5f1aa7ea50d5c8e35e3; its only finding is that D-5891 should also cite replies.rs:204."
+    ],
+    "paths": [
+     "app/intake/src/replies.rs:367 (and replies.rs:204). The chat raw path web_chat::raw_turn -> replies::receive_raw_reply -> answer_name_address -> receive_answer (replies.rs:367) and reply_in's receive_text call (replies.rs:204) reach models::record_consent; T856 does not own replies.rs",
+     "TextIn has ~100 unowned builders",
+     "so only a runtime flag (set_chat_turn",
+     "D-5891) is possible in owned files. Reviewer (agent aec58822cf2c18f01) confirmed the gap with evidence at head c3beeeb4ca4cae1ff578a5f1aa7ea50d5c8e35e3; its only finding is that D-5891 should also cite replies.rs:204."
+    ]
+   },
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 233,
+     "head_sha": "c3beeeb4ca4cae1ff578a5f1aa7ea50d5c8e35e3",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-27T00:24:55Z",
+     "ended_at": "2026-11-27T02:15:00Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 13113881,
+       "turns": 135
+      },
+      "reviewer": {
+       "tokens": 2205614,
+       "turns": 44
+      }
+     },
+     "wip_skipped": "PII scan: a commit message in 2e19f8cd4466e19289adb202676322d93c16d00e"
+    }
+   ]
   },
   {
    "id": "T857",
@@ -122979,12 +123015,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T861",
-   "at": "2026-11-27T01:13:59Z",
-   "input_tokens": 109,
-   "cache_creation_input_tokens": 103504,
-   "cache_read_input_tokens": 2261887,
-   "output_tokens": 18238
+   "task": "T856",
+   "at": "2026-11-27T02:15:00Z",
+   "cache_creation_input_tokens": 346961,
+   "cache_read_input_tokens": 14868527,
+   "input_tokens": 350,
+   "output_tokens": 103657
   },
   "source": "session_reading 2026-11-27T01:49:59Z (week)",
   "by_task": {
@@ -131278,7 +131314,17 @@
    },
    "T856": {
     "estimated_bytes": 660981,
-    "estimated_tokens": 1898331
+    "estimated_tokens": 1898331,
+    "usage_counting": "message_id",
+    "cache_creation_input_tokens": 346961,
+    "cache_read_input_tokens": 14868527,
+    "input_tokens": 350,
+    "output_tokens": 103657,
+    "worker_tokens": 13113881,
+    "worker_turns": 135,
+    "reviewer_tokens": 2205614,
+    "reviewer_turns": 44,
+    "last_model": "claude-opus-5-5"
    },
    "T861": {
     "estimated_bytes": 89302,
@@ -131306,11 +131352,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-26T23:54:05Z",
-    "tokens": 6176000
+    "tokens": 8113820
    },
    "week": {
     "start": "2026-11-26T20:01:04Z",
-    "tokens": 9713135
+    "tokens": 11650955
    }
   },
   "session_reading": {
@@ -131321,7 +131367,7 @@
    }
   }
  },
- "updated_at": "2026-11-27T02:06:02Z",
+ "updated_at": "2026-11-27T02:15:07Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -131419,7 +131465,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "404e829ae7407f62477caab8d2d1e19ece28361d",
+ "runner_sha": "c3beeeb4ca4cae1ff578a5f1aa7ea50d5c8e35e3",
  "starter": "actions",
  "smoke_runs": [
   {
