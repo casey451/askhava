@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-27T07:36:43Z by runner df1e5bfd1b8f (actions).
+Updated 2026-11-27T07:37:19Z by runner df1e5bfd1b8f (actions).
 
 **Building: T869 in progress since 07:31Z; 685 of 802 done; week 12% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 685 of 802 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T869 claimed 07:31Z, lease until 10:31Z; lane 2: T688 claimed 06:52Z, lease until 09:52Z; lane 3: T734 claimed 06:54Z, lease until 09:54Z; lane 4: T657 claimed 06:50Z, lease until 09:50Z; lane 5: T849 claimed 05:54Z, lease until 08:54Z
+- **Lane:** lane 1: T869 claimed 07:31Z, lease until 10:31Z; lane 2: T688 claimed 06:52Z, lease until 09:52Z; lane 3: T734 claimed 06:54Z, lease until 09:54Z; lane 4: T657 claimed 06:50Z, lease until 09:50Z
 - **Week:** 12% used, 164.5M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
 - **Last run:** 07:32Z, 4 min before this update
 - **Keeper:** last ran 07:07Z, next wake 08:57Z
@@ -21,10 +21,11 @@ Updated 2026-11-27T07:36:43Z by runner df1e5bfd1b8f (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T849 | server: the e2e web binary serves J1/J2 business time from t | MERGE_PENDING | 2 | 102 min | 07:36Z | E2e: failure; Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflo |
 | T612 | harness: the WEB-029 and WEB-030 runtime checks on every sit | done | 3 | 2 h 5 min | 05:50Z | Reviewer on head 700f50e1fce2ee8fc4392587b89d7a82a956f72f still ended REVIEW-VERDICT: FINDINGS after the fix round: / 1. |
 | T518 | server, ops and payments: the Stripe-or-webhook-errors alert | done | 1 | 51 min | 05:34Z |  |
 | T657 | quotes and portals: quote-form and sign-in errors mark the f | QUEUED | 2 | 25 min | 05:11Z | Worker stopped with no edits: start smoke exceeded ~20 min. Finding: J3 step 5 owner sign-in (signInOwner, tests/e2e/own |
-| T849 | server: the e2e web binary serves J1/J2 business time from t | check_failed | 1 | 103 min | 05:09Z | E2e: failure; Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflo |
+| T849 | server: the e2e web binary serves J1/J2 business time from t | check_failed | 1 | 103 min | 05:09Z |  |
 | T843 | runner (harness): a 35-minute pre-session smoke cap, and a p | done | 1 | 78 min | 04:51Z |  |
 | T518 | server, ops and payments: the Stripe-or-webhook-errors alert | resync | 1 | 2 h 9 min | 04:13Z |  |
 | T522 | server and portals: the business text-consent box is served  | done | 1 | 104 min | 04:07Z |  |
@@ -98,7 +99,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T688 (lease until 2026-11-27T09:52:09Z)
 - lane 3: T734 (lease until 2026-11-27T09:54:33Z)
 - lane 4: T657 (lease until 2026-11-27T09:50:45Z)
-- lane 5: T849 (lease until 2026-11-27T08:54:12Z)
 
 ## Last usage reading
-- {"task": "T612", "at": "2026-11-27T05:50:05Z", "output_tokens": 94136, "cache_creation_input_tokens": 297587, "input_tokens": 302, "cache_read_input_tokens": 10731469}
+- {"task": "T849", "at": "2026-11-27T07:36:40Z", "input_tokens": 214, "cache_creation_input_tokens": 198900, "output_tokens": 38999, "cache_read_input_tokens": 6839128}
