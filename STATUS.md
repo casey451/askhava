@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-27T22:12:11Z by runner 4061d77bd2b7 (manual).
+Updated 2026-11-27T23:00:11Z by runner e7d740d4ef96 (actions).
 
 **Building: T871 in progress since 21:06Z; 694 of 805 done; week 18% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-27T22:12:11Z by runner 4061d77bd2b7 (manual).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T871 claimed 21:06Z, lease until 00:06Z
 - **Week:** 18% used, 158.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:07Z, 64 min before this update
+- **Last run:** 22:12Z, 47 min before this update
 - **Keeper:** last ran 20:11Z, next wake 20:31Z
 
 ## Needs attention
@@ -16,7 +16,7 @@ Updated 2026-11-27T22:12:11Z by runner 4061d77bd2b7 (manual).
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 50% of the context window, over its 45% limit
 - PLAN GAP T872 (since 2026-11-27T21:06:06Z, no attempt used; a plan change fixes it): T872: prompt kit/prompts/T872.md is missing; run scripts/gen_prompts.py; T872: branch claude/task/T872-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
-- Strict plan check red: 58 problem(s) on tasks still to run (+604 on DONE tasks); first: T704: stored context_pct 38% but it measures 44%; regenerate
+- Strict plan check red: 58 problem(s) on tasks still to run (+605 on DONE tasks); first: T704: stored context_pct 38% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -58,6 +58,7 @@ Updated 2026-11-27T22:12:11Z by runner 4061d77bd2b7 (manual).
 | T744 | picks: a job that reaches a final status ends its pick await | done | 1 | 98 min | 23:54Z |  |
 
 ### Plan and harness merges on main
+- 22:40Z Harness: workers post a short progress note about every 10 minutes (D-5988) (#1521)
 - 20:24Z Plan: T857/T865 drafts bound to T856's guard; under-18 refused text; T872 (D-5982) (#1520)
 - 17:23Z Harness: Sonnet-worker trial on T871, T857, T865 from Opus drafts (D-5981) (#1518)
 - 17:02Z Plan: one task at a time, token use assessed after each (D-5980) (#1516)
