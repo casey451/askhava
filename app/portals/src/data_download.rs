@@ -27,12 +27,18 @@
 use std::fmt;
 
 use askhava_adapters::api::{CodeChannel, IdempotencyKey, VerifyAdapter};
-use askhava_intake::api::{conversations_of_contact, jobs_of_contact};
-use askhava_jobs::api::purge_feedback;
-use askhava_ops::api::{Actor, AuditEntry, Change, audit, audit_once, export_audit};
+use askhava_catalog::api::{Question, QuestionBank, QuestionSet, question_bank};
+use askhava_intake::api::{
+    JobAnswer, conversation, conversations_of_contact, job_answers, jobs_of_contact,
+};
+use askhava_jobs::api::{current, feedback, purge_feedback};
+use askhava_messaging::api::optout_records;
+use askhava_ops::api::{
+    Actor, AuditEntry, Change, audit, audit_once, export_audit, help_keyword_of,
+};
 use askhava_picks::api::rules::parse_code;
 use askhava_privacy::api::delete_my_data;
-use askhava_quotes::api::forget_requests;
+use askhava_quotes::api::{description, forget_requests};
 use jiff::{SignedDuration, Timestamp};
 use secrecy::{ExposeSecret, SecretString};
 use serde_json::{Map, Value, json};
@@ -433,7 +439,7 @@ pub enum DeleteError {
     Privacy,
 }
 
-/// The four parts of the download (PRIV-031).
+/// The seven parts of the download (PRIV-031, D-5399).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Section {
     /// Her requests.
@@ -443,12 +449,27 @@ pub enum Section {
     Quotes,
     /// Her messages still held (bodies are cut at 30 days, TXT-020); contact details masked.
     Messages,
-    /// Her consent and opt-out records.
+    /// Her consent and opt-out records: consent, STOP, START, the other channels' opt-outs and
+    /// restarts, and HELP (CON-022, D-5399).
     Consent,
+    /// Each job's scrubbed description (D-5399).
+    Jobs,
+    /// Her intake answers, never a contact answer (D-5399).
+    Answers,
+    /// Her feedback words with its share tick (D-5399).
+    Feedback,
 }
 
 impl Section {
-    const ALL: [Self; 4] = [Self::Requests, Self::Quotes, Self::Messages, Self::Consent];
+    const ALL: [Self; 7] = [
+        Self::Requests,
+        Self::Quotes,
+        Self::Messages,
+        Self::Consent,
+        Self::Jobs,
+        Self::Answers,
+        Self::Feedback,
+    ];
 
     fn key(self) -> &'static str {
         match self {
@@ -456,12 +477,15 @@ impl Section {
             Self::Quotes => "quotes",
             Self::Messages => "messages",
             Self::Consent => "consent",
+            Self::Jobs => "jobs",
+            Self::Answers => "answers",
+            Self::Feedback => "feedback",
         }
     }
 
-    /// Whether a business's words can appear in this part.
+    /// Whether a business's or free words can appear in this part, so they are masked.
     fn has_business_words(self) -> bool {
-        matches!(self, Self::Quotes | Self::Messages)
+        !matches!(self, Self::Requests | Self::Consent)
     }
 }
 
@@ -584,9 +608,159 @@ fn flush_run(out: &mut String, run: &mut String) {
     run.clear();
 }
 
-/// PRIV-031: the "Download my data" file for the homeowner `on_file` names, as JSON with the four
-/// sections; an item of any other contact is left out, and contact details in the quotes and
-/// messages are masked, so the file holds no business contact detail.
+/// PRIV-031, CON-022, D-5399: the items T820 added to her file: each of her jobs' scrubbed
+/// description ([`Section::Jobs`]), its intake answers ([`Section::Answers`], never a contact
+/// answer) and its feedback ([`Section::Feedback`]), then her opt-out, START and HELP records
+/// ([`Section::Consent`]). Each job's items carry the opening time of the request it opened with,
+/// else the job's status time. On the caller's connection; the error names the failed read.
+///
+/// # Errors
+/// The name of the read that failed.
+pub async fn more_held_items(
+    db: &mut PgConnection,
+    contact: Uuid,
+) -> Result<Vec<HeldItem>, &'static str> {
+    let opened = request_times(db, contact).await?;
+    let mut items = Vec::new();
+    for job in jobs_of_contact(db, contact).await.map_err(|_| "jobs")? {
+        let at = match opened.iter().find(|(first, _)| *first == job) {
+            Some((_, at)) => *at,
+            None => current(db, job).await.map_err(|_| "job")?.status_at,
+        };
+        items.extend(job_items(db, (contact, job), at).await?);
+    }
+    items.extend(record_items(db, contact).await?);
+    Ok(items)
+}
+
+/// Each of her requests' first job with the request's opening time.
+async fn request_times(
+    db: &mut PgConnection,
+    contact: Uuid,
+) -> Result<Vec<(Uuid, Timestamp)>, &'static str> {
+    let mut times = Vec::new();
+    for id in conversations_of_contact(db, contact)
+        .await
+        .map_err(|_| "requests")?
+    {
+        let row = conversation(db, id).await.map_err(|_| "request")?;
+        if let Some((job, at)) = row.and_then(|r| r.job_id.map(|j| (j, r.opened_at))) {
+            times.push((job, at));
+        }
+    }
+    Ok(times)
+}
+
+/// One job's description, answers and feedback, each held item of `contact`'s at `at` but the
+/// feedback, at its own time.
+async fn job_items(
+    db: &mut PgConnection,
+    (contact, job): (Uuid, Uuid),
+    at: Timestamp,
+) -> Result<Vec<HeldItem>, &'static str> {
+    let held = |section, at, words| HeldItem {
+        contact,
+        section,
+        at,
+        words,
+    };
+    let mut items = Vec::new();
+    if let Some(text) = description(db, job).await.map_err(|_| "job text")? {
+        let words = format!("What you told us about the job: {}", text.parts().join(" "));
+        items.push(held(Section::Jobs, at, words));
+    }
+    let answers = job_answers(db, job).await.map_err(|_| "answers")?;
+    let bank = question_bank().map_err(|_| "questions")?;
+    for words in answer_words(&bank, &answers) {
+        items.push(held(Section::Answers, at, words));
+    }
+    if let Some(given) = feedback::of_job(db, job).await.map_err(|_| "feedback")? {
+        let tick = if given.share {
+            "You ticked the box to let us share it."
+        } else {
+            "You did not tick the box to let us share it."
+        };
+        let words = format!("Your feedback: {} {tick}", given.body);
+        items.push(held(Section::Feedback, given.received_at, words));
+    }
+    Ok(items)
+}
+
+/// PRIV-031, D-5399: each answer as its question and the option she chose, from the bank set that
+/// holds the most of the answered questions; a question no set holds is left out.
+fn answer_words(bank: &QuestionBank, answers: &[JobAnswer]) -> Vec<String> {
+    let held = |set: &&QuestionSet| {
+        let has = |a: &JobAnswer| set.questions.iter().any(|q| q.id == a.question);
+        answers.iter().filter(|a| has(a)).count()
+    };
+    let Some(set) = bank.sets.values().rev().max_by_key(held) else {
+        return Vec::new();
+    };
+    answers
+        .iter()
+        .filter_map(|a| {
+            let q = set.questions.iter().find(|q| q.id == a.question)?;
+            let asked = q.en.split(" (").next().unwrap_or(&q.en);
+            Some(format!("{asked} Your answer: {}", chosen(q, &a.value)))
+        })
+        .collect()
+}
+
+/// The words of a stored answer code: the option, "Not sure" or a note that she typed it.
+fn chosen(question: &Question, code: &str) -> String {
+    let options = question.options_en.as_deref().unwrap_or_default();
+    let picked = code.parse::<usize>().ok().and_then(|n| n.checked_sub(1));
+    match picked.and_then(|i| options.get(i)) {
+        Some(option) => option.clone(),
+        None if code == "not_sure" => "Not sure".to_owned(),
+        None => "You answered in your own words.".to_owned(),
+    }
+}
+
+/// CON-022, D-5399: her opt-out and START records (`messaging::api::optout_records`) and her HELP
+/// record (`ops::api::help_keyword_of`), each with its time.
+async fn record_items(db: &mut PgConnection, contact: Uuid) -> Result<Vec<HeldItem>, &'static str> {
+    let held = |at, words| HeldItem {
+        contact,
+        section: Section::Consent,
+        at,
+        words,
+    };
+    let records = optout_records(db, contact).await.map_err(|_| "opt-outs")?;
+    let mut items: Vec<HeldItem> = (records.iter())
+        .map(|r| held(r.at, optout_words(r.start, &r.channel)))
+        .collect();
+    if let Some(at) = help_keyword_of(db, contact).await.map_err(|_| "help")? {
+        items.push(held(at, "You texted HELP".to_owned()));
+    }
+    Ok(items)
+}
+
+/// CON-035, D-5399: an opt-out or START in plain words: "You texted STOP" or "You texted START"
+/// for a text, otherwise "Texts turned off" or "Texts turned on" and the channel.
+fn optout_words(start: bool, channel: &str) -> String {
+    let (word, turned) = if start {
+        ("START", "on")
+    } else {
+        ("STOP", "off")
+    };
+    let by = match channel {
+        "text" => return format!("You texted {word}"),
+        "email" => "by email",
+        "email_reply" => "by a reply to one of our emails",
+        "help_form" => "through the help form",
+        "portal" => "in your account on our website",
+        "owner" => "by our team when you asked",
+        "carrier" => "by your phone carrier",
+        "web_chat" => "in the web chat",
+        _ => "(we have no note of how)",
+    };
+    format!("Texts turned {turned} {by}")
+}
+
+/// PRIV-031: the "Download my data" file for the homeowner `on_file` names, as JSON with the seven
+/// sections; an item of any other contact is left out, and contact details in every section but
+/// requests and consent are masked, so the file holds no business contact detail.
 #[must_use]
 pub fn download_file(on_file: &OnFile, items: &[HeldItem]) -> String {
     let mut file = Map::new();
@@ -631,6 +805,10 @@ mod tests {
         download_file, open_request, resend_request_code,
     };
     use crate::homeowner_portal::OnFile;
+    use askhava_catalog::api::{Question, QuestionBank, QuestionSet};
+    use askhava_intake::api::JobAnswer;
+
+    use super::{answer_words, chosen, optout_words};
 
     const CODE: &str = "123456";
 
@@ -927,5 +1105,111 @@ mod tests {
             .await
             .expect("no connection is held across Verify");
         assert_eq!(actions(&mut db).await.len(), 2);
+    }
+
+    /// A fake question: multiple choice with `options`, else free text.
+    fn question(id: &str, en: &str, options: Option<&[&str]>) -> Question {
+        let options = options.map(|o| o.iter().map(|s| (*s).to_owned()).collect::<Vec<_>>());
+        Question {
+            id: id.to_owned(),
+            en: en.to_owned(),
+            es: en.to_owned(),
+            options_en: options.clone(),
+            options_es: options,
+            card_field: false,
+            size_band: false,
+            band_floor: Vec::new(),
+            emergency: false,
+            ask_if: None,
+        }
+    }
+
+    fn set(questions: Vec<Question>) -> QuestionSet {
+        QuestionSet {
+            version: 1,
+            kb_trade: None,
+            photos: Vec::new(),
+            questions,
+        }
+    }
+
+    fn answer(question: &str, value: &str) -> JobAnswer {
+        JobAnswer {
+            question: question.to_owned(),
+            value: value.to_owned(),
+        }
+    }
+
+    /// CON-035, D-5399: a text reads "You texted ..."; every other channel names itself.
+    #[test]
+    fn td_priv_15_optout_words_name_the_channel() {
+        assert_eq!(optout_words(false, "text"), "You texted STOP");
+        assert_eq!(optout_words(true, "text"), "You texted START");
+        let channels = [
+            ("email", "by email"),
+            ("email_reply", "by a reply to one of our emails"),
+            ("help_form", "through the help form"),
+            ("portal", "in your account on our website"),
+            ("owner", "by our team when you asked"),
+            ("carrier", "by your phone carrier"),
+            ("web_chat", "in the web chat"),
+            ("fax", "(we have no note of how)"),
+        ];
+        for (channel, by) in channels {
+            assert_eq!(
+                optout_words(false, channel),
+                format!("Texts turned off {by}")
+            );
+            assert_eq!(optout_words(true, channel), format!("Texts turned on {by}"));
+        }
+    }
+
+    /// PRIV-031, D-5399: a stored code reads as the option, "Not sure" or a note; never a guess.
+    #[test]
+    fn td_priv_15_chosen_reads_the_stored_code() {
+        let pick = question("fixture", "Which fixture?", Some(&["Sink", "Toilet"]));
+        assert_eq!(chosen(&pick, "2"), "Toilet");
+        assert_eq!(chosen(&pick, "not_sure"), "Not sure");
+        for code in ["0", "3", "text"] {
+            assert_eq!(chosen(&pick, code), "You answered in your own words.");
+        }
+        let free = question("details", "Anything else?", None);
+        assert_eq!(chosen(&free, "1"), "You answered in your own words.");
+    }
+
+    /// PRIV-031, D-5399: the set holding most of her answers is used; a question no set holds,
+    /// and so the address row, is left out.
+    #[test]
+    fn td_priv_15_answer_words_use_the_best_set() {
+        let empty = QuestionBank {
+            version: 1,
+            sets: std::collections::BTreeMap::new(),
+        };
+        assert!(answer_words(&empty, &[answer("fixture", "1")]).is_empty());
+        let plumbing = set(vec![
+            question(
+                "fixture",
+                "Which fixture? (pick one)",
+                Some(&["Sink", "Toilet"]),
+            ),
+            question("leak", "Is it leaking?", Some(&["Yes", "No"])),
+        ]);
+        let roofing = set(vec![question("leak", "Roof leak?", Some(&["Yes"]))]);
+        let bank = QuestionBank {
+            version: 1,
+            sets: [("PLB".to_owned(), plumbing), ("ROF".to_owned(), roofing)].into(),
+        };
+        let answers = [
+            answer("fixture", "1"),
+            answer("leak", "not_sure"),
+            answer("address", "text"),
+        ];
+        assert_eq!(
+            answer_words(&bank, &answers),
+            [
+                "Which fixture? Your answer: Sink",
+                "Is it leaking? Your answer: Not sure",
+            ]
+        );
     }
 }

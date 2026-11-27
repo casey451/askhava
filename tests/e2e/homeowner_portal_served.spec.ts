@@ -113,7 +113,7 @@ test("TD-PRIV-21: she downloads her data file and the request screen is axe-clea
   const download = await downloading;
   expect(download.suggestedFilename()).toBe("my-data.json");
   const file = JSON.parse(readFileSync(await download.path(), "utf8")) as Record<string, unknown>;
-  expect(Object.keys(file).sort()).toEqual(["consent", "messages", "quotes", "requests"]);
+  expect(Object.keys(file).sort()).toEqual(["answers", "consent", "feedback", "jobs", "messages", "quotes", "requests"]);
   expect(JSON.stringify(file)).not.toContain(HER.street);
 
   await page.getByRole("button", { name: "Delete my data" }).click();

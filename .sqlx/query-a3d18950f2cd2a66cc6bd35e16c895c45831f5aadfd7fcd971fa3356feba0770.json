@@ -1,0 +1,64 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT job_id, business_id, received_at, original FROM quotes.quote WHERE job_id = ANY($1) AND confirmed AND withdrawn_at IS NOT NULL ORDER BY received_at, business_id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "job_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "quotes.quote",
+            "name": "job_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "business_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "quotes.quote",
+            "name": "business_id"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "received_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "quotes.quote",
+            "name": "received_at"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "original",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "quotes.quote",
+            "name": "original"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "UuidArray"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "a3d18950f2cd2a66cc6bd35e16c895c45831f5aadfd7fcd971fa3356feba0770"
+}

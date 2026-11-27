@@ -71,6 +71,7 @@ mod rules;
 mod scorecard_inputs;
 mod service;
 mod update_texts;
+mod withdrawn_quotes;
 
 #[cfg(test)]
 mod tests;

@@ -269,3 +269,4 @@
 - [PICK-048 SEC-006] (task 738) D-4727: `file_stripe_answer` returns the new `quotes.stripe_written_answer` row's ID, for the owner portal's audit row in the same transaction.
 - [CARD-001 LIC-043 INT-017] (task 716) `card_pool::pair_coverage` counts a request's coverage from stored (trade, job type) pairs, each under its own trade's category and license (`pair_jobs`), as `request_coverage` counts (D-5582); `which_fits` and `trade_ask` are in `NOT_UPDATE_TEXTS`.
 - [CARD-001 CARD-016 OPS-003] (task 716) `card_pool::pair_pool_at` is `card_pool_at` over stored (trade, job type) pairs (the send's twin of `pair_coverage`); with pairs, `owner_pauses` reads the trade switch of every pair's category, so a paused trade stops its pair (D-5606).
+- [PRIV-031] (task 820) `withdrawn_quotes` (`src/withdrawn_quotes.rs`): the confirmed, withdrawn quotes on the given jobs with their still-held words, for "Download my data"; `page_quotes` still blanks them (D-5526, D-5709)

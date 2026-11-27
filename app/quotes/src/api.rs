@@ -147,6 +147,7 @@ pub use crate::service::{
 pub use crate::update_texts::{
     LIMIT, NOT_UPDATE_TEXTS, Problem, SHORT, Shape, UPDATE_TEXTS, check, scan,
 };
+pub use crate::withdrawn_quotes::{WithdrawnQuote, withdrawn_quotes};
 
 /// One shown quote as the homeowner's quote page lists it (PICK-008, D-1233). No homeowner or
 /// business contact detail: the wording passed the PICK-007 bounce before it was stored.
