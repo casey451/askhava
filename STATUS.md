@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-27T15:29:55Z by runner febc73c2ddbc (actions).
+Updated 2026-11-27T15:31:25Z by runner 278d45f2f121 (actions).
 
-**Idle since 15:27Z; 692 of 802 done; week 15% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Idle since 15:27Z; 693 of 802 done; week 15% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 692 of 802 build tasks (owner gates not counted)
+- **Tasks done:** 693 of 802 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** idle since 15:27Z (no task in progress)
 - **Week:** 15% used, 164.1M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:29Z, 0 min before this update
+- **Last run:** 15:30Z, 1 min before this update
 - **Keeper:** last ran 15:29Z, next wake 15:49Z
 
 ## Needs attention
@@ -21,13 +21,13 @@ Evidence: her data download is assembled in app/server/src/homeowner_portal.rs:6
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 50% of the context window, over its 45% limit
 - PLAN GAP T856 (since 2026-11-27T07:31:36Z, no attempt used; a plan change fixes it): T856: measures 46% of the context window, over its 45% limit
 - PLAN GAP T862 (since 2026-11-27T13:22:09Z, no attempt used; a plan change fixes it): outside ownership: app/server/src/homeowner_portal.rs, app/portals/src/homeowner_portal.rs
-- Strict plan check red: 62 problem(s) on tasks still to run (+599 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
+- Strict plan check red: 62 problem(s) on tasks still to run (+603 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T849 | server: the e2e web binary serves J1/J2 business time from t | MERGE_PENDING | 4 | 118 min | 15:27Z | PLAN GAP: outside ownership: tests/e2e/web_chat.spec.ts, tests/a11y/page_states.ts / D-5836 puts inbound SMS and action  |
-| T817 | messaging: a text re-checks the opt-out list after its claim | MERGE_PENDING | 1 | 67 min | 14:27Z |  |
+| T817 | messaging: a text re-checks the opt-out list after its claim | done | 1 | 67 min | 14:27Z |  |
 | T822 | docs: the privacy policy names the email link and the fuller | done | 1 | 54 min | 14:13Z |  |
 | T862 | privacy: the email she types in her own conversation is kept | BLOCKED | 1 | 4 min | 13:22Z | PLAN GAP: outside ownership: app/server/src/homeowner_portal.rs, app/portals/src/homeowner_portal.rs / Evidence: her dat |
 | T734 | server and adapters: a business can leave in the portal, wit | BLOCKED | 3 | 26 min | 13:10Z | PLAN GAP: app/portals/templates/business_leave.html:25 owned by T228 and T410, not T734. Smallest plan change: let T734  |
@@ -75,7 +75,7 @@ Evidence: her data download is assembled in app/server/src/homeowner_portal.rs:6
 ## Progress (requirements verified)
 
 **Requirements verified:** 465 of 735 (63.3%) · partial 262 · unstarted 8
-**Tasks merged (throughput only):** 692 of 802
+**Tasks merged (throughput only):** 693 of 802
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -111,7 +111,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 335 of 374 done
+- stage 5: 336 of 374 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
