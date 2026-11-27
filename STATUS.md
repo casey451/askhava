@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-27T17:03:50Z by runner 12679cbd7990 (manual).
+Updated 2026-11-27T17:09:46Z by runner 12679cbd7990 (actions).
 
 **Idle since 16:48Z; 693 of 804 done; week 17% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-27T17:03:50Z by runner 12679cbd7990 (manual).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** idle since 16:48Z (no task in progress)
 - **Week:** 17% used, 164.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:03Z, 0 min before this update
+- **Last run:** 17:04Z, 5 min before this update
 - **Keeper:** last ran 16:51Z, next wake 22:31Z
 
 ## Needs attention
@@ -21,7 +21,7 @@ Updated 2026-11-27T17:03:50Z by runner 12679cbd7990 (manual).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T749 | messaging: the unused `business_pick_waiting` text template  | MERGE_PENDING | 1 | 44 min | 16:48Z |  |
+| T749 | messaging: the unused `business_pick_waiting` text template  | check_failed | 1 | 44 min | 16:48Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T849 | server: the e2e web binary serves J1/J2 business time from t | check_failed | 4 | 118 min | 15:27Z | PLAN GAP: outside ownership: tests/e2e/web_chat.spec.ts, tests/a11y/page_states.ts / D-5836 puts inbound SMS and action  |
 | T817 | messaging: a text re-checks the opt-out list after its claim | done | 1 | 67 min | 14:27Z |  |
 | T822 | docs: the privacy policy names the email link and the fuller | done | 1 | 54 min | 14:13Z |  |
