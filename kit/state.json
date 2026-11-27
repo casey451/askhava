@@ -91710,7 +91710,7 @@
     "T613",
     "T846"
    ],
-   "status": "IN_PROGRESS",
+   "status": "MERGE_PENDING",
    "attempts": 2,
    "slug": "polish-speed-checks",
    "type": "harness",
@@ -91774,6 +91774,29 @@
       }
      },
      "wip_skipped": "PII scan: a commit message in a546a2d2ec95bc47e2684b18bb3a9a9533492f72"
+    },
+    {
+     "attempt": 3,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 175,
+     "head_sha": "a5560a0b9856a760bea55ea083ee2bc107781409",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": true,
+     "started_at": "2026-11-27T03:44:20Z",
+     "ended_at": "2026-11-27T05:50:05Z",
+     "result": "MERGE_PENDING",
+     "usage": {
+      "worker": {
+       "tokens": 8854073,
+       "turns": 102
+      },
+      "reviewer": {
+       "tokens": 2269421,
+       "turns": 55
+      }
+     }
     }
    ],
    "requeues": [
@@ -91791,10 +91814,6 @@
      "plan_now": "baed9ae4974e93cbdc9f8267eb593644344d47f6c497ddf1df54987fe102a11f"
     }
    ],
-   "wip_claim": {
-    "attempt": 3,
-    "remote_sha": ""
-   },
    "reviewed_sha": "efdbd84ed8eebc42cd7ad9149979e5e597f56132",
    "review_lease": {
     "task": "T612",
@@ -91803,7 +91822,11 @@
     "lane": "3"
    },
    "branch": "claude/task/T612-polish-speed-checks",
-   "head_check_since": null,
+   "auto_merge": {
+    "enabled": true,
+    "why": "auto-merge on #1493 (gh pr merge)",
+    "head": "efdbd84ed8eebc42cd7ad9149979e5e597f56132"
+   },
    "update_merges": [
     {
      "from": "a5560a0b9856a760bea55ea083ee2bc107781409",
@@ -123737,12 +123760,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T518",
-   "at": "2026-11-27T05:34:14Z",
-   "cache_creation_input_tokens": 73367,
-   "input_tokens": 65,
-   "output_tokens": 11950,
-   "cache_read_input_tokens": 1030508
+   "task": "T612",
+   "at": "2026-11-27T05:50:05Z",
+   "output_tokens": 94136,
+   "cache_creation_input_tokens": 297587,
+   "input_tokens": 302,
+   "cache_read_input_tokens": 10731469
   },
   "source": "session_reading 2026-11-27T04:22:22Z (week)",
   "by_task": {
@@ -131898,14 +131921,14 @@
     "estimated_bytes": 604709,
     "estimated_tokens": 759126,
     "usage_counting": "message_id",
-    "cache_read_input_tokens": 16194935,
-    "cache_creation_input_tokens": 487593,
-    "input_tokens": 367,
-    "output_tokens": 144732,
-    "worker_tokens": 14638746,
-    "worker_turns": 147,
-    "reviewer_tokens": 2188881,
-    "reviewer_turns": 46,
+    "cache_read_input_tokens": 26926404,
+    "cache_creation_input_tokens": 785180,
+    "input_tokens": 669,
+    "output_tokens": 238868,
+    "worker_tokens": 23492819,
+    "worker_turns": 249,
+    "reviewer_tokens": 4458302,
+    "reviewer_turns": 101,
     "last_model": "claude-opus-5-5"
    },
    "T123": {
@@ -132122,11 +132145,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-27T05:09:03Z",
-    "tokens": 2922251
+    "tokens": 4387422
    },
    "week": {
     "start": "2026-11-26T20:01:04Z",
-    "tokens": 19924264
+    "tokens": 21389435
    }
   },
   "session_reading": {
@@ -132137,7 +132160,7 @@
    }
   }
  },
- "updated_at": "2026-11-27T05:51:10Z",
+ "updated_at": "2026-11-27T05:51:20Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -132235,7 +132258,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "71a7f5f83c4fa26aac55ae18d2c6c8c1d18e3eda",
+ "runner_sha": "a5560a0b9856a760bea55ea083ee2bc107781409",
  "starter": "actions",
  "smoke_runs": [
   {
