@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-27T12:40:55Z by runner 7678ecacb504 (actions).
+Updated 2026-11-27T12:41:27Z by runner 7678ecacb504 (actions).
 
 **Building: T820 in progress since 10:58Z; 689 of 802 done; week 14% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -21,7 +21,7 @@ Updated 2026-11-27T12:40:55Z by runner 7678ecacb504 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T734 | server and adapters: a business can leave in the portal, wit | MERGE_PENDING | 2 | 2 h 44 min | 12:11Z | session ended without handing in |
+| T734 | server and adapters: a business can leave in the portal, wit | check_failed | 2 | 2 h 44 min | 12:11Z | Ally: failure; E2e: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflo |
 | T778 | jobs, core and server: a dead Payment pending timer is reviv | done | 1 | 114 min | 11:24Z |  |
 | T867 | picks and payments (harness): an early fraud warning before  | check_failed | 1 | 60 min | 10:24Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
 | T868 | tests (harness): two DONE tests that can fail by chance are  | done | 1 | 85 min | 10:14Z |  |
