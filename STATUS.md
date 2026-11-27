@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-27T04:51:54Z by runner e7a80ba3a125 (actions).
+Updated 2026-11-27T04:52:29Z by runner e7a80ba3a125 (actions).
 
 **Building: T518 in progress since 04:42Z; 682 of 799 done; week 11% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 682 of 799 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T518 claimed 04:42Z, lease until 07:42Z; lane 2: T849 claimed 03:25Z, lease until 06:25Z; lane 3: T612 claimed 03:44Z, lease until 06:44Z; lane 4: T657 claimed 04:46Z, lease until 07:46Z; lane 5: T843 claimed 03:33Z, lease until 06:33Z
+- **Lane:** lane 1: T518 claimed 04:42Z, lease until 07:42Z; lane 2: T849 claimed 03:25Z, lease until 06:25Z; lane 3: T612 claimed 03:44Z, lease until 06:44Z; lane 4: T657 claimed 04:46Z, lease until 07:46Z
 - **Week:** 11% used, 167.9M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
 - **Last run:** 04:46Z, 5 min before this update
 - **Keeper:** last ran 04:23Z, next wake 06:28Z
@@ -42,6 +42,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T843 | runner (harness): a 35-minute pre-session smoke cap, and a p | MERGE_PENDING | 1 | 78 min | 04:51Z |  |
 | T518 | server, ops and payments: the Stripe-or-webhook-errors alert | resync | 1 | 2 h 9 min | 04:13Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
 | T522 | server and portals: the business text-consent box is served  | done | 1 | 104 min | 04:07Z |  |
 | T612 | harness: the WEB-029 and WEB-030 runtime checks on every sit | QUEUED | 2 | 96 min | 03:36Z | Reviewer on head 700f50e1fce2ee8fc4392587b89d7a82a956f72f still ended REVIEW-VERDICT: FINDINGS after the fix round: / 1. |
@@ -113,7 +114,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T849 (lease until 2026-11-27T06:25:59Z)
 - lane 3: T612 (lease until 2026-11-27T06:44:20Z)
 - lane 4: T657 (lease until 2026-11-27T07:46:01Z)
-- lane 5: T843 (lease until 2026-11-27T06:33:11Z)
 
 ## Last usage reading
-- {"task": "T518", "at": "2026-11-27T04:13:40Z", "output_tokens": 75258, "input_tokens": 222, "cache_read_input_tokens": 7544173, "cache_creation_input_tokens": 217845}
+- {"task": "T843", "at": "2026-11-27T04:51:53Z", "cache_read_input_tokens": 9112512, "cache_creation_input_tokens": 226098, "input_tokens": 179, "output_tokens": 85036}
