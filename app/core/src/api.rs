@@ -46,8 +46,8 @@ pub use crate::settings::{
 pub use crate::task_queries::unfinished;
 pub use crate::tasks::{
     ClaimTick, Claimed, DEFAULT_MAX_ATTEMPTS, HandlerError, HandlerFuture, LEASE_EXPIRED, Lease,
-    NO_HANDLER, NewTask, Outcome, Registry, TIMED_OUT, TaskError, WORKER_CONCURRENCY, Worker,
-    WorkerId, backoff, claim, enqueue, fail, finish, reap_expired, release_leases, renew,
+    NO_HANDLER, NewTask, Outcome, REAP_EVERY, Registry, TIMED_OUT, TaskError, WORKER_CONCURRENCY,
+    Worker, WorkerId, backoff, claim, enqueue, fail, finish, reap_expired, release_leases, renew,
 };
 pub use crate::test_control::{TEST_CONTROL_COMPILED, TestControl, TestControlError};
 pub use crate::webhooks::{Dedupe, EventKey, WebhookError};
