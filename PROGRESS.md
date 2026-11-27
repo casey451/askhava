@@ -11370,3 +11370,4 @@
 - 2026-11-27T03:19:50Z runner 2e19f8cd4466 (actions): {"T849": "IN_PROGRESS -> QUEUED"}
 - 2026-11-27T03:20:31Z runner 2e19f8cd4466 (actions): {}
 - 2026-11-27T03:21:13Z runner 2e19f8cd4466 (actions): {}
+- 2026-11-27T03:26:12Z runner 2e19f8cd4466 (actions): {"T849": "QUEUED -> IN_PROGRESS"}; T849 estimated 920k tokens (calibrated); week has 170.3M left (no five-hour budget, D-3056) after 3.7M still running in another lane (session_reading 2026-11-27T03:20:30Z (week)); claimed
