@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-27T00:28:24Z by runner 0e6c9e4355d4 (actions).
+Updated 2026-11-27T00:28:57Z by runner 0e6c9e4355d4 (actions).
 
 **Building: T856 in progress since 00:24Z; 676 of 799 done; week 7% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 676 of 799 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T856 claimed 00:24Z, lease until 03:24Z; lane 3: T309 claimed 22:19Z, lease until 01:19Z; lane 4: T783 claimed 22:18Z, lease until 01:18Z
+- **Lane:** lane 1: T856 claimed 00:24Z, lease until 03:24Z; lane 4: T783 claimed 22:18Z, lease until 01:18Z
 - **Week:** 7% used, 177.2M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:25Z, 2 min before this update
+- **Last run:** 00:25Z, 3 min before this update
 - **Keeper:** last ran 00:07Z, next wake 00:27Z
 
 ## Needs attention
@@ -40,6 +40,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T309 | server and portals: the business Get help form and the site  | MERGE_PENDING | 1 | 2 h 8 min | 00:28Z |  |
 | T854 | portals and action links: sessions and admissions on `real_n | MERGE_PENDING | 1 | 2 h 5 min | 23:58Z |  |
 | T744 | picks: a job that reaches a final status ends its pick await | done | 1 | 98 min | 23:54Z |  |
 | T820 | server and portals: "Download my data" also holds withdrawn  | check_failed | 3 | 102 min | 21:46Z | Hand-in time passed. Worker added unit tests in app/portals/src/data_download.rs (commit f4a102dca); portals-only covera |
@@ -100,8 +101,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T856 (lease until 2026-11-27T03:24:55Z)
-- lane 3: T309 (lease until 2026-11-27T01:19:36Z)
 - lane 4: T783 (lease until 2026-11-27T01:18:01Z)
 
 ## Last usage reading
-- {"task": "T854", "at": "2026-11-26T23:58:01Z", "cache_read_input_tokens": 8364795, "output_tokens": 45069, "cache_creation_input_tokens": 162846, "input_tokens": 225}
+- {"task": "T309", "at": "2026-11-27T00:28:21Z", "cache_read_input_tokens": 23272808, "cache_creation_input_tokens": 331890, "input_tokens": 321, "output_tokens": 87569}
