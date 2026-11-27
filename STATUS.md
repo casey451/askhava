@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-27T19:34:01Z by runner c2cf3bb02c31 (actions).
+Updated 2026-11-27T19:34:35Z by runner c2cf3bb02c31 (actions).
 
-**Building: T856 in progress since 17:17Z; 693 of 804 done; week 17% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Idle since 19:33Z; 693 of 804 done; week 17% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 693 of 804 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T856 claimed 17:17Z, lease until 20:17Z
+- **Lane:** idle since 19:33Z (no task in progress)
 - **Week:** 17% used, 160.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:18Z, 2 h 15 min before this update
+- **Last run:** 17:18Z, 2 h 16 min before this update
 - **Keeper:** last ran 17:11Z, next wake 17:31Z
 - **WARNING:** no runner cycle logged for over 90 minutes before this update
 
@@ -21,6 +21,7 @@ Updated 2026-11-27T19:34:01Z by runner c2cf3bb02c31 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T856 | intake: a request may be texted only with an `sms` consent r | MERGE_PENDING | 2 | 2 h 16 min | 19:33Z | PLAN GAP: outside ownership: app/intake/src/replies.rs:367 (and replies.rs:204). The chat raw path web_chat::raw_turn -> |
 | T749 | messaging: the unused `business_pick_waiting` text template  | check_failed | 1 | 44 min | 16:48Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T849 | server: the e2e web binary serves J1/J2 business time from t | check_failed | 4 | 118 min | 15:27Z | PLAN GAP: outside ownership: tests/e2e/web_chat.spec.ts, tests/a11y/page_states.ts / D-5836 puts inbound SMS and action  |
 | T817 | messaging: a text re-checks the opt-out list after its claim | done | 1 | 67 min | 14:27Z |  |
@@ -49,7 +50,7 @@ Updated 2026-11-27T19:34:01Z by runner c2cf3bb02c31 (actions).
 | T522 | server and portals: the business text-consent box is served  | done | 1 | 104 min | 04:07Z |  |
 | T612 | harness: the WEB-029 and WEB-030 runtime checks on every sit | QUEUED | 2 | 96 min | 03:36Z |  |
 | T799 | Templates and tests (harness): copy review fixes (refund att | done | 2 | 31 min | 02:52Z | PLAN GAP: contradiction: D-5401 requires es.json text "dentro de 72 horas de recibir los datos del cliente" (5 keys), bu |
-| T856 | intake: a request may be texted only with an `sms` consent r | BLOCKED | 1 | 110 min | 02:15Z | PLAN GAP: outside ownership: app/intake/src/replies.rs:367 (and replies.rs:204). The chat raw path web_chat::raw_turn -> |
+| T856 | intake: a request may be texted only with an `sms` consent r | BLOCKED | 1 | 110 min | 02:15Z |  |
 | T861 | e2e (harness): J1 reads a sent text from the fake carrier on | done | 1 | 42 min | 01:13Z |  |
 | T783 | intake: a picture text's media is deleted at the provider af | done | 1 | 2 h 19 min | 00:37Z |  |
 | T309 | server and portals: the business Get help form and the site  | done | 1 | 2 h 8 min | 00:28Z |  |
@@ -117,7 +118,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T856 (lease until 2026-11-27T20:17:40Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T749", "at": "2026-11-27T16:48:37Z", "output_tokens": 6164, "cache_read_input_tokens": 545579, "input_tokens": 47, "cache_creation_input_tokens": 57673}
+- {"task": "T856", "at": "2026-11-27T19:33:59Z", "cache_read_input_tokens": 13734057, "input_tokens": 325, "cache_creation_input_tokens": 357397, "output_tokens": 100341}
