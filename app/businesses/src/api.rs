@@ -179,6 +179,7 @@ pub use crate::team::{
     Acting, MEMBER_REMOVED_KIND, NoticePurpose, Roles, SenderLink, TeamError, TeamMember,
     add_member, add_owner, members, remove_member, set_roles, unlink_phone,
 };
+pub use crate::text_lines::{MemberTextLine, member_text_lines};
 pub use crate::texting_switch::business_texting_on;
 pub use crate::texting_switch::homeowner_texting_number;
 

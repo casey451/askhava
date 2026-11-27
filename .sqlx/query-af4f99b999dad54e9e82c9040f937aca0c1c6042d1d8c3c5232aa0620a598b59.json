@@ -1,0 +1,56 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id AS \"id!\", template_id AS \"template_id!\", at AS \"at!\", subject_ids AS \"subject_ids!\", email AS \"email!\" FROM ( SELECT o.id, o.template_id, coalesce((SELECT min(d.received_at) FROM messaging.delivery_event d WHERE d.provider_sid = o.provider_sid AND d.status = 'delivered'), o.sent_at, o.created_at) AS at, o.subject_ids, o.created_at AS queued, false AS email FROM messaging.outbox o WHERE o.recipient_id = $1 AND $2 = ANY(o.subject_ids) AND o.template_id = ANY($3::text[]) AND o.status NOT IN ('blocked', 'failed', 'expired') UNION ALL SELECT e.id, substr(e.template_id, length($6) + 1), coalesce((SELECT min(v.event_at) FROM messaging.email_event v WHERE v.provider_id = e.provider_id AND v.kind = 'email.delivered'), e.sent_at, e.queued_at), e.subject_ids, e.queued_at, true FROM messaging.email_outbox e WHERE e.recipient_id = $1 AND $2 = ANY(e.subject_ids) AND e.template_id = ANY($4::text[]) AND e.status <> 'dropped' AND NOT EXISTS (SELECT 1 FROM messaging.email_event v WHERE v.provider_id = e.provider_id AND v.kind = ANY($5::text[]))) u ORDER BY queued DESC, email ASC, id DESC LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id!",
+        "type_info": "Uuid",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "template_id!",
+        "type_info": "Text",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "at!",
+        "type_info": "Timestamptz",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 3,
+        "name": "subject_ids!",
+        "type_info": "UuidArray",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 4,
+        "name": "email!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "TextArray",
+        "TextArray",
+        "TextArray",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null,
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "af4f99b999dad54e9e82c9040f937aca0c1c6042d1d8c3c5232aa0620a598b59"
+}

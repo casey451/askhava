@@ -20,21 +20,26 @@
 //! T271 (CALL-008, D-3118): each turn runs `voice_turn_reporting` or `voice_confirm_reporting`, so
 //! a dial asks for the dialed leg's status callbacks at `ASKHAVA_PUBLIC_BASE_URL` plus
 //! `calls::api::DIALED_STATUS_PATH`, which `call_status` serves.
+//! T688 (CALL-020, D-227, D-4361, D-5534): a verified call whose `To` is the Laftly main number,
+//! read from an optional [`MainNumber`] extension `build_router` layers on this route, gets
+//! `calls::api::greeting_twiml` (English then Spanish, the 911 line, a hang-up): no `Record`,
+//! `Dial` or voicemail verb, nothing stored, no forward. Without the layer every number outside
+//! the pool hangs up, as before.
 
 use std::sync::Arc;
 
 use askhava_adapters::api::{MaskedPool, VerifiedWebhook};
 use askhava_calls::api::{
     Attestation, CallsError, DIALED_STATUS_PATH, IncomingCall, JobPin, PinWait, TRIES_PER_CALL,
-    VoiceCall, VoiceKeys, VoiceReply, hangup_twiml, link_after_dial, pin_prompt_twiml,
-    readback_twiml, voice_confirm_reporting, voice_turn_reporting,
+    VoiceCall, VoiceKeys, VoiceReply, greeting_twiml, hangup_twiml, link_after_dial,
+    pin_prompt_twiml, readback_twiml, voice_confirm_reporting, voice_turn_reporting,
 };
-use axum::Router;
 use axum::body::Bytes;
 use axum::extract::State;
 use axum::http::{HeaderMap, StatusCode, Uri, header};
 use axum::response::{IntoResponse, Response};
 use axum::routing::post;
+use axum::{Extension, Router};
 use secrecy::{ExposeSecret, SecretString};
 
 use crate::inbound_text::{Webhooks, verified};
@@ -52,6 +57,19 @@ pub struct VoiceHooks {
     pub pool: MaskedPool,
     /// How long each prompt waits for digits (CALL-013).
     pub wait: PinWait,
+}
+
+/// The Laftly main number (`ASKHAVA_MAIN_NUMBER`, E.164), whose callers hear the greeting
+/// (CALL-020); the voice route reads it as an optional extension, so a route served without the
+/// layer, or with `None` in it (the default), has no main number.
+#[derive(Clone, Default)]
+pub struct MainNumber(Option<String>);
+
+impl From<Option<String>> for MainNumber {
+    /// The main number `number`, as `core::settings::main_number` gives it (CALL-020).
+    fn from(number: Option<String>) -> Self {
+        Self(number)
+    }
 }
 
 /// The voice route over `v`, for `build_router` to merge (SEC-016).
@@ -96,6 +114,7 @@ impl Turn {
 
 async fn voice(
     State(v): State<Arc<VoiceHooks>>,
+    main: Option<Extension<MainNumber>>,
     uri: Uri,
     head: HeaderMap,
     body: Bytes,
@@ -107,7 +126,8 @@ async fn voice(
     let Some(turn) = Turn::parse(uri.query()) else {
         return twiml(hangup_twiml());
     };
-    match answer(&v, &hook, turn).await {
+    let main = main.as_ref().and_then(|Extension(m)| m.0.as_deref());
+    match answer(&v, &hook, turn, main).await {
         Ok(xml) => twiml(xml),
         Err(CallsError::Database) => {
             tracing::error!("twilio voice webhook database error");
@@ -126,12 +146,21 @@ fn attestation(verstat: Option<&str>) -> Attestation {
     Attestation::parse(a.then_some("A"))
 }
 
-/// The TwiML for one checked turn (CALL-002 to CALL-005, CALL-025).
-async fn answer(v: &VoiceHooks, hook: &VerifiedWebhook, turn: Turn) -> Result<String, CallsError> {
+/// The TwiML for one checked turn (CALL-002 to CALL-005, CALL-025); a call to `main`, the main
+/// number, gets the greeting and nothing is read or stored (CALL-020).
+async fn answer(
+    v: &VoiceHooks,
+    hook: &VerifiedWebhook,
+    turn: Turn,
+    main: Option<&str>,
+) -> Result<String, CallsError> {
     let field = |name: &str| {
         let found = hook.params().iter().find(|(k, _)| k == name);
         found.map(|(_, value)| value.as_str())
     };
+    if main.is_some_and(|m| field("To") == Some(m)) {
+        return Ok(greeting_twiml());
+    }
     let (Some(sid), Some(to), Some(from)) = (field("CallSid"), field("To"), field("From")) else {
         return Ok(hangup_twiml());
     };

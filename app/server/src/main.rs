@@ -26,6 +26,7 @@ use std::io;
 use std::net::Ipv4Addr;
 
 use askhava_core::api::TestControl;
+use askhava_server::help_forms::help_mail;
 use tokio::net::TcpListener;
 
 #[tokio::main]
@@ -111,7 +112,7 @@ fn liveness_limit() -> io::Result<askhava_server::liveness::LivenessLimit> {
 /// T261), the step-up page's Verify part (T364), the quote page's update keys (T729), the homeowner sign-in's Verify part (T307), the web chat's code-step keys (T489) and the
 /// site pages' settings (T102) with the business number for the business page's WEB-024 line
 /// (T769, D-4931) and the homeowner number with the Gate C launch date for the home pages' texting
-/// number (T725, WEB-017, D-4709) and the owner reports' settings (T305, D-5775); each errors as its own builder does, naming a key, never a value.
+/// number (T725, WEB-017, D-4709) and the owner reports' settings (T305, D-5775) and the Get help answer email's key (T309) and the main number its callers' greeting needs (T688, CALL-020); each errors as its own builder does, naming a key, never a value.
 fn business_parts(
     settings: &askhava_core::api::Settings,
     pool: &sqlx::PgPool,
@@ -134,8 +135,7 @@ fn business_parts(
     let homeowner = askhava_server::homeowner_portal::homeowner_verify(settings, std::env::vars())?;
     let photos = askhava_server::homeowner_portal::photo_parts(settings, std::env::vars())?;
     let data_link = askhava_server::data_link_postal(settings, std::env::vars())?;
-    let link_codes = askhava_server::action_links::confirm_link_codes(settings, std::env::vars())?;
-    let press_codes = askhava_server::action_links::confirm_link_codes(settings, std::env::vars())?;
+    let codes = || askhava_server::action_links::confirm_link_codes(settings, std::env::vars());
     let number = askhava_server::business_number(settings.business_number())?;
     let env: Vec<(String, String)> = std::env::vars().collect();
     let texting = askhava_server::homeowner_number(settings, &env)?;
@@ -152,11 +152,12 @@ fn business_parts(
         .with_homeowner_verify(homeowner)
         .with_photos(photos)
         .with_data_link_postal(data_link)
+        .with_help_mail(help_mail(settings, std::env::vars())?)
         .with_vault(vault)
         .with_business_number(number.clone())
         .with_confirm_part(confirm)
-        .with_confirm_link_codes(link_codes)
-        .with_confirm_codes(press_codes)
+        .with_confirm_link_codes(codes()?)
+        .with_confirm_codes(codes()?)
         .with_quote_page_keys(quote_keys)
         .with_chat_codes(chat)
         .with_site_pages(pages.with_business_number(number))
@@ -166,7 +167,8 @@ fn business_parts(
             std::env::vars(),
         ))
         .with_report_settings(reports)
-        .with_owner_flag_limits(settings.owner_flag_limits()))
+        .with_owner_flag_limits(settings.owner_flag_limits())
+        .with_main_number(settings.main_number().map(str::to_owned)))
 }
 
 /// Applies every pending migration over `ASKHAVA_MIGRATION_DATABASE_URL`, never the app

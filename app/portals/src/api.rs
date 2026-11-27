@@ -302,4 +302,8 @@ pub use crate::step_up_page::{
     business_step_up_page, check_step_up_code, send_step_up_code,
 };
 pub use crate::team_page::{ShownMember, TEAM_ROUTE, may_see_team, team_page};
+pub use crate::text_consent_page::{
+    TEXT_CONSENT_ROUTE, TextConsentError, TextConsentNote, TextConsentOutcome, record_text_consent,
+    text_consent_page,
+};
 pub use crate::update_channel::{UPDATES_CONFIRM_ROUTE, UPDATES_ROUTE};

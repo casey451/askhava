@@ -1,0 +1,34 @@
+{% extends "business_layout.html" %}
+{#- The business text-consent page (T522; CON-019, BIZ-036, TXT-035; D-3879, D-3881). One section
+    per phone the signed-in member linked: its last 4 digits and "Texts on", or the CON-019 text
+    box, never pre-ticked, with the phone's line ID and current number version in hidden fields.
+    While business texting is off it says so and shows no box. The status line is present at load;
+    an unticked box gets an "Error: " title and a focused summary. No whole number, no homeowner
+    detail. Works without JavaScript. -#}
+{% block title %}{% if error().is_some() %}Error: {% endif %}Job-card texts to your phones{% endblock %}
+{% block main %}
+<link rel="stylesheet" href="/static/portals/forms.css">
+<h1>Job-card texts to your phones</h1>
+{% if let Some(e) = error() %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
+<p>There is a problem:</p>
+<ul><li><a href="#consent-{{ e.0 }}">{{ e.1 }}</a></li></ul>
+</div>
+{% endif %}<p id="texts-said" role="status">{{ said }}</p>
+{% if !texting_on %}<p>We aren't texting businesses right now, so everything comes to you by email. You don't need to do anything here.</p>
+{% else %}<p>A phone gets texts only after the person who uses it ticks its box below. If the number changes, tick the box again for the new number.</p>
+<h2 id="phones">Phones you added</h2>
+{% if phones.is_empty() %}<p>You haven't added a phone yet.</p>
+{% endif %}{% for p in phones %}<section aria-labelledby="phone-{{ loop.index }}">
+<h3 id="phone-{{ loop.index }}">Phone {{ p.ending }}</h3>
+{% if p.on %}<p>Texts on</p>
+{% else %}<form method="post" action="{{ crate::api::TEXT_CONSENT_ROUTE }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<input type="hidden" name="phone" value="{{ p.line }}">
+<input type="hidden" name="number_version" value="{{ p.version }}">
+{% let wrong = self.wrong(p.line) %}{% if let Some(e) = wrong %}<p id="consent-error-{{ p.line }}" class="field-error">Error: {{ e }}</p>
+{% endif %}<p><input type="checkbox" id="consent-{{ p.line }}" name="consent" value="yes"{% if wrong.is_some() %} aria-describedby="consent-error-{{ p.line }}"{% endif %}> <label for="consent-{{ p.line }}">{{ wording }}</label></p>
+<p><button type="submit" aria-describedby="phone-{{ loop.index }}">Save</button></p>
+</form>
+{% endif %}</section>
+{% endfor %}{% endif %}{% if !self.boxes_shown() %}<p>{{ askhava_core::api::brand().display_name() }} never places recorded or automated calls to you.</p>
+{% endif %}{% endblock %}

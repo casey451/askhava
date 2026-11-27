@@ -143,6 +143,18 @@ def test_real_looking_emails_fail() -> None:
     assert rules("help" + "@laftly.com" + ".evil.net") == ["email"]
 
 
+def test_only_the_anthropic_no_reply_trailer_address_is_a_service_identity() -> None:
+    """D-5934: the Co-Authored-By trailer's one address passes; its domain and its local part elsewhere do not."""
+    assert rules("Co-Authored-By: Claude Opus 5.5 <noreply" + "@anthropic.com>") == []
+    assert rules("NoReply" + "@Anthropic.com") == []
+    assert rules("pat" + "@anthropic.com") == ["email"]
+    assert rules("noreply" + "@mail.anthropic.com") == ["email"]
+    assert rules("noreply" + "@anthropic.co") == ["email"]
+    assert rules("noreply" + "@anthropic.com" + ".evil.net") == ["email"]
+    assert rules("noreply" + "@havasu-mail.net") == ["email"]
+    assert rules("xnoreply" + "@anthropic.com") == ["email"]
+
+
 def tiff(tags: list[int], sub_tags: list[int] | None = None) -> bytes:
     """A little-endian TIFF block with IFD0 holding `tags` and an optional Exif sub-IFD."""
     entries = list(tags) + ([0x8769] if sub_tags is not None else [])

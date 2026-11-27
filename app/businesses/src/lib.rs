@@ -79,6 +79,7 @@ mod signup_record;
 mod signup_view;
 mod status;
 mod team;
+mod text_lines;
 mod texting_switch;
 
 #[cfg(test)]
