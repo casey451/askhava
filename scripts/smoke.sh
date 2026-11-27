@@ -3,9 +3,11 @@
 # branch before hand-in (kit/prompts/TEMPLATE.md, BUILD_BRIEF.md:240). It runs the same checks as
 # the Ci job, minus the slow dependency audits (add --full for cargo-audit and cargo-deny), against
 # a local PostgreSQL 16 it starts if needed. Exit status 0 means green; anything else means red,
-# and if this is main, the only task is "fix main".
+# and if this is main, the only task is "fix main". --plan-half (D-5682) runs every check up to the Python tests
+# as always, then only the two Rust tests that read kit/tasks.json at run time: the runner's pre-session and
+# background smokes use it for a commit that changes only plan and docs paths since a full green.
 #
-# Usage: bash scripts/smoke.sh [--full]
+# Usage: bash scripts/smoke.sh [--full | --plan-half]
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -84,13 +86,31 @@ python3 scripts/gen_prompts.py --check >/dev/null && echo "ok  gen_prompts --che
 step "Python tests"
 python3 -m pytest tests -q -p no:cacheprovider
 
-if [ -f Cargo.toml ]; then
+rust_env() {
   pg16_path
   local_database
-  step "Rust format, lint and tests"
   toolchain="$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)"
   rustup toolchain install "${toolchain}" --profile minimal -c clippy -c rustfmt >/dev/null 2>&1
   export SQLX_OFFLINE=true  # compile against the committed .sqlx/ data, as Ci does (D-481)
+}
+
+# The plan half's two Rust test targets, with the warm-up's `cargo test --workspace --locked` feature set so no
+# dependency rebuilds: route_wiring and architecture_migrations read kit/tasks.json at run time (D-5682).
+plan_tests() { cargo test --workspace --locked --test route_wiring --test architecture_migrations; }
+
+if [ "${FULL}" = "--plan-half" ]; then
+  if [ -f Cargo.toml ]; then
+    rust_env
+    step "Rust tests that read the plan (plan half)"
+    plan_tests
+  fi
+  printf '\nsmoke: green (plan half)\n'
+  exit 0
+fi
+
+if [ -f Cargo.toml ]; then
+  rust_env
+  step "Rust format, lint and tests"
   cargo fmt --all --check
   cargo clippy --workspace --all-targets --locked -- -D warnings -F clippy::allow_attributes_without_reason
   # The binaries' own dependency graph builds with the lockfile (D-481, D-488).
