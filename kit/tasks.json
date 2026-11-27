@@ -16558,7 +16558,7 @@
     "T840",
     "T863"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -16596,7 +16596,8 @@
     "D-5551",
     "D-5664",
     "D-5836",
-    "D-5848"
+    "D-5848",
+    "D-5918"
    ],
    "cites": [],
    "budget": {
@@ -16626,7 +16627,7 @@
     "T536",
     "T851"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -16655,7 +16656,8 @@
    "decisions": [
     "D-3889",
     "D-3892",
-    "D-5836"
+    "D-5836",
+    "D-5918"
    ],
    "cites": [],
    "budget": {
@@ -33063,7 +33065,8 @@
     "T846",
     "T847",
     "T867",
-    "T868"
+    "T868",
+    "T869"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -33318,7 +33321,8 @@
     "T846",
     "T847",
     "T867",
-    "T868"
+    "T868",
+    "T869"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -34134,7 +34138,8 @@
     "T846",
     "T847",
     "T867",
-    "T868"
+    "T868",
+    "T869"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -35643,7 +35648,8 @@
     "T852",
     "T853",
     "T867",
-    "T868"
+    "T868",
+    "T869"
    ],
    "model": null,
    "effort": null,
@@ -38562,7 +38568,8 @@
     "T821",
     "T825",
     "T867",
-    "T868"
+    "T868",
+    "T869"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -38666,7 +38673,8 @@
     "T759",
     "T760",
     "T867",
-    "T868"
+    "T868",
+    "T869"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -38765,7 +38773,8 @@
     "T759",
     "T760",
     "T867",
-    "T868"
+    "T868",
+    "T869"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -39073,7 +39082,8 @@
     "T821",
     "T825",
     "T867",
-    "T868"
+    "T868",
+    "T869"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -55338,7 +55348,7 @@
    "deps": [
     "T850"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -55371,7 +55381,8 @@
     "TD-BIZ-25"
    ],
    "decisions": [
-    "D-5836"
+    "D-5836",
+    "D-5918"
    ],
    "cites": [],
    "budget": {
@@ -55399,7 +55410,7 @@
    "deps": [
     "T222"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -55426,7 +55437,8 @@
    ],
    "decisions": [
     "D-5836",
-    "D-5848"
+    "D-5848",
+    "D-5918"
    ],
    "cites": [],
    "budget": {
@@ -55454,7 +55466,7 @@
    "deps": [
     "T851"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -55489,7 +55501,8 @@
    ],
    "decisions": [
     "D-5836",
-    "D-5848"
+    "D-5848",
+    "D-5918"
    ],
    "cites": [],
    "budget": {
@@ -55563,7 +55576,7 @@
    "id": "T856",
    "slug": "consent-per-request",
    "title": "intake: a request may be texted only with an `sms` consent record of its own; the guard primitive",
-   "goal": "Plan change D-5848 (task A of the T801 chain; Fable's T2, scope decision section 1). (1) New `models::sms_consented(conversation)`, exposed as `service::may_text_request`: true only when an `sms` consent record exists for that request's conversation (`intake.consent_record.conversation_id`, no migration). It decides `rules::plan`'s consent input in `service::handle` (`service.rs:154`, `:182`, in place of `open.is_some()`) and the text uses of `card_allowed` (`tell`, `handlers.rs:350` to `:377`). `card_allowed` stays per request and keeps counting any record (CON-007's web-chat card). `models::contact_consented`, read by `service::may_text`, counts only `sms` records (R1-01); `may_text` stays only for the one caller with no request in hand, the owner's help reply (`app/portals/src/owner_help.rs:199`, D-5848): a number with only `web_chat` records gets `ReplyRefusal::EmailOnly` there (a test in this task's test file), and the opt-out and texting-switch checks at send are unchanged. (2) Every text-opened request gets its own `sms` record from its first inbound text, whether or not the consent text is queued again (`receive_answer`, `service.rs:222` to `:249`); her first text into a web-opened request queues the consent text and appends the `sms` record, then the request goes on by text (Fable's b); the append locks the conversation row (`SELECT ... FOR UPDATE`) so two racing first texts give one consent text and one `sms` record; reword `app/intake/CLAUDE.md:16` (\"One consent record per request, none from a reply\") and NOTES never 27 to allow that appended record. (3) An `sms` record is written only from a carrier inbound, structurally: the chat path (`web_chat.rs:333` reads the open request before its transaction at `:337`) never calls `models::record_consent` and never passes a browser message ID as an `inbox_id` (R2-02, R2-03), with a test; if a re-read of the open request stays, it is `SELECT ... FOR UPDATE` on the conversation row; `app/server/src/inbound_text.rs` is not edited. The chat's `text_turn` gets its own service entry, not `receive_text` or `receive_answer`: its `rules::plan` input stays \"request open\" and it never writes a consent record (test: a chat turn on a `web_chat`-only request queues no second consent text and writes no record). (4) In `open_verified` (`web_chat.rs:764` to `:773`) the `web_chat` record is written before the consent and Spanish texts are queued, in the same transaction; the chat exemption applies only with at least one `web_chat` record and no `sms` record, and a request with no record is refused. A guard primitive for request texts in the new `app/intake/src/consent_guard.rs`: given the request and the text kind it answers Outbox, or refuses with an error (fail closed); named exemptions only: the consent text of a carrier-inbound first text, the INT-004 safety text for a carrier-inbound request with no consent record yet (a web request's safety text is shown on the page, `docs/spec/intake.md:62`, CON-005), the carrier keyword replies, the business sign-up reply, and the chat exemption: a branch of T856's guard (`app/intake/src/consent_guard.rs`) under which a request whose only consent records are `web_chat` keeps outbox delivery until T801, whatever the caller (T649's fixture `ask()` calls `answer_zip` and `ask_name_address` straight through `intake::api`, `app/server/tests/web_chat_after_code.rs:231` to `:234`, and asserts a NAME_ADDRESS outbox row at `:325` to `:330`); its constant `CHAT_LEGACY_TEXTS` may stay in `web_chat.rs`, and T801 deletes both the constant and the branch. Use it at this task's own call sites; T857 and T865 put every caller behind it. Tests in the new `tests/integration/tests/consent_per_request.rs`: a returning number's second text-opened request is textable; a web-opened request is not textable until her first text, which gets the consent text and one `sms` record; a `web_chat` record never makes `may_text` or `may_text_request` true; the stale-read race writes no `sms` record; 911 before consent unchanged (INT-002). Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-5848 (task A of the T801 chain; Fable's T2, scope decision section 1). (1) New `models::sms_consented(conversation)`, exposed as `service::may_text_request`: true only when an `sms` consent record exists for that request's conversation (`intake.consent_record.conversation_id`, no migration). It decides `rules::plan`'s consent input in `service::handle` (`service.rs:154`, `:182`, in place of `open.is_some()`) and the text uses of `card_allowed` (`tell`, `handlers.rs:350` to `:377`). `card_allowed` stays per request and keeps counting any record (CON-007's web-chat card). `models::contact_consented`, read by `service::may_text`, counts only `sms` records (R1-01); `may_text` stays only for the one caller with no request in hand, the owner's help reply (`app/portals/src/owner_help.rs:199`, D-5848): a number with only `web_chat` records gets `ReplyRefusal::EmailOnly` there (a test in this task's test file), and the opt-out and texting-switch checks at send are unchanged. (2) Every text-opened request gets its own `sms` record from its first inbound text, whether or not the consent text is queued again (`receive_answer`, `service.rs:222` to `:249`); her first text into a web-opened request queues the consent text and appends the `sms` record, then the request goes on by text (Fable's b); the append locks the conversation row (`SELECT ... FOR UPDATE`) so two racing first texts give one consent text and one `sms` record; reword `app/intake/CLAUDE.md:16` (\"One consent record per request, none from a reply\") and NOTES never 27 to allow that appended record. (3) An `sms` record is written only from a carrier inbound, structurally: the chat path (`web_chat.rs:333` reads the open request before its transaction at `:337`) never calls `models::record_consent` and never passes a browser message ID as an `inbox_id` (R2-02, R2-03), with a test; if a re-read of the open request stays, it is `SELECT ... FOR UPDATE` on the conversation row; `app/server/src/inbound_text.rs` is not edited. The chat's `text_turn` gets its own service entry, not `receive_text` or `receive_answer`: its `rules::plan` input stays \"request open\" and it never writes a consent record (test: a chat turn on a `web_chat`-only request queues no second consent text and writes no record). (4) In `open_verified` (`web_chat.rs:764` to `:773`) the `web_chat` record is written before the consent and Spanish texts are queued, in the same transaction; the chat exemption applies only with at least one `web_chat` record and no `sms` record, and a request with no record is refused. A guard primitive for request texts in the new `app/intake/src/consent_guard.rs`: given the request and the text kind it answers Outbox, or refuses with an error (fail closed); named exemptions only: the consent text of a carrier-inbound first text, the INT-004 safety text for a carrier-inbound request with no consent record yet (a web request's safety text is shown on the page, `docs/spec/intake.md:62`, CON-005), the carrier keyword replies, the business sign-up reply, and the chat exemption: a branch of T856's guard (`app/intake/src/consent_guard.rs`) under which a request whose only consent records are `web_chat` keeps outbox delivery until T801, whatever the caller (T649's fixture `ask()` calls `answer_zip` and `ask_name_address` straight through `intake::api`, `app/server/tests/web_chat_after_code.rs:231` to `:234`, and asserts a NAME_ADDRESS outbox row at `:325` to `:330`); its constant `CHAT_LEGACY_TEXTS` may stay in `web_chat.rs`, and T801 deletes both the constant and the branch. Use it at this task's own call sites; T857 and T865 put every caller behind it. Tests in the new `tests/integration/tests/consent_per_request.rs`: a returning number's second text-opened request is textable; a web-opened request is not textable until her first text, which gets the consent text and one `sms` record; a `web_chat` record never makes `may_text` or `may_text_request` true; the stale-read race writes no `sms` record; 911 before consent unchanged (INT-002). Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`. Plan change D-5918 (requeue after attempt 1's confirmed plan gap; Fable's pre-flight question): on the retry use the branch the runner prepares and never recreate, reset or rebase it (attempt 1's work was not kept: its WIP save was refused by the scanner false positive D-5918 (3) fixes). `app/intake/src/rules.rs` leaves the owned files: `rules::plan` takes the consent input as a value (`rules.rs:93`), so `service.rs` alone decides it. The chat raw path (`web_chat::raw_turn`, `web_chat.rs:340`, to `replies::receive_raw_reply` to `answer_name_address` to `receive_answer`, `app/intake/src/replies.rs:367`) and `reply_in`'s `receive_text` call (`replies.rs:204`) reach `models::record_consent` (`service.rs:245`), so this task now owns `app/intake/src/replies.rs` and makes the chat path structurally unable to write a consent record: `web_chat.rs` calls a chat entry in `replies.rs` that never reaches `receive_text` or `receive_answer`'s consent write, and `receive_raw_reply` keeps its signature for its carrier caller `app/server/src/inbound_text.rs:839`, which is not edited;  Callers checked and out of scope are listed in D-5918 (1).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -55589,10 +55602,10 @@
    "owns": [
     "app/intake/src/models.rs",
     "app/intake/src/service.rs",
-    "app/intake/src/rules.rs",
     "app/intake/src/conversation.rs",
     "app/intake/src/handlers.rs",
     "app/intake/src/web_chat.rs",
+    "app/intake/src/replies.rs",
     "app/intake/src/consent_guard.rs",
     "tests/integration/tests/consent_per_request.rs"
    ],
@@ -55613,13 +55626,14 @@
    ],
    "tests": [],
    "decisions": [
-    "D-5848"
+    "D-5848",
+    "D-5918"
    ],
    "cites": [],
    "budget": {
     "files": 8,
-    "lines": 450,
-    "context_pct": 44
+    "lines": 500,
+    "context_pct": 45
    },
    "checks": [
     "Ci",
@@ -55634,7 +55648,7 @@
    "id": "T857",
    "slug": "guarded-enqueue-seam",
    "title": "intake: `queue_text` and `queue_body` behind the guard; a page sink for web dispatch only",
-   "goal": "Plan change D-5848 (task C, part 1; Fable's section C.2; verification R1-05, R1-06; round-1 review). `queue_text` (`conversation.rs:585`) and `queue_body` (`handlers.rs:379`) keep their signatures (callers `summary_step.rs:35`, `:193`, `photos.rs:236`, `order.rs:399`, `cards_out.rs:582`) and check T856's guard before every enqueue: an `sms` request to the outbox as today, anything else refused, except the chat exemption: a branch of T856's guard (`app/intake/src/consent_guard.rs`) under which a request whose only consent records are `web_chat` keeps outbox delivery until T801, whatever the caller (T649's fixture `ask()` calls `answer_zip` and `ask_name_address` straight through `intake::api`, `app/server/tests/web_chat_after_code.rs:231` to `:234`, and asserts a NAME_ADDRESS outbox row at `:325` to `:330`); its constant `CHAT_LEGACY_TEXTS` may stay in `web_chat.rs`, and T801 deletes both the constant and the branch, so every legacy caller on a `web_chat` request (`zip_step`, `ask_name_address` at `conversation.rs:420`, the T649 and T645 paths) keeps outbox delivery until T801. Page delivery happens only when web dispatch is the explicit caller: a new function returns the rendered reply in a chat result type of its own (`intake::api`), never an outbox row; the shared `Queued`/`Handled` (`service.rs:66` to `:86`) are not changed. The `order_dispatch` gates (`:371`, `:476`, `:522`) ask the same question per request (`may_text_request` for a text, the web request for the page) with small edits only. The guard resolves the request from `subject[0]`: a conversation ID, or a job ID mapped to its conversation; anything else is refused (an inbox-only subject is the named business-reply exemption, `service.rs:262`), and a request is never resolved by contact; tests for a conversation subject and a job subject. Every existing test passes unchanged, including `app/server/tests/web_chat_after_code.rs:216` to `:235`, `:325` to `:330`, `app/server/tests/web_chat_stops.rs:572` and `tests/integration/tests/web_chat.rs:360`. Tests in the new `tests/integration/tests/guarded_enqueue.rs`. Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-5848 (task C, part 1; Fable's section C.2; verification R1-05, R1-06; round-1 review). `queue_text` (`conversation.rs:585`) and `queue_body` (`handlers.rs:379`) keep their signatures (callers `summary_step.rs:35`, `:193`, `photos.rs:236`, `order.rs:399`, `cards_out.rs:582`) and check T856's guard before every enqueue: an `sms` request to the outbox as today, anything else refused, except the chat exemption: a branch of T856's guard (`app/intake/src/consent_guard.rs`) under which a request whose only consent records are `web_chat` keeps outbox delivery until T801, whatever the caller (T649's fixture `ask()` calls `answer_zip` and `ask_name_address` straight through `intake::api`, `app/server/tests/web_chat_after_code.rs:231` to `:234`, and asserts a NAME_ADDRESS outbox row at `:325` to `:330`); its constant `CHAT_LEGACY_TEXTS` may stay in `web_chat.rs`, and T801 deletes both the constant and the branch, so every legacy caller on a `web_chat` request (`zip_step`, `ask_name_address` at `conversation.rs:420`, the T649 and T645 paths) keeps outbox delivery until T801. Page delivery happens only when web dispatch is the explicit caller: a new function returns the rendered reply in a chat result type of its own (`intake::api`), never an outbox row; the shared `Queued`/`Handled` (`service.rs:66` to `:86`) are not changed. The `order_dispatch` gates (`:371`, `:476`, `:522`) ask the same question per request (`may_text_request` for a text, the web request for the page) with small edits only. The guard resolves the request from `subject[0]`: a conversation ID, or a job ID mapped to its conversation; anything else is refused (an inbox-only subject is the named business-reply exemption, `service.rs:262`), and a request is never resolved by contact; tests for a conversation subject and a job subject. Every existing test passes unchanged, including `app/server/tests/web_chat_after_code.rs:216` to `:235`, `:325` to `:330`, `app/server/tests/web_chat_stops.rs:572` and `tests/integration/tests/web_chat.rs:360`. Tests in the new `tests/integration/tests/guarded_enqueue.rs`. Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`. Plan change D-5918 (Fable's pre-flight question, every caller grepped): `queue_text`'s callers also include `web_chat.rs:764` and `:767` (the consent and Spanish texts in `open_verified`, under the chat exemption) and `order.rs:399`; `queue_body`'s also include `replies.rs`, `zip_step.rs`, `order_dispatch.rs` and `handlers.rs`; both signatures are kept, so none of those files needs an edit here and none is owned.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -55671,7 +55685,8 @@
    ],
    "tests": [],
    "decisions": [
-    "D-5848"
+    "D-5848",
+    "D-5918"
    ],
    "cites": [],
    "budget": {
@@ -55692,7 +55707,7 @@
    "id": "T865",
    "slug": "direct-enqueue-callers",
    "title": "intake: the direct outbox callers and the background quote and job text gates go through the per-request guard",
-   "goal": "Plan change D-5848 (task C, part 2; R1-06 and the round-1 review). The intake callers that enqueue directly, outside `queue_text`/`queue_body`, check T856's guard the same way (an `sms` request to the outbox, anything else refused, except the chat exemption: a branch of T856's guard (`app/intake/src/consent_guard.rs`) under which a request whose only consent records are `web_chat` keeps outbox delivery until T801, whatever the caller (T649's fixture `ask()` calls `answer_zip` and `ask_name_address` straight through `intake::api`, `app/server/tests/web_chat_after_code.rs:231` to `:234`, and asserts a NAME_ADDRESS outbox row at `:325` to `:330`); its constant `CHAT_LEGACY_TEXTS` may stay in `web_chat.rs`, and T801 deletes both the constant and the branch) and offer T857's page function to web dispatch: `zip_step.rs:253`; `replies.rs:518`; `routing.rs:618` to `:634` (`queue`, reached by `tell_coverage` `:378`, `:393`, `apply` `:330` via `zip_step.rs:210` and `order_dispatch.rs:1241`, `:1451`, and `not_covered` `:429`); `closing.rs:243` (`answer_close`/`say`, from `replies.rs:299`); `address_wait.rs:150` queues a core task (`ADDRESS_IN_KIND`), not a text, and gets no guard; its text goes through T857's `queue_text`. After T840 (claimed before D-5848, so its plan is untouched): the homeowner text gates `quote_updates.rs:123` (the `way` call) and `job_texts.rs:351` to `:357` (`text_gate`, `may_text` at `:357`) (as T840 leaves them) ask T856's per-request predicate (`service::may_text_request` for the job's request) in place of the per-contact `may_text`. Every existing test passes unchanged. Tests in the new `tests/integration/tests/guarded_direct_callers.rs`. Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`. Plan change D-5900: a checked implementation draft is in `docs/handoff/drafts/T865.md` (written by an outside reviewer, checked by Opus against main, not compiled); read its 'Worker: read this first' header before relying on it; this goal and the acceptance win over the draft wherever they differ.",
+   "goal": "Plan change D-5848 (task C, part 2; R1-06 and the round-1 review). The intake callers that enqueue directly, outside `queue_text`/`queue_body`, check T856's guard the same way (an `sms` request to the outbox, anything else refused, except the chat exemption: a branch of T856's guard (`app/intake/src/consent_guard.rs`) under which a request whose only consent records are `web_chat` keeps outbox delivery until T801, whatever the caller (T649's fixture `ask()` calls `answer_zip` and `ask_name_address` straight through `intake::api`, `app/server/tests/web_chat_after_code.rs:231` to `:234`, and asserts a NAME_ADDRESS outbox row at `:325` to `:330`); its constant `CHAT_LEGACY_TEXTS` may stay in `web_chat.rs`, and T801 deletes both the constant and the branch) and offer T857's page function to web dispatch: `zip_step.rs:253`; `replies.rs:518`; `routing.rs:618` to `:634` (`queue`, reached by `tell_coverage` `:378`, `:393`, `apply` `:330` via `zip_step.rs:210` and `order_dispatch.rs:1241`, `:1451`, and `not_covered` `:429`); `closing.rs:243` (`answer_close`/`say`, from `replies.rs:299`); `address_wait.rs:150` queues a core task (`ADDRESS_IN_KIND`), not a text, and gets no guard; its text goes through T857's `queue_text`. After T840 (claimed before D-5848, so its plan is untouched): the homeowner text gates `quote_updates.rs:123` (the `way` call) and `job_texts.rs:351` to `:357` (`text_gate`, `may_text` at `:357`) (as T840 leaves them) ask T856's per-request predicate (`service::may_text_request` for the job's request) in place of the per-contact `may_text`. Every existing test passes unchanged. Tests in the new `tests/integration/tests/guarded_direct_callers.rs`. Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`. Plan change D-5900: a checked implementation draft is in `docs/handoff/drafts/T865.md` (written by an outside reviewer, checked by Opus against main, not compiled); read its 'Worker: read this first' header before relying on it; this goal and the acceptance win over the draft wherever they differ. Plan change D-5918 (callers grepped): `zip_step.rs:253` and `replies.rs:518` already enqueue through `queue_body`, so T857's guard covers them; this task confirms that with a test and changes them only for the page variant; `text_gate` and `homeowner_of` have no caller outside `job_texts.rs`, and `way` in `quote_updates.rs` is that file's own call, so their signatures may change; `tell_coverage`, `not_covered` and `answer_close` keep their signatures for their callers in `order_dispatch.rs`, `api.rs` and the integration tests.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -55736,7 +55751,8 @@
    "tests": [],
    "decisions": [
     "D-5848",
-    "D-5900"
+    "D-5900",
+    "D-5918"
    ],
    "cites": [],
    "budget": {
@@ -55757,7 +55773,7 @@
    "id": "T864",
    "slug": "web-dispatch-zip",
    "title": "intake: web dispatch after the code through ZIP, the replayed description and the coverage line",
-   "goal": "Plan change D-5848 (task C, second half; Fable's section C.2 and T4; verification V1, R1-04, R1-25). (1) The new `app/intake/src/web_dispatch.rs`: after the code a web request runs the shared steps of the Intake order table's web-chat column (`docs/spec/intake.md:60` to `:72`) through T857's seam: the ZIP and area check (INT-022), the trade check and the coverage line (INT-016, INT-017), every reply returned for the page through T857's page function in its own chat result type (no outbox ID, R1-04; the shared `Queued`/`Handled` unchanged). (2) Fable's T4: on the code POST (`app/site/src/chat.rs:491` to `:516`, through the composition's `ChatKeys` check and vault scrub, `app/server/src/chat_codes.rs:109` to `:117`, `:163` to `:180`) her \"you\" lines from the hidden `said` field (`app/site/src/chat.rs:230` to `:233`) are untrusted input: a length cap, the same scrub as any chat message (vault name included), the 911 and INT-038 checks again, then `keep_description` under `first_message_id`, so a retried POST stores nothing twice (D-3189); a missing, empty or over-cap `said` gets one request for the description (draft copy for the copy panel, WORD-028, English and Spanish); the server never keeps pre-code words (`web_chat.rs:578` to `:579`, D-4292). The served chat is not switched here (T801 does it): the web path is reached through `intake::api` and this task's tests, and every existing test passes unchanged. Tests in the new `tests/integration/tests/web_dispatch_zip.rs`. Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-5848 (task C, second half; Fable's section C.2 and T4; verification V1, R1-04, R1-25). (1) The new `app/intake/src/web_dispatch.rs`: after the code a web request runs the shared steps of the Intake order table's web-chat column (`docs/spec/intake.md:60` to `:72`) through T857's seam: the ZIP and area check (INT-022), the trade check and the coverage line (INT-016, INT-017), every reply returned for the page through T857's page function in its own chat result type (no outbox ID, R1-04; the shared `Queued`/`Handled` unchanged). (2) Fable's T4: on the code POST (`app/site/src/chat.rs:491` to `:516`, through the composition's `ChatKeys` check and vault scrub, `app/server/src/chat_codes.rs:109` to `:117`, `:163` to `:180`) her \"you\" lines from the hidden `said` field (`app/site/src/chat.rs:230` to `:233`) are untrusted input: a length cap, the same scrub as any chat message (vault name included), the 911 and INT-038 checks again, then `keep_description` under `first_message_id`, so a retried POST stores nothing twice (D-3189); a missing, empty or over-cap `said` gets one request for the description (draft copy for the copy panel, WORD-028, English and Spanish); the server never keeps pre-code words (`web_chat.rs:578` to `:579`, D-4292). The served chat is not switched here (T801 does it): the web path is reached through `intake::api` and this task's tests, and every existing test passes unchanged. Tests in the new `tests/integration/tests/web_dispatch_zip.rs`. Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`. Plan change D-5918 (callers grepped): `keep_description` is `quotes`' API (`app/quotes/src/job_text.rs`), called here unchanged; no function this task changes has a caller outside its owned files.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -55802,7 +55818,8 @@
    ],
    "tests": [],
    "decisions": [
-    "D-5848"
+    "D-5848",
+    "D-5918"
    ],
    "cites": [],
    "budget": {
@@ -56313,6 +56330,58 @@
    "branch": "claude/task/T868-chance-failure-tests",
    "prompt": "kit/prompts/T868.md",
    "acceptance": "Both tests pass against PostgreSQL with every assertion kept or made exact; the photo test's payload is compared whole; no product code changes; `tests/integration/tests/db_metrics.rs` and `intake_order_photos.rs` pass 20 runs in a row locally."
+  },
+  {
+   "id": "T869",
+   "slug": "wip-trailer-scan",
+   "title": "harness: the PII scan allows the Co-Authored-By no-reply address so WIP saves work",
+   "goal": "Plan change D-5918 (Fable's efficiency finding A, on Casey's \"let fable make the calls and make this as efficient as possible\"). WIP-continue (D-4720) has never saved anything: kit-state holds 23 `wip_skipped` rows and no `wip_used`; 17 of them read \"PII scan: a commit message in <sha>\" (the sha is only the range base, `runner/wip.py:351` prints `rng[:40]`), and main's `scripts/pii_scan.py` flags every `Co-Authored-By: Claude ...` trailer, whose address is Anthropic's no-reply commit address (local part `noreply` at the domain `anthropic.com`), as an email, because `SERVICE_DOMAINS` (`scripts/pii_scan.py:113`) allows only `users.noreply.github.com`; every worker commit carries that trailer. (1) Allow exactly that one address (the full address, not the domain) as a service identity, with tests in `tests/test_pii_scan.py` that it passes and that any other `anthropic.com` address, and the same local part at another domain, still fail; no other rule changes. (2) In `tests/test_runner_wip.py`, a test that a WIP save whose branch commit message carries the trailer passes the scan (fails before the fix). (3) The other 6 refusals read \"<sha> changes .github\": find out from kit-state's `wip_skipped` rows and the runner code (`runner/wip.py`) whether those were commits merged in from `main`, and report the cause and the smallest fix in the decision entry; do not change that check in this task. This fixes a scanner false positive on a vendor no-reply address; no test is weakened. Opus worker, Opus privacy, security and harness review. Update `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T172",
+    "T291",
+    "T426",
+    "T727"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security",
+    "harness"
+   ],
+   "owns": [
+    "scripts/pii_scan.py",
+    "tests/test_pii_scan.py",
+    "tests/test_runner_wip.py"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "runner/wip.py"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-5918"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 80,
+    "context_pct": 11
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T869-wip-trailer-scan",
+   "prompt": "kit/prompts/T869.md",
+   "acceptance": "`python3 -m pytest tests/test_pii_scan.py tests/test_runner_wip.py` passes, the new trailer cases failing before the fix; `python3 scripts/pii_scan.py --root .` stays at 0 findings; the decision entry names the cause of the 6 `.github` refusals."
   }
  ]
 }
