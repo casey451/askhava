@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-27T23:38:28Z by runner 8ff8dd521bd2 (actions).
+Updated 2026-11-27T23:43:35Z by runner 83e824672bcc (actions).
 
-**Idle since 23:00Z; 694 of 805 done; week 20% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Idle since 23:39Z; 695 of 805 done; week 20% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 694 of 805 build tasks (owner gates not counted)
+- **Tasks done:** 695 of 805 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** idle since 23:00Z (no task in progress)
+- **Lane:** idle since 23:39Z (no task in progress)
 - **Week:** 20% used, 158.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:38Z, 0 min before this update
+- **Last run:** 23:38Z, 4 min before this update
 - **Keeper:** last ran 23:38Z, next wake 23:58Z
 
 ## Needs attention
@@ -16,12 +16,12 @@ Updated 2026-11-27T23:38:28Z by runner 8ff8dd521bd2 (actions).
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 50% of the context window, over its 45% limit
 - PLAN GAP T872 (since 2026-11-27T21:06:06Z, no attempt used; a plan change fixes it): T872: prompt kit/prompts/T872.md is missing; run scripts/gen_prompts.py; T872: branch claude/task/T872-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
-- Strict plan check red: 58 problem(s) on tasks still to run (+604 on DONE tasks); first: T704: stored context_pct 38% but it measures 44%; regenerate
+- Strict plan check red: 58 problem(s) on tasks still to run (+605 on DONE tasks); first: T704: stored context_pct 38% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T871 | portals: the link-only code send and check that email a pers | MERGE_PENDING | 1 | 114 min | 23:00Z |  |
+| T871 | portals: the link-only code send and check that email a pers | done | 1 | 114 min | 23:00Z |  |
 | T856 | intake: a request may be texted only with an `sms` consent r | done | 2 | 2 h 16 min | 19:33Z | PLAN GAP: outside ownership: app/intake/src/replies.rs:367 (and replies.rs:204). The chat raw path web_chat::raw_turn -> |
 | T749 | messaging: the unused `business_pick_waiting` text template  | check_failed | 1 | 44 min | 16:48Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T849 | server: the e2e web binary serves J1/J2 business time from t | check_failed | 4 | 118 min | 15:27Z | PLAN GAP: outside ownership: tests/e2e/web_chat.spec.ts, tests/a11y/page_states.ts / D-5836 puts inbound SMS and action  |
@@ -72,7 +72,7 @@ Updated 2026-11-27T23:38:28Z by runner 8ff8dd521bd2 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 486 of 735 (66.1%) · partial 241 · unstarted 8
-**Tasks merged (throughput only):** 694 of 805
+**Tasks merged (throughput only):** 695 of 805
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -108,7 +108,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 337 of 377 done
+- stage 5: 338 of 377 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
