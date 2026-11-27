@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-27T13:11:42Z by runner 51920bfa8267 (actions).
+Updated 2026-11-27T13:12:05Z by runner 7678ecacb504 (actions).
 
 **Building: T849 in progress since 12:40Z; 689 of 802 done; week 14% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-27T13:11:42Z by runner 51920bfa8267 (actions).
 - **Lane:** lane 5: T849 claimed 12:40Z, lease until 15:40Z
 - **Week:** 14% used, 161.8M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
 - **Last run:** 13:11Z, 0 min before this update
-- **Keeper:** last ran 13:10Z, next wake 15:43Z
+- **Keeper:** last ran 13:12Z, next wake 13:32Z
 
 ## Needs attention
 - BLOCKED T734: plan gap reported: PLAN GAP: app/portals/templates/business_leave.html:25 owned by T228 and T410, not T734. Smallest plan change: let T734 own that template for one line, <link rel="stylesheet" href="/static/portals/forms.css"> at the top of {% block main %}, as get_help.html:9 and notice_settings.html:8 carry.
@@ -18,7 +18,7 @@ Evidence: the six reason radios on /b/leave and /b/pause-reason have no visible 
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 50% of the context window, over its 45% limit
 - PLAN GAP T856 (since 2026-11-27T07:31:36Z, no attempt used; a plan change fixes it): T856: measures 46% of the context window, over its 45% limit
-- Strict plan check red: 63 problem(s) on tasks still to run (+596 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
+- Strict plan check red: 62 problem(s) on tasks still to run (+596 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
