@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-27T21:07:27Z by runner e29a4938318b (actions).
+Updated 2026-11-27T22:12:11Z by runner 4061d77bd2b7 (manual).
 
 **Building: T871 in progress since 21:06Z; 694 of 805 done; week 18% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-27T21:07:27Z by runner e29a4938318b (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T871 claimed 21:06Z, lease until 00:06Z
 - **Week:** 18% used, 158.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:16Z, 50 min before this update
+- **Last run:** 21:07Z, 64 min before this update
 - **Keeper:** last ran 20:11Z, next wake 20:31Z
 
 ## Needs attention
@@ -56,10 +56,6 @@ Updated 2026-11-27T21:07:27Z by runner e29a4938318b (actions).
 | T309 | server and portals: the business Get help form and the site  | done | 1 | 2 h 8 min | 00:28Z |  |
 | T854 | portals and action links: sessions and admissions on `real_n | done | 1 | 2 h 5 min | 23:58Z |  |
 | T744 | picks: a job that reaches a final status ends its pick await | done | 1 | 98 min | 23:54Z |  |
-| T820 | server and portals: "Download my data" also holds withdrawn  | check_failed | 3 | 102 min | 21:46Z |  |
-| T657 | quotes and portals: quote-form and sign-in errors mark the f | check_failed | 1 | 75 min | 21:40Z |  |
-| T840 | intake and messaging: quote updates reach Email and web-and- | done | 1 | 2 h 10 min | 21:20Z |  |
-| T848 | core, payments, inbound text, security: `Clock::real_now()`  | done | 1 | 75 min | 21:12Z |  |
 
 ### Plan and harness merges on main
 - 20:24Z Plan: T857/T865 drafts bound to T856's guard; under-18 refused text; T872 (D-5982) (#1520)
@@ -75,7 +71,7 @@ Updated 2026-11-27T21:07:27Z by runner e29a4938318b (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 486 of 735 (66.1%) · partial 241 · unstarted 8
-**Tasks merged (throughput only):** 694 of 804
+**Tasks merged (throughput only):** 694 of 805
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
