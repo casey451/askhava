@@ -1365,7 +1365,7 @@ def test_renew_with_a_note_keeps_a_clean_progress_line(repo: dict[str, Path], tm
     assert entry.renew(cfg, env, note) == "renewed"
     stored = json.loads(origin_file(repo, "claude/kit-state", "kit/state.json"))
     kept = st.entry(stored, "K10")["progress"]
-    assert kept == [{"at": "2026-11-01T12:10:00Z", "note": "step 3; done: tests; call [redacted] or [redacted], mail [redacted] next: docs"}]
+    assert kept == [{"at": "2026-11-01T12:10:00Z", "attempt": 1, "note": "step 3; done: tests; call [redacted] or [redacted], mail [redacted] next: docs"}]
     doc = json.loads(origin_file(repo, "claude/lease", "lease.json"))
     assert doc["lease"]["expires"] == "2026-11-01T15:10:00Z"
     assert entry.clean_note("y" * 300) == "y" * 200

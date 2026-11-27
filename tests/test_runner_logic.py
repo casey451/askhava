@@ -82,6 +82,18 @@ def test_progress_keeps_the_last_six_notes_each_capped() -> None:
     assert s["lease"] == st.claim(st.new_state(), "T001", "a", NOW)["lease"]
 
 
+def test_progress_names_the_attempt_and_a_claim_clears_it() -> None:
+    """D-5988: each note carries the attempt in flight, and the next claim starts the list empty."""
+    s = st.claim(st.with_task(st.new_state(), "T001", attempts=1), "T001", "a", NOW)
+    assert "progress" not in st.entry(s, "T001")
+    s = st.with_progress(s, "T001", "step 1", NOW)
+    assert st.entry(s, "T001")["progress"] == [{"at": st.iso(NOW), "attempt": 2, "note": "step 1"}]
+    s = st.with_task(s, "T001", status=st.QUEUED, attempts=2)
+    s = st.release_expired(s, NOW + timedelta(hours=4))
+    again = st.claim(s, "T001", "b", NOW + timedelta(hours=5))
+    assert st.entry(again, "T001")["progress"] == []
+
+
 def test_expired_lease_returns_task_and_keeps_evidence() -> None:
     s = st.claim(st.new_state(), "T001", "a", NOW)
     assert st.release_expired(s, NOW + timedelta(hours=2)) == s

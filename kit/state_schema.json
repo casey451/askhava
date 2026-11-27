@@ -650,12 +650,16 @@
               "type": "object",
               "required": [
                 "at",
+                "attempt",
                 "note"
               ],
               "properties": {
                 "at": {
                   "type": "string",
                   "minLength": 1
+                },
+                "attempt": {
+                  "type": "integer"
                 },
                 "note": {
                   "type": "string"
