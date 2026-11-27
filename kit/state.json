@@ -124398,7 +124398,16 @@
    "wip_claim": {
     "attempt": 1,
     "remote_sha": ""
-   }
+   },
+   "reviewed_sha": "a3b9b1faa78be2e1b5673bfb854856e41a2c86f6",
+   "review_lease": {
+    "task": "T867",
+    "session": "actions-45972393407",
+    "expires": "2026-11-27T13:20:15Z",
+    "lane": "5"
+   },
+   "branch": "claude/task/T867-fraud-end-real-states",
+   "head_check_since": null
   },
   {
    "id": "T868",
@@ -133089,7 +133098,7 @@
    }
   }
  },
- "updated_at": "2026-11-27T10:24:08Z",
+ "updated_at": "2026-11-27T10:24:46Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -133187,7 +133196,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "9fc6bfae88cb9262b74cbd155bdd8e58ba1c3e82",
+ "runner_sha": "a3b9b1faa78be2e1b5673bfb854856e41a2c86f6",
  "starter": "actions",
  "smoke_runs": [
   {
