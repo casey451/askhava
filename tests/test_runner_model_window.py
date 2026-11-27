@@ -82,7 +82,7 @@ def test_the_repository_window_is_caseys_run_to_the_limit() -> None:
     limit, closing at the first limit. (D-2225's Fable window, closed before it opened by D-2485, is replaced;
     the tests below that need a closed or an open Fable window write their own, `_window_root`.)"""
     raw = json.loads((ROOT / "kit" / "runner.json").read_text(encoding="utf-8"))
-    assert raw["lanes"] == 5 and raw["owner_review"] is False  # the locked switches as set: five lanes since D-5554 (seven since D-3269, five since D-3043, four since D-2986, D-620)
+    assert raw["lanes"] == 1 and raw["owner_review"] is False  # the locked switches as set: one lane since D-5980 (five since D-5554, seven since D-3269, five since D-3043, four since D-2986, D-620)
     win = mw.load()
     assert win is not None and win["model"] == OPUS and win["alias"] == "opus"
     assert st.iso(win["from"]) == "2026-11-16T07:30:00Z" and st.iso(win["until"]) == "2026-11-19T17:00:00Z"
