@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-27T05:36:11Z by runner bccc571c6527 (actions).
+Updated 2026-11-27T05:37:35Z by runner bccc571c6527 (actions).
 
 **Building: T612 in progress since 03:44Z; 683 of 799 done; week 12% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-27T05:36:11Z by runner bccc571c6527 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T612 claimed 03:44Z, lease until 06:44Z
 - **Week:** 12% used, 167.9M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:35Z, 0 min before this update
+- **Last run:** 05:36Z, 0 min before this update
 - **Keeper:** last ran 05:36Z, next wake 05:56Z
 
 ## Needs attention
@@ -44,7 +44,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 |---|---|---|---|---|---|---|
 | T518 | server, ops and payments: the Stripe-or-webhook-errors alert | MERGE_PENDING | 1 | 51 min | 05:34Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
 | T657 | quotes and portals: quote-form and sign-in errors mark the f | QUEUED | 2 | 25 min | 05:11Z | Worker stopped with no edits: start smoke exceeded ~20 min. Finding: J3 step 5 owner sign-in (signInOwner, tests/e2e/own |
-| T849 | server: the e2e web binary serves J1/J2 business time from t | MERGE_PENDING | 1 | 103 min | 05:09Z |  |
+| T849 | server: the e2e web binary serves J1/J2 business time from t | check_failed | 1 | 103 min | 05:09Z | E2e: failure; Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflo |
 | T843 | runner (harness): a 35-minute pre-session smoke cap, and a p | done | 1 | 78 min | 04:51Z |  |
 | T518 | server, ops and payments: the Stripe-or-webhook-errors alert | resync | 1 | 2 h 9 min | 04:13Z |  |
 | T522 | server and portals: the business text-consent box is served  | done | 1 | 104 min | 04:07Z |  |
