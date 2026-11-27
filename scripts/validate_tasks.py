@@ -200,6 +200,7 @@ TWILIO_SANDBOX_PATH = "app/adapters/src/twilio_sms.rs"
 MAX_OWNS = 10  # P-1 (D-485): one session's work; was 14 (D-119)
 MAX_FILES = 10
 MAX_DIR_FILES = 14  # a cleanup or harness task owning a directory; the runner holds its diff to budget.files
+SONNET_TRIAL_CAP = 3  # task IDs a `sonnet_trial` may list (D-5981)
 MAX_LINES = 600  # was 800 (D-119)
 # budget.context_pct is derived from bytes by scripts/gen_prompts.py. The limits sit where the re-measured
 # tasks are (D-1036; were 20 and 30, D-485): build, docs and audit tasks reach 39, so 45.
@@ -270,16 +271,45 @@ class Models:
 
     ids: frozenset[str] = MODELS
     opus: frozenset[str] = frozenset({OPUS})
+    trial: frozenset[str] = frozenset()  # `sonnet_trial` task IDs (D-5981)
 
 
 def plan_models(data: dict[str, Any]) -> Models:
     """The Models of a tasks file; the fixed three when it has no `models` map or no full ID in it."""
     raw = data.get("models")
     if not isinstance(raw, dict):
-        return Models()
+        return Models(trial=trial_ids(data))
     ids = frozenset(v for v in raw.values() if isinstance(v, str) and MODEL_ID.match(v))
     fable = raw.get(FABLE_KEY)
-    return Models(ids or MODELS, frozenset({OPUS} | ({fable} if fable in ids else set())))
+    return Models(ids or MODELS, frozenset({OPUS} | ({fable} if fable in ids else set())), trial_ids(data))
+
+
+def trial_ids(data: dict[str, Any]) -> frozenset[str]:
+    """The task IDs of a well-formed `sonnet_trial` (D-5981); none when it is missing or malformed."""
+    trial = data.get("sonnet_trial")
+    tasks = trial.get("tasks") if isinstance(trial, dict) else None
+    if not isinstance(tasks, list) or not all(isinstance(t, str) for t in tasks):
+        return frozenset()
+    return frozenset(tasks)
+
+
+def check_sonnet_trial(data: dict[str, Any]) -> list[str]:
+    """D-5981: an optional `sonnet_trial` names its decision and at most SONNET_TRIAL_CAP task IDs."""
+    trial = data.get("sonnet_trial")
+    if trial is None:
+        return []
+    tasks = trial.get("tasks") if isinstance(trial, dict) else None
+    ok = (
+        isinstance(trial, dict)
+        and isinstance(trial.get("decision"), str)
+        and DECISION_ID.match(trial["decision"]) is not None
+        and isinstance(tasks, list)
+        and all(isinstance(t, str) for t in tasks)
+        and len(tasks) <= SONNET_TRIAL_CAP
+    )
+    if ok:
+        return []
+    return [f"tasks file: 'sonnet_trial' must be {{decision: D-###, tasks: at most {SONNET_TRIAL_CAP} task IDs}}"]
 
 
 @dataclass
@@ -399,7 +429,9 @@ def check_models(task: Task, models: Models = Models()) -> list[str]:
     writes_sensitive_code = task["type"] == "build" and owns_app_code and bool(
         derived_areas(task) or areas & OPUS_REVIEW_AREAS
     )
-    if writes_sensitive_code and task["model"] not in models.opus:
+    # D-5981: a listed trial task may run on Sonnet, only with an Opus reviewer.
+    trial = task["id"] in models.trial and task["reviewer_model"] in models.opus
+    if writes_sensitive_code and task["model"] not in models.opus and not trial:
         errors.append(
             f"{where(task)}: money, privacy, security and recovery application code"
             " runs on Opus (BUILD_BRIEF.md:498); test-only, docs and harness work in those areas may"
@@ -1053,7 +1085,7 @@ def check_file_header(data: dict[str, Any]) -> list[str]:
     raw = data.get("models", {})
     if not isinstance(raw, dict) or not all(isinstance(v, str) and MODEL_ID.match(v) for v in raw.values()):
         errors.append("tasks file: 'models' must map each name to a full model ID")
-    return errors
+    return errors + check_sonnet_trial(data)
 
 
 @dataclass
