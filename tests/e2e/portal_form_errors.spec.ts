@@ -6,8 +6,11 @@
 // each answer a page titled "Error: …" whose focused error summary is main's first element,
 // before the h1, with aria-invalid="true" on exactly the faulty fields (both owner sign-in factors
 // together, never one alone) and no axe violation at 320 and 1280 px. Each form is posted once and
-// its answer scanned at both widths, so the run spends one owner password try of the hour's few
-// (`OWNER_TRIES_PER_IP`). The quote links are seeded through psql on DATABASE_URL as
+// its answer scanned at both widths. The two owner tests send the edge header the default
+// `ClientIpPolicy` reads (`x-real-ip`) with a documentation address, so their password and step-up
+// tries count in that address's own buckets and never in 127.0.0.1's few an hour
+// (`OWNER_TRIES_PER_IP`, `OWNER_STEP_UPS_PER_IP`) that the later owner specs and J3 sign in on
+// (D-5872). The quote links are seeded through psql on DATABASE_URL as
 // tests/e2e/action_links_served.spec.ts seeds its own, for a fake active business and a made-up
 // job in a packages category (car detailing) and a range category (heating and cooling
 // replacement). POSTs go with the browser's own headers (D-4292). Fake data only; no token is printed.
@@ -18,6 +21,9 @@ import { axeScan } from "../a11y/fixtures";
 import { test, expect } from "./fixtures";
 import { keyedUrl } from "./keyed";
 import { signInOwner } from "./owner_session";
+
+/** A documentation address (RFC 5737) the owner tests post from, never the run's 127.0.0.1 (D-5872). */
+const OWNER_TEST_IP = "203.0.113.57";
 
 /** Runs `sql` through psql on DATABASE_URL. */
 function psql(sql: string): void {
@@ -89,6 +95,7 @@ test.describe("TD-A11Y-05 A11Y-030: failed portal forms", () => {
   test.setTimeout(150_000);
 
   test("owner sign-in with a wrong password marks both factors", async ({ page }) => {
+    await page.context().setExtraHTTPHeaders({ "x-real-ip": OWNER_TEST_IP });
     await page.goto("/owner/sign-in");
     await page.getByLabel("Password").fill("not-the-password-0657");
     await page.getByLabel("Code", { exact: true }).fill("123456");
@@ -101,6 +108,7 @@ test.describe("TD-A11Y-05 A11Y-030: failed portal forms", () => {
   });
 
   test("the owner step-up with a wrong code marks the code", async ({ page }) => {
+    await page.context().setExtraHTTPHeaders({ "x-real-ip": OWNER_TEST_IP });
     await signInOwner(page);
     await page.getByLabel("Code", { exact: true }).fill("000000");
     await page.getByRole("button", { name: "Check code" }).click();
