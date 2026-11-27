@@ -103,8 +103,9 @@ async fn schedule_messaging(conn: &mut sqlx::PgConnection, now: jiff::Timestamp)
         .map_err(io::Error::other)
 }
 
-/// The two alert checks' first runs: this hour's dead-letter check (T327) and this 5-minute
-/// slot's health check (T624, D-4280), each under its own slot's dedupe key.
+/// The three alert checks' first runs: this hour's dead-letter check (T327), this 5-minute
+/// slot's health check (T624, D-4280) and its Stripe-or-webhook-errors check (T518, D-3877), each
+/// under its own slot's dedupe key.
 async fn schedule_alert_checks(
     conn: &mut sqlx::PgConnection,
     now: jiff::Timestamp,
@@ -113,6 +114,9 @@ async fn schedule_alert_checks(
         .await
         .map_err(io::Error::other)?;
     askhava_server::health_watch::schedule(conn, now)
+        .await
+        .map_err(io::Error::other)?;
+    askhava_server::vendor_alerts::schedule(conn, now)
         .await
         .map_err(io::Error::other)
 }

@@ -10,6 +10,8 @@ unreadable input gives one warning and its section reads "not available". The su
 warnings hold only figures, route and page names and goals (TD-OPS-43): a text value from an input
 (a "not exposed" reason) is shown as "not measured", and a name outside NAME (a
 lower-case letter first, so a digits-only key such as a phone number never shows) is left out.
+The aspirational column holds DESIGN_SPEC section 7's lab aims, LCP 1.5 s and CLS 0.05 (D-4246, T612);
+on the home and quote pages a figure above its aim reads "missed" there, and never warns or fails.
 `--write-baseline` writes the figures alone in the baseline's shape, for the first green `main` run.
 """
 
@@ -24,7 +26,8 @@ from pathlib import Path
 
 LABEL = "lab, not field"
 GOALS = {"lcp_ms": 2500.0, "inp_ms": 200.0, "cls": 0.1}
-ASPIRATIONAL = {"lcp_ms": 1500.0, "inp_ms": 150.0}
+ASPIRATIONAL = {"lcp_ms": 1500.0, "inp_ms": 150.0, "cls": 0.05}
+ASPIRATIONAL_PAGES = ("home", "quote_page")
 VITAL_NAMES = {"lcp_ms": "LCP ms", "inp_ms": "INP ms (lab stand-in)", "cls": "CLS"}
 P95_SLACK = 0.25
 NAME = re.compile(r"^[a-z][a-z0-9_.%]{0,47}$")
@@ -99,6 +102,15 @@ def route_rows(routes: object, base: object, warnings: list[str]) -> list[str]:
     return rows
 
 
+def aim_cell(page: str, vital: str, value: float | None) -> str:
+    """The aspirational figure; on the home and quote pages a figure above it reads "missed" (D-4246, never a warning)."""
+    aim = ASPIRATIONAL.get(vital)
+    if aim is None:
+        return "-"
+    missed = page in ASPIRATIONAL_PAGES and value is not None and value > aim
+    return f"{aim:g}, missed" if missed else f"{aim:g}"
+
+
 def vital_rows(pages: object, base: object, warnings: list[str]) -> list[str]:
     rows = []
     for page in names(pages):
@@ -106,7 +118,7 @@ def vital_rows(pages: object, base: object, warnings: list[str]) -> list[str]:
         old = base.get(page) if isinstance(base, dict) and isinstance(base.get(page), dict) else {}
         for vital, goal in GOALS.items():
             value, old_value = figure(found.get(vital)), figure(old.get(vital))
-            aim = show(ASPIRATIONAL.get(vital)) if vital in ASPIRATIONAL else "-"
+            aim = aim_cell(page, vital, value)
             rows.append(f"| {page} | {VITAL_NAMES[vital]} ({LABEL}) | {show(value)} | {goal:g} | {aim} | {show_base(old_value)} | {change(value, old_value)} |")
             if value is not None and value > goal:
                 warnings.append(f"{page}: {VITAL_NAMES[vital]} {show(value)} ({LABEL}) misses the goal {goal:g}")
