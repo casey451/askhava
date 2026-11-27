@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-27T08:55:29Z by runner 37f92ed09311 (actions).
+Updated 2026-11-27T09:02:05Z by runner 02eda79e70d5 (actions).
 
 **Building: T868 in progress since 08:48Z; 686 of 802 done; week 12% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-27T08:55:29Z by runner 37f92ed09311 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T868 claimed 08:48Z, lease until 11:48Z; lane 3: T734 claimed 06:54Z, lease until 09:54Z
 - **Week:** 12% used, 167.8M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:55Z, 0 min before this update
+- **Last run:** 09:01Z, 0 min before this update
 - **Keeper:** last ran 08:55Z, next wake 09:57Z
 
 ## Needs attention
@@ -16,7 +16,7 @@ Updated 2026-11-27T08:55:29Z by runner 37f92ed09311 (actions).
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 50% of the context window, over its 45% limit
 - PLAN GAP T856 (since 2026-11-27T07:31:36Z, no attempt used; a plan change fixes it): T856: measures 46% of the context window, over its 45% limit
-- Strict plan check red: 61 problem(s) on tasks still to run (+594 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
+- Strict plan check red: 63 problem(s) on tasks still to run (+595 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
