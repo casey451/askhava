@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-27T02:52:10Z by runner 0b8fffda176e (actions).
+Updated 2026-11-27T02:52:52Z by runner 0b8fffda176e (actions).
 
 **Building: T522 in progress since 02:23Z; 680 of 799 done; week 9% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 680 of 799 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T522 claimed 02:23Z, lease until 05:23Z; lane 2: T849 claimed 01:34Z, lease until 04:34Z; lane 3: T612 claimed 02:00Z, lease until 05:00Z; lane 4: T518 claimed 02:04Z, lease until 05:04Z; lane 5: T799 claimed 02:20Z, lease until 05:20Z
+- **Lane:** lane 1: T522 claimed 02:23Z, lease until 05:23Z; lane 2: T849 claimed 01:34Z, lease until 04:34Z; lane 3: T612 claimed 02:00Z, lease until 05:00Z; lane 4: T518 claimed 02:04Z, lease until 05:04Z
 - **Week:** 9% used, 172.8M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:25Z, 26 min before this update
+- **Last run:** 02:25Z, 27 min before this update
 - **Keeper:** last ran 02:16Z, next wake 02:36Z
 
 ## Needs attention
@@ -42,6 +42,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T799 | Templates and tests (harness): copy review fixes (refund att | MERGE_PENDING | 2 | 31 min | 02:52Z | PLAN GAP: contradiction: D-5401 requires es.json text "dentro de 72 horas de recibir los datos del cliente" (5 keys), bu |
 | T856 | intake: a request may be texted only with an `sms` consent r | BLOCKED | 1 | 110 min | 02:15Z | PLAN GAP: outside ownership: app/intake/src/replies.rs:367 (and replies.rs:204). The chat raw path web_chat::raw_turn -> |
 | T861 | e2e (harness): J1 reads a sent text from the fake carrier on | done | 1 | 42 min | 01:13Z |  |
 | T783 | intake: a picture text's media is deleted at the provider af | done | 1 | 2 h 19 min | 00:37Z |  |
@@ -109,7 +110,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T849 (lease until 2026-11-27T04:34:33Z)
 - lane 3: T612 (lease until 2026-11-27T05:00:07Z)
 - lane 4: T518 (lease until 2026-11-27T05:04:26Z)
-- lane 5: T799 (lease until 2026-11-27T05:20:12Z)
 
 ## Last usage reading
-- {"task": "T856", "at": "2026-11-27T02:15:00Z", "cache_creation_input_tokens": 346961, "cache_read_input_tokens": 14868527, "input_tokens": 350, "output_tokens": 103657}
+- {"task": "T799", "at": "2026-11-27T02:52:09Z", "output_tokens": 18900, "input_tokens": 83, "cache_creation_input_tokens": 79105, "cache_read_input_tokens": 1636158}
