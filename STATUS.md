@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-27T14:14:02Z by runner e8c8011cdb4a (actions).
+Updated 2026-11-27T14:14:11Z by runner e8c8011cdb4a (actions).
 
-**Building: T822 in progress since 13:18Z; 691 of 802 done; week 15% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Building: T849 in progress since 13:29Z; 691 of 802 done; week 15% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 691 of 802 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T822 claimed 13:18Z, lease until 16:18Z; lane 2: T849 claimed 13:29Z, lease until 16:29Z; lane 4: T817 claimed 13:19Z, lease until 16:19Z
+- **Lane:** lane 2: T849 claimed 13:29Z, lease until 16:29Z; lane 4: T817 claimed 13:19Z, lease until 16:19Z
 - **Week:** 15% used, 164.1M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
 - **Last run:** 14:13Z, 0 min before this update
 - **Keeper:** last ran 13:49Z, next wake 16:21Z
@@ -26,6 +26,7 @@ Evidence: her data download is assembled in app/server/src/homeowner_portal.rs:6
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T822 | docs: the privacy policy names the email link and the fuller | MERGE_PENDING | 1 | 54 min | 14:13Z |  |
 | T862 | privacy: the email she types in her own conversation is kept | BLOCKED | 1 | 4 min | 13:22Z | PLAN GAP: outside ownership: app/server/src/homeowner_portal.rs, app/portals/src/homeowner_portal.rs / Evidence: her dat |
 | T734 | server and adapters: a business can leave in the portal, wit | BLOCKED | 3 | 26 min | 13:10Z | PLAN GAP: app/portals/templates/business_leave.html:25 owned by T228 and T410, not T734. Smallest plan change: let T734  |
 | T867 | picks and payments (harness): an early fraud warning before  | done | 2 | 101 min | 12:57Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
@@ -115,9 +116,9 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T822 (lease until 2026-11-27T16:18:44Z)
+- nothing
 - lane 2: T849 (lease until 2026-11-27T16:29:16Z)
 - lane 4: T817 (lease until 2026-11-27T16:19:54Z)
 
 ## Last usage reading
-- {"task": "T862", "at": "2026-11-27T13:22:09Z", "cache_read_input_tokens": 1469783, "output_tokens": 14959, "cache_creation_input_tokens": 94794, "input_tokens": 64}
+- {"task": "T822", "at": "2026-11-27T14:13:35Z", "input_tokens": 52, "cache_read_input_tokens": 872587, "output_tokens": 11243, "cache_creation_input_tokens": 68265}
