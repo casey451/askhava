@@ -11534,3 +11534,4 @@
 - 2026-11-27T11:16:34Z runner f3fc11156d59 (actions): {"T867": "QUEUED -> IN_PROGRESS"}; T867 estimated 1.8M tokens (calibrated); week has 161.3M left (no five-hour budget, D-3056) after 4.7M still running in another lane (session_reading 2026-11-27T10:51:07Z (week)); claimed
 - 2026-11-27T11:17:09Z runner f3fc11156d59 (actions): {}
 - 2026-11-27T11:24:15Z runner 26c4a5f7e844 (actions): {}
+- 2026-11-27T11:24:58Z runner 26c4a5f7e844 (actions): {"T778": "IN_PROGRESS -> MERGE_PENDING"}

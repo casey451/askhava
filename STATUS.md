@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-27T11:24:15Z by runner 26c4a5f7e844 (actions).
+Updated 2026-11-27T11:24:58Z by runner 26c4a5f7e844 (actions).
 
-**Building: T778 in progress since 09:29Z; 688 of 802 done; week 14% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Building: T820 in progress since 10:58Z; 688 of 802 done; week 14% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 688 of 802 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T778 claimed 09:29Z, lease until 12:29Z; lane 2: T820 claimed 10:58Z, lease until 13:58Z; lane 3: T867 claimed 11:15Z, lease until 14:15Z; lane 4: T734 claimed 09:27Z, lease until 12:27Z
+- **Lane:** lane 2: T820 claimed 10:58Z, lease until 13:58Z; lane 3: T867 claimed 11:15Z, lease until 14:15Z; lane 4: T734 claimed 09:27Z, lease until 12:27Z
 - **Week:** 14% used, 161.3M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
 - **Last run:** 11:17Z, 7 min before this update
 - **Keeper:** last ran 10:51Z, next wake 12:23Z
@@ -44,6 +44,7 @@ D-5836 puts inbound SMS and action links on the test-control clock. web_chat.spe
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T778 | jobs, core and server: a dead Payment pending timer is reviv | MERGE_PENDING | 1 | 114 min | 11:24Z |  |
 | T867 | picks and payments (harness): an early fraud warning before  | check_failed | 1 | 60 min | 10:24Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
 | T868 | tests (harness): two DONE tests that can fail by chance are  | done | 1 | 85 min | 10:14Z |  |
 | T849 | server: the e2e web binary serves J1/J2 business time from t | BLOCKED | 3 | 7 min | 09:16Z | PLAN GAP: outside ownership: tests/e2e/web_chat.spec.ts, tests/a11y/page_states.ts / D-5836 puts inbound SMS and action  |
@@ -126,10 +127,10 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T778 (lease until 2026-11-27T12:29:44Z)
+- nothing
 - lane 2: T820 (lease until 2026-11-27T13:58:44Z)
 - lane 3: T867 (lease until 2026-11-27T14:15:35Z)
 - lane 4: T734 (lease until 2026-11-27T12:27:02Z)
 
 ## Last usage reading
-- {"task": "T867", "at": "2026-11-27T10:24:18Z", "input_tokens": 164, "cache_creation_input_tokens": 207714, "output_tokens": 54672, "cache_read_input_tokens": 7644397}
+- {"task": "T778", "at": "2026-11-27T11:24:12Z", "cache_read_input_tokens": 5756666, "input_tokens": 167, "output_tokens": 49927, "cache_creation_input_tokens": 176111}
