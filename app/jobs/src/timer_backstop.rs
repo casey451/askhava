@@ -11,7 +11,14 @@
 //! - missing (a waiting status with no timer row): queues it again, with the same audit row;
 //! - dead after [`MOST_REVIVALS`] revivals (it died 3 times): raises one High
 //!   [`TIMER_DEAD_ALERT`] about the job, unless one is open, and leaves it for Casey;
-//! - waiting, running or done: nothing.
+//! - waiting, running or done: nothing, except on a Payment pending job (below).
+//!
+//! A Payment pending job's wait ends in a [`PAYMENT_RETURNED_KIND`] task its timer queued
+//! (`payment_wait`, JOB-014, D-4349). When the job's own timer is alive (waiting, running or done)
+//! the backstop also looks at that task's key (job, version, timer version, `payment_wait.rs`'s
+//! format): dead, it is revived under the same [`MOST_REVIVALS`] cap, audit row and alert, so the
+//! job leaves Payment pending and reaches its PRIV-007 purge; missing (the normal state before the
+//! timer fires) or alive, nothing (T778, D-5081 F32).
 //!
 //! A final job is never looked at, so its old timers stay dead. At most [`BATCH`] timers are
 //! revived or re-queued per run; the rest wait for the next day. A revived timer re-checks the job
@@ -25,6 +32,7 @@ use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection, PgPool};
 
 use crate::models::{self, JobRow, JobsError};
+use crate::payment_wait::PAYMENT_RETURNED_KIND;
 use crate::rules::timeout;
 use crate::service::{queue_timer, timer_key};
 use crate::status::JobStatus;
@@ -114,8 +122,9 @@ pub async fn revive_timers(db: &mut PgConnection, now: Timestamp) -> Result<Back
     Ok(done)
 }
 
-/// One job's current timer: `Some(true)` revived or re-queued, `Some(false)` left dead and
-/// alerted, `None` nothing to do (JOB-006, OPS-004).
+/// One job's current timer, and a Payment pending job's wait task when its timer is alive:
+/// `Some(true)` revived or re-queued, `Some(false)` left dead and alerted, `None` nothing to do
+/// (JOB-006, JOB-014, OPS-004, PRIV-007, D-5081).
 async fn check_timer(
     db: &mut PgConnection,
     id: Uuid,
@@ -131,23 +140,56 @@ async fn check_timer(
         .await
         .map_err(|_| JobsError::Database)?;
     match found {
-        Revival::Alive => return Ok(None),
-        Revival::Exhausted => {
-            let raised = raise_alert_once(&mut tx, TIMER_DEAD_ALERT, Severity::High, (SUBJECT, id))
+        Revival::Alive if job.status.timer_defers_to_payments() => {
+            let wait = payment_returned_key(id, job.version, job.timer_version);
+            let found = revive_dead(&mut tx, &wait, now, MOST_REVIVALS)
                 .await
                 .map_err(|_| JobsError::Database)?;
-            tx.commit().await.map_err(|_| JobsError::Database)?;
-            if raised.is_some() {
-                tracing::error!(job = %id, "a job timer died after its last revival");
-            }
-            return Ok(Some(false));
+            return match found {
+                Revival::Revived(_) => revived(tx, id).await,
+                Revival::Exhausted => left_dead(tx, id).await,
+                Revival::Alive | Revival::Missing => Ok(None),
+            };
         }
+        Revival::Alive => return Ok(None),
+        Revival::Exhausted => return left_dead(tx, id).await,
         Revival::Missing => {
             let fenced = (job.version, job.timer_version, job.emergency);
             queue_timer(&mut tx, id, job.status, fenced, job.timer_from).await?;
         }
         Revival::Revived(_) => {}
     }
+    revived(tx, id).await
+}
+
+/// The key `payment_wait::queue_payment_returned` gives job `id`'s wait task at `version` and
+/// timer version `timer` (JOB-014, D-4349); it must repeat that format.
+fn payment_returned_key(id: Uuid, version: i32, timer: i32) -> String {
+    format!("{PAYMENT_RETURNED_KIND}.{id}.{version}.{timer}")
+}
+
+/// OPS-004: raises one High [`TIMER_DEAD_ALERT`] about job `id` unless one is open, commits and
+/// answers `Some(false)`: the task stays dead for Casey.
+async fn left_dead(
+    mut tx: sqlx::Transaction<'_, sqlx::Postgres>,
+    id: Uuid,
+) -> Result<Option<bool>, JobsError> {
+    let raised = raise_alert_once(&mut tx, TIMER_DEAD_ALERT, Severity::High, (SUBJECT, id))
+        .await
+        .map_err(|_| JobsError::Database)?;
+    tx.commit().await.map_err(|_| JobsError::Database)?;
+    if raised.is_some() {
+        tracing::error!(job = %id, "a job timer died after its last revival");
+    }
+    Ok(Some(false))
+}
+
+/// OPS-004: writes one [`TIMER_REVIVED`] audit row about job `id`, commits and answers
+/// `Some(true)`.
+async fn revived(
+    mut tx: sqlx::Transaction<'_, sqlx::Postgres>,
+    id: Uuid,
+) -> Result<Option<bool>, JobsError> {
     let entry = AuditEntry {
         actor: Actor::System,
         action: TIMER_REVIVED,
