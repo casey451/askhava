@@ -111,6 +111,9 @@ def own_domains() -> tuple[str, ...]:
 RENAME_DOMAINS = ("askhava.com", "laftly.com")
 OWN_DOMAINS = own_domains()
 SERVICE_DOMAINS = ("users.noreply.github.com",)  # GitHub's no-reply commit identities, never a person's inbox
+# The Co-Authored-By trailer on every worker commit (D-5934): Anthropic's no-reply commit address, never a
+# person's inbox. The one full address only: any other address at that domain is still a finding.
+SERVICE_EMAILS = frozenset({"noreply@anthropic.com"})
 VENDOR_TEST_SINKS = frozenset({"delivered@resend.dev", "bounced@resend.dev", "complained@resend.dev"})
 PLACEHOLDER_EMAILS = frozenset({"askhava.quotes@gmail.com"})  # docs/pilot/hand-run-test.md: "for example"
 PLACEHOLDER_LOCAL = re.compile(r"^you(?:\+[a-z0-9]+)?$")  # "you+poola@gmail.com" in the dry-run guide
@@ -175,7 +178,8 @@ def _key_findings(line: str) -> Iterator[str]:
 
 
 def email_allowed(local: str, domain: str) -> bool:
-    """True for a reserved example domain, the brand's own or a rename domain, a vendor sink or a placeholder."""
+    """True for a reserved example domain, the brand's own or a rename domain, a vendor sink, a service address
+    (`SERVICE_EMAILS`) or a placeholder."""
     domain = domain.lower()
     address = f"{local.lower()}@{domain}"
     tld = domain.rsplit(".", 1)[-1]
@@ -184,7 +188,7 @@ def email_allowed(local: str, domain: str) -> bool:
     allowed = EXAMPLE_DOMAINS + OWN_DOMAINS + RENAME_DOMAINS + SERVICE_DOMAINS
     if any(domain == d or domain.endswith(f".{d}") for d in allowed):
         return True
-    if address in VENDOR_TEST_SINKS or address in PLACEHOLDER_EMAILS:
+    if address in VENDOR_TEST_SINKS or address in PLACEHOLDER_EMAILS or address in SERVICE_EMAILS:
         return True
     return domain == "gmail.com" and bool(PLACEHOLDER_LOCAL.match(local.lower()))
 
