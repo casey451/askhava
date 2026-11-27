@@ -11479,3 +11479,4 @@
 - 2026-11-27T08:49:00Z runner 02eda79e70d5 (actions): {"T868": "QUEUED -> IN_PROGRESS"}; T868 estimated 1.6M tokens (calibrated); week has 167.8M left (no five-hour budget, D-3056) after 2.2M still running in another lane (session_reading 2026-11-27T08:31:12Z (week)); claimed
 - 2026-11-27T08:49:27Z runner 02eda79e70d5 (actions): {}
 - 2026-11-27T08:53:39Z runner 9473cadc748d (actions): {}
+- 2026-11-27T08:54:13Z runner 9473cadc748d (actions): {"T869": "IN_PROGRESS -> MERGE_PENDING"}

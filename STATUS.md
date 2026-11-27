@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-27T08:53:39Z by runner 9473cadc748d (actions).
+Updated 2026-11-27T08:54:13Z by runner 9473cadc748d (actions).
 
-**Building: T869 in progress since 07:31Z; 686 of 802 done; week 12% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Building: T868 in progress since 08:48Z; 686 of 802 done; week 12% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 686 of 802 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T869 claimed 07:31Z, lease until 10:31Z; lane 2: T868 claimed 08:48Z, lease until 11:48Z; lane 3: T734 claimed 06:54Z, lease until 09:54Z
+- **Lane:** lane 2: T868 claimed 08:48Z, lease until 11:48Z; lane 3: T734 claimed 06:54Z, lease until 09:54Z
 - **Week:** 12% used, 167.8M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
 - **Last run:** 08:49Z, 4 min before this update
 - **Keeper:** last ran 08:31Z, next wake 09:56Z
@@ -21,6 +21,7 @@ Updated 2026-11-27T08:53:39Z by runner 9473cadc748d (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T869 | harness: the PII scan allows the Co-Authored-By no-reply add | MERGE_PENDING | 1 | 82 min | 08:53Z |  |
 | T849 | server: the e2e web binary serves J1/J2 business time from t | MERGE_PENDING | 2 | 45 min | 08:29Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
 | T688 | server: a call to the Laftly main number hears the greeting  | done | 1 | 85 min | 08:17Z |  |
 | T657 | quotes and portals: quote-form and sign-in errors mark the f | MERGE_PENDING | 3 | 75 min | 08:05Z | Worker stopped with no edits: start smoke exceeded ~20 min. Finding: J3 step 5 owner sign-in (signInOwner, tests/e2e/own |
@@ -98,9 +99,9 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T869 (lease until 2026-11-27T10:31:36Z)
+- nothing
 - lane 2: T868 (lease until 2026-11-27T11:48:44Z)
 - lane 3: T734 (lease until 2026-11-27T09:54:33Z)
 
 ## Last usage reading
-- {"task": "T849", "at": "2026-11-27T08:29:56Z", "output_tokens": 9320, "cache_creation_input_tokens": 67290, "input_tokens": 67, "cache_read_input_tokens": 989721}
+- {"task": "T869", "at": "2026-11-27T08:53:36Z", "output_tokens": 25086, "cache_creation_input_tokens": 133435, "input_tokens": 116, "cache_read_input_tokens": 1883842}
