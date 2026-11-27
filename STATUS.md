@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-27T09:25:03Z by runner 02eda79e70d5 (actions).
+Updated 2026-11-27T09:27:20Z by runner 02eda79e70d5 (actions).
 
 **Building: T868 in progress since 08:48Z; 687 of 802 done; week 13% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 687 of 802 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T868 claimed 08:48Z, lease until 11:48Z; lane 3: T820 claimed 09:21Z, lease until 12:21Z; lane 5: T867 claimed 09:23Z, lease until 12:23Z
-- **Week:** 13% used, 164.9M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:24Z, 0 min before this update
+- **Lane:** lane 2: T868 claimed 08:48Z, lease until 11:48Z; lane 3: T820 claimed 09:21Z, lease until 12:21Z; lane 4: T734 claimed 09:27Z, lease until 12:27Z; lane 5: T867 claimed 09:23Z, lease until 12:23Z
+- **Week:** 13% used, 163.1M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
+- **Last run:** 09:25Z, 1 min before this update
 - **Keeper:** last ran 09:20Z, next wake 09:40Z
 
 ## Needs attention
@@ -109,7 +109,7 @@ D-5836 puts inbound SMS and action links on the test-control clock. web_chat.spe
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-27T09:19:35Z (week)): week: 29.1M used, 164.9M left, resets 2026-12-03T17:00:00Z; projected finish 2026-12-11T06:19:59Z.
+- Pacing (session_reading 2026-11-27T09:19:35Z (week)): week: 30.9M used, 163.1M left, resets 2026-12-03T17:00:00Z; projected finish 2026-12-11T06:34:42Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -127,6 +127,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 2: T868 (lease until 2026-11-27T11:48:44Z)
 - lane 3: T820 (lease until 2026-11-27T12:21:05Z)
+- lane 4: T734 (lease until 2026-11-27T12:27:02Z)
 - lane 5: T867 (lease until 2026-11-27T12:23:39Z)
 
 ## Last usage reading
