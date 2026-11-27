@@ -49,6 +49,13 @@
 //! before its transaction opens, and only [`CodeCheck::Right`] lets it go on. The codes come from
 //! [`confirm_routes_with`]'s [`PressCodes`]; with none nothing is sent and a press that owes a
 //! code gets the shared-inbox line, as before.
+//!
+//! T871 (SEC-004, SEC-027, TXT-038, D-5315, D-5971): the Confirm link's own code, beside the press
+//! path's. [`send_link_code`] and [`check_link_code`] send and check by text to the person's own
+//! phone as the press functions do, or, for a person with no phone that gets texts, by email to
+//! their sign-in address ([`CodeSent::Emailed`]); never while their inbox is marked shared
+//! (that answer is [`CodeSent::NoPhone`]), never to an empty address and never by a call. The
+//! address is never logged or shown and is dropped after the send.
 
 use std::net::IpAddr;
 use std::pin::Pin;
@@ -442,6 +449,24 @@ impl<V: VerifyAdapter + Send + Sync> ConfirmCodes<V> {
         }
     }
 
+    /// SEC-004, SEC-027, D-5315: where the Confirm link's code goes: the person's own texting
+    /// phone, else their sign-in address while their inbox is not marked shared; `None` for an
+    /// empty address or a shared inbox, so nothing is sent. The connection is dropped before
+    /// Verify is asked (PT-04).
+    async fn link_to(&self, pool: &PgPool, person: Uuid) -> Result<Option<CodeTo>, PortalsError> {
+        let mut conn = pool.acquire().await.map_err(|_| PortalsError::Database)?;
+        let to = self.to.code_to(&mut conn, person).await?;
+        if matches!(&to, CodeTo::Email(address) if address.expose_secret().is_empty()) {
+            return Ok(None);
+        }
+        if matches!(to, CodeTo::Phone(_)) {
+            return Ok(Some(to));
+        }
+        let shared = inbox_shared(&mut conn, person).await;
+        let shared = shared.map_err(|_| PortalsError::Database)?;
+        Ok((!shared).then_some(to))
+    }
+
     /// The person's own linked phone that takes texts; none for an email-only person.
     async fn phone(&self, pool: &PgPool, person: Uuid) -> Result<Option<String>, PortalsError> {
         let mut conn = pool.acquire().await.map_err(|_| PortalsError::Database)?;
@@ -452,11 +477,13 @@ impl<V: VerifyAdapter + Send + Sync> ConfirmCodes<V> {
     }
 }
 
-/// What one "Text me a code" did (SEC-014, SEC-027).
+/// What one "Text me a code" or link code send did (SEC-014, SEC-027, SEC-004).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CodeSent {
     /// Verify texted a code to the person's own phone.
     Sent,
+    /// Verify emailed a code to the person's own sign-in address (SEC-004, D-5315; link only).
+    Emailed,
     /// The person has no phone that takes texts, so nothing was sent.
     NoPhone,
     /// A SEC-014 send limit refused it; nothing was sent.
@@ -471,6 +498,7 @@ impl CodeSent {
     pub const fn line(self) -> &'static str {
         match self {
             Self::Sent => "We texted a code to your phone. Type it below.",
+            Self::Emailed => "We emailed a code to your sign-in address. Type it below.",
             Self::NoPhone => {
                 "We can't text you a code, so you can't confirm yet. In your portal, link a phone that gets texts."
             }
@@ -588,6 +616,104 @@ pub async fn check_confirm_code<V: VerifyAdapter + Send + Sync>(
         Err(AdapterError::Vendor { status, .. }) if status < 500 => CodeCheck::Ended,
         Err(_) => CodeCheck::Unchecked,
     })
+}
+
+/// TXT-038: the number or address Verify is given for `to` (`CodeTo::address` is private to
+/// `business_auth`). Never logged or shown.
+fn link_address(to: &CodeTo) -> &str {
+    match to {
+        CodeTo::Phone(to) | CodeTo::Email(to) => to.expose_secret(),
+    }
+}
+
+/// SEC-004, SEC-027, SEC-014, TXT-038, BIZ-046, D-5315: the Confirm link's code send. It texts
+/// `person`'s own phone as [`send_confirm_code`] does, or, for a person with no phone that gets
+/// texts, emails their sign-in address ([`CodeSent::Emailed`]); never by a call. An empty
+/// address or an inbox marked "This inbox is shared" answers [`CodeSent::NoPhone`] and spends no
+/// send. Otherwise `admit_code_send` (per IP, 5 a day per person, the global `threshold`) must
+/// admit it, as for a text. The address is dropped after the send; no connection is held
+/// across Verify (PT-04).
+///
+/// # Errors
+/// [`PortalsError::Database`] when a limit, the address or the shared-inbox lookup fails.
+pub async fn send_link_code<V: VerifyAdapter + Send + Sync>(
+    codes: &ConfirmCodes<V>,
+    pool: &PgPool,
+    (ip, person, pick): (IpAddr, Uuid, Uuid),
+    (now, threshold): (Timestamp, i32),
+) -> Result<CodeSent, PortalsError> {
+    let Some(to) = codes.link_to(pool, person).await? else {
+        return Ok(CodeSent::NoPhone);
+    };
+    let admitted = admit_code_send(pool, (ip, Some(person)), (now, threshold)).await;
+    if matches!(
+        admitted.map_err(|_| PortalsError::Database)?,
+        Admission::Refused(_)
+    ) {
+        return Ok(CodeSent::Limited);
+    }
+    let parts = [pick.to_string(), person.to_string(), now.to_string()];
+    let key = IdempotencyKey::derive(
+        &codes.key,
+        "verify.link_code",
+        &parts.each_ref().map(String::as_str),
+    );
+    let emailed = matches!(to, CodeTo::Email(_));
+    let sent = codes
+        .verify
+        .send_code(&key, link_address(&to), to.channel())
+        .await;
+    drop(to);
+    Ok(match (sent.is_ok(), emailed) {
+        (false, _) => CodeSent::Failed,
+        (true, true) => CodeSent::Emailed,
+        (true, false) => CodeSent::Sent,
+    })
+}
+
+/// SEC-020: Verify's answer to one code check, as [`check_confirm_code`] reads it: a 4xx ends
+/// the code; no answer, a 5xx or an unreadable answer is [`CodeCheck::Unchecked`].
+fn verdict(answer: Result<bool, AdapterError>) -> CodeCheck {
+    match answer {
+        Ok(true) => CodeCheck::Right,
+        Ok(false) => CodeCheck::Wrong,
+        Err(AdapterError::Vendor { status, .. }) if status < 500 => CodeCheck::Ended,
+        Err(_) => CodeCheck::Unchecked,
+    }
+}
+
+/// SEC-004, SEC-027, SEC-020, TXT-038, D-5315: the Confirm link's code check, against the same
+/// phone or sign-in address [`send_link_code`] used, after `admit_code_try` (per IP and per
+/// `business`, 20 an hour each) admits the try. An empty address or a shared inbox is
+/// [`CodeCheck::Ended`] and Verify is not asked. No `portals.code_try` row is written and no
+/// connection is held across Verify.
+///
+/// # Errors
+/// [`PortalsError::Database`] when a limit, the address or the shared-inbox lookup fails.
+pub async fn check_link_code<V: VerifyAdapter + Send + Sync>(
+    codes: &ConfirmCodes<V>,
+    pool: &PgPool,
+    (ip, person, business): (IpAddr, Uuid, Uuid),
+    code: &str,
+    now: Timestamp,
+) -> Result<CodeCheck, PortalsError> {
+    let code = code.trim();
+    if code.len() != 6 || !code.bytes().all(|b| b.is_ascii_digit()) {
+        return Ok(CodeCheck::Missing);
+    }
+    let admitted = admit_code_try(pool, (ip, Some(business)), now).await;
+    if matches!(
+        admitted.map_err(|_| PortalsError::Database)?,
+        Admission::Refused(_)
+    ) {
+        return Ok(CodeCheck::Limited);
+    }
+    let Some(to) = codes.link_to(pool, person).await? else {
+        return Ok(CodeCheck::Ended);
+    };
+    Ok(verdict(
+        codes.verify.check_code(link_address(&to), code).await,
+    ))
 }
 
 /// The send and check of one [`ConfirmCodes`], whatever its Verify (SEC-027): `VerifyAdapter`
