@@ -413,6 +413,9 @@ jobs:
         # kit/state.json from claude/kit-state, read-only with the job token as "Pick the session's model" does, so the
         # next step can skip a smoke the start routine will not need: main's head already smoked green and nothing
         # since doubts it (`st.reusable_smoke`). A failed read leaves no file, and the step then smokes as before.
+        # kit/nightly.json too, for the plan half's doubt check (D-5682): no readable file means the full smoke. Its
+        # path reaches the pre-smoke step as RUNNER_PRE_SMOKE_NIGHTLY through $GITHUB_ENV, since the warm-up and
+        # pre-smoke steps keep one `env` block (tests/test_runner_warm_skip.py, D-5919); smoke.sh never sees it.
         if: hashFiles('Cargo.lock') != ''
         continue-on-error: true
         env:
@@ -420,6 +423,9 @@ jobs:
         run: |
           gh api "repos/${GITHUB_REPOSITORY}/contents/kit/state.json?ref=claude/kit-state" -H 'Accept: application/vnd.github.raw' \
             > "$RUNNER_TEMP/pre_smoke_state.json" 2>/dev/null || rm -f "$RUNNER_TEMP/pre_smoke_state.json"
+          gh api "repos/${GITHUB_REPOSITORY}/contents/kit/nightly.json?ref=claude/kit-state" -H 'Accept: application/vnd.github.raw' \
+            > "$RUNNER_TEMP/pre_smoke_nightly.json" 2>/dev/null || rm -f "$RUNNER_TEMP/pre_smoke_nightly.json"
+          echo "RUNNER_PRE_SMOKE_NIGHTLY=$RUNNER_TEMP/pre_smoke_nightly.json" >> "$GITHUB_ENV"
       - name: Warm the smoke build before the session (D-2007)
         # The start routine's smoke runs inside the session's 600-second Bash call (SMOKE_TIMEOUT 540, D-1178), and
         # after nearly every merge its first run timed out compiling and only the chained retry passed (D-1970): about
@@ -441,7 +447,7 @@ jobs:
         # Even with the build warm, smoke.sh's checks and tests took 366 to 551 s on heads with nothing to compile,
         # against the session's 540-second cap (D-1178), so heads timed out again and again. Here, with no 600-second
         # Bash call, the runner runs the start routine's smoke itself: smoke.sh on the checkout's origin/main in the
-        # smoke's own tree, seed, pinned mtimes and environment, within PRE_SMOKE_TIMEOUT (1,500 s, its process group
+        # smoke's own tree, seed, pinned mtimes and environment, within PRE_SMOKE_TIMEOUT (2,100 s, its process group
         # killed past it). It writes `target/smoke-pre.json` ({sha, ok, timed_out, exit, seconds, at, job, last}),
         # which the session's start routine takes as its smoke when main's head is still that SHA and the result is
         # this job's (`GITHUB_RUN_ID`, `GITHUB_RUN_ATTEMPT`); otherwise the session runs the smoke as before. A red
@@ -457,9 +463,13 @@ jobs:
         # A plan, harness or docs merge may also stand in that chain when the one merged PR naming it as its merge
         # commit has a head with the identical tree and every Ci, Twin and Ally run green on it (`green_twin_tree`,
         # D-3156); the job token reads those (REST, read only), as the session does; without it nothing is proven.
+        # D-5682: when every commit since such a green is one of those or changes only plan and docs paths
+        # (`st.PLAN_HALF_PATHS`, at least one of them), and neither the nightly read above nor `main`'s checks doubt
+        # any, it runs `smoke.sh --plan-half` (every check but the Rust and TypeScript half, then the two Rust tests
+        # that read kit/tasks.json) and the session checks the base again before it takes the result.
         if: hashFiles('Cargo.lock') != ''
         continue-on-error: true
-        timeout-minutes: 32
+        timeout-minutes: 40
         env:
           RUNNER_PRE_SMOKE_STATE: ${{ runner.temp }}/pre_smoke_state.json
           RUNNER_CHECKS_TOKEN: ${{ github.token }}
