@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-27T06:51:48Z by runner 71a7f5f83c4f (actions).
+Updated 2026-11-27T06:52:21Z by runner 71a7f5f83c4f (actions).
 
-**Building: T657 in progress since 06:50Z; 685 of 799 done; week 12% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Building: T688 in progress since 06:52Z; 685 of 799 done; week 12% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 685 of 799 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 4: T657 claimed 06:50Z, lease until 09:50Z; lane 5: T849 claimed 05:54Z, lease until 08:54Z
-- **Week:** 12% used, 169.1M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 2: T688 claimed 06:52Z, lease until 09:52Z; lane 4: T657 claimed 06:50Z, lease until 09:50Z; lane 5: T849 claimed 05:54Z, lease until 08:54Z
+- **Week:** 12% used, 167.6M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
 - **Last run:** 06:51Z, 0 min before this update
 - **Keeper:** last ran 06:47Z, next wake 07:07Z
 
@@ -99,7 +99,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-27T06:46:44Z (week)): week: 24.9M used, 169.1M left, resets 2026-12-03T17:00:00Z; projected finish 2026-12-10T17:35:20Z.
+- Pacing (session_reading 2026-11-27T06:46:44Z (week)): week: 26.4M used, 167.6M left, resets 2026-12-03T17:00:00Z; projected finish 2026-12-10T17:36:44Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -115,6 +115,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 2: T688 (lease until 2026-11-27T09:52:09Z)
 - lane 4: T657 (lease until 2026-11-27T09:50:45Z)
 - lane 5: T849 (lease until 2026-11-27T08:54:12Z)
 
