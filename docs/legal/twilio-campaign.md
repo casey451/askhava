@@ -42,7 +42,7 @@ There is one way to opt in: the person's own first text to the Laftly number, se
 
 Message flow (the `message_flow` field):
 
-> A person opts in by sending their own first text to the Laftly number. They find the number on a public page on laftly.com that shows it next to our SMS disclosures: automated texts about their own request, message frequency varies, message and data rates may apply, reply HELP for help and STOP to opt out, with links to laftly.com/sms-terms, laftly.com/terms and laftly.com/privacy. Texting us is optional, and nobody has to reply to agree. Our first reply is the consent text (sample 1).
+> A person opts in by sending their own first text to the Laftly number. They find the number on a public page on laftly.com that shows it next to our SMS disclosures: automated texts about their own request, message frequency varies, message and data rates may apply, reply HELP for help and STOP to opt out, with links to laftly.com/sms-terms, laftly.com/terms and laftly.com/privacy. Texting us is optional, and nobody has to reply to agree. Our first reply is the consent text (sample 1). Sample 5 is the Spanish version of sample 1. English translation: Got it. Next, a few quick questions. Laftly is not a contractor; you hire the business you pick directly. Automated texts about your request. Msg frequency varies. Msg & data rates may apply. Reply STOP to opt out, HELP for help. Terms: laftly.com/terms Privacy: laftly.com/privacy.
 
 End the field with the evidence link from the pre-submit check (section 9). The SMS terms are at laftly.com/sms-terms.
 
@@ -133,6 +133,8 @@ Console sample 5:
 ```text
 Laftly: Recibido. Ahora, unas preguntas. Laftly no es contratista; usted contrata al negocio que elija. Textos automatizados sobre su solicitud; frecuencia variable. Pueden aplicar cargos de msj y datos. PARAR para salir, AYUDA para ayuda. Términos: laftly.com/terms Privacidad: laftly.com/privacy
 ```
+
+Sample 5 is the Spanish version of sample 1. English translation: Got it. Next, a few quick questions. Laftly is not a contractor; you hire the business you pick directly. Automated texts about your request. Msg frequency varies. Msg & data rates may apply. Reply STOP to opt out, HELP for help. Terms: laftly.com/terms Privacy: laftly.com/privacy.
 
 ## 7. Spanish
 
