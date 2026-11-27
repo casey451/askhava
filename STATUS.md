@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-27T09:20:21Z by runner 02eda79e70d5 (actions).
+Updated 2026-11-27T09:21:19Z by runner 02eda79e70d5 (actions).
 
 **Building: T868 in progress since 08:48Z; 686 of 802 done; week 13% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 686 of 802 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T868 claimed 08:48Z, lease until 11:48Z
-- **Week:** 13% used, 166.5M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 2: T868 claimed 08:48Z, lease until 11:48Z; lane 3: T820 claimed 09:21Z, lease until 12:21Z
+- **Week:** 13% used, 166.4M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
 - **Last run:** 09:20Z, 0 min before this update
 - **Keeper:** last ran 09:20Z, next wake 09:40Z
 
@@ -109,7 +109,7 @@ D-5836 puts inbound SMS and action links on the test-control clock. web_chat.spe
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-27T09:04:33Z (week)): week: 27.5M used, 166.5M left, resets 2026-12-03T17:00:00Z; projected finish 2026-12-11T06:05:35Z.
+- Pacing (session_reading 2026-11-27T09:19:35Z (week)): week: 27.6M used, 166.4M left, resets 2026-12-03T17:00:00Z; projected finish 2026-12-11T06:17:24Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -126,6 +126,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T868 (lease until 2026-11-27T11:48:44Z)
+- lane 3: T820 (lease until 2026-11-27T12:21:05Z)
 
 ## Last usage reading
 - {"task": "T849", "at": "2026-11-27T09:16:18Z", "cache_creation_input_tokens": 74439, "input_tokens": 79, "output_tokens": 13527, "cache_read_input_tokens": 1468350}
