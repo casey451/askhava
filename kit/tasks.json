@@ -10822,7 +10822,8 @@
     "T318",
     "T355",
     "T402",
-    "T590"
+    "T590",
+    "T867"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -10855,13 +10856,14 @@
     "D-2628",
     "D-3055",
     "D-3106",
-    "D-4052"
+    "D-4052",
+    "D-5888"
    ],
    "cites": [],
    "budget": {
     "files": 3,
     "lines": 200,
-    "context_pct": 18
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -16556,7 +16558,7 @@
     "T840",
     "T863"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -16594,7 +16596,8 @@
     "D-5551",
     "D-5664",
     "D-5836",
-    "D-5848"
+    "D-5848",
+    "D-5918"
    ],
    "cites": [],
    "budget": {
@@ -16624,7 +16627,7 @@
     "T536",
     "T851"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -16653,7 +16656,8 @@
    "decisions": [
     "D-3889",
     "D-3892",
-    "D-5836"
+    "D-5836",
+    "D-5918"
    ],
    "cites": [],
    "budget": {
@@ -33059,7 +33063,10 @@
     "T840",
     "T841",
     "T846",
-    "T847"
+    "T847",
+    "T867",
+    "T868",
+    "T869"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -33312,7 +33319,10 @@
     "T840",
     "T841",
     "T846",
-    "T847"
+    "T847",
+    "T867",
+    "T868",
+    "T869"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -33343,7 +33353,7 @@
    "budget": {
     "files": 1,
     "lines": 300,
-    "context_pct": 12
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -34126,7 +34136,10 @@
     "T840",
     "T841",
     "T846",
-    "T847"
+    "T847",
+    "T867",
+    "T868",
+    "T869"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -34188,7 +34201,7 @@
    "budget": {
     "files": 14,
     "lines": 800,
-    "context_pct": 57
+    "context_pct": 63
    },
    "checks": [
     "Ci",
@@ -35633,7 +35646,10 @@
     "T837",
     "T843",
     "T852",
-    "T853"
+    "T853",
+    "T867",
+    "T868",
+    "T869"
    ],
    "model": null,
    "effort": null,
@@ -38550,7 +38566,10 @@
     "T797",
     "T818",
     "T821",
-    "T825"
+    "T825",
+    "T867",
+    "T868",
+    "T869"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -38612,7 +38631,7 @@
    "budget": {
     "files": 14,
     "lines": 800,
-    "context_pct": 18
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -38652,7 +38671,10 @@
     "T757",
     "T758",
     "T759",
-    "T760"
+    "T760",
+    "T867",
+    "T868",
+    "T869"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -38709,7 +38731,7 @@
    "budget": {
     "files": 14,
     "lines": 800,
-    "context_pct": 20
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -38749,7 +38771,10 @@
     "T757",
     "T758",
     "T759",
-    "T760"
+    "T760",
+    "T867",
+    "T868",
+    "T869"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -38806,7 +38831,7 @@
    "budget": {
     "files": 14,
     "lines": 800,
-    "context_pct": 20
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -39055,7 +39080,10 @@
     "T760",
     "T818",
     "T821",
-    "T825"
+    "T825",
+    "T867",
+    "T868",
+    "T869"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -52201,7 +52229,7 @@
    "id": "T785",
    "slug": "dispute-without-due-date",
    "title": "payments: a dispute with no usable evidence date is still recorded and still blocks refunds",
-   "goal": "Plan change D-5081 (external code review of Nov 20, 2026, finding F26; FEE-026, FEE-027; D-2073 (1)). A `charge.dispute.created` whose `evidence_details.due_by` is null is read as unreadable (`app/payments/src/routes.rs`): one High alert with no subject, no `payments.dispute` row and no ledger entry, so FEE-026's refund block never applies and an automatic refund can go out on a disputed charge; D-2073 (1) said Casey records such a dispute by hand, but no screen or caller exists for that. A `due_by` of 0 or below is stored as 1970 and its tasks fire at once. The new `migrations/0219_payments_dispute_due_optional.sql` drops `NOT NULL` from `payments.dispute.due_at`. The webhook route now treats a null, zero, negative or already-past `due_by` as no date and still records the dispute: the dispute row, the ledger entry and the dispute alert are written exactly as for a dated one, so refunds on that pick are blocked and flagged, and only the submit task and the due reminders, which need a date, are skipped; the alert says the evidence date is missing and names the pick, so Casey can act in Stripe. `record_dispute`'s existing signature stays for dated disputes; the undated case is a new entry beside it in `app/payments/src/disputes.rs`, so no done test changes except TD-FEE-43's `td_fee_43_an_unreadable_event_alerts_casey_once`, by logged spec change (D-5164): its unreadable dispute becomes one with no `payment_intent`; the odd refund status, the alert count 2, the no-dispute-row and High assertions stay. Every reader of `payments.dispute.due_at` handles a missing date: the ones in these two files (in `disputes.rs`, `mark_auto_submit` (`:213` to `:224`) neither sets `auto_submit` nor queues a submit task for an undated dispute and answers as for one it did not mark, and `list_disputes` (`:414`) reads `(due_at IS NULL OR due_at >= $1)` so an undated open dispute stays in the digest), `DisputeView.due_at` (now `Option<Timestamp>`, `models.rs`), `dispute_row` in `app/portals/src/owner_portal.rs` (an undated dispute shows `date not given by Stripe` as `due` and, unless submitted, the standing 'You need to counter or accept this one in Stripe.', never the 2-days line; no template change), and `place_dispute_holds` in `app/payments/src/purge.rs`, which this task also owns for that read alone: an undated dispute's PRIV-007 hold counts from `opened_at` in place of the missing date, and the decision entry and `docs/for-casey-review.md` say so. Tests in the new `tests/integration/tests/dispute_no_due_date.rs`, PostgreSQL with the Stripe stand-in's signing, fake data only, the event bodies built in the test: `due_by` null makes one dispute row with no date and one ledger entry, and a later refund on that pick is blocked and flagged; `due_by` 0 and a past date do the same and queue no task due in the past; an undated dispute still places its retention hold; a dated dispute behaves as today; an undated open dispute is listed by `list_disputes` and gets no submit task from `mark_auto_submit`; a negative `due_by` is undated; a null `due_by` raises no `UNREADABLE_EVENT_ALERT`; `disputes_of` returns `None` for the date; the owner refund page line for an undated dispute; and the null, zero, negative and past `due_by` paths and the undated `purge.rs:41` read each get a case (95% branch floor). Every existing dispute and refund test passes unchanged except that one TD-FEE-43 case. It is money code under the `payments` 95% branch floor. The worker updates `td_fee_43_an_unreadable_event_alerts_casey_once`'s doc comment (\"a dispute with no evidence due date\") to match its new body. This task does not touch `kit/plan.lock`. Build notes go to the end of `app/payments/NOTES.md`; update `docs/architecture.md` and `docs/decisions.md`. Plan change D-5252 (job-5 money review findings 2 and 9, verified on `main`; FEE-026, FEE-027; D-2289): (2) a `charge.dispute.created` whose PaymentIntent a `payments.pick_intent` row holds but which has no `payments.charge_evidence` row is not an unknown charge: `record_dispute` (`app/payments/src/disputes.rs:97` to `:106`) answers a new `MoneyEventError::NoEvidence(pick)` there (`models.rs`), and the `Dispatch::Dispute` arm (`app/payments/src/routes.rs:329` to `:337`; `money` at `:431` is synchronous) raises one `raise_alert_once` per pick of a new High alert kind `payments.dispute_no_evidence` (subject the pick; not `FRAUD_WARNING_ALERT` and not `no_evidence_alert`) and answers `Acted::Retry` (500, Stripe resends), the same retry shape as the fraud-warning `NoEvidence` path (`routes.rs:473` to `:477`); a dispute no pick holds keeps today's answer (200, nothing written; TD-FEE-43, D-1754; `td_fee_43_an_unknown_object_changes_nothing`, `tests/integration/tests/stripe_webhook_dispatch.rs:451` to `:505`, passes unchanged), the nightly reconcile's `UNKNOWN_CHARGE_ALERT` already covering it. (9) in `run_dispute_submit` (`disputes.rs:361` to `:398`), after the existing `auto_submit AND submitted_at IS NULL` read finds the row, when its `due_at` is set and `now >= due_at` it makes no Stripe call, raises one High alert of a new kind `payments.dispute_deadline_missed` through `raise_alert_once` (subject the pick) and returns `Ok`. Their cases join `tests/integration/tests/dispute_no_due_date.rs` (a dispute with evidence missing is resent and alerted once; a submit task run after the deadline calls no Stripe and alerts once). Plan change D-5314: this task's migration moves to `migrations/0220_payments_dispute_due_optional.sql` for T812's `0216_businesses_step_up_session.sql`, which runs earlier (V9); earlier numbers in this goal are history. Plan change D-5336: this task's migration moves to `migrations/0222_payments_dispute_due_optional.sql` for T804's `0216_portals_data_request_link.sql`, which runs earlier (V9); earlier numbers in this goal are history. Plan change D-5848: the migration is `0222_payments_dispute_due_optional.sql` (T862 takes `0218`); earlier numbers are history.",
+   "goal": "Plan change D-5081 (external code review of Nov 20, 2026, finding F26; FEE-026, FEE-027; D-2073 (1)). A `charge.dispute.created` whose `evidence_details.due_by` is null is read as unreadable (`app/payments/src/routes.rs`): one High alert with no subject, no `payments.dispute` row and no ledger entry, so FEE-026's refund block never applies and an automatic refund can go out on a disputed charge; D-2073 (1) said Casey records such a dispute by hand, but no screen or caller exists for that. A `due_by` of 0 or below is stored as 1970 and its tasks fire at once. The new `migrations/0219_payments_dispute_due_optional.sql` drops `NOT NULL` from `payments.dispute.due_at`. The webhook route now treats a null, zero, negative or already-past `due_by` as no date and still records the dispute: the dispute row, the ledger entry and the dispute alert are written exactly as for a dated one, so refunds on that pick are blocked and flagged, and only the submit task and the due reminders, which need a date, are skipped; the alert says the evidence date is missing and names the pick, so Casey can act in Stripe. `record_dispute`'s existing signature stays for dated disputes; the undated case is a new entry beside it in `app/payments/src/disputes.rs`, so no done test changes except TD-FEE-43's `td_fee_43_an_unreadable_event_alerts_casey_once`, by logged spec change (D-5164): its unreadable dispute becomes one with no `payment_intent`; the odd refund status, the alert count 2, the no-dispute-row and High assertions stay. Every reader of `payments.dispute.due_at` handles a missing date: the ones in these two files (in `disputes.rs`, `mark_auto_submit` (`:213` to `:224`) neither sets `auto_submit` nor queues a submit task for an undated dispute and answers as for one it did not mark, and `list_disputes` (`:414`) reads `(due_at IS NULL OR due_at >= $1)` so an undated open dispute stays in the digest), `DisputeView.due_at` (now `Option<Timestamp>`, `models.rs`), `dispute_row` in `app/portals/src/owner_portal.rs` (an undated dispute shows `date not given by Stripe` as `due` and, unless submitted, the standing 'You need to counter or accept this one in Stripe.', never the 2-days line; no template change), and `place_dispute_holds` in `app/payments/src/purge.rs`, which this task also owns for that read alone: an undated dispute's PRIV-007 hold counts from `opened_at` in place of the missing date, and the decision entry and `docs/for-casey-review.md` say so. Tests in the new `tests/integration/tests/dispute_no_due_date.rs`, PostgreSQL with the Stripe stand-in's signing, fake data only, the event bodies built in the test: `due_by` null makes one dispute row with no date and one ledger entry, and a later refund on that pick is blocked and flagged; `due_by` 0 and a past date do the same and queue no task due in the past; an undated dispute still places its retention hold; a dated dispute behaves as today; an undated open dispute is listed by `list_disputes` and gets no submit task from `mark_auto_submit`; a negative `due_by` is undated; a null `due_by` raises no `UNREADABLE_EVENT_ALERT`; `disputes_of` returns `None` for the date; the owner refund page line for an undated dispute; and the null, zero, negative and past `due_by` paths and the undated `purge.rs:41` read each get a case (95% branch floor). Every existing dispute and refund test passes unchanged except that one TD-FEE-43 case. It is money code under the `payments` 95% branch floor. The worker updates `td_fee_43_an_unreadable_event_alerts_casey_once`'s doc comment (\"a dispute with no evidence due date\") to match its new body. This task does not touch `kit/plan.lock`. Build notes go to the end of `app/payments/NOTES.md`; update `docs/architecture.md` and `docs/decisions.md`. Plan change D-5252 (job-5 money review findings 2 and 9, verified on `main`; FEE-026, FEE-027; D-2289): (2) a `charge.dispute.created` whose PaymentIntent a `payments.pick_intent` row holds but which has no `payments.charge_evidence` row is not an unknown charge: `record_dispute` (`app/payments/src/disputes.rs:97` to `:106`) answers a new `MoneyEventError::NoEvidence(pick)` there (`models.rs`), and the `Dispatch::Dispute` arm (`app/payments/src/routes.rs:329` to `:337`; `money` at `:431` is synchronous) raises one `raise_alert_once` per pick of a new High alert kind `payments.dispute_no_evidence` (subject the pick; not `FRAUD_WARNING_ALERT` and not `no_evidence_alert`) and answers `Acted::Retry` (500, Stripe resends), the same retry shape as the fraud-warning `NoEvidence` path (`routes.rs:473` to `:477`); a dispute no pick holds keeps today's answer (200, nothing written; TD-FEE-43, D-1754; `td_fee_43_an_unknown_object_changes_nothing`, `tests/integration/tests/stripe_webhook_dispatch.rs:451` to `:505`, passes unchanged), the nightly reconcile's `UNKNOWN_CHARGE_ALERT` already covering it. (9) in `run_dispute_submit` (`disputes.rs:361` to `:398`), after the existing `auto_submit AND submitted_at IS NULL` read finds the row, when its `due_at` is set and `now >= due_at` it makes no Stripe call, raises one High alert of a new kind `payments.dispute_deadline_missed` through `raise_alert_once` (subject the pick) and returns `Ok`. Their cases join `tests/integration/tests/dispute_no_due_date.rs` (a dispute with evidence missing is resent and alerted once; a submit task run after the deadline calls no Stripe and alerts once). Plan change D-5314: this task's migration moves to `migrations/0220_payments_dispute_due_optional.sql` for T812's `0216_businesses_step_up_session.sql`, which runs earlier (V9); earlier numbers in this goal are history. Plan change D-5336: this task's migration moves to `migrations/0222_payments_dispute_due_optional.sql` for T804's `0216_portals_data_request_link.sql`, which runs earlier (V9); earlier numbers in this goal are history. Plan change D-5848: the migration is `0222_payments_dispute_due_optional.sql` (T862 takes `0218`); earlier numbers are history. Plan change D-5888 (MONEY-1 review finding F4, verified; FEE-026, FEE-027): `record_dispute` (`app/payments/src/disputes.rs:97` to `:106`) answers `UnknownCharge`, which `money()` (`app/payments/src/routes.rs:470` to `:474`) acknowledges with 200, also when the pick is known but its charge evidence is not stored yet, so a dispute arriving before the success is recorded is dropped. `UnknownCharge` stays for an unknown or malformed charge, answered as today (TD-FEE-43, `tests/integration/tests/stripe_webhook_dispatch.rs:451` to `:505`; `tests/integration/tests/disputes.rs:280`, `:299`). When a `payments.pick_intent` row names the intent's pick but no `payments.charge_evidence` row exists yet, `record_dispute` returns a new not-yet `MoneyEventError` variant (`app/payments/src/models.rs`) and the route answers retry (`Acted::Retry`, so Stripe resends), raising one High alert on the first such retry through `raise_alert_once` naming the dispute (subject the pick, no homeowner detail), as the fraud route's `NoEvidence` does (`routes.rs:511` to `:514`). Tests in the new `tests/integration/tests/dispute_before_success.rs`, PostgreSQL with the Stripe stand-in's signing, fake data only: a dispute before the success answers retry, writes no dispute row and raises one alert across two deliveries, and once the success is recorded its resend records the dispute, fee and refund block once (fails on `main`).",
    "type": "harness",
    "phase": 2,
    "stage": "6",
@@ -52227,7 +52255,8 @@
     "tests/integration/tests/dispute_no_due_date.rs",
     "app/payments/src/models.rs",
     "app/portals/src/owner_portal.rs",
-    "tests/integration/tests/stripe_webhook_dispatch.rs"
+    "tests/integration/tests/stripe_webhook_dispatch.rs",
+    "tests/integration/tests/dispute_before_success.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -52247,12 +52276,13 @@
     "D-5252",
     "D-5314",
     "D-5336",
-    "D-5848"
+    "D-5848",
+    "D-5888"
    ],
    "cites": [],
    "budget": {
-    "files": 8,
-    "lines": 700,
+    "files": 9,
+    "lines": 800,
     "context_pct": 44
    },
    "checks": [
@@ -52262,7 +52292,7 @@
    ],
    "branch": "claude/task/T785-dispute-without-due-date",
    "prompt": "kit/prompts/T785.md",
-   "acceptance": "`tests/integration/tests/dispute_no_due_date.rs` passes against PostgreSQL with every listed case, the null case failing on `main` before the change (no dispute row there); every existing dispute and refund test passes unchanged except that one TD-FEE-43 case; the migration only drops the `NOT NULL`; `app/payments/` stays at or above its branch floor."
+   "acceptance": "`tests/integration/tests/dispute_no_due_date.rs` passes against PostgreSQL with every listed case, the null case failing on `main` before the change (no dispute row there); every existing dispute and refund test passes unchanged except that one TD-FEE-43 case; the migration only drops the `NOT NULL`; `app/payments/` stays at or above its branch floor. `tests/integration/tests/dispute_before_success.rs` passes, its before-success case failing on `main` before the change."
   },
   {
    "id": "T789",
@@ -52866,7 +52896,7 @@
    "id": "T796",
    "slug": "reconcile-partial-refunds",
    "title": "payments: the nightly reconcile books a dashboard partial refund once and alerts Casey, and catches a stored refund Stripe shows failed",
-   "goal": "Plan change D-5254 (job-5 money review findings 4 and 6, verified on `main`; FEE-029, FEE-030; D-2303, D-5158; review rounds 1 and 2). (4) A refund Casey makes in the Stripe dashboard (which D-5158 sanctions) can be partial; `plan_charge` (`app/payments/src/models.rs:749`) books any refund as yes or no (`has_refund`, `:770`), so a second partial refund is never booked. The reconcile does not refund the rest of a dashboard partial refund on an ended pick (T066's `request_refund` would refund it but book nothing, raise a spurious `REFUND_MISMATCH_ALERT` and settle at the dashboard amount): `plan_charge`'s decision and signature are unchanged, and `app/payments/src/reconcile.rs` (its only production caller, `:457`) books the charge's refund this way: the first refund booking for a charge (the ledger holds no net refund for it) keeps today's key from `key_and_id` (`reconcile.rs:557` to `:564`: `refund.{pick}` on the pick's own intent, `reconcile.refund.{charge}` on a second charge), so T066's `held`, `last_refund` and `refund_ended` (`app/payments/src/refunds.rs:497` to `:529`, `:744` to `:748`) still see it (D-1753, D-2067; both `td_fee_42` cases in `tests/integration/tests/refund_lifecycle.rs` pass unchanged); only a later top-up, when the ledger already holds a positive net refund for the charge, is booked as `refunded_cents` minus that net refund under `reconcile.refund.{charge}.{refunded_cents}`, and only when positive; and, for a partial refund (`0 < refunded_cents < amount_cents`, no dispute) on an ended pick with no refund of Laftly's own on record for the charge (no `payments.refund` row on the pick whose own intent is the charge's, and no `payments.reconcile_charge` row for the charge with a `refund_reason`, which `first_seen` writes, `reconcile.rs:590` to `:610`), raises one High `payments.reconcile_partial_refund` alert per charge (`raise_alert_once`, subject the pick) asking Casey to refund the rest in Stripe; the no-pick branch is decided by the same per-charge marker. A no-pick charge with a dashboard partial refund raises nothing new and books nothing (`plan_charge` is unchanged, a no-pick charge never enters the ledger, and `UNKNOWN_CHARGE_ALERT` already covers it); the `payments.reconcile_partial_refund` alert is only for a charge with a pick as its subject. A partial answer to Laftly's own refund stays as D-2303 books and alerts it. (6) When the ledger's net refund is more than Stripe's `refunded_cents` and the pick's refund is stored `succeeded`, the nightly reconcile reads the refund with `fetch_refund` (`app/payments/src/refund_stripe.rs:132`) and calls the existing `refund_failed` or `refund_canceled` (`app/payments/src/refunds.rs:713`, `:725`) for what it answers; a `fetch_refund` error, `NotSent` included (`app/adapters/src/payments.rs:397` to `:403`), leaves the refund as stored, keeps the charge open in the report and never fails the run. Tests in the new `tests/integration/tests/reconcile_partial_refund.rs`, PostgreSQL and the Stripe stand-in, fake data only: a dashboard partial refund on an ended pick is booked once across two nights, refunds nothing and raises one `payments.reconcile_partial_refund` alert; a second partial refund books only the new part; a stored-succeeded refund Stripe shows failed is moved through `refund_failed`; a `fetch_refund` error leaves it as stored. Every reconcile and refund test passes unchanged, both `td_fee_42` cases in `refund_lifecycle.rs`, the TD-FEE-16 property (`app/payments/src/tests/prop_ledger_matches_stripe.rs`), `coverage_margin.rs` and both `td_fee_60` partial-refund cases (`tests/integration/tests/reconcile_catch_up.rs:373` to `:437`, the night-1 `refunded == 1` included) among them. Money: Opus worker, Opus money review, two review rounds. Update `app/payments/NOTES.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-5254 (job-5 money review findings 4 and 6, verified on `main`; FEE-029, FEE-030; D-2303, D-5158; review rounds 1 and 2). (4) A refund Casey makes in the Stripe dashboard (which D-5158 sanctions) can be partial; `plan_charge` (`app/payments/src/models.rs:749`) books any refund as yes or no (`has_refund`, `:770`), so a second partial refund is never booked. The reconcile does not refund the rest of a dashboard partial refund on an ended pick (T066's `request_refund` would refund it but book nothing, raise a spurious `REFUND_MISMATCH_ALERT` and settle at the dashboard amount): `plan_charge`'s decision and signature are unchanged, and `app/payments/src/reconcile.rs` (its only production caller, `:457`) books the charge's refund this way: the first refund booking for a charge (the ledger holds no net refund for it) keeps today's key from `key_and_id` (`reconcile.rs:557` to `:564`: `refund.{pick}` on the pick's own intent, `reconcile.refund.{charge}` on a second charge), so T066's `held`, `last_refund` and `refund_ended` (`app/payments/src/refunds.rs:497` to `:529`, `:744` to `:748`) still see it (D-1753, D-2067; both `td_fee_42` cases in `tests/integration/tests/refund_lifecycle.rs` pass unchanged); only a later top-up, when the ledger already holds a positive net refund for the charge, is booked as `refunded_cents` minus that net refund under `reconcile.refund.{charge}.{refunded_cents}`, and only when positive; and, for a partial refund (`0 < refunded_cents < amount_cents`, no dispute) on an ended pick with no refund of Laftly's own on record for the charge (no `payments.refund` row on the pick whose own intent is the charge's, and no `payments.reconcile_charge` row for the charge with a `refund_reason`, which `first_seen` writes, `reconcile.rs:590` to `:610`), raises one High `payments.reconcile_partial_refund` alert per charge (`raise_alert_once`, subject the pick) asking Casey to refund the rest in Stripe; the no-pick branch is decided by the same per-charge marker. A no-pick charge with a dashboard partial refund raises nothing new and books nothing (`plan_charge` is unchanged, a no-pick charge never enters the ledger, and `UNKNOWN_CHARGE_ALERT` already covers it); the `payments.reconcile_partial_refund` alert is only for a charge with a pick as its subject. A partial answer to Laftly's own refund stays as D-2303 books and alerts it. (6) When the ledger's net refund is more than Stripe's `refunded_cents` and the pick's refund is stored `succeeded`, the nightly reconcile reads the refund with `fetch_refund` (`app/payments/src/refund_stripe.rs:132`) and calls the existing `refund_failed` or `refund_canceled` (`app/payments/src/refunds.rs:713`, `:725`) for what it answers; a `fetch_refund` error, `NotSent` included (`app/adapters/src/payments.rs:397` to `:403`), leaves the refund as stored, keeps the charge open in the report and never fails the run. Tests in the new `tests/integration/tests/reconcile_partial_refund.rs`, PostgreSQL and the Stripe stand-in, fake data only: a dashboard partial refund on an ended pick is booked once across two nights, refunds nothing and raises one `payments.reconcile_partial_refund` alert; a second partial refund books only the new part; a stored-succeeded refund Stripe shows failed is moved through `refund_failed`; a `fetch_refund` error leaves it as stored. Every reconcile and refund test passes unchanged, both `td_fee_42` cases in `refund_lifecycle.rs`, the TD-FEE-16 property (`app/payments/src/tests/prop_ledger_matches_stripe.rs`), `coverage_margin.rs` and both `td_fee_60` partial-refund cases (`tests/integration/tests/reconcile_catch_up.rs:373` to `:437`, the night-1 `refunded == 1` included) among them. Money: Opus worker, Opus money review, two review rounds. Update `app/payments/NOTES.md` and `docs/decisions.md`. Plan change D-5888 (MONEY-1 review finding F2, verified): the `payments.reconcile_partial_refund` alert's condition uses the same predicate as the refund, `pick.ended || !pick.own_intent`: a partly refunded second charge (not the pick's own intent) on a pick that has not ended raises the same one High alert per charge, with the same no-refund-of-Laftly's-own test; a case for it joins `tests/integration/tests/reconcile_partial_refund.rs`.",
    "deps": [
     "T785"
    ],
@@ -52886,13 +52916,15 @@
    ],
    "requirements": [
     "FEE-029",
-    "FEE-030"
+    "FEE-030",
+    "FEE-037"
    ],
    "tests": [],
    "decisions": [
     "D-5254",
     "D-5158",
-    "D-2303"
+    "D-2303",
+    "D-5888"
    ],
    "budget": {
     "files": 2,
@@ -53661,7 +53693,7 @@
    "id": "T811",
    "slug": "confirm-code-by-email",
    "title": "server and portals: a person with no texting phone gets the Confirm link code by email",
-   "goal": "Plan change D-5315 (outside review job 8, SEC-004 email fallback, checked on `main` 62c2b1c; Fable's decision for Casey). SEC-004 and TD-BIZ-25 send the Confirm code by email to the sign-in address of a person with no phone that gets texts, but `LinkCodeAddress::find` returns `CodeTo::Email(SecretString::default())` (`app/server/src/action_links.rs:812` to `:814`) and `send_confirm_code` answers `NoPhone` for any email (`NoPhone`, `app/portals/src/confirm_pay.rs:497` to `:499`); D-3889 (7) left it out. Build it now against the stand-in Verify's email channel (`CodeChannel::Email`, D-2769); the live email account is a Gate C item, not a blocker. (1) `LinkCodeAddress::find` returns the member's real sign-in address when they have no texting line, read from the vault with `privacy::api::read_business_mailbox` under `BusinessPurpose::SignInCode` on the member's `mailbox` (as `MemberCodeAddress::find` does, `app/server/src/business_signin.rs:328` to `:335`; that type is not reused, its client is task-local to sign-in, D-5112 (2)). (2) `send_confirm_code` and `check_confirm_code` stay as they are, texting only (the press path never emails, and a shared inbox needs a phone; `tests/integration/tests/confirm_terms.rs:257` to `:258` and `:386` to `:399`, DONE, pin `NoPhone` for an email-only person and pass unchanged); new link-only `send_link_code` and `check_link_code` beside them in `confirm_pay.rs`, exported through the shared `portals::api`, send and check by email to that address when `code_to` is `CodeTo::Email`, and as the press functions do for a phone, and the Confirm link's code step in `server::action_links` calls them instead; `CodeSent` gains an emailed variant whose line says the code went to their email (the link page's words go through the cold read); never by email while the person's inbox is marked shared (SEC-027: that answer stays `NoPhone`'s link-a-phone line, nothing sent), never by a call (BIZ-046); the SEC-014 send and SEC-020 try limits apply as for a text; the address is never logged or shown and is dropped after the send. (3) Tests: this task owns `app/server/tests/action_links_route.rs` after T399, T455, T301, T456, T543, T463, T457, T458, T714, T813 and T814 (line numbers below are on `main` 62c2b1c; find them by their test names). The third block of `td_sec_44_without_codes_or_a_texting_phone_the_confirm_link_uses_nothing` (`:1251` to `:1256`, codes set, no texting phone) changes by logged spec change (D-5315; SEC-004, `docs/spec/security.md:8`; `BUILD_BRIEF.md:69`) to assert one email code sent to the member's fake sign-in address, no text and no call, and the link still unused; the no-codes block (`:1243` to `:1250`) stays. New cases for TD-BIZ-25's Confirm email case: the right emailed code signs that browser in, opens the Confirm page and uses the link once; a wrong code uses nothing; a person with no texting phone whose inbox is marked shared (set in the database, since the switch refuses it) gets no email and nothing used. Fake data only. Update `app/server/NOTES.md`, `app/portals/NOTES.md` and `docs/decisions.md`. Plan change D-5568 (Grok systemic check): `CodeSent`'s emailed line is this task's own copy, so neither the \"Customer copy: none changed\" line nor End step 2's \"stop and report\" covers it: run `scripts/check_ai_smell.py`, the cold read and the copy panel on that line (not flagged `copy`, which would push the prompt past its context limit). Plan change D-5670 (outside pre-flight, checked on `main` 52bc3014): in `td_sec_44_without_codes_or_a_texting_phone_the_confirm_link_uses_nothing` the block that changes is the `coded(&pool, false)` block (`:1402` to `:1407` on the plan branch); the no-codes block (`:1252` to `:1259`) stays; the test's doc comment (`:1247` to `:1249`, \"a person with no phone that gets texts is told to link one, with nothing sent or used\") is reworded to the emailed code, by the same logged spec change. Other cites refreshed: `CodeTo::Email(SecretString::default())` `:812` to `:814`, `NoPhone` `:497` to `:499`. Plan change D-5876 (pre-flight PF-P1-2b 11): in (3) `FakeVerify` records each (to, `CodeChannel`), the email `FakeAddress` gives a fake `@example.com` address, the test asserts exactly one `CodeChannel::Email` send to it and none by SMS or call, and one case runs the real `LinkCodeAddress::find` against a vault-sealed fake mailbox.",
+   "goal": "Plan change D-5315 (outside review job 8, SEC-004 email fallback, checked on `main` 62c2b1c; Fable's decision for Casey). SEC-004 and TD-BIZ-25 send the Confirm code by email to the sign-in address of a person with no phone that gets texts, but `LinkCodeAddress::find` returns `CodeTo::Email(SecretString::default())` (`app/server/src/action_links.rs:812` to `:814`) and `send_confirm_code` answers `NoPhone` for any email (`NoPhone`, `app/portals/src/confirm_pay.rs:497` to `:499`); D-3889 (7) left it out. Build it now against the stand-in Verify's email channel (`CodeChannel::Email`, D-2769); the live email account is a Gate C item, not a blocker. (1) `LinkCodeAddress::find` returns the member's real sign-in address when they have no texting line, read from the vault with `privacy::api::read_business_mailbox` under `BusinessPurpose::SignInCode` on the member's `mailbox` (as `MemberCodeAddress::find` does, `app/server/src/business_signin.rs:328` to `:335`; that type is not reused, its client is task-local to sign-in, D-5112 (2)). (2) `send_confirm_code` and `check_confirm_code` stay as they are, texting only (the press path never emails, and a shared inbox needs a phone; `tests/integration/tests/confirm_terms.rs:257` to `:258` and `:386` to `:399`, DONE, pin `NoPhone` for an email-only person and pass unchanged); new link-only `send_link_code` and `check_link_code` beside them in `confirm_pay.rs`, exported through the shared `portals::api`, send and check by email to that address when `code_to` is `CodeTo::Email`, and as the press functions do for a phone, and the Confirm link's code step in `server::action_links` calls them instead; `CodeSent` gains an emailed variant whose line says the code went to their email (the link page's words go through the cold read); never by email while the person's inbox is marked shared (SEC-027: that answer stays `NoPhone`'s link-a-phone line, nothing sent), never by a call (BIZ-046); the SEC-014 send and SEC-020 try limits apply as for a text; the address is never logged or shown and is dropped after the send. (3) Tests: this task owns `app/server/tests/action_links_route.rs` after T399, T455, T301, T456, T543, T463, T457, T458, T714, T813 and T814 (line numbers below are on `main` 62c2b1c; find them by their test names). The third block of `td_sec_44_without_codes_or_a_texting_phone_the_confirm_link_uses_nothing` (`:1251` to `:1256`, codes set, no texting phone) changes by logged spec change (D-5315; SEC-004, `docs/spec/security.md:8`; `BUILD_BRIEF.md:69`) to assert one email code sent to the member's fake sign-in address, no text and no call, and the link still unused; the no-codes block (`:1243` to `:1250`) stays. New cases for TD-BIZ-25's Confirm email case: the right emailed code signs that browser in, opens the Confirm page and uses the link once; a wrong code uses nothing; a person with no texting phone whose inbox is marked shared (set in the database, since the switch refuses it) gets no email and nothing used. Fake data only. Update `app/server/NOTES.md`, `app/portals/NOTES.md` and `docs/decisions.md`. Plan change D-5568 (Grok systemic check): `CodeSent`'s emailed line is this task's own copy, so neither the \"Customer copy: none changed\" line nor End step 2's \"stop and report\" covers it: run `scripts/check_ai_smell.py`, the cold read and the copy panel on that line (not flagged `copy`, which would push the prompt past its context limit). Plan change D-5670 (outside pre-flight, checked on `main` 52bc3014): in `td_sec_44_without_codes_or_a_texting_phone_the_confirm_link_uses_nothing` the block that changes is the `coded(&pool, false)` block (`:1402` to `:1407` on the plan branch); the no-codes block (`:1252` to `:1259`) stays; the test's doc comment (`:1247` to `:1249`, \"a person with no phone that gets texts is told to link one, with nothing sent or used\") is reworded to the emailed code, by the same logged spec change. Other cites refreshed: `CodeTo::Email(SecretString::default())` `:812` to `:814`, `NoPhone` `:497` to `:499`. Plan change D-5876 (pre-flight PF-P1-2b 11): in (3) `FakeVerify` records each (to, `CodeChannel`), the email `FakeAddress` gives a fake `@example.com` address, the test asserts exactly one `CodeChannel::Email` send to it and none by SMS or call, and one case runs the real `LinkCodeAddress::find` against a vault-sealed fake mailbox. Plan change D-5889 (Fable's T820 diagnosis): `td_sec_44`'s last assert (`app/server/tests/action_links_route.rs:545` to `:548`, `!again.text.contains(\"990\")` over the whole page) flakes about 2% of runs because the page carries a random CSRF token, a job UUID and a link token; make it exact, never weaker: assert from the database that the stored quote amount is still 32500 cents, and look for \"$990\" only in the page's quote line, not the whole page; every other assertion in the test stays.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -53707,7 +53739,8 @@
     "D-5568",
     "D-5670",
     "D-5836",
-    "D-5876"
+    "D-5876",
+    "D-5889"
    ],
    "cites": [],
    "budget": {
@@ -54239,7 +54272,7 @@
    "id": "T820",
    "slug": "data-download-contents",
    "title": "server and portals: \"Download my data\" also holds withdrawn quotes, her job descriptions, intake answers, feedback and STOP, HELP and START records",
-   "goal": "Plan change D-5399 (privacy review job 14, findings P2 and P3 and P-optout, Fable's choices (a) and yes for Casey under D-305; PRIV-031, CON-022; TD-PRIV-15 and TD-PRIV-21 gain cases). Her \"Download my data\" file (`held_file`, `app/server/src/homeowner_portal.rs:593` to `:604`; sections in `app/portals/src/data_download.rs`, `Section`, `:394`) leaves out data still held about her: `quote_items` (`:572` to `:590`) drops withdrawn quotes (`!q.withdrawn`), and the file has no job description, no intake answer, no feedback and no STOP, HELP or START record, though PRIV-031 says \"her own requests, quotes, messages and consent records still held\". After T804 (which owns both files and changes the download) and T745 (`intake::api`'s job answers) and T819 (scrubbed feedback), the file also holds: (1) each withdrawn quote of her jobs, in `quotes`, its words prefixed \"Withdrawn: \" (same business-contact masking); (2) a new `jobs` section with each job's scrubbed description (`quotes.job_description`, through a `quotes::api` reader, added in the shared `api.rs` if none exists); (3) a new `answers` section with her intake answers through `intake::api`'s job answers (T745), leaving out the name-and-address row (`ADDRESS_CONTACT`) and every other answer that names a vault contact; (4) a new `feedback` section with her feedback words and share tick (a `jobs::api::feedback` reader in the shared `api.rs`); (5) in `consent`, each `messaging.optout_event` (`action` `opt_out` or `start`, `migrations/0044_messaging_optout.sql:19`) under her number's digests whose `effective_at` is at or after her vault contact's `created_at` (a reused number never shows an earlier holder's events), labelled by its `channel` (`migrations/0044_messaging_optout.sql:21` to `:22`): \"You texted STOP\" or \"You texted START\" only for `text`, otherwise \"Texts turned off\" or \"Texts turned on\" with the channel in plain words (email, email reply, help form, portal, owner, carrier) (D-5399 round 2), with its time, through a reader in the new `app/messaging/src/optout_records.rs` (re-exported by one line in the shared `messaging::api`), with her digests built the way `intake::consent_purge` builds them; and her HELP record, which lives in `ops.help_keyword (contact_id, at)` (`migrations/0194_help_requests.sql:36`), not in `optout_event`, as \"You texted HELP\" with its time, through `ops::api::help_keyword_of(conn, contact)` in the new `app/ops/src/help_keyword_of.rs` (one line in the shared `ops::api`) (D-5399 round 1). No business contact, no other person's data and no detection phrase beyond the keyword. The DONE counts of `app/server/tests/homeowner_portal_route.rs:709` to `:711` (`requests` 1, `quotes` 0, `consent` 1) hold because that test seeds no quote, job or opt-out event; if it seeds one, report a plan gap. Tests in the new `app/server/tests/data_download_contents.rs` (PostgreSQL, fake data only, through the assembled router as TD-PRIV-21 says, since `held_file` is private to `server`): each new item appears for her and not for another homeowner; a withdrawn quote is marked; her address answer is absent; her STOP, HELP and START records appear; a portal opt-out reads \"Texts turned off\" with the portal named; a STOP under her digests from before her contact was created does not. The file keeps one section per kind (TD-PRIV-15), and `download_file` (`app/portals/src/data_download.rs:547` to `:565`) writes every section, so the DONE `tests/e2e/homeowner_portal_served.spec.ts:116` (T561), which checks the keys are exactly `[\"consent\", \"messages\", \"quotes\", \"requests\"]`, changes by this logged spec change (D-5399, `BUILD_BRIEF.md:69`) to exactly `[\"answers\", \"consent\", \"feedback\", \"jobs\", \"messages\", \"quotes\", \"requests\"]` and nothing else in that file; this task therefore is a harness task (Opus worker and review) and owns it; every existing download, portal and mask test (`homeowner_portal_route.rs`, `app/portals/src/tests/data_download_mask.rs`) passes unchanged, and the e2e spec changes only at `:116`. Privacy: Opus worker and review. Update the `server`, `portals` and `messaging` notes and `docs/decisions.md`. Plan change D-5526 (pre-flight, Nov 22, 2026): `quotes::api::page_quotes` blanks a withdrawn quote's words (`app/quotes/src/api.rs:200`) and the DONE `tests/integration/tests/quote_shown_changes.rs:307` asserts it, but withdrawal only sets `withdrawn_at` (`app/quotes/src/edit_withdraw.rs:114` to `:115`), so the words are still held. (1)'s withdrawn words come from a new reader added in the shared `app/quotes/src/api.rs` (as (2)'s description reader is), taking her jobs and returning only their withdrawn quotes; `page_quotes` and its DONE test are unchanged. (4): `jobs::api::feedback` has only `shown` (`app/jobs/src/api.rs:331`: ticked, not removed, not purged), so the new reader in the shared `app/jobs/src/api.rs` returns her job's own feedback, shared or not, with its share tick (words blanked by the purge or \"Delete my data\" are left out); `feedback::shown` is unchanged. Plan change D-5568 (Grok systemic check, verified on main bd3e4e9c): this task writes words a homeowner or business reads, so it is flagged `copy` and its prompt carries the copy steps instead of \"Customer copy: none changed ... stop and report\". Plan change D-5709 (pre-flight PF-P1d, verified on `main` 82aea083): the shared-path rule allows only one `pub use` line per public item in a shared `src/api.rs` (`docs/code-docs.md:69`, also when a goal says \"add it to `api.rs`\"), so D-5526's two readers cannot be written there and T820 owned no file in `quotes` or `jobs`. (1)'s withdrawn-quote reader is defined in the new owned `app/quotes/src/withdrawn_quotes.rs` and re-exported by one line in the shared `app/quotes/src/api.rs`; (4)'s feedback reader is defined in the new owned `app/jobs/src/feedback_of_job.rs` and re-exported by one line inside `api::feedback` (`app/jobs/src/api.rs:148`), so it is still reached as `jobs::api::feedback`. Everything else D-5526 says stands (`page_quotes`, its DONE test and `feedback::shown` unchanged). (2)'s description reader already exists: `quotes::api::description` (`app/quotes/src/api.rs:106` to `:110`, `app/quotes/src/job_text.rs:111` to `:121`), so no reader is added for it. Files budget 8, lines budget 580. Update the `quotes` and `jobs` notes too.",
+   "goal": "Plan change D-5399 (privacy review job 14, findings P2 and P3 and P-optout, Fable's choices (a) and yes for Casey under D-305; PRIV-031, CON-022; TD-PRIV-15 and TD-PRIV-21 gain cases). Her \"Download my data\" file (`held_file`, `app/server/src/homeowner_portal.rs:593` to `:604`; sections in `app/portals/src/data_download.rs`, `Section`, `:394`) leaves out data still held about her: `quote_items` (`:572` to `:590`) drops withdrawn quotes (`!q.withdrawn`), and the file has no job description, no intake answer, no feedback and no STOP, HELP or START record, though PRIV-031 says \"her own requests, quotes, messages and consent records still held\". After T804 (which owns both files and changes the download) and T745 (`intake::api`'s job answers) and T819 (scrubbed feedback), the file also holds: (1) each withdrawn quote of her jobs, in `quotes`, its words prefixed \"Withdrawn: \" (same business-contact masking); (2) a new `jobs` section with each job's scrubbed description (`quotes.job_description`, through a `quotes::api` reader, added in the shared `api.rs` if none exists); (3) a new `answers` section with her intake answers through `intake::api`'s job answers (T745), leaving out the name-and-address row (`ADDRESS_CONTACT`) and every other answer that names a vault contact; (4) a new `feedback` section with her feedback words and share tick (a `jobs::api::feedback` reader in the shared `api.rs`); (5) in `consent`, each `messaging.optout_event` (`action` `opt_out` or `start`, `migrations/0044_messaging_optout.sql:19`) under her number's digests whose `effective_at` is at or after her vault contact's `created_at` (a reused number never shows an earlier holder's events), labelled by its `channel` (`migrations/0044_messaging_optout.sql:21` to `:22`): \"You texted STOP\" or \"You texted START\" only for `text`, otherwise \"Texts turned off\" or \"Texts turned on\" with the channel in plain words (email, email reply, help form, portal, owner, carrier) (D-5399 round 2), with its time, through a reader in the new `app/messaging/src/optout_records.rs` (re-exported by one line in the shared `messaging::api`), with her digests built the way `intake::consent_purge` builds them; and her HELP record, which lives in `ops.help_keyword (contact_id, at)` (`migrations/0194_help_requests.sql:36`), not in `optout_event`, as \"You texted HELP\" with its time, through `ops::api::help_keyword_of(conn, contact)` in the new `app/ops/src/help_keyword_of.rs` (one line in the shared `ops::api`) (D-5399 round 1). No business contact, no other person's data and no detection phrase beyond the keyword. The DONE counts of `app/server/tests/homeowner_portal_route.rs:709` to `:711` (`requests` 1, `quotes` 0, `consent` 1) hold because that test seeds no quote, job or opt-out event; if it seeds one, report a plan gap. Tests in the new `app/server/tests/data_download_contents.rs` (PostgreSQL, fake data only, through the assembled router as TD-PRIV-21 says, since `held_file` is private to `server`): each new item appears for her and not for another homeowner; a withdrawn quote is marked; her address answer is absent; her STOP, HELP and START records appear; a portal opt-out reads \"Texts turned off\" with the portal named; a STOP under her digests from before her contact was created does not. The file keeps one section per kind (TD-PRIV-15), and `download_file` (`app/portals/src/data_download.rs:547` to `:565`) writes every section, so the DONE `tests/e2e/homeowner_portal_served.spec.ts:116` (T561), which checks the keys are exactly `[\"consent\", \"messages\", \"quotes\", \"requests\"]`, changes by this logged spec change (D-5399, `BUILD_BRIEF.md:69`) to exactly `[\"answers\", \"consent\", \"feedback\", \"jobs\", \"messages\", \"quotes\", \"requests\"]` and nothing else in that file; this task therefore is a harness task (Opus worker and review) and owns it; every existing download, portal and mask test (`homeowner_portal_route.rs`, `app/portals/src/tests/data_download_mask.rs`) passes unchanged, and the e2e spec changes only at `:116`. Privacy: Opus worker and review. Update the `server`, `portals` and `messaging` notes and `docs/decisions.md`. Plan change D-5526 (pre-flight, Nov 22, 2026): `quotes::api::page_quotes` blanks a withdrawn quote's words (`app/quotes/src/api.rs:200`) and the DONE `tests/integration/tests/quote_shown_changes.rs:307` asserts it, but withdrawal only sets `withdrawn_at` (`app/quotes/src/edit_withdraw.rs:114` to `:115`), so the words are still held. (1)'s withdrawn words come from a new reader added in the shared `app/quotes/src/api.rs` (as (2)'s description reader is), taking her jobs and returning only their withdrawn quotes; `page_quotes` and its DONE test are unchanged. (4): `jobs::api::feedback` has only `shown` (`app/jobs/src/api.rs:331`: ticked, not removed, not purged), so the new reader in the shared `app/jobs/src/api.rs` returns her job's own feedback, shared or not, with its share tick (words blanked by the purge or \"Delete my data\" are left out); `feedback::shown` is unchanged. Plan change D-5568 (Grok systemic check, verified on main bd3e4e9c): this task writes words a homeowner or business reads, so it is flagged `copy` and its prompt carries the copy steps instead of \"Customer copy: none changed ... stop and report\". Plan change D-5709 (pre-flight PF-P1d, verified on `main` 82aea083): the shared-path rule allows only one `pub use` line per public item in a shared `src/api.rs` (`docs/code-docs.md:69`, also when a goal says \"add it to `api.rs`\"), so D-5526's two readers cannot be written there and T820 owned no file in `quotes` or `jobs`. (1)'s withdrawn-quote reader is defined in the new owned `app/quotes/src/withdrawn_quotes.rs` and re-exported by one line in the shared `app/quotes/src/api.rs`; (4)'s feedback reader is defined in the new owned `app/jobs/src/feedback_of_job.rs` and re-exported by one line inside `api::feedback` (`app/jobs/src/api.rs:148`), so it is still reached as `jobs::api::feedback`. Everything else D-5526 says stands (`page_quotes`, its DONE test and `feedback::shown` unchanged). (2)'s description reader already exists: `quotes::api::description` (`app/quotes/src/api.rs:106` to `:110`, `app/quotes/src/job_text.rs:111` to `:121`), so no reader is added for it. Files budget 8, lines budget 580. Update the `quotes` and `jobs` notes too. Plan change D-5889 (requeue after attempt 3; Fable's diagnosis): switch to the prepared branch `claude/task/T820-data-download-contents` (never recreate, reset or rebase it); attempt 3's only red needs no product-code change: take the runner's merge of `main` and re-run Checks. `td_sec_44`'s assert at `app/server/tests/action_links_route.rs:546` (`!again.text.contains(\"990\")` over the whole replayed page, which carries a random 64-hex CSRF token, a job UUID and a link token) is a known random-substring flake of about 2% per run, on `main` too, fixed by T811; T820 never edits `action_links_route.rs`.",
    "type": "harness",
    "phase": 1,
    "stage": "5",
@@ -54287,13 +54320,14 @@
     "D-5399",
     "D-5526",
     "D-5568",
-    "D-5709"
+    "D-5709",
+    "D-5889"
    ],
    "cites": [],
    "budget": {
     "files": 8,
     "lines": 580,
-    "context_pct": 29
+    "context_pct": 33
    },
    "checks": [
     "Ci",
@@ -54369,15 +54403,19 @@
   {
    "id": "T822",
    "slug": "privacy-policy-portal-link",
-   "title": "docs: the privacy policy names the email link for opted-out numbers and the fuller data file",
-   "goal": "Plan change D-5399 (privacy review job 14, policy finding; PRIV-031). `docs/legal/privacy-policy.md:99` (T800, DONE) describes only a texted code for a copy or delete request; T804 adds, for a number on the suppression list, a request made in the signed-in portal confirmed from a single-use link sent to her confirmed update email (PRIV-031, D-5281, D-5339), and T820 adds withdrawn quotes, job descriptions, intake answers, feedback and STOP, HELP and START records to \"Download my data\". Edit line 99 in place (no line added or removed): keep word for word the three texts pinned there: `tests/docs/test_privacy_policy.py:400` (\"we text a code to the number on file and you type it back, so no one else can ask in your name.\"), `:399` ('\"Download my data\" gives you a file of your requests') and `scripts/check_legal_docs.py:231` and `:239` (PRIV-011's \"We keep your phone number, locked, for 5 years only as proof of your texting permission and opt-out.\" and PRIV-031's \"Download my data\"), add one plain sentence for the email link, and name the file's contents as T820 builds them. `python3 scripts/check_legal_docs.py`, `scripts/check_copy.py`, `scripts/check_ai_smell.py` and `python3 -m pytest tests/docs` pass. Update `docs/decisions.md`. Plan change D-5664 (outside pre-flight): Sonnet writes this docs task; the Opus reviewer stays (privacy, D-483).",
+   "title": "docs: the privacy policy names the email link and the fuller data file and describes photo checks truly; the handyman certification and the Spanish campaign sample are completed",
+   "goal": "Plan change D-5399 (privacy review job 14, policy finding; PRIV-031). `docs/legal/privacy-policy.md:99` (T800, DONE) describes only a texted code for a copy or delete request; T804 adds, for a number on the suppression list, a request made in the signed-in portal confirmed from a single-use link sent to her confirmed update email (PRIV-031, D-5281, D-5339), and T820 adds withdrawn quotes, job descriptions, intake answers, feedback and STOP, HELP and START records to \"Download my data\". Edit line 99 in place (no line added or removed): keep word for word the three texts pinned there: `tests/docs/test_privacy_policy.py:400` (\"we text a code to the number on file and you type it back, so no one else can ask in your name.\"), `:399` ('\"Download my data\" gives you a file of your requests') and `scripts/check_legal_docs.py:231` and `:239` (PRIV-011's \"We keep your phone number, locked, for 5 years only as proof of your texting permission and opt-out.\" and PRIV-031's \"Download my data\"), add one plain sentence for the email link, and name the file's contents as T820 builds them. `python3 scripts/check_legal_docs.py`, `scripts/check_copy.py`, `scripts/check_ai_smell.py` and `python3 -m pytest tests/docs` pass. Update `docs/decisions.md`. Plan change D-5664 (outside pre-flight): Sonnet writes this docs task; the Opus reviewer stays (privacy, D-483). Plan change D-5907 (ChatGPT COMPLIANCE-1, verified by Opus; LIC-025, INT-044, TERMS-007, TERMS-013 (lines unchanged except LIC-025); D-491, D-5278): this task also, editing each line in place so every file keeps its line count unless stated: (a) `docs/legal/privacy-policy.md:84` claims \"Our own server, not an outside AI, checks it for faces, people, house numbers and license plates. It blurs or leaves out what it finds.\", which contradicts INT-044, D-491 and the policy's own `:32` and `:38`; replace those two sentences with \"Our own server checks its format and size and re-encodes it; you confirm it shows no person or house number. Once our AI photo screening is on, faces, house numbers, license plates and readable text are blurred.\" and keep the rest of the line; (b) `docs/legal/business-terms.md:39` becomes \"**Handymen** (not licensed contractors) certify on each quote that it is a full-job price under $1,000 for casual or minor work, not one part of a larger job split up to stay under the limit, with no permit and no gas, smoke-alarm or sprinkler work. A business that breaks this is removed.\" (LIC-025 as D-5907 reworded it), keeping the prefix pinned at `tests/docs/test_terms_clauses.py:402` word for word; (c) `docs/legal/twilio-campaign.md`: after Console sample 5 (`:131` to `:135`) add one line \"Sample 5 is the Spanish version of sample 1. English translation: <Console sample 1's text as written above it>.\", and end the `message_flow` quote (`:43` to `:47`) with the same translation sentence, so the registration carries an English translation of the Spanish sample; every pin in `tests/docs/test_campaign.py` stays green unchanged (the five Console samples still parse as five fenced blocks, the flow line still starts with the first-text sentence and names no chat, widget or code); if a pin cannot hold, stop and report a `PLAN GAP:` rather than edit the test. `python3 scripts/check_legal_docs.py`, `scripts/check_copy.py`, `scripts/check_ai_smell.py` and `python3 -m pytest tests/docs` pass. (d) `docs/legal/incident-response-plan.md:32` (Arizona breach law paragraph, edited in place, line count kept) gains one sentence: \"Before notifying, check whether an affected person's home state sets a shorter deadline than Arizona's 45 days, and meet the shortest.\" (D-5907, Fable's CCPA decision).",
    "type": "docs",
    "phase": 1,
    "stage": "5",
    "module": null,
    "deps": [
     "T820",
-    "T800"
+    "T800",
+    "T428",
+    "T111",
+    "T229",
+    "T113"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -54387,28 +54425,38 @@
     "compliance"
    ],
    "owns": [
-    "docs/legal/privacy-policy.md"
+    "docs/legal/privacy-policy.md",
+    "docs/legal/business-terms.md",
+    "docs/legal/twilio-campaign.md",
+    "docs/legal/incident-response-plan.md"
    ],
    "reads": [
     "docs/spec/privacy.md",
     "tests/docs/test_privacy_policy.py",
-    "scripts/check_legal_docs.py"
+    "scripts/check_legal_docs.py",
+    "docs/spec/licensing.md",
+    "tests/docs/test_terms_clauses.py",
+    "tests/docs/test_campaign.py",
+    "docs/spec/intake.md"
    ],
    "requirements": [
-    "PRIV-031"
+    "PRIV-031",
+    "LIC-025",
+    "INT-044"
    ],
    "tests": [],
    "decisions": [
     "D-5281",
     "D-5339",
     "D-5399",
-    "D-5664"
+    "D-5664",
+    "D-5907"
    ],
    "cites": [],
    "budget": {
-    "files": 1,
-    "lines": 20,
-    "context_pct": 8
+    "files": 4,
+    "lines": 45,
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -54417,7 +54465,8 @@
    ],
    "branch": "claude/task/T822-privacy-policy-portal-link",
    "prompt": "kit/prompts/T822.md",
-   "acceptance": "Line 99 of the policy describes the code and the email link and the file's contents; the policy keeps its line count; `check_legal_docs.py`, `check_copy.py`, `check_ai_smell.py` and `pytest tests/docs` pass."
+   "acceptance": "Line 99 of the policy describes the code and the email link and the file's contents, and line 84 matches lines 32 and 38; business-terms line 39 carries the casual-or-minor and no-split wording; the campaign file carries the English translation of sample 5; the policy and terms keep their line counts; `check_legal_docs.py`, `check_copy.py`, `check_ai_smell.py` and `pytest tests/docs` pass.",
+   "copy": true
   },
   {
    "id": "T823",
@@ -55299,7 +55348,7 @@
    "deps": [
     "T850"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -55332,7 +55381,8 @@
     "TD-BIZ-25"
    ],
    "decisions": [
-    "D-5836"
+    "D-5836",
+    "D-5918"
    ],
    "cites": [],
    "budget": {
@@ -55360,7 +55410,7 @@
    "deps": [
     "T222"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -55387,7 +55437,8 @@
    ],
    "decisions": [
     "D-5836",
-    "D-5848"
+    "D-5848",
+    "D-5918"
    ],
    "cites": [],
    "budget": {
@@ -55415,7 +55466,7 @@
    "deps": [
     "T851"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -55450,7 +55501,8 @@
    ],
    "decisions": [
     "D-5836",
-    "D-5848"
+    "D-5848",
+    "D-5918"
    ],
    "cites": [],
    "budget": {
@@ -55524,7 +55576,7 @@
    "id": "T856",
    "slug": "consent-per-request",
    "title": "intake: a request may be texted only with an `sms` consent record of its own; the guard primitive",
-   "goal": "Plan change D-5848 (task A of the T801 chain; Fable's T2, scope decision section 1). (1) New `models::sms_consented(conversation)`, exposed as `service::may_text_request`: true only when an `sms` consent record exists for that request's conversation (`intake.consent_record.conversation_id`, no migration). It decides `rules::plan`'s consent input in `service::handle` (`service.rs:154`, `:182`, in place of `open.is_some()`) and the text uses of `card_allowed` (`tell`, `handlers.rs:350` to `:377`). `card_allowed` stays per request and keeps counting any record (CON-007's web-chat card). `models::contact_consented`, read by `service::may_text`, counts only `sms` records (R1-01); `may_text` stays only for the one caller with no request in hand, the owner's help reply (`app/portals/src/owner_help.rs:199`, D-5848): a number with only `web_chat` records gets `ReplyRefusal::EmailOnly` there (a test in this task's test file), and the opt-out and texting-switch checks at send are unchanged. (2) Every text-opened request gets its own `sms` record from its first inbound text, whether or not the consent text is queued again (`receive_answer`, `service.rs:222` to `:249`); her first text into a web-opened request queues the consent text and appends the `sms` record, then the request goes on by text (Fable's b); the append locks the conversation row (`SELECT ... FOR UPDATE`) so two racing first texts give one consent text and one `sms` record; reword `app/intake/CLAUDE.md:16` (\"One consent record per request, none from a reply\") and NOTES never 27 to allow that appended record. (3) An `sms` record is written only from a carrier inbound, structurally: the chat path (`web_chat.rs:333` reads the open request before its transaction at `:337`) never calls `models::record_consent` and never passes a browser message ID as an `inbox_id` (R2-02, R2-03), with a test; if a re-read of the open request stays, it is `SELECT ... FOR UPDATE` on the conversation row; `app/server/src/inbound_text.rs` is not edited. The chat's `text_turn` gets its own service entry, not `receive_text` or `receive_answer`: its `rules::plan` input stays \"request open\" and it never writes a consent record (test: a chat turn on a `web_chat`-only request queues no second consent text and writes no record). (4) In `open_verified` (`web_chat.rs:764` to `:773`) the `web_chat` record is written before the consent and Spanish texts are queued, in the same transaction; the chat exemption applies only with at least one `web_chat` record and no `sms` record, and a request with no record is refused. A guard primitive for request texts in the new `app/intake/src/consent_guard.rs`: given the request and the text kind it answers Outbox, or refuses with an error (fail closed); named exemptions only: the consent text of a carrier-inbound first text, the INT-004 safety text for a carrier-inbound request with no consent record yet (a web request's safety text is shown on the page, `docs/spec/intake.md:62`, CON-005), the carrier keyword replies, the business sign-up reply, and the chat exemption: a branch of T856's guard (`app/intake/src/consent_guard.rs`) under which a request whose only consent records are `web_chat` keeps outbox delivery until T801, whatever the caller (T649's fixture `ask()` calls `answer_zip` and `ask_name_address` straight through `intake::api`, `app/server/tests/web_chat_after_code.rs:231` to `:234`, and asserts a NAME_ADDRESS outbox row at `:325` to `:330`); its constant `CHAT_LEGACY_TEXTS` may stay in `web_chat.rs`, and T801 deletes both the constant and the branch. Use it at this task's own call sites; T857 and T865 put every caller behind it. Tests in the new `tests/integration/tests/consent_per_request.rs`: a returning number's second text-opened request is textable; a web-opened request is not textable until her first text, which gets the consent text and one `sms` record; a `web_chat` record never makes `may_text` or `may_text_request` true; the stale-read race writes no `sms` record; 911 before consent unchanged (INT-002). Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-5848 (task A of the T801 chain; Fable's T2, scope decision section 1). (1) New `models::sms_consented(conversation)`, exposed as `service::may_text_request`: true only when an `sms` consent record exists for that request's conversation (`intake.consent_record.conversation_id`, no migration). It decides `rules::plan`'s consent input in `service::handle` (`service.rs:154`, `:182`, in place of `open.is_some()`) and the text uses of `card_allowed` (`tell`, `handlers.rs:350` to `:377`). `card_allowed` stays per request and keeps counting any record (CON-007's web-chat card). `models::contact_consented`, read by `service::may_text`, counts only `sms` records (R1-01); `may_text` stays only for the one caller with no request in hand, the owner's help reply (`app/portals/src/owner_help.rs:199`, D-5848): a number with only `web_chat` records gets `ReplyRefusal::EmailOnly` there (a test in this task's test file), and the opt-out and texting-switch checks at send are unchanged. (2) Every text-opened request gets its own `sms` record from its first inbound text, whether or not the consent text is queued again (`receive_answer`, `service.rs:222` to `:249`); her first text into a web-opened request queues the consent text and appends the `sms` record, then the request goes on by text (Fable's b); the append locks the conversation row (`SELECT ... FOR UPDATE`) so two racing first texts give one consent text and one `sms` record; reword `app/intake/CLAUDE.md:16` (\"One consent record per request, none from a reply\") and NOTES never 27 to allow that appended record. (3) An `sms` record is written only from a carrier inbound, structurally: the chat path (`web_chat.rs:333` reads the open request before its transaction at `:337`) never calls `models::record_consent` and never passes a browser message ID as an `inbox_id` (R2-02, R2-03), with a test; if a re-read of the open request stays, it is `SELECT ... FOR UPDATE` on the conversation row; `app/server/src/inbound_text.rs` is not edited. The chat's `text_turn` gets its own service entry, not `receive_text` or `receive_answer`: its `rules::plan` input stays \"request open\" and it never writes a consent record (test: a chat turn on a `web_chat`-only request queues no second consent text and writes no record). (4) In `open_verified` (`web_chat.rs:764` to `:773`) the `web_chat` record is written before the consent and Spanish texts are queued, in the same transaction; the chat exemption applies only with at least one `web_chat` record and no `sms` record, and a request with no record is refused. A guard primitive for request texts in the new `app/intake/src/consent_guard.rs`: given the request and the text kind it answers Outbox, or refuses with an error (fail closed); named exemptions only: the consent text of a carrier-inbound first text, the INT-004 safety text for a carrier-inbound request with no consent record yet (a web request's safety text is shown on the page, `docs/spec/intake.md:62`, CON-005), the carrier keyword replies, the business sign-up reply, and the chat exemption: a branch of T856's guard (`app/intake/src/consent_guard.rs`) under which a request whose only consent records are `web_chat` keeps outbox delivery until T801, whatever the caller (T649's fixture `ask()` calls `answer_zip` and `ask_name_address` straight through `intake::api`, `app/server/tests/web_chat_after_code.rs:231` to `:234`, and asserts a NAME_ADDRESS outbox row at `:325` to `:330`); its constant `CHAT_LEGACY_TEXTS` may stay in `web_chat.rs`, and T801 deletes both the constant and the branch. Use it at this task's own call sites; T857 and T865 put every caller behind it. Tests in the new `tests/integration/tests/consent_per_request.rs`: a returning number's second text-opened request is textable; a web-opened request is not textable until her first text, which gets the consent text and one `sms` record; a `web_chat` record never makes `may_text` or `may_text_request` true; the stale-read race writes no `sms` record; 911 before consent unchanged (INT-002). Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`. Plan change D-5918 (requeue after attempt 1's confirmed plan gap; Fable's pre-flight question): on the retry use the branch the runner prepares and never recreate, reset or rebase it (attempt 1's work was not kept: its WIP save was refused by the scanner false positive D-5918 (3) fixes). `app/intake/src/rules.rs` leaves the owned files: `rules::plan` takes the consent input as a value (`rules.rs:93`), so `service.rs` alone decides it. The chat raw path (`web_chat::raw_turn`, `web_chat.rs:340`, to `replies::receive_raw_reply` to `answer_name_address` to `receive_answer`, `app/intake/src/replies.rs:367`) and `reply_in`'s `receive_text` call (`replies.rs:204`) reach `models::record_consent` (`service.rs:245`), so this task now owns `app/intake/src/replies.rs` and makes the chat path structurally unable to write a consent record: `web_chat.rs` calls a chat entry in `replies.rs` that never reaches `receive_text` or `receive_answer`'s consent write, and `receive_raw_reply` keeps its signature for its carrier caller `app/server/src/inbound_text.rs:839`, which is not edited;  Callers checked and out of scope are listed in D-5918 (1).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -55550,10 +55602,10 @@
    "owns": [
     "app/intake/src/models.rs",
     "app/intake/src/service.rs",
-    "app/intake/src/rules.rs",
     "app/intake/src/conversation.rs",
     "app/intake/src/handlers.rs",
     "app/intake/src/web_chat.rs",
+    "app/intake/src/replies.rs",
     "app/intake/src/consent_guard.rs",
     "tests/integration/tests/consent_per_request.rs"
    ],
@@ -55574,13 +55626,14 @@
    ],
    "tests": [],
    "decisions": [
-    "D-5848"
+    "D-5848",
+    "D-5918"
    ],
    "cites": [],
    "budget": {
     "files": 8,
-    "lines": 450,
-    "context_pct": 44
+    "lines": 500,
+    "context_pct": 45
    },
    "checks": [
     "Ci",
@@ -55595,7 +55648,7 @@
    "id": "T857",
    "slug": "guarded-enqueue-seam",
    "title": "intake: `queue_text` and `queue_body` behind the guard; a page sink for web dispatch only",
-   "goal": "Plan change D-5848 (task C, part 1; Fable's section C.2; verification R1-05, R1-06; round-1 review). `queue_text` (`conversation.rs:585`) and `queue_body` (`handlers.rs:379`) keep their signatures (callers `summary_step.rs:35`, `:193`, `photos.rs:236`, `order.rs:399`, `cards_out.rs:582`) and check T856's guard before every enqueue: an `sms` request to the outbox as today, anything else refused, except the chat exemption: a branch of T856's guard (`app/intake/src/consent_guard.rs`) under which a request whose only consent records are `web_chat` keeps outbox delivery until T801, whatever the caller (T649's fixture `ask()` calls `answer_zip` and `ask_name_address` straight through `intake::api`, `app/server/tests/web_chat_after_code.rs:231` to `:234`, and asserts a NAME_ADDRESS outbox row at `:325` to `:330`); its constant `CHAT_LEGACY_TEXTS` may stay in `web_chat.rs`, and T801 deletes both the constant and the branch, so every legacy caller on a `web_chat` request (`zip_step`, `ask_name_address` at `conversation.rs:420`, the T649 and T645 paths) keeps outbox delivery until T801. Page delivery happens only when web dispatch is the explicit caller: a new function returns the rendered reply in a chat result type of its own (`intake::api`), never an outbox row; the shared `Queued`/`Handled` (`service.rs:66` to `:86`) are not changed. The `order_dispatch` gates (`:371`, `:476`, `:522`) ask the same question per request (`may_text_request` for a text, the web request for the page) with small edits only. The guard resolves the request from `subject[0]`: a conversation ID, or a job ID mapped to its conversation; anything else is refused (an inbox-only subject is the named business-reply exemption, `service.rs:262`), and a request is never resolved by contact; tests for a conversation subject and a job subject. Every existing test passes unchanged, including `app/server/tests/web_chat_after_code.rs:216` to `:235`, `:325` to `:330`, `app/server/tests/web_chat_stops.rs:572` and `tests/integration/tests/web_chat.rs:360`. Tests in the new `tests/integration/tests/guarded_enqueue.rs`. Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-5848 (task C, part 1; Fable's section C.2; verification R1-05, R1-06; round-1 review). `queue_text` (`conversation.rs:585`) and `queue_body` (`handlers.rs:379`) keep their signatures (callers `summary_step.rs:35`, `:193`, `photos.rs:236`, `order.rs:399`, `cards_out.rs:582`) and check T856's guard before every enqueue: an `sms` request to the outbox as today, anything else refused, except the chat exemption: a branch of T856's guard (`app/intake/src/consent_guard.rs`) under which a request whose only consent records are `web_chat` keeps outbox delivery until T801, whatever the caller (T649's fixture `ask()` calls `answer_zip` and `ask_name_address` straight through `intake::api`, `app/server/tests/web_chat_after_code.rs:231` to `:234`, and asserts a NAME_ADDRESS outbox row at `:325` to `:330`); its constant `CHAT_LEGACY_TEXTS` may stay in `web_chat.rs`, and T801 deletes both the constant and the branch, so every legacy caller on a `web_chat` request (`zip_step`, `ask_name_address` at `conversation.rs:420`, the T649 and T645 paths) keeps outbox delivery until T801. Page delivery happens only when web dispatch is the explicit caller: a new function returns the rendered reply in a chat result type of its own (`intake::api`), never an outbox row; the shared `Queued`/`Handled` (`service.rs:66` to `:86`) are not changed. The `order_dispatch` gates (`:371`, `:476`, `:522`) ask the same question per request (`may_text_request` for a text, the web request for the page) with small edits only. The guard resolves the request from `subject[0]`: a conversation ID, or a job ID mapped to its conversation; anything else is refused (an inbox-only subject is the named business-reply exemption, `service.rs:262`), and a request is never resolved by contact; tests for a conversation subject and a job subject. Every existing test passes unchanged, including `app/server/tests/web_chat_after_code.rs:216` to `:235`, `:325` to `:330`, `app/server/tests/web_chat_stops.rs:572` and `tests/integration/tests/web_chat.rs:360`. Tests in the new `tests/integration/tests/guarded_enqueue.rs`. Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`. Plan change D-5918 (Fable's pre-flight question, every caller grepped): `queue_text`'s callers also include `web_chat.rs:764` and `:767` (the consent and Spanish texts in `open_verified`, under the chat exemption) and `order.rs:399`; `queue_body`'s also include `replies.rs`, `zip_step.rs`, `order_dispatch.rs` and `handlers.rs`; both signatures are kept, so the unowned callers `replies.rs`, `zip_step.rs`, `photos.rs`, `cards_out.rs`, `order.rs` and `web_chat.rs` keep compiling unchanged.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -55632,7 +55685,8 @@
    ],
    "tests": [],
    "decisions": [
-    "D-5848"
+    "D-5848",
+    "D-5918"
    ],
    "cites": [],
    "budget": {
@@ -55653,7 +55707,7 @@
    "id": "T865",
    "slug": "direct-enqueue-callers",
    "title": "intake: the direct outbox callers and the background quote and job text gates go through the per-request guard",
-   "goal": "Plan change D-5848 (task C, part 2; R1-06 and the round-1 review). The intake callers that enqueue directly, outside `queue_text`/`queue_body`, check T856's guard the same way (an `sms` request to the outbox, anything else refused, except the chat exemption: a branch of T856's guard (`app/intake/src/consent_guard.rs`) under which a request whose only consent records are `web_chat` keeps outbox delivery until T801, whatever the caller (T649's fixture `ask()` calls `answer_zip` and `ask_name_address` straight through `intake::api`, `app/server/tests/web_chat_after_code.rs:231` to `:234`, and asserts a NAME_ADDRESS outbox row at `:325` to `:330`); its constant `CHAT_LEGACY_TEXTS` may stay in `web_chat.rs`, and T801 deletes both the constant and the branch) and offer T857's page function to web dispatch: `zip_step.rs:253`; `replies.rs:518`; `routing.rs:618` to `:634` (`queue`, reached by `tell_coverage` `:378`, `:393`, `apply` `:330` via `zip_step.rs:210` and `order_dispatch.rs:1241`, `:1451`, and `not_covered` `:429`); `closing.rs:243` (`answer_close`/`say`, from `replies.rs:299`); `address_wait.rs:150`. After T840 (claimed before D-5848, so its plan is untouched): the homeowner text gates `quote_updates.rs:115` and `job_texts.rs:282` (as T840 leaves them) ask T856's per-request predicate (`service::may_text_request` for the job's request) in place of the per-contact `may_text`. Every existing test passes unchanged. Tests in the new `tests/integration/tests/guarded_direct_callers.rs`. Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-5848 (task C, part 2; R1-06 and the round-1 review). The intake callers that enqueue directly, outside `queue_text`/`queue_body`, check T856's guard the same way (an `sms` request to the outbox, anything else refused, except the chat exemption: a branch of T856's guard (`app/intake/src/consent_guard.rs`) under which a request whose only consent records are `web_chat` keeps outbox delivery until T801, whatever the caller (T649's fixture `ask()` calls `answer_zip` and `ask_name_address` straight through `intake::api`, `app/server/tests/web_chat_after_code.rs:231` to `:234`, and asserts a NAME_ADDRESS outbox row at `:325` to `:330`); its constant `CHAT_LEGACY_TEXTS` may stay in `web_chat.rs`, and T801 deletes both the constant and the branch) and offer T857's page function to web dispatch: `zip_step.rs:253`; `replies.rs:518`; `routing.rs:618` to `:634` (`queue`, reached by `tell_coverage` `:378`, `:393`, `apply` `:330` via `zip_step.rs:210` and `order_dispatch.rs:1241`, `:1451`, and `not_covered` `:429`); `closing.rs:243` (`answer_close`/`say`, from `replies.rs:299`); `address_wait.rs:150` queues a core task (`ADDRESS_IN_KIND`), not a text, and gets no guard; its text goes through T857's `queue_text`. After T840 (claimed before D-5848, so its plan is untouched): the homeowner text gates `quote_updates.rs:123` (the `way` call) and `job_texts.rs:351` to `:357` (`text_gate`, `may_text` at `:357`) (as T840 leaves them) ask T856's per-request predicate (`service::may_text_request` for the job's request) in place of the per-contact `may_text`. Every existing test passes unchanged. Tests in the new `tests/integration/tests/guarded_direct_callers.rs`. Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`. Plan change D-5900: a checked implementation draft is in `docs/handoff/drafts/T865.md` (written by an outside reviewer, checked by Opus against main, not compiled); read its 'Worker: read this first' header before relying on it; this goal and the acceptance win over the draft wherever they differ. Plan change D-5918 (callers grepped): `zip_step.rs:253` and `replies.rs:518` already enqueue through `queue_body`, so T857's guard covers them; this task confirms that with a test and changes them only for the page variant; `text_gate` and `homeowner_of` have no caller outside `job_texts.rs`, and `way` in `quote_updates.rs` is that file's own call, so their signatures may change; `tell_coverage`, `not_covered` and `answer_close` keep their signatures for their callers in `order_dispatch.rs`, `api.rs` and the integration tests.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -55675,7 +55729,6 @@
     "app/intake/src/replies.rs",
     "app/intake/src/routing.rs",
     "app/intake/src/closing.rs",
-    "app/intake/src/address_wait.rs",
     "app/intake/src/quote_updates.rs",
     "app/intake/src/job_texts.rs",
     "tests/integration/tests/guarded_direct_callers.rs"
@@ -55685,7 +55738,8 @@
     "docs/code-docs.md",
     "docs/spec/consent.md",
     "docs/spec/intake.md",
-    "docs/spec/messaging.md"
+    "docs/spec/messaging.md",
+    "docs/handoff/drafts/T865.md"
    ],
    "requirements": [
     "CON-005",
@@ -55696,13 +55750,15 @@
    ],
    "tests": [],
    "decisions": [
-    "D-5848"
+    "D-5848",
+    "D-5900",
+    "D-5918"
    ],
    "cites": [],
    "budget": {
-    "files": 8,
+    "files": 7,
     "lines": 400,
-    "context_pct": 35
+    "context_pct": 38
    },
    "checks": [
     "Ci",
@@ -55717,7 +55773,7 @@
    "id": "T864",
    "slug": "web-dispatch-zip",
    "title": "intake: web dispatch after the code through ZIP, the replayed description and the coverage line",
-   "goal": "Plan change D-5848 (task C, second half; Fable's section C.2 and T4; verification V1, R1-04, R1-25). (1) The new `app/intake/src/web_dispatch.rs`: after the code a web request runs the shared steps of the Intake order table's web-chat column (`docs/spec/intake.md:60` to `:72`) through T857's seam: the ZIP and area check (INT-022), the trade check and the coverage line (INT-016, INT-017), every reply returned for the page through T857's page function in its own chat result type (no outbox ID, R1-04; the shared `Queued`/`Handled` unchanged). (2) Fable's T4: on the code POST (`app/site/src/chat.rs:491` to `:516`, through the composition's `ChatKeys` check and vault scrub, `app/server/src/chat_codes.rs:109` to `:117`, `:163` to `:180`) her \"you\" lines from the hidden `said` field (`app/site/src/chat.rs:230` to `:233`) are untrusted input: a length cap, the same scrub as any chat message (vault name included), the 911 and INT-038 checks again, then `keep_description` under `first_message_id`, so a retried POST stores nothing twice (D-3189); a missing, empty or over-cap `said` gets one request for the description (draft copy for the copy panel, WORD-028, English and Spanish); the server never keeps pre-code words (`web_chat.rs:578` to `:579`, D-4292). The served chat is not switched here (T801 does it): the web path is reached through `intake::api` and this task's tests, and every existing test passes unchanged. Tests in the new `tests/integration/tests/web_dispatch_zip.rs`. Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-5848 (task C, second half; Fable's section C.2 and T4; verification V1, R1-04, R1-25). (1) The new `app/intake/src/web_dispatch.rs`: after the code a web request runs the shared steps of the Intake order table's web-chat column (`docs/spec/intake.md:60` to `:72`) through T857's seam: the ZIP and area check (INT-022), the trade check and the coverage line (INT-016, INT-017), every reply returned for the page through T857's page function in its own chat result type (no outbox ID, R1-04; the shared `Queued`/`Handled` unchanged). (2) Fable's T4: on the code POST (`app/site/src/chat.rs:491` to `:516`, through the composition's `ChatKeys` check and vault scrub, `app/server/src/chat_codes.rs:109` to `:117`, `:163` to `:180`) her \"you\" lines from the hidden `said` field (`app/site/src/chat.rs:230` to `:233`) are untrusted input: a length cap, the same scrub as any chat message (vault name included), the 911 and INT-038 checks again, then `keep_description` under `first_message_id`, so a retried POST stores nothing twice (D-3189); a missing, empty or over-cap `said` gets one request for the description (draft copy for the copy panel, WORD-028, English and Spanish); the server never keeps pre-code words (`web_chat.rs:578` to `:579`, D-4292). The served chat is not switched here (T801 does it): the web path is reached through `intake::api` and this task's tests, and every existing test passes unchanged. Tests in the new `tests/integration/tests/web_dispatch_zip.rs`. Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`. Plan change D-5918 (callers grepped): `keep_description` is `quotes`' API (`app/quotes/src/job_text.rs`), called here unchanged; no function this task changes has a caller outside its owned files.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -55762,7 +55818,8 @@
    ],
    "tests": [],
    "decisions": [
-    "D-5848"
+    "D-5848",
+    "D-5918"
    ],
    "cites": [],
    "budget": {
@@ -56156,6 +56213,175 @@
    "prompt": "kit/prompts/T863.md",
    "acceptance": "In web-and-email mode, texting off or suspended, or opted out, the code goes by email to her conversation address and no Verify SMS is sent; otherwise unchanged; two Opus review rounds.",
    "copy": true
+  },
+  {
+   "id": "T867",
+   "slug": "fraud-end-real-states",
+   "title": "picks and payments (harness): an early fraud warning before release ends the pick and returns the job from the states that really occur",
+   "goal": "Plan change D-5888 (MONEY-1 review finding F3, verified by Opus on `main` 32744d0f2; Casey's go of November 26; two Opus reviews of the plan change; FEE-052, JOB-014, PICK-022, PICK-047; D-491, D-2627, D-4349). FEE-052 says a warned charge whose details were not yet released is refunded at once, its pick ending as fraud-refunded and the job returning to Quotes ready. `fraud_warning` (`app/picks/src/unreachable_refund.rs:546` to `:562`) moves the job only from Payment pending and ends only a `paid` pick, but since T663 `settle` makes the pick `paid` and the job Connected in one transaction (`app/picks/src/settle.rs:113` to `:123`), so that pair never holds on `main`: (a) a pick `awaiting_confirm` with its job in Payment pending is refunded, `end_pick` gives `MovedOn`, the job move rolls back and `run_fraud_warning` swallows it (`app/picks/src/unreachable_steps.rs:685` to `:687`), so the job stays in Payment pending and `payment_held` (`app/payments/src/payment_hold.rs:61`, which ignores refunds) keeps answering `Success`, so `picks.held_success` is queued hourly and refused each time; (b) a pick `paid` with its job Connected and nothing released is refunded but the job stays Connected. Money is already right (refunded, nothing released); the lifecycle is not. This task, after T744 (owner of `app/picks/src/connect.rs`) and T799 (owner of `tests/integration/tests/unreachable_refund.rs`): (1) after the refund reads `Succeeded`, `fraud_warning` re-reads the pick and job under the pick's row lock (the lock the release claim takes first, D-2627) and branches on the real state. Case (a), a pick `awaiting_confirm` whose job is in Payment pending: it goes through T663's `end_pending` (`app/picks/src/connect.rs`) with a new `PendingEnd` variant that ends the pick with status `fraud_refunded` (no new `end_reason`, no migration; if a CHECK constraint would reject it, stop and report a plan gap), and the job returns to Quotes ready with her backup offer (PICK-047) or PICK-046's text; `end_pending` ends the PaymentIntent through `end_pick_intent`, which records `payments`' `EndReason::CardFix` and raises `payments.pick_ended` with `card_fix` (`app/payments/src/payment_hold.rs:101` to `:107`, `app/payments/src/handlers.rs:369` to `:374`); that is accepted (D-5888): the reason only travels in the event, whose `picks` handler finds the pick already ended and does nothing, so no fraud reason is added. A PICK-048 auto-confirm charge (pick `awaiting_confirm`, job still Awaiting confirm) is not case (a); it is deferred to T689. Case (b), a pick `paid` whose job is Connected with no `picks.release` row: in one transaction the job first moves Connected to Quotes ready (an allowed arrow, `app/jobs/src/status.rs:100`), the pick ends as fraud-refunded, its PaymentIntent ends through `end_pick_intent` (the late-success path then sees the refund row and does nothing, `app/payments/src/late.rs:76` to `:92`), and the backup is offered through the crate's own `after_end` and `backup_choice`; offering a backup after `settle`'s PICK-026 loss notices (`settle.rs:122`) is intended, unlike the Connected no-show path. Any other state (released, ended, a final job, a free pick) changes nothing (a free pick still answers `MovedOn`), and a second warning or a rerun ends nothing twice and offers no second backup. (2) `ended_businesses` (`app/picks/src/pick_ended.rs:145` to `:157`) also excludes a `fraud_refunded` pick's business, so the backup offer never re-offers the warned business. (3) `payments::api::payment_held` answers `Held` (never `Success`, never `Free`) for a `succeeded` attempt whose refund has succeeded while its PaymentIntent is unended, so the hourly `picks.held_success` loop stops, `payment_returned` never ends that pick as `payment_failed` ahead of the fraud end (`app/picks/src/connect.rs:242` to `:251`), and a stuck case is still caught by the 24-hour `picks.payment_held_long` alert; every other `payment_held` answer is unchanged. A refunded success whose intent stays open with no fraud step (for example a refund Casey makes in the Stripe dashboard while the job waits in Payment pending) answers `Held`; the one `picks.payment_held_long` alert after 24 hours (`app/picks/src/connect.rs:256` to `:300`) is the safety net, and Casey ends that pick by hand. DONE tests that seed the impossible pair (a `paid` pick on a Payment pending job) move to the real states, no assertion weakened or removed: `td_fee_39_the_fraud_warning` in `tests/integration/tests/unreachable_refund.rs` (`:246` to `:253`, `:472` to `:505`; its Connected seed at `:500` to `:504`, which asserts nothing changes, gets a `picks.release` row, since a released pick still changes nothing, and its doc comment at `:467` says so; every other test there keeps its seed); `tests/integration/tests/release_fraud_race.rs` (TD-PICK-59, `:101` to `:108`, `:218` to `:242`); `td_fee_47_a` and `td_fee_47_the_fraud_warning_ends_only_a_paid_pick` in `tests/integration/tests/unreachable_refund_states.rs` (`:350` to `:397`; the free pick still gives `Err(PicksError::MovedOn)`, the refund `Succeeded` and the job left as it was); and `td_job_14` in `tests/integration/tests/unreachable_steps.rs` (`:488` to `:523`, seeds `:154`, `:167`). The TD-FEE-39, TD-PICK-59 and TD-JOB-14 rows are unchanged; TD-FEE-47's last clause now reads that the fraud warning ends a charged pick (paid, or awaiting_confirm with its charge succeeded), never a free one (D-5888). New tests in `tests/integration/tests/fraud_end_real_states.rs`, PostgreSQL and the Stripe stand-in, fake data only: case (a) ends the pick fraud-refunded, returns the job to Quotes ready and queues one backup offer that does not name the warned business (fails on `main`); case (b) does the same from Connected and ends the PaymentIntent (fails on `main`); a released pick is listed for Casey and changes nothing; a repeated warning changes nothing; after a refunded success `payment_held` answers `Held` and no `picks.held_success` task is queued. Money: Opus worker, Opus money, privacy and harness review, two review rounds. Update `app/picks/CLAUDE.md`, `app/payments/NOTES.md` and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": "picks",
+   "deps": [
+    "T744",
+    "T799"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "privacy",
+    "harness"
+   ],
+   "owns": [
+    "app/picks/src/unreachable_refund.rs",
+    "app/picks/src/connect.rs",
+    "app/payments/src/payment_hold.rs",
+    "tests/integration/tests/unreachable_refund.rs",
+    "tests/integration/tests/release_fraud_race.rs",
+    "tests/integration/tests/fraud_end_real_states.rs",
+    "app/picks/src/pick_ended.rs",
+    "tests/integration/tests/unreachable_refund_states.rs",
+    "tests/integration/tests/unreachable_steps.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/fees.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/lifecycle.md",
+    "docs/brains/payments-stripe.md"
+   ],
+   "requirements": [
+    "FEE-052",
+    "JOB-014",
+    "PICK-022",
+    "PICK-047"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-491",
+    "D-2627",
+    "D-4349",
+    "D-5888"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 9,
+    "lines": 650,
+    "context_pct": 37
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T867-fraud-end-real-states",
+   "prompt": "kit/prompts/T867.md",
+   "acceptance": "`tests/integration/tests/fraud_end_real_states.rs` passes against PostgreSQL with cases (a) and (b) failing on `main` before the change; the re-seeded fraud cases in `unreachable_refund.rs`, `release_fraud_race.rs`, `unreachable_refund_states.rs` and `unreachable_steps.rs` pass on reachable seeds with no assertion weakened; every other pick, payment-wait and release test passes unchanged; `app/payments/` keeps its 95% branch floor."
+  },
+  {
+   "id": "T868",
+   "slug": "chance-failure-tests",
+   "title": "tests (harness): two DONE tests that can fail by chance are made exact",
+   "goal": "Plan change D-5901 (Fable's decision on Casey's \"Have fable make any decisions\" and \"most efficient without degrading quality\"; ChatGPT FLAKE-AUDIT-1, verified by Opus on `main` 404e829ae: 2 of its 8 findings hold; TD-OPS-41 and TD-INT-49 lines unchanged; no requirement changes). Two DONE tests can fail by chance with correct code; tighten each, never weaken it. (1) `tests/integration/tests/db_metrics.rs:187` to `:203` (`td_ops_41_a_held_connection_makes_the_second_acquire_wait`, T416): `tokio::time::sleep(HOLD)` fixes its deadline before the waiter's `pool.acquire()` starts its own clock, so a preempted thread can make the measured wait shorter than the hold; the waiter sends on a `tokio::sync::oneshot` immediately before `pool.acquire()`, and the test awaits it before `sleep(HOLD)`; every assertion stays as it is (acquires 2, max and sum at least the hold, the bucket slot, the deltas sum, the pool (1, 1)). (2) `tests/integration/tests/intake_order_photos.rs:541` (`td_int_49_a_picture_text_is_stored_confirmed_and_put_on_the_card`, T675): `!payload.to_string().contains(\"555\")` also scans the random inbox UUID (about 0.5% per run); read the inbox id with `SELECT id FROM messaging.inbox WHERE message_sid = $1` (the `message` SID), assert the whole payload equals `{\"inbox\": <that id>, \"media\": [media], \"message\": message}` exactly, keep the `!contains(\"http\")` check, and replace the \"555\" check with the absence of the setup's full fake phone number in its E.164 and 10-digit forms; every other assertion stays. (3) Optional, only if it takes 4 changed lines or fewer: `tests/integration/tests/offdb_stream.rs` (`:207`, T017) derives the expected folder date from the same `at` the writer stamps on the request line, not a later `Timestamp::now()`, so a UTC-midnight crossing cannot fail it; otherwise leave the file unchanged and say so. No product code changes. Opus worker, Opus harness review. Update `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T416",
+    "T675",
+    "T017"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness"
+   ],
+   "owns": [
+    "tests/integration/tests/db_metrics.rs",
+    "tests/integration/tests/intake_order_photos.rs",
+    "tests/integration/tests/offdb_stream.rs"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "docs/test-design.md"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-5901"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 60,
+    "context_pct": 11
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T868-chance-failure-tests",
+   "prompt": "kit/prompts/T868.md",
+   "acceptance": "Both tests pass against PostgreSQL with every assertion kept or made exact; the photo test's payload is compared whole; no product code changes; `tests/integration/tests/db_metrics.rs` and `intake_order_photos.rs` pass 20 runs in a row locally."
+  },
+  {
+   "id": "T869",
+   "slug": "wip-trailer-scan",
+   "title": "harness: the PII scan allows the Co-Authored-By no-reply address so WIP saves work",
+   "goal": "Plan change D-5918 (Fable's efficiency finding A, on Casey's \"let fable make the calls and make this as efficient as possible\"). WIP-continue (D-4720) has never saved anything: kit-state holds 23 `wip_skipped` rows and no `wip_used`; 17 of them read \"PII scan: a commit message in <sha>\" (the sha is only the range base, `runner/wip.py:351` prints `rng[:40]`), and main's `scripts/pii_scan.py` flags every `Co-Authored-By: Claude ...` trailer, whose address is Anthropic's no-reply commit address (local part `noreply` at the domain `anthropic.com`), as an email, because `SERVICE_DOMAINS` (`scripts/pii_scan.py:113`) allows only `users.noreply.github.com`; every worker commit carries that trailer. (1) Allow exactly that one address (the full address, not the domain) as a service identity, with tests in `tests/test_pii_scan.py` that it passes and that any other `anthropic.com` address, and the same local part at another domain, still fail; no other rule changes. (2) In `tests/test_runner_wip.py`, a test that a WIP save whose branch commit message carries the trailer passes the scan (fails before the fix). (3) The other 6 refusals read \"<sha> changes .github\": find out from kit-state's `wip_skipped` rows and the runner code (`runner/wip.py`) whether those were commits merged in from `main`, and report the cause and the smallest fix in the decision entry; do not change that check in this task. This fixes a scanner false positive on a vendor no-reply address; no test is weakened. Opus worker, Opus privacy, security and harness review. Update `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T172",
+    "T291",
+    "T426",
+    "T727"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security",
+    "harness"
+   ],
+   "owns": [
+    "scripts/pii_scan.py",
+    "tests/test_pii_scan.py",
+    "tests/test_runner_wip.py"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "runner/wip.py"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-5918"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 80,
+    "context_pct": 11
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T869-wip-trailer-scan",
+   "prompt": "kit/prompts/T869.md",
+   "acceptance": "`python3 -m pytest tests/test_pii_scan.py tests/test_runner_wip.py` passes, the new trailer cases failing before the fix; `python3 scripts/pii_scan.py --root .` stays at 0 findings; the decision entry names the cause of the 6 `.github` refusals."
   }
  ]
 }
