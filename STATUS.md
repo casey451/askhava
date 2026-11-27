@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-27T16:50:46Z by runner 84f4b331d069 (manual).
+Updated 2026-11-27T16:50:56Z by runner 278d45f2f121 (actions).
 
 **Idle since 16:48Z; 693 of 804 done; week 17% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-27T16:50:46Z by runner 84f4b331d069 (manual).
 - **Lane:** idle since 16:48Z (no task in progress)
 - **Week:** 17% used, 164.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
 - **Last run:** 16:50Z, 0 min before this update
-- **Keeper:** last ran 16:44Z, next wake 19:06Z
+- **Keeper:** last ran 16:50Z, next wake 17:10Z
 
 ## Needs attention
 - BLOCKED T734: plan gap reported: PLAN GAP: app/portals/templates/business_leave.html:25 owned by T228 and T410, not T734. Smallest plan change: let T734 own that template for one line, <link rel="stylesheet" href="/static/portals/forms.css"> at the top of {% block main %}, as get_help.html:9 and notice_settings.html:8 carry.
@@ -39,7 +39,7 @@ Evidence: her data download is assembled in app/server/src/homeowner_portal.rs:6
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 50% of the context window, over its 45% limit
 - PLAN GAP T856 (since 2026-11-27T07:31:36Z, no attempt used; a plan change fixes it): T856: measures 46% of the context window, over its 45% limit
 - PLAN GAP T862 (since 2026-11-27T13:22:09Z, no attempt used; a plan change fixes it): outside ownership: app/server/src/homeowner_portal.rs, app/portals/src/homeowner_portal.rs
-- Strict plan check red: 57 problem(s) on tasks still to run (+603 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
+- Strict plan check red: 62 problem(s) on tasks still to run (+603 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -96,8 +96,8 @@ Evidence: her data download is assembled in app/server/src/homeowner_portal.rs:6
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 464 of 735 (63.1%) · partial 263 · unstarted 8
-**Tasks merged (throughput only):** 693 of 804
+**Requirements verified:** 465 of 735 (63.3%) · partial 262 · unstarted 8
+**Tasks merged (throughput only):** 693 of 802
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -117,7 +117,7 @@ Evidence: her data download is assembled in app/server/src/homeowner_portal.rs:6
 | quiet-hours | 4 | 5 | 0 | 9 |
 | quotes-pick | 37 | 19 | 0 | 56 |
 | recurring | 10 | 1 | 0 | 11 |
-| security | 23 | 29 | 3 | 55 |
+| security | 24 | 28 | 3 | 55 |
 | terms | 35 | 0 | 0 | 35 |
 | website | 27 | 3 | 0 | 30 |
 | wording | 30 | 2 | 0 | 32 |
