@@ -270,18 +270,28 @@ pub async fn send(
     id: Uuid,
     dest: (To<'_>, &str),
 ) -> Result<Option<SentText>, OutboxError> {
-    send_at(db, keys, id, dest, (None, None)).await
+    send_at(db, keys, id, dest, (None, None, None)).await
 }
+
+/// The number's blind-index digests, one per key version, as `optout::send_checked` read them.
+pub(crate) type Digests<'a> = &'a [(u16, [u8; 32])];
 
 /// [`send`], recording the claim at `at` (the caller's clock) when given, else the database's now;
 /// `phone` is the recipient's number when the caller already read it from the vault for this row
-/// (`optout::send_checked`, D-3149), else it is read here after the claim.
+/// (`optout::send_checked`, D-3149), else it is read here after the claim. With `at` and the
+/// number's `digests` (`send_checked`), the suppression list is read again after the claim and
+/// just before the carrier call ([`recheck`]): an opt-out committed before that read stops the
+/// text (CON-013, CON-035, D-5382, D-5388).
 pub(crate) async fn send_at(
     db: &mut PgConnection,
     (secret, carrier): (&SecretString, &impl SmsAdapter),
     id: Uuid,
     (to, from): (To<'_>, &str),
-    (at, phone): (Option<Timestamp>, Option<&SecretString>),
+    (at, phone, digests): (
+        Option<Timestamp>,
+        Option<&SecretString>,
+        Option<Digests<'_>>,
+    ),
 ) -> Result<Option<SentText>, OutboxError> {
     if let To::Homeowner { relation, .. } = to
         && !may_text(relation)
@@ -306,6 +316,9 @@ pub(crate) async fn send_at(
         secret,
         (&claim.template_id, claim.recipient, &claim.subject),
     );
+    if let Some(checked) = at.zip(digests) {
+        recheck(db, id, &claim, checked).await?;
+    }
     match carrier
         .send_text(&key, number.expose_secret(), from, &claim.body)
         .await
@@ -324,6 +337,33 @@ pub(crate) async fn send_at(
         }
         Err(_) => Err(OutboxError::OutcomeUnknown),
     }
+}
+
+/// CON-013, CON-035, D-5382, D-5388: re-reads the number's listing after claimed row `id` was
+/// claimed, with no lock (R11 forbids holding one across the carrier call). A listing that
+/// `rules::may_send_to` refuses at `now` for the claimed template and subjects (any text but the
+/// current listing's confirmation within 5 minutes, the HELP reply included) puts the row back to
+/// `queued`, its counted attempt kept, and is [`OutboxError::Suppressed`], which `outbox_sender`
+/// turns into an expired row; a failed read also puts it back. This read is the send's
+/// linearization point: an opt-out committing after it is the accepted residual window.
+async fn recheck(
+    db: &mut PgConnection,
+    id: Uuid,
+    claim: &models::Claim,
+    (now, digests): (Timestamp, Digests<'_>),
+) -> Result<(), OutboxError> {
+    let refused = match models::listing(db, digests).await {
+        Ok(listing) => !crate::rules::may_send_to(listing, &claim.template_id, &claim.subject, now),
+        Err(e) => {
+            models::release(db, id).await?;
+            return Err(e);
+        }
+    };
+    if refused {
+        models::release(db, id).await?;
+        return Err(OutboxError::Suppressed);
+    }
+    Ok(())
 }
 
 /// Twilio's "too many requests" error code, a rate limit whatever the HTTP status (D-4052).
