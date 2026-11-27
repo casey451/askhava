@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-27T04:23:09Z by runner a546a2d2ec95 (actions).
+Updated 2026-11-27T04:39:52Z by runner bccc571c6527 (actions).
 
-**Building: T849 in progress since 03:25Z; 681 of 799 done; week 11% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Building: T849 in progress since 03:25Z; 682 of 799 done; week 11% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 681 of 799 build tasks (owner gates not counted)
+- **Tasks done:** 682 of 799 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T849 claimed 03:25Z, lease until 06:25Z; lane 3: T612 claimed 03:44Z, lease until 06:44Z; lane 5: T843 claimed 03:33Z, lease until 06:33Z
 - **Week:** 11% used, 167.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:22Z, 0 min before this update
+- **Last run:** 04:23Z, 16 min before this update
 - **Keeper:** last ran 04:23Z, next wake 06:28Z
 
 ## Needs attention
@@ -37,13 +37,13 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 50% of the context window, over its 45% limit
 - PLAN GAP T856 (since 2026-11-27T02:15:00Z, no attempt used; a plan change fixes it): outside ownership: app/intake/src/replies.rs:367 (and replies.rs:204). The chat raw path web_chat::raw_turn -> replies::receive_raw_reply -> answer_name_address -> receive_answer (replies.rs:367) and reply_in's receive_text call (replies.rs:204) reach models::record_consent; T856 does not own replies.rs, TextIn has ~100 unowned builders, so only a runtime flag (set_chat_turn, D-5891) is possible in owned files. Reviewer (agent aec58822cf2c18f01) confirmed the gap with evidence at head c3beeeb4ca4cae1ff578a5f1aa7ea50d5c8e35e3; its only finding is that D-5891 should also cite replies.rs:204.
-- Strict plan check red: 62 problem(s) on tasks still to run (+587 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
+- Strict plan check red: 64 problem(s) on tasks still to run (+589 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T518 | server, ops and payments: the Stripe-or-webhook-errors alert | MERGE_PENDING | 1 | 2 h 9 min | 04:13Z |  |
-| T522 | server and portals: the business text-consent box is served  | MERGE_PENDING | 1 | 104 min | 04:07Z |  |
+| T518 | server, ops and payments: the Stripe-or-webhook-errors alert | resync | 1 | 2 h 9 min | 04:13Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
+| T522 | server and portals: the business text-consent box is served  | done | 1 | 104 min | 04:07Z |  |
 | T612 | harness: the WEB-029 and WEB-030 runtime checks on every sit | QUEUED | 2 | 96 min | 03:36Z | Reviewer on head 700f50e1fce2ee8fc4392587b89d7a82a956f72f still ended REVIEW-VERDICT: FINDINGS after the fix round: / 1. |
 | T799 | Templates and tests (harness): copy review fixes (refund att | done | 2 | 31 min | 02:52Z | PLAN GAP: contradiction: D-5401 requires es.json text "dentro de 72 horas de recibir los datos del cliente" (5 keys), bu |
 | T856 | intake: a request may be texted only with an `sms` consent r | BLOCKED | 1 | 110 min | 02:15Z | PLAN GAP: outside ownership: app/intake/src/replies.rs:367 (and replies.rs:204). The chat raw path web_chat::raw_turn -> |
@@ -66,7 +66,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 ## Progress (requirements verified)
 
 **Requirements verified:** 467 of 735 (63.5%) · partial 260 · unstarted 8
-**Tasks merged (throughput only):** 681 of 799
+**Tasks merged (throughput only):** 682 of 799
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -102,7 +102,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 324 of 371 done
+- stage 5: 325 of 371 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
