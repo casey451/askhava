@@ -11454,3 +11454,4 @@
 - 2026-11-27T07:37:59Z runner df1e5bfd1b8f (actions): {}
 - 2026-11-27T07:38:41Z runner 71a7f5f83c4f (actions): {}
 - 2026-11-27T07:44:43Z runner 37f92ed09311 (actions): {"T849": "MERGE_PENDING -> QUEUED"}
+- 2026-11-27T07:45:19Z runner 37f92ed09311 (actions): {"T849": "QUEUED -> IN_PROGRESS"}; T849 estimated 923k tokens (calibrated); week has 165.2M left (no five-hour budget, D-3056) after 4.8M still running in another lane (session_reading 2026-11-27T07:37:59Z (week)); claimed
