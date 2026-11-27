@@ -120518,12 +120518,12 @@
      }
     }
    ],
-   "reviewed_sha": "2ac33054b50524d777d27d6f525d1071c1b5b6a1",
+   "reviewed_sha": "2cf16103c495706bac130bd53c8c8fa4f17d8281",
    "review_lease": {
     "task": "T820",
-    "session": "actions-45887510986",
-    "expires": "2026-11-26T23:04:34Z",
-    "lane": "3"
+    "session": "actions-45984664445",
+    "expires": "2026-11-27T13:58:44Z",
+    "lane": "2"
    },
    "branch": "claude/task/T820-data-download-contents",
    "auto_merge": {
@@ -120536,17 +120536,6 @@
     1465,
     1479
    ],
-   "update_merges": [
-    {
-     "from": "b4a057ce7f55ce600e7bc6f23711afd1e9506649",
-     "to": "2ac33054b50524d777d27d6f525d1071c1b5b6a1",
-     "main": "94a988623895e5dad1118f24c0ed275311dcdefa",
-     "how": "hand-in",
-     "at": "2026-11-26T21:46:37Z"
-    }
-   ],
-   "update_waiting_since": null,
-   "update_push_failures": null,
    "reason": null,
    "requeues": [
     {
@@ -120566,7 +120555,19 @@
    "wip_claim": {
     "attempt": 4,
     "remote_sha": "2ac33054b50524d777d27d6f525d1071c1b5b6a1"
-   }
+   },
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "bca3652c0b56927e0e9a073d9f53a37ab196a873",
+     "to": "2cf16103c495706bac130bd53c8c8fa4f17d8281",
+     "main": "703f1b55401fe152096746097375aa07db11f6ca",
+     "how": "hand-in",
+     "at": "2026-11-27T12:45:21Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T821",
@@ -133526,7 +133527,7 @@
    }
   }
  },
- "updated_at": "2026-11-27T12:43:56Z",
+ "updated_at": "2026-11-27T12:45:21Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -133624,7 +133625,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "7678ecacb5043be1b3f859b7373db32ceacc063e",
+ "runner_sha": "bca3652c0b56927e0e9a073d9f53a37ab196a873",
  "starter": "actions",
  "smoke_runs": [
   {
