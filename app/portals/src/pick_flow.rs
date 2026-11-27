@@ -841,7 +841,8 @@ where
 
 /// SEC-014, PICK-055, D-2634, D-3144, D-3880: whether one pick code send from `ip` passes the
 /// per-IP send limit, with no contact (`picks` counts the per-number and global caps itself). A
-/// threshold that does not fit an `i32` refuses the send; a failed count is a bare 500.
+/// threshold that does not fit an `i32` refuses the send; a failed count is a bare 500. Counted
+/// at `real_now()` (D-5836); `send_page_code`'s per-number cap stays on `now()` (C2).
 async fn send_admitted<V>(
     flow: &PickFlow<V>,
     keys: &PickCodeKeys<V>,
@@ -850,17 +851,17 @@ async fn send_admitted<V>(
     let Ok(threshold) = i32::try_from(keys.threshold) else {
         return Ok(false);
     };
-    let when = (flow.clock.now(), threshold);
+    let when = (flow.clock.real_now(), threshold);
     match admit_code_send(&flow.pool, (ip, None), when).await {
         Ok(admission) => Ok(!matches!(admission, Admission::Refused(_))),
         Err(_) => Err(failed("send limit")),
     }
 }
 
-/// SEC-020, D-2634: whether one shaped pick code try from `ip` passes the per-IP try limit; a
-/// failed count is a bare 500.
+/// SEC-020, D-2634: whether one shaped pick code try from `ip` passes the per-IP try limit,
+/// counted at `real_now()` (D-5836); a failed count is a bare 500.
 async fn try_admitted<V>(flow: &PickFlow<V>, ip: IpAddr) -> Result<bool, StatusCode> {
-    match admit_code_try(&flow.pool, (ip, None), flow.clock.now()).await {
+    match admit_code_try(&flow.pool, (ip, None), flow.clock.real_now()).await {
         Ok(admission) => Ok(!matches!(admission, Admission::Refused(_))),
         Err(_) => Err(failed("try limit")),
     }
@@ -1645,5 +1646,41 @@ mod share_tests {
                 assert_eq!(html.contains("id=\"share-error\""), refused);
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod real_time_tests {
+    //! D-5836: the pick code limits count at `real_now()` under an advanced test-control clock.
+
+    use std::net::IpAddr;
+    use std::sync::Arc;
+
+    use askhava_core::api::Clock;
+    use jiff::Timestamp;
+    use sqlx::PgPool;
+
+    use super::{PickFlow, try_admitted};
+    use crate::confirm_pay::real_time_tests::Ahead;
+    use crate::limits::{CODE_TRIES_PER_IP, admit_code_try};
+    use crate::security::WebSecurity;
+
+    /// SEC-020, SEC-014: a try from an IP whose real-time hour is full is refused, though the
+    /// route's `now()` is 40 days ahead in an empty window.
+    #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+    async fn a_try_is_counted_at_real_time(pool: PgPool) {
+        let ip = IpAddr::from([192, 0, 2, 7]);
+        for _ in 0..CODE_TRIES_PER_IP.max {
+            let at = Timestamp::now();
+            admit_code_try(&pool, (ip, None), at).await.expect("count");
+        }
+        let clock: Arc<dyn Clock> = Arc::new(Ahead);
+        let flow = PickFlow::<()> {
+            security: WebSecurity::new(pool.clone(), Arc::clone(&clock)),
+            pool,
+            clock,
+            keys: None,
+        };
+        assert_eq!(try_admitted(&flow, ip).await, Ok(false));
     }
 }

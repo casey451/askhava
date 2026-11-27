@@ -57,6 +57,7 @@ pub mod email_due;
 pub mod email_provider;
 pub mod health_watch;
 pub mod healthz;
+pub mod help_forms;
 pub mod homeowner_portal;
 pub mod inbound_retry;
 pub mod inbound_text;
@@ -175,6 +176,7 @@ struct BusinessParts {
     photos: Option<homeowner_portal::PhotoParts>,
     data_link_postal: Option<askhava_messaging::api::PostalAddress>,
     business_number: Option<askhava_messaging::api::SendingNumber>,
+    help_mail: Option<help_forms::HelpMail>,
     report: owner_tools::SecretReport,
     reports: owner_reports::ReportSettings,
     owner_flags: OwnerFlagLimits,
@@ -251,6 +253,14 @@ impl RouterParts {
         number: Option<askhava_messaging::api::SendingNumber>,
     ) -> Self {
         self.business.business_number = number;
+        self
+    }
+
+    /// Adds the Get help answer email's key and postal line (T309, BIZ-047; [`help_forms::help_mail`]);
+    /// without it the help forms are served and a checked Get help post answers 500.
+    #[must_use]
+    pub fn with_help_mail(mut self, mail: Option<help_forms::HelpMail>) -> Self {
+        self.business.help_mail = mail;
         self
     }
 
@@ -497,8 +507,9 @@ fn owner_pages(
 /// settings, shared-inbox switch and contact card ([`business_settings_routes`], T733, the card
 /// with the voice hooks' pool numbers), and the notice and
 /// backup address changes ([`address_changes`], T542, changing only with their part), and the
-/// owner's waiting-phones page ([`phone_approval`], T397, with the portal's vault), always; and the
-/// owner's sign-in, step-up and sign-out routes ([`owner_signin`], T303) and home, settings and
+/// owner's waiting-phones page ([`phone_approval`], T397, with the portal's vault), and the Get
+/// help form and the site help form's post ([`help_forms`], T309, with the portal's vault and the
+/// parts' help mail), always; and the owner's sign-in, step-up and sign-out routes ([`owner_signin`], T303) and home, settings and
 /// switches ([`owner_portal`], T310, the opt-out with the portal's vault), AI page
 /// ([`owner_ai_routes`], T737) and refund review, audit
 /// log and health page ([`owner_tools`], T304, refunding only with the Stripe hooks and the
@@ -542,10 +553,10 @@ fn business_pages(
     let step_up = business_step_up::routes(pool.clone(), parts.step_up, parts.vault.clone())
         .merge(business_guarded_changes::routes(pool.clone()))
         .merge(address_changes::routes(pool.clone(), parts.address))
-        .merge(phone_approval::routes(
-            pool.clone(),
-            parts.vault.clone(),
-            webhooks,
+        .merge(vault_pages(
+            &pool,
+            (parts.vault.clone(), webhooks),
+            parts.help_mail,
         ))
         .merge(business_settings_routes::served(pool.clone(), voice));
     let portal_parts = (parts.vault, parts.business_number);
@@ -567,13 +578,29 @@ fn business_pages(
         .merge(homeowner)
 }
 
+/// The owner's waiting-phones page ([`phone_approval`], T397) and the help forms ([`help_forms`],
+/// T309), each reading the portal's `vault`, else the webhooks'; the Get help answer email is
+/// queued with `mail`.
+fn vault_pages(
+    pool: &PgPool,
+    (vault, webhooks): (Option<Arc<Vault>>, Option<&Arc<inbound_text::Webhooks>>),
+    mail: Option<help_forms::HelpMail>,
+) -> Router {
+    phone_approval::routes(pool.clone(), vault.clone(), webhooks).merge(help_forms::routes(
+        pool.clone(),
+        vault,
+        (webhooks, mail),
+    ))
+}
+
 /// The feedback page (T230), the check-in answer page (T231), the email action links (T301), the
 /// built browser files (T362), the site's stylesheet (T101), the site pages with `site`'s
 /// settings (T102), and the legal, data, services, coverage and help pages (T221, T201) with the AI
 /// switch read in `environment`, each over `pool`; and the request page and web chat (T489) with
 /// the chat's code-step keys and the intake settings the SMS path uses (`webhooks`'), behind
 /// [`chat_codes::guard`]'s request checks (D-3882). Its fallback, `site::api::not_found`, answers
-/// every path no route serves with the styled 404 page (T615, D-4252).
+/// every path no route serves with the styled 404 page (T615, D-4252). `GET /help` gets the help
+/// form's pre-session token from [`help_forms::guard`] (T309, D-3890).
 fn link_and_site_pages(
     pool: &PgPool,
     statics: &StaticRoot,
@@ -605,7 +632,10 @@ fn link_and_site_pages(
             site,
         )))
         .merge(askhava_site::api::legal_routes(pool.clone(), environment))
-        .merge(askhava_site::api::help_routes(pool.clone(), environment))
+        .merge(help_forms::guard(askhava_site::api::help_routes(
+            pool.clone(),
+            environment,
+        )))
         .merge(chat_codes::guard(chat, pool.clone()))
         .fallback(not_found)
 }
@@ -635,7 +665,7 @@ fn link_and_site_pages(
 /// the home and how-it-works pages and the old directory paths are `site::api::page_routes`, with
 /// the parts' site settings ([`RouterParts::with_site_pages`], T102); the services, coverage, help
 /// and ROC complaint pages are `site::api::help_routes`, with the AI switch read in the parts'
-/// environment (T201); the request page and web chat at `/request` are `site::api::chat_routes`
+/// environment (T201), `GET /help` behind [`help_forms::guard`]'s pre-session token (T309); the request page and web chat at `/request` are `site::api::chat_routes`
 /// behind [`chat_codes::guard`], with the parts' chat keys ([`RouterParts::with_chat_codes`],
 /// T489) and the webhooks' intake settings (default without them). A path no route serves gets
 /// `site::api::not_found`, the router's one fallback (set on the site pages' router, kept by every
