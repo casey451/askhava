@@ -481,13 +481,13 @@ async fn td_job_14_a_retry_after_the_close_queues_the_decision_email_once(pool: 
     assert_eq!(count(&pool, REMINDERS, case.pick).await, 0);
 }
 
-/// TD-JOB-14 (FEE-052, JOB-014): a fraud warning on an unreleased paid pick whose refund is in
-/// flight changes nothing and runs again an hour later; once the refund succeeded the job returns
-/// to Quotes ready and the pick ends fraud-refunded; a released pick changes nothing.
+/// TD-JOB-14 (FEE-052, JOB-014, D-5888): a fraud warning on an unreleased paid pick (its job
+/// Connected, as the settle leaves it) whose refund is in flight changes nothing and runs again an
+/// hour later; once the refund succeeded the job returns to Quotes ready and the pick ends
+/// fraud-refunded; a released pick changes nothing.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_job_14_the_fraud_warning_task(pool: PgPool) {
     let unreleased = Seed {
-        status: JobStatus::PaymentPending,
         released: false,
         ..REGULAR
     };
@@ -499,7 +499,8 @@ async fn td_job_14_the_fraud_warning_task(pool: PgPool) {
         run_fraud_warning(pool.clone(), parts(true), claimed, now)
     };
     assert_eq!(warn(case.pick, az(3, 9, 0)).await, Ok(()));
-    assert_eq!(status(&pool, case.job).await, "payment_pending");
+    assert_eq!(status(&pool, case.job).await, "connected");
+    assert_eq!(pick_status(&pool, case.pick).await, "paid");
     let rerun = "SELECT count(*) FROM core.task WHERE kind = 'picks.fraud_warning' AND run_at = $2 AND payload->>'pick' = $1::text";
     let later: i64 = sqlx::query_scalar(rerun)
         .bind(case.pick)

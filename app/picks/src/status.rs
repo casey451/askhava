@@ -240,6 +240,26 @@ pub const fn refund_finishes(status: JobStatus) -> bool {
     }
 }
 
+/// Whether a job in `status` is Connected, where the settle leaves a `paid` pick, so an
+/// unreleased fraud refund ends it there (FEE-052, D-5888).
+#[must_use]
+pub(crate) const fn connected(status: JobStatus) -> bool {
+    match status {
+        JobStatus::Connected => true,
+        JobStatus::Intake
+        | JobStatus::Open
+        | JobStatus::NoQuotesYet
+        | JobStatus::QuotesReady
+        | JobStatus::AwaitingConfirm
+        | JobStatus::PaymentPending
+        | JobStatus::Done
+        | JobStatus::Closed
+        | JobStatus::ClosedEarly
+        | JobStatus::NotCovered
+        | JobStatus::Cancelled => false,
+    }
+}
+
 /// Whether a job in `status` still waits for the charge (FEE-041, FEE-018, FEE-020): an ended
 /// pick there moves to no backup until `payments`' caller returns the job to Quotes ready
 /// (PICK-047, D-2662).

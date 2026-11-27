@@ -180,7 +180,7 @@ async fn wait_for_lock_waiter<T>(pool: &PgPool, racer: &tokio::task::JoinHandle<
 /// open; the fraud path waits on the lock, then finds the row: no hold, no refund asked for.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_pick_59_a_fraud_warning_waits_for_a_claim_and_refunds_nothing(pool: PgPool) {
-    let case = seeded(&pool, JobStatus::PaymentPending, "pi_FakeT355a").await;
+    let case = seeded(&pool, JobStatus::Connected, "pi_FakeT355a").await;
     let mut claim = pool.begin().await.expect("claim tx");
     let open = claim_still_open(&mut claim, case.pick, PickStatus::Paid).await;
     assert_eq!(open, Ok(true));
@@ -208,14 +208,15 @@ async fn td_pick_59_a_fraud_warning_waits_for_a_claim_and_refunds_nothing(pool: 
     assert_eq!(pick_status(&pool, case.pick).await, "paid");
 }
 
-/// TD-PICK-59 (b) (PRIV-005, FEE-052, D-2627): the fraud path commits its hold first (its refund
-/// failing here, so the pick stays paid); the claim then refuses with nothing written;
-/// the next warning refunds once and ends the pick; the hold is append-only for the app role.
+/// TD-PICK-59 (b) (PRIV-005, FEE-052, D-2627, D-5888): on a paid pick whose job the settle made
+/// Connected, the fraud path commits its hold first (its refund failing here, so the pick stays
+/// paid); the claim then refuses with nothing written; the next warning refunds once, ends the
+/// pick and returns the job to Quotes ready; the hold is append-only for the app role.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_pick_59_b_a_committed_hold_refuses_the_claim_and_refunds_once(pool: PgPool) {
     let secret = SecretString::from(SECRET.to_owned());
     let (down, up) = (FakeStripe::new(false), FakeStripe::new(true));
-    let case = seeded(&pool, JobStatus::PaymentPending, "pi_FakeT355b").await;
+    let case = seeded(&pool, JobStatus::Connected, "pi_FakeT355b").await;
     let ids = (case.pick, case.job, false);
     assert_eq!(
         fraud_warning(&pool, (&down, &secret), ids, az(3, 9)).await,
@@ -240,6 +241,11 @@ async fn td_pick_59_b_a_committed_hold_refuses_the_claim_and_refunds_once(pool: 
         "a second warning adds none"
     );
     assert_eq!(pick_status(&pool, case.pick).await, "fraud_refunded");
+    let mut db = pool.acquire().await.expect("conn");
+    let job = askhava_jobs::api::current(&mut db, case.job)
+        .await
+        .expect("job");
+    assert_eq!(job.status.code(), "quotes_ready");
     let mut app = pool.acquire().await.expect("conn");
     set_app_role(&mut app).await.expect("SET ROLE askhava_app");
     for sql in [
@@ -273,7 +279,7 @@ async fn td_pick_59_c_the_no_show_and_the_plain_paths_behave_as_before(pool: PgP
     assert_eq!(pick_status(&pool, released.pick).await, "no_show");
     let open = claim_still_open(&mut db, released.pick, PickStatus::Paid).await;
     assert_eq!(open, Ok(false));
-    let plain = seeded(&pool, JobStatus::PaymentPending, "pi_FakeT355d").await;
+    let plain = seeded(&pool, JobStatus::Connected, "pi_FakeT355d").await;
     let open = claim_still_open(&mut db, plain.pick, PickStatus::Paid).await;
     assert_eq!(open, Ok(true));
     let said = (plain.pick, plain.job, true);

@@ -136,7 +136,8 @@ pub(crate) async fn end_unpaid(
 }
 
 /// PICK-046, PICK-035, D-3571, D-3722: the businesses whose pick on `job` ended without a Confirm
-/// (expired, ended by `payments`, or cancelled as `cant_take` or `fee_terms_changed`); PICK-046's
+/// (expired, ended by `payments`, fraud-refunded (FEE-052, D-5888), or cancelled as `cant_take` or
+/// `fee_terms_changed`); PICK-046's
 /// text never offers their quotes again. A `replaced` or `paused` pick's business stays offered.
 ///
 /// # Errors
@@ -144,12 +145,13 @@ pub(crate) async fn end_unpaid(
 /// [`PicksError::Database`].
 pub async fn ended_businesses(db: &mut PgConnection, job: Uuid) -> Result<Vec<Uuid>, PicksError> {
     sqlx::query_scalar!(
-        "SELECT DISTINCT business_id FROM picks.pick WHERE job_id = $1 AND (status IN ($2, $3) \
+        "SELECT DISTINCT business_id FROM picks.pick WHERE job_id = $1 AND (status IN ($2, $3, $5) \
          OR (status = $4 AND end_reason IN ('cant_take', 'fee_terms_changed')))",
         job,
         PickStatus::Expired.code(),
         PickStatus::PaymentFailed.code(),
         PickStatus::Cancelled.code(),
+        PickStatus::FraudRefunded.code(),
     )
     .fetch_all(db)
     .await
