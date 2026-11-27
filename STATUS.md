@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-27T19:44:19Z by runner f40a8e4da247 (actions).
+Updated 2026-11-27T20:09:45Z by runner 12679cbd7990 (manual).
 
 **Idle since 19:33Z; 693 of 804 done; week 18% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-27T19:44:19Z by runner f40a8e4da247 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** idle since 19:33Z (no task in progress)
 - **Week:** 18% used, 160.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:44Z, 0 min before this update
+- **Last run:** 19:44Z, 24 min before this update
 - **Keeper:** last ran 19:44Z, next wake 20:04Z
 
 ## Needs attention
@@ -59,7 +59,6 @@ Updated 2026-11-27T19:44:19Z by runner f40a8e4da247 (actions).
 | T657 | quotes and portals: quote-form and sign-in errors mark the f | check_failed | 1 | 75 min | 21:40Z |  |
 | T840 | intake and messaging: quote updates reach Email and web-and- | done | 1 | 2 h 10 min | 21:20Z |  |
 | T848 | core, payments, inbound text, security: `Clock::real_now()`  | done | 1 | 75 min | 21:12Z |  |
-| T847 | e2e: J3 step 5 seeds its refused pick at the app clock, so t | done | 1 | 94 min | 20:01Z |  |
 
 ### Plan and harness merges on main
 - 17:23Z Harness: Sonnet-worker trial on T871, T857, T865 from Opus drafts (D-5981) (#1518)
