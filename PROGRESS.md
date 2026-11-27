@@ -11393,3 +11393,4 @@
 - 2026-11-27T04:22:23Z runner a546a2d2ec95 (actions): {}
 - 2026-11-27T04:23:09Z runner a546a2d2ec95 (actions): {}
 - 2026-11-27T04:39:52Z runner bccc571c6527 (actions): {"T518": "MERGE_PENDING -> QUEUED", "T522": "MERGE_PENDING -> DONE"}
+- 2026-11-27T04:42:57Z runner bccc571c6527 (actions): {"T518": "QUEUED -> IN_PROGRESS"}; T518 estimated 1.4M tokens (calibrated); week has 169.3M left (no five-hour budget, D-3056) after 2.7M still running in another lane (session_reading 2026-11-27T04:22:22Z (week)); claimed
