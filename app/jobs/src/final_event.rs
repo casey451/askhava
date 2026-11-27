@@ -1,7 +1,10 @@
 //! The final-status event (PICK-026, D-044, D-491, D-4361): a move into a final status queues one
-//! [`FINAL_STATUS_KIND`] task `{job, status}` in the move's transaction, so `picks` (which `jobs`
-//! may not call) tells every quoter but the connected one "This job is no longer active." once.
-//! `server` registers `picks::api::run_final_status` under the kind.
+//! [`FINAL_STATUS_KIND`] task `{job, status, at}` in the move's transaction, so `picks` (which
+//! `jobs` may not call) ends the job's waiting picks and tells every quoter but the connected one
+//! "This job is no longer active." once. `at` is the move's time, the same value written to
+//! `jobs.status_history`, as RFC 3339 text: the close time `picks` hands to QH-007's expiry, since
+//! `picks` may not read the history (D-5664). `server` registers `picks::api::run_final_status`
+//! under the kind.
 
 use askhava_core::api::{NewTask, enqueue};
 use jiff::Timestamp;
@@ -15,9 +18,10 @@ use crate::status::JobStatus;
 /// The `core.task` kind a move into a final status queues; `picks` handles it (PICK-026, D-044).
 pub const FINAL_STATUS_KIND: &str = "jobs.final_status";
 
-/// PICK-026, D-044, D-4361: queues one [`FINAL_STATUS_KIND`] task for job `job` when `status` is
-/// final (`JobStatus::is_final`), due at `at`, on `db` (the move's transaction); a final status
-/// has no arrow out, so the key is the job's alone. Nothing for any other status.
+/// PICK-026, QH-007, D-044, D-4361, D-5664: queues one [`FINAL_STATUS_KIND`] task for job `job`
+/// when `status` is final (`JobStatus::is_final`), due at `at` and carrying `at` as the close time,
+/// on `db` (the move's transaction); a final status has no arrow out, so the key is the job's
+/// alone. Nothing for any other status.
 ///
 /// # Errors
 ///
@@ -31,7 +35,7 @@ pub(crate) async fn queue_final_status(
     if !status.is_final() {
         return Ok(());
     }
-    let payload = json!({ "job": job, "status": status.code() });
+    let payload = json!({ "job": job, "status": status.code(), "at": at.to_string() });
     let mut task = NewTask::new(FINAL_STATUS_KIND, payload, at);
     task.dedupe_key = Some(format!("{FINAL_STATUS_KIND}.{job}"));
     enqueue(db, &task)

@@ -68,6 +68,8 @@ pub enum PendingEnd {
     CantTake,
     /// The business can no longer take it (license, leaving): cancelled with `ineligible`.
     Ineligible,
+    /// The job reached a final status: cancelled with `job_final` (FEE-021, D-4748).
+    JobFinal,
 }
 
 /// Locks pick `pick` and answers its business only while it waits for Confirm, has not ended and
@@ -178,6 +180,7 @@ pub async fn end_pending(
     match reason {
         PendingEnd::PaymentFailed => end_unpaid(tx, pick, at).await?,
         PendingEnd::CantTake => drop(models::end_pick(tx, pick, "cant_take", at).await?),
+        PendingEnd::JobFinal => drop(models::end_pick(tx, pick, "job_final", at).await?),
         PendingEnd::Ineligible => {
             models::end_pick(tx, pick, "ineligible", at).await?;
             refused_after_confirm(tx, job, business).await?;
