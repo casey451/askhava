@@ -7,9 +7,11 @@
 // this file's own: the suite's worker, which writes the cards and the first-quote text, shares its ID
 // secret and vault keys (D-5657). Inbound texts are posted signed as Twilio signs them (SEC-016).
 // This harness sets no homeowner number (`ASKHAVA_HOMEOWNER_NUMBER`), so no homeowner text is ever
-// sent: each reply's texts are the rows the app queued in `messaging.outbox`, body and all, read
-// per reply and compared as a set, never ordered by `created_at` or `template_id` (one reply queues
-// its texts in one transaction). Steps 2 to 4 are the real conversation of INT-043's "Intake order"
+// sent today: each reply's texts are the rows the app queued in `messaging.outbox`, read
+// per reply, the body from the row or, once the sender has cleared it, from the fake carrier by the
+// row's derived MessageKey (D-2764, D-5895), so the worker sending or idle changes nothing; the
+// texts are compared as a set, never ordered by `created_at` or `template_id` (one reply queues its
+// texts in one transaction). Steps 2 to 4 are the real conversation of INT-043's "Intake order"
 // table: her ZIP, the coverage line counting two fake active HVAC businesses seeded in her town as
 // fixture rows, "How soon?", the trade questions, "No photo", her fake name and address, the card
 // and SEND; the job's cards are then recorded. The two quotes come in through each business's
@@ -78,22 +80,35 @@ function now(): string {
   return rows("SELECT clock_timestamp()")[0]?.[0] ?? "";
 }
 
-/** One text the app queued for her; this harness sets no homeowner number, so none is sent and the outbox keeps its body. */
+/** One text the app queued for her, with the body it carried: the outbox's own while it still has one, else the one the fake carrier received. */
 interface Queued { id: string; template: string; body: string }
 
 /** A request's texts read per reply: `seen` holds the outbox rows an earlier reply already showed. */
 interface Chat { from: string; contact: string; seen: Set<string> }
 
-function queuedFor(contact: string): Queued[] {
-  const json = rows(`SELECT coalesce(json_agg(json_build_object('id', id, 'template', template_id, 'body', body) ORDER BY created_at), '[]')
+/**
+ * Her queued texts with their bodies. The sender clears an outbox row's body once it sends it
+ * (app/messaging/src/models.rs `mark_sent`), so a row whose body is NULL is read from the fake
+ * carrier's sent texts by the row's derived MessageKey (its `idempotency_key`, D-2764), never by
+ * recipient and template alone; a row not yet sent still has its body. Either way the text is the
+ * same, whether the worker sends or is idle.
+ */
+async function queuedFor(control: Control, contact: string): Promise<Queued[]> {
+  const json = rows(`SELECT coalesce(json_agg(json_build_object('id', id, 'template', template_id, 'body', body, 'key', idempotency_key) ORDER BY created_at), '[]')
     FROM messaging.outbox WHERE recipient_id = '${contact}'`)[0]?.[0] ?? "[]";
-  return JSON.parse(json) as Queued[];
+  const found = JSON.parse(json) as (Omit<Queued, "body"> & { body: string | null; key: string })[];
+  return Promise.all(found.map(async ({ id, template, body, key }) => {
+    if (body !== null) return { id, template, body };
+    const sent = await control.sentTexts({ key });
+    if (sent.length !== 1) throw new Error(`the carrier holds ${String(sent.length)} texts for the sent "${template}" row, not 1`);
+    return { id, template, body: sent[0]?.body ?? "" };
+  }));
 }
 
 /** The texts one inbound text of hers made the app queue; one reply queues them in one transaction, so their order is not read. */
-async function say(chat: Chat, body: string): Promise<Queued[]> {
+async function say(control: Control, chat: Chat, body: string): Promise<Queued[]> {
   expect(await textIn(chat.from, body)).toBe(200);
-  const fresh = queuedFor(chat.contact).filter((t) => !chat.seen.has(t.id));
+  const fresh = (await queuedFor(control, chat.contact)).filter((t) => !chat.seen.has(t.id));
   fresh.forEach((t) => chat.seen.add(t.id));
   return fresh;
 }
@@ -101,12 +116,12 @@ async function say(chat: Chat, body: string): Promise<Queued[]> {
 const templates = (got: Queued[]): string[] => got.map((t) => t.template).sort();
 
 /** Starts a request of `from` with `first`; its first texts count as seen. */
-async function open(from: string, first: string): Promise<{ chat: Chat; conversation: string }> {
+async function open(control: Control, from: string, first: string): Promise<{ chat: Chat; conversation: string }> {
   const since = now();
   expect(await textIn(from, first)).toBe(200);
   const { conversation, contact } = requestSince(since);
   const chat: Chat = { from, contact, seen: new Set() };
-  queuedFor(contact).forEach((t) => chat.seen.add(t.id));
+  (await queuedFor(control, contact)).forEach((t) => chat.seen.add(t.id));
   return { chat, conversation };
 }
 
@@ -175,8 +190,8 @@ async function quoteFrom(page: Page, control: Control, job: string, business: st
  * names her page mints a token and revokes the last (first quote, then an update for the second).
  * `""` when none is queued yet.
  */
-function quotePath(chat: Chat): string {
-  const linked = queuedFor(chat.contact).map((t) => /\/q\/[0-9a-f]+/.exec(t.body)?.[0] ?? "").filter((path) => path !== "");
+async function quotePath(control: Control, chat: Chat): Promise<string> {
+  const linked = (await queuedFor(control, chat.contact)).map((t) => /\/q\/[0-9a-f]+/.exec(t.body)?.[0] ?? "").filter((path) => path !== "");
   return linked.at(-1) ?? "";
 }
 
@@ -189,11 +204,11 @@ function quotePath(chat: Chat): string {
 async function quoteTextQueued(control: Control, chat: Chat): Promise<string> {
   for (let tries = 0; tries < 2; tries += 1) {
     const deadline = Date.now() + 8_000;
-    while (Date.now() < deadline && quotePath(chat) === "") await new Promise((r) => setTimeout(r, 300));
-    if (quotePath(chat) !== "") {
+    while (Date.now() < deadline && (await quotePath(control, chat)) === "") await new Promise((r) => setTimeout(r, 300));
+    if ((await quotePath(control, chat)) !== "") {
       let path = "";
-      while (path !== quotePath(chat)) {
-        path = quotePath(chat);
+      while (path !== (await quotePath(control, chat))) {
+        path = await quotePath(control, chat);
         await new Promise((r) => setTimeout(r, 2_000));
       }
       return path;
@@ -230,42 +245,44 @@ test("J1 step 1 CON-005 CON-031 INT-002 D-419: the first text is the consent; th
   expect(await textIn(HOMEOWNER, "AC blowing warm air", sid), "the same delivery again").toBe(200);
   Object.assign(state, requestSince(state.since));
   state.chat.contact = state.contact;
-  queuedFor(state.contact).forEach((t) => state.chat.seen.add(t.id));
+  (await queuedFor(control, state.contact)).forEach((t) => state.chat.seen.add(t.id));
   // CON-031, INT-043 (D-4360): the ZIP question follows the consent text as its own text.
   expect(textsTo(state.contact)).toEqual(["consent", "zip_question"]);
-  const body = rows(`SELECT body FROM messaging.outbox WHERE recipient_id = '${state.contact}' AND template_id = 'consent'`)[0]?.[0] ?? "";
+  const consent = (await queuedFor(control, state.contact)).filter((t) => t.template === "consent");
+  expect(consent, "the consent text is queued once").toHaveLength(1);
+  const body = consent[0]?.body ?? "";
   expect(body.startsWith(CON_031_START)).toBe(true);
   expect(body).not.toMatch(/Reply (OK|YES)/i);
   expect(rows(`SELECT channel FROM intake.consent_record WHERE conversation_id = '${state.conversation}'`)).toEqual([["sms"]]);
   expect(rows(`SELECT count(*) FROM intake.emergency_event WHERE conversation_id = '${state.conversation}'`)).toEqual([["0"]]);
 });
 
-test("J1 step 2 TD-INT-50 INT-043 INT-049 INT-016 INT-017 D-460: her ZIP gets the coverage line naming the 2 businesses in her town, then \"How soon?\"", async () => {
-  const got = await say(state.chat, "86403");
+test("J1 step 2 TD-INT-50 INT-043 INT-049 INT-016 INT-017 D-460: her ZIP gets the coverage line naming the 2 businesses in her town, then \"How soon?\"", async ({ control }) => {
+  const got = await say(control, state.chat, "86403");
   expect(templates(got), "steps 4 and 5, then step 6").toEqual(["coverage_count_many", "how_soon"]);
   expect(got.find((t) => t.template === "coverage_count_many")?.body).toMatch(new RegExp(`^${BRAND.short_name}: Got it\\. We'll send this to the 2 `));
   expect(got.find((t) => t.template === "how_soon")?.body).toContain("How soon do you need this?");
 });
 
-test("J1 step 3 TD-INT-50 INT-043 INT-030 INT-039 INT-044: \"In the next few days\" gets the trade questions one at a time, then the photo ask, then the name-and-address question", async () => {
+test("J1 step 3 TD-INT-50 INT-043 INT-030 INT-039 INT-044: \"In the next few days\" gets the trade questions one at a time, then the photo ask, then the name-and-address question", async ({ control }) => {
   const asks = [/What kind of system is it\?/, /What's happening\?/, /About how old is the system\?/, /Is an error code or flashing light showing\?/, /Anything else\?/];
   for (const [i, answer] of ["2", "1", "1", "1", "2"].entries()) {
-    const got = await say(state.chat, answer);
+    const got = await say(control, state.chat, answer);
     expect(templates(got), "step 8").toEqual(["trade_question"]);
     expect(got[0]?.body).toMatch(asks[i] ?? /^$/);
   }
-  expect(templates(await say(state.chat, "Nothing else")), "step 9").toEqual(["photo_ask"]);
-  const last = await say(state.chat, "No photo");
+  expect(templates(await say(control, state.chat, "Nothing else")), "step 9").toEqual(["photo_ask"]);
+  const last = await say(control, state.chat, "No photo");
   expect(templates(last), "step 11").toEqual(["name_address"]);
   expect(last[0]?.body).toContain("What is your first name and street address?");
 });
 
 test("J1 step 4 TD-INT-50 INT-041 INT-043: her fake name and address get the card; SEND sends it at once and the job's cards are recorded", async ({ page, control }) => {
-  const card = await say(state.chat, "Pat Sample, 12 Sample Street");
+  const card = await say(control, state.chat, "Pat Sample, 12 Sample Street");
   expect(templates(card), "step 12").toHaveLength(1);
   expect(["card_shown", "card_link"]).toContain(card[0]?.template);
   expect(card[0]?.body).toMatch(/It goes out in 30 minutes\. Reply EDIT to change it, or SEND to send it now\.$/);
-  expect(await say(state.chat, "SEND"), "SEND sends it at once with no text of its own").toEqual([]);
+  expect(await say(control, state.chat, "SEND"), "SEND sends it at once with no text of its own").toEqual([]);
   state.job = rows(`SELECT job_id FROM intake.conversation WHERE id = '${state.conversation}'`)[0]?.[0] ?? "";
   expect(state.job).not.toBe("");
   state.path = await quotesIn(page, control, [state.chat, state.job]);
@@ -308,13 +325,13 @@ test("J1 step 6 PICK-016 PICK-013 PICK-017 PICK-018: review, Go back, pick again
 
 test("J1 variant CON-009 CON-012 CON-028: STOP after quotes arrive; the one confirmation, then no further text; the job and its quote page go on", async ({ page, control }) => {
   seedHvacBusinesses(await arizonaDay(control));
-  const { chat, conversation } = await open("+19285550146", "AC blowing warm air");
-  for (const reply of REPLIES) await say(chat, reply);
+  const { chat, conversation } = await open(control, "+19285550146", "AC blowing warm air");
+  for (const reply of REPLIES) await say(control, chat, reply);
   const job = rows(`SELECT job_id FROM intake.conversation WHERE id = '${conversation}'`)[0]?.[0] ?? "";
   const path = await quotesIn(page, control, [chat, job]);
-  queuedFor(chat.contact).forEach((t) => chat.seen.add(t.id));
-  expect(templates(await say(chat, "STOP")), "the one confirmation").toEqual(["opt_out_confirmation"]);
-  expect(await say(chat, "Is anyone coming today?"), "no further text").toEqual([]);
+  (await queuedFor(control, chat.contact)).forEach((t) => chat.seen.add(t.id));
+  expect(templates(await say(control, chat, "STOP")), "the one confirmation").toEqual(["opt_out_confirmation"]);
+  expect(await say(control, chat, "Is anyone coming today?"), "no further text").toEqual([]);
   expect(rows(`SELECT status FROM jobs.job WHERE id = '${job}'`)).toEqual([["quotes_ready"]]);
   await page.goto(BASE + path);
   await expect(page.locator("#quotes > li h2")).toHaveText(["Quote #1", "Quote #2"]);
