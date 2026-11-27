@@ -344,11 +344,16 @@ async fn td_fee_47_refund_state_answers_each_state(pool: PgPool) {
     assert_eq!(aborted, Err(MoneyEventError::Database));
 }
 
-/// TD-FEE-47: an early fraud warning while the pick's refund is in flight ends nothing; once
-/// Stripe answers `succeeded` the next warning run ends the paid pick and returns the job.
+/// TD-FEE-47 (D-5888): an early fraud warning while the pick's refund is in flight ends nothing;
+/// once Stripe answers `succeeded` the next warning run ends the charged pick (waiting in Payment
+/// pending) and returns the job.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_fee_47_a_fraud_warning_during_an_in_flight_refund_ends_nothing(pool: PgPool) {
-    let case = seeded(&pool, JobStatus::PaymentPending, paid("pi_FakeT270f")).await;
+    let charged = Intro {
+        status: "awaiting_confirm",
+        ..paid("pi_FakeT270f")
+    };
+    let case = seeded(&pool, JobStatus::PaymentPending, charged).await;
     let (held, up) = (FakeStripe::new(true, true), FakeStripe::new(true, false));
     let trigger = (case.pick, RefundTrigger::FraudWarning);
     let key = secret();
@@ -361,7 +366,7 @@ async fn td_fee_47_a_fraud_warning_during_an_in_flight_refund_ends_nothing(pool:
         assert_eq!(job_status(&pool, case.job).await, "payment_pending");
         assert_eq!(
             pick_status(&pool, case.pick).await,
-            ("paid".to_owned(), false)
+            ("awaiting_confirm".to_owned(), false)
         );
         held.release.notify_one();
     };
@@ -374,21 +379,22 @@ async fn td_fee_47_a_fraud_warning_during_an_in_flight_refund_ends_nothing(pool:
     assert_eq!(ended, ("fraud_refunded".to_owned(), true));
 }
 
-/// TD-FEE-47: the fraud warning ends only a `paid` pick: a refunded charge whose pick is `free`
-/// rolls the job's return back and answers `MovedOn`.
+/// TD-FEE-47 (D-5888): the fraud warning ends a charged pick, never a free one: a refunded charge
+/// whose pick is `free` (its job Connected, as the settle leaves it) changes nothing and answers
+/// `MovedOn`.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_fee_47_the_fraud_warning_ends_only_a_paid_pick(pool: PgPool) {
     let odd = Intro {
         status: "free",
         ..paid("pi_FakeT270g")
     };
-    let case = seeded(&pool, JobStatus::PaymentPending, odd).await;
+    let case = seeded(&pool, JobStatus::Connected, odd).await;
     let up = FakeStripe::new(true, false);
     let ids = (case.pick, case.job, false);
     let warned = fraud_warning(&pool, (&up, &secret()), ids, az(5, 9, 0)).await;
     assert_eq!(warned, Err(PicksError::MovedOn));
     assert_eq!(state(&pool, case.pick).await, PickRefundState::Succeeded);
-    assert_eq!(job_status(&pool, case.job).await, "payment_pending");
+    assert_eq!(job_status(&pool, case.job).await, "connected");
     assert_eq!(
         pick_status(&pool, case.pick).await,
         ("free".to_owned(), false)
