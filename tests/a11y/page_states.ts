@@ -823,6 +823,32 @@ const SERVICE_AREA_SETTINGS_STATES: readonly PageState[] = [
   ["service area settings, nothing stored", "Save service area", "Fix these to save", businessSql("")],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: SERVICE_AREA_SETTINGS_ROUTE, name, shows, hides, sql, statusRegions: ["area-saved"] }));
 
+/**
+ * The business text-consent page (T522; CON-019, BIZ-036, TXT-035, D-3879, D-3881): the owner with
+ * one fake linked phone ending in 0151; each state inserts its own business-audience
+ * `messaging.mode_state` row (the newest row is the switch), the texting-off state last, so the
+ * switch is left off as every other page expects. "Texts on" adds the text box ticked for the
+ * phone's current number version.
+ */
+const TEXT_CONSENT_ROUTE = "/b/texts";
+function textConsentSql(on: boolean, consented: boolean): string {
+  const consent = consented
+    ? `,
+    tc AS (INSERT INTO businesses.esign_consent (business_id, member_id, channel, line_id, number_version, wording_version, consented_at)
+      SELECT business_id, linked_by, 'text', id, number_version, 'con019-v1', now() FROM tp)`
+    : "";
+  return businessSql(`,
+    ms AS (INSERT INTO messaging.mode_state (audience, texting_on, line_state, launch_channel, actor_id, changed_at)
+      VALUES ('business', ${String(on)}, 'working', 'sms', gen_random_uuid(), now())),
+    tp AS (INSERT INTO businesses.staff_phone (business_id, linked_by, linked_at, number_set_at, number_set_by, number_end)
+      SELECT business_id, id, now(), now(), id, '0151' FROM m RETURNING id, business_id, linked_by, number_version)${consent}`);
+}
+const TEXT_CONSENT_STATES: readonly PageState[] = [
+  ["text consent, a phone waiting for the box", "I agree to get job-card texts", "We aren't texting businesses right now", textConsentSql(true, false)],
+  ["text consent, texts on", "Texts on", "I agree to get job-card texts", textConsentSql(true, true)],
+  ["text consent, texting off", "We aren't texting businesses right now", "Phones you added", textConsentSql(false, false)],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: TEXT_CONSENT_ROUTE, name, shows, hides, sql, statusRegions: ["texts-said"] }));
+
 /** The homeowner sign-in form (T307, SEC-008): no seed, the plain path. */
 const HOMEOWNER_SIGNIN_ROUTE = "/h/sign-in";
 const HOMEOWNER_SIGNIN_STATES: readonly PageState[] = [
@@ -1007,6 +1033,7 @@ export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: GET_HELP_ROUTE, seed: portalSeed(false), states: GET_HELP_STATES },
   { route: DATA_LINK_ROUTE, seed: dataLinkSeed, states: DATA_LINK_STATES },
   { route: SERVICE_AREA_SETTINGS_ROUTE, seed: portalSeed(false), states: SERVICE_AREA_SETTINGS_STATES },
+  { route: TEXT_CONSENT_ROUTE, seed: portalSeed(false), states: TEXT_CONSENT_STATES },
 ];
 
 /** Every state of every page, in entry order. */
