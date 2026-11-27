@@ -32,6 +32,7 @@ pub mod api;
 mod cards_out;
 mod check_in_replies;
 mod closing;
+mod consent_guard;
 mod consent_purge;
 mod conversation;
 mod design;

@@ -52,9 +52,10 @@ use serde_json::{Value, json};
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection, PgPool};
 
+use crate::consent_guard::{TextKind, may_queue};
 use crate::models::{self, IntakeError};
 use crate::rules::language_from_code;
-use crate::service::{Queued, TextIn, card_allowed};
+use crate::service::{Queued, TextIn};
 
 /// The `core.task` kind of a job's no-reply step (INT-019).
 pub const NO_REPLY_KIND: &str = "intake.no_reply";
@@ -345,15 +346,16 @@ async fn close_if_done(
         .map(|_| ())
 }
 
-/// Queues `template` about the job to the request's homeowner, only with a consent record
-/// (CON-007, D-419), in the request's language.
+/// Queues `template` about the job to the request's homeowner, only when the consent guard lets
+/// a request text go: her own `sms` record, or T856's chat exemption for a `web_chat`-only request
+/// (CON-007, CON-021, D-419, D-5848), in the request's language.
 async fn tell(
     db: &mut PgConnection,
     secret: &SecretString,
     wait: &Wait,
     template: &'static str,
 ) -> Result<Option<Queued>, IntakeError> {
-    if !card_allowed(db, wait.conversation).await? {
+    if !may_queue(db, wait.conversation, TextKind::Request).await? {
         return Ok(None);
     }
     let Some((contact, code)) = models::recipient(db, wait.conversation).await? else {
