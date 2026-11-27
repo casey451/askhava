@@ -48,6 +48,7 @@ CITE = re.compile(r"^(?P<path>[^\s:]+):(?P<line>\d+)$")
 MODELS = frozenset({"claude-haiku-5-5", "claude-sonnet-5-5", "claude-opus-5-5"})
 OPUS = "claude-opus-5-5"
 HAIKU = "claude-haiku-5-5"
+SONNET = "claude-sonnet-5-5"
 REVIEWERS = frozenset({"claude-sonnet-5-5", OPUS})
 FABLE_KEY = "fable"  # the `models` key naming Fable, an Opus-class model wherever a rule asks for Opus (D-4761)
 MODEL_ID = re.compile(r"^claude-[a-z]+(-[0-9]+)+$")
@@ -272,6 +273,7 @@ class Models:
     ids: frozenset[str] = MODELS
     opus: frozenset[str] = frozenset({OPUS})
     trial: frozenset[str] = frozenset()  # `sonnet_trial` task IDs (D-5981)
+    sonnet: str = SONNET  # the Sonnet ID a trial task must name (D-5981)
 
 
 def plan_models(data: dict[str, Any]) -> Models:
@@ -281,7 +283,9 @@ def plan_models(data: dict[str, Any]) -> Models:
         return Models(trial=trial_ids(data))
     ids = frozenset(v for v in raw.values() if isinstance(v, str) and MODEL_ID.match(v))
     fable = raw.get(FABLE_KEY)
-    return Models(ids or MODELS, frozenset({OPUS} | ({fable} if fable in ids else set())), trial_ids(data))
+    sonnet = raw.get("sonnet") if raw.get("sonnet") in ids else SONNET
+    opus = frozenset({OPUS} | ({fable} if fable in ids else set()))
+    return Models(ids or MODELS, opus, trial_ids(data), str(sonnet))
 
 
 def trial_ids(data: dict[str, Any]) -> frozenset[str]:
@@ -429,8 +433,8 @@ def check_models(task: Task, models: Models = Models()) -> list[str]:
     writes_sensitive_code = task["type"] == "build" and owns_app_code and bool(
         derived_areas(task) or areas & OPUS_REVIEW_AREAS
     )
-    # D-5981: a listed trial task may run on Sonnet, only with an Opus reviewer.
-    trial = task["id"] in models.trial and task["reviewer_model"] in models.opus
+    # D-5981: a listed trial task may run on Sonnet (the map's ID), only with an Opus reviewer.
+    trial = task["id"] in models.trial and task["model"] == models.sonnet and task["reviewer_model"] in models.opus
     if writes_sensitive_code and task["model"] not in models.opus and not trial:
         errors.append(
             f"{where(task)}: money, privacy, security and recovery application code"

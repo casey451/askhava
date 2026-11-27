@@ -378,6 +378,14 @@ def test_a_sonnet_trial_task_without_an_opus_reviewer_fails(tmp_path: Path) -> N
     assert_error(errors, "need an Opus reviewer")
 
 
+def test_a_sonnet_trial_task_on_another_non_opus_model_fails(tmp_path: Path) -> None:
+    tasks = valid_tasks()
+    sonnet_privacy_build(tasks)
+    task(tasks, "T001")["model"] = HAIKU
+    errors = errors_for(tmp_path, tasks, sonnet_trial={"decision": "D-001", "tasks": ["T001"]})
+    assert_error(errors, "runs on Opus (BUILD_BRIEF.md:498)")
+
+
 def test_a_sonnet_trial_lists_at_most_three_tasks(tmp_path: Path) -> None:
     tasks = valid_tasks()
     trial = {"decision": "D-001", "tasks": ["T001", "T002", "T003", "T004"]}
