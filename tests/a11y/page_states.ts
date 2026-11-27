@@ -797,17 +797,17 @@ const PHONES_STATES: readonly PageState[] = [
   ["phones to approve, one waiting", "Phone number ending in 0150", "No phones are waiting", businessSql(WAITING_PHONE_SQL)],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: PHONES_ROUTE, name, shows, hides, sql, statusRegions: [] }));
 
-/**
- * The business team page (T544; BIZ-023, FEE-041, D-5567): the owner signed in with one fake
- * "Cards and quotes" member, so the role form and Remove button show (the unkeyed binary shows the
- * numbered fixed line in place of each address).
- */
 /** The business Get help form (T200, served by T309; BIZ-047): the owner, the empty form. */
 const GET_HELP_ROUTE = "/b/help";
 const GET_HELP_STATES: readonly PageState[] = [
   ["get help, empty form", "What is it about?", "There is a problem", businessSql("")],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: GET_HELP_ROUTE, name, shows, hides, sql, statusRegions: [] }));
 
+/**
+ * The business team page (T544; BIZ-023, FEE-041, D-5567): the owner signed in with one fake
+ * "Cards and quotes" member, so the role form and Remove button show (the unkeyed binary shows the
+ * numbered fixed line in place of each address).
+ */
 const TEAM_ROUTE = "/b/team";
 const TEAM_MEMBER_SQL = `,
     mm AS (INSERT INTO businesses.team_member (business_id, mailbox_id, is_owner, cards_and_quotes,
