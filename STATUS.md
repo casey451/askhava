@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-27T16:48:39Z by runner 218011486304 (actions).
+Updated 2026-11-27T16:49:12Z by runner 218011486304 (actions).
 
-**Building: T749 in progress since 16:03Z; 693 of 804 done; week 16% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Idle since 16:48Z; 693 of 804 done; week 16% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 693 of 804 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T749 claimed 16:03Z, lease until 19:03Z
+- **Lane:** idle since 16:48Z (no task in progress)
 - **Week:** 16% used, 164.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
 - **Last run:** 16:44Z, 4 min before this update
 - **Keeper:** last ran 16:44Z, next wake 19:06Z
@@ -44,6 +44,7 @@ Evidence: her data download is assembled in app/server/src/homeowner_portal.rs:6
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T749 | messaging: the unused `business_pick_waiting` text template  | MERGE_PENDING | 1 | 44 min | 16:48Z |  |
 | T849 | server: the e2e web binary serves J1/J2 business time from t | check_failed | 4 | 118 min | 15:27Z | PLAN GAP: outside ownership: tests/e2e/web_chat.spec.ts, tests/a11y/page_states.ts / D-5836 puts inbound SMS and action  |
 | T817 | messaging: a text re-checks the opt-out list after its claim | done | 1 | 67 min | 14:27Z |  |
 | T822 | docs: the privacy policy names the email link and the fuller | done | 1 | 54 min | 14:13Z |  |
@@ -139,7 +140,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T749 (lease until 2026-11-27T19:03:40Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T849", "at": "2026-11-27T15:27:49Z", "cache_read_input_tokens": 13144721, "output_tokens": 82348, "cache_creation_input_tokens": 319898, "input_tokens": 314}
+- {"task": "T749", "at": "2026-11-27T16:48:37Z", "output_tokens": 6164, "cache_read_input_tokens": 545579, "input_tokens": 47, "cache_creation_input_tokens": 57673}
