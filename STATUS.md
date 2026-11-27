@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-27T23:46:27Z by runner 83e824672bcc (actions).
+Updated 2026-11-27T23:51:21Z by runner 83e824672bcc (actions).
 
-**Building: T811 in progress since 23:45Z; 695 of 805 done; week 20% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Building: T811 in progress since 23:45Z; 695 of 809 done; week 20% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 695 of 805 build tasks (owner gates not counted)
+- **Tasks done:** 695 of 809 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T811 claimed 23:45Z, lease until 02:45Z
+- **Lane:** lane 1: T811 claimed 23:45Z, lease until 02:51Z
 - **Week:** 20% used, 154.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:44Z, 2 min before this update
+- **Last run:** 23:46Z, 4 min before this update
 - **Keeper:** last ran 23:38Z, next wake 23:58Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
-- Strict plan check red: 58 problem(s) on tasks still to run (+605 on DONE tasks); first: T704: stored context_pct 38% but it measures 44%; regenerate
+- Strict plan check red: 58 problem(s) on tasks still to run (+606 on DONE tasks); first: T704: stored context_pct 38% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -57,6 +57,7 @@ Updated 2026-11-27T23:46:27Z by runner 83e824672bcc (actions).
 | T744 | picks: a job that reaches a final status ends its pick await | done | 1 | 98 min | 23:54Z |  |
 
 ### Plan and harness merges on main
+- 23:50Z Plan: PF-CHAIN2 fixes for the web-chat consent chain; seams T873-T876 (D-5989) (#1523)
 - 22:40Z Harness: workers post a short progress note about every 10 minutes (D-5988) (#1521)
 - 20:24Z Plan: T857/T865 drafts bound to T856's guard; under-18 refused text; T872 (D-5982) (#1520)
 - 17:23Z Harness: Sonnet-worker trial on T871, T857, T865 from Opus drafts (D-5981) (#1518)
@@ -113,7 +114,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T811 (lease until 2026-11-28T02:45:35Z)
+- T811 (lease until 2026-11-28T02:51:21Z)
 
 ## Last usage reading
 - {"task": "T871", "at": "2026-11-27T23:00:09Z", "input_tokens": 84, "cache_read_input_tokens": 2183726, "cache_creation_input_tokens": 122355, "output_tokens": 17523}
