@@ -18,7 +18,7 @@ use crate::quote_page::PageView;
 
 /// Every template served behind the business session (BIZ-047, D-3155, D-3744, D-3890). A new
 /// signed-in business page extends `business_layout.html` and joins this list.
-const BUSINESS_PAGES: [&str; 17] = [
+const BUSINESS_PAGES: [&str; 19] = [
     "address_change.html",
     "business_actions.html",
     "business_billing.html",
@@ -32,9 +32,11 @@ const BUSINESS_PAGES: [&str; 17] = [
     "get_help.html",
     "job_release.html",
     "job_types.html",
+    "not_a_fit.html",
     "notice_log.html",
     "notice_settings.html",
     "phone_approval.html",
+    "text_consent.html",
     "why_charged.html",
 ];
 
