@@ -27235,7 +27235,10 @@
     "T840",
     "T841",
     "T846",
-    "T847"
+    "T847",
+    "T867",
+    "T868",
+    "T869"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -27296,7 +27299,10 @@
     "T837",
     "T843",
     "T852",
-    "T853"
+    "T853",
+    "T867",
+    "T868",
+    "T869"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -27571,7 +27577,10 @@
     "T760",
     "T818",
     "T821",
-    "T825"
+    "T825",
+    "T867",
+    "T868",
+    "T869"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -32768,7 +32777,10 @@
     "T797",
     "T818",
     "T821",
-    "T825"
+    "T825",
+    "T867",
+    "T868",
+    "T869"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -32798,7 +32810,10 @@
     "T757",
     "T758",
     "T759",
-    "T760"
+    "T760",
+    "T867",
+    "T868",
+    "T869"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -32828,7 +32843,10 @@
     "T757",
     "T758",
     "T759",
-    "T760"
+    "T760",
+    "T867",
+    "T868",
+    "T869"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -60168,7 +60186,8 @@
     "T318",
     "T355",
     "T402",
-    "T590"
+    "T590",
+    "T867"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -82170,7 +82189,10 @@
     "T840",
     "T841",
     "T846",
-    "T847"
+    "T847",
+    "T867",
+    "T868",
+    "T869"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -82380,7 +82402,10 @@
     "T840",
     "T841",
     "T846",
-    "T847"
+    "T847",
+    "T867",
+    "T868",
+    "T869"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -120083,7 +120108,11 @@
    "id": "T822",
    "deps": [
     "T820",
-    "T800"
+    "T800",
+    "T428",
+    "T111",
+    "T229",
+    "T113"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -123943,6 +123972,45 @@
    "attempts": 0,
    "slug": "pick-code-by-email",
    "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T867",
+   "deps": [
+    "T744",
+    "T799"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "fraud-end-real-states",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T868",
+   "deps": [
+    "T416",
+    "T675",
+    "T017"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "chance-failure-tests",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T869",
+   "deps": [
+    "T172",
+    "T291",
+    "T426",
+    "T727"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "wip-trailer-scan",
+   "type": "harness",
    "stage": "5"
   }
  ],
@@ -132379,7 +132447,7 @@
    }
   }
  },
- "updated_at": "2026-11-27T07:26:42Z",
+ "updated_at": "2026-11-27T07:31:40Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -132478,7 +132546,7 @@
   ]
  },
  "runner_sha": "37f92ed093111a42071e9044252b0f7066aad712",
- "starter": "manual",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "5ca4c08df8750f0d6238f7eecd2f9f1d2f8aa339",
