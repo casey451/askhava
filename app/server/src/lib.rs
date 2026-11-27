@@ -1590,8 +1590,8 @@ impl askhava_intake::api::PictureSource for ServerPictures {
     }
 }
 
-/// INT-044 (T675, D-5251, D-5337): `intake.picture_text` over [`ServerPictures`]; with no
-/// `VAULT_KEY` (dev and CI only) nothing is registered.
+/// INT-044 (T675, D-5251, D-5337): `intake.picture_text` and T783's `intake.picture_delete` over
+/// [`ServerPictures`]; with no `VAULT_KEY` (dev and CI only) nothing is registered.
 fn register_picture_text(
     registry: &mut Registry,
     (twilio, sms): (&TwilioConfig, TwilioSms),
@@ -1612,6 +1612,10 @@ fn register_picture_text(
     let secret = id_secret.clone();
     let keys = Arc::new(askhava_intake::api::PictureKeys { source, secret });
     let at = Arc::clone(clock);
+    let deletes = Arc::clone(&keys);
+    registry.register(askhava_intake::api::PICTURE_DELETE_KIND, move |_, task| {
+        askhava_intake::api::run_picture_delete(Arc::clone(&deletes), task)
+    });
     registry.register(askhava_intake::api::PICTURE_TEXT_KIND, move |pool, task| {
         askhava_intake::api::run_picture_text_at(pool, Arc::clone(&keys), task, at.now())
     });

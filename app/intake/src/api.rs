@@ -111,8 +111,9 @@ pub use crate::photos::{
     note_picture_text, photo_answer, photo_body, photo_job_is_hers, photo_text, press_photo,
 };
 pub use crate::picture_text::{
-    HOLD_EVERY, HOLD_FOR, MAX_PICTURES, PICTURE_TEXT_KIND, PictureKeys, PictureSource, media_tail,
-    picture_payload, queue_picture_text, run_picture_text_at,
+    HOLD_EVERY, HOLD_FOR, MAX_PICTURES, PICTURE_DELETE_KIND, PICTURE_TEXT_KIND, PictureKeys,
+    PictureSource, media_tail, picture_payload, queue_picture_text, run_picture_delete,
+    run_picture_text_at,
 };
 pub use crate::purge::{
     REQUEST_PURGE_KIND, jobs_of_contact, purge_answers, run_purge, run_purge_at, run_request_purge,
