@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-27T16:12:18Z by runner 278d45f2f121 (manual).
+Updated 2026-11-27T16:22:46Z by runner 8df89e31f515 (actions).
 
-**Building: T749 in progress since 16:03Z; 693 of 802 done; week 16% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Building: T749 in progress since 16:03Z; 693 of 804 done; week 16% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 693 of 802 build tasks (owner gates not counted)
+- **Tasks done:** 693 of 804 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T749 claimed 16:03Z, lease until 19:03Z
 - **Week:** 16% used, 164.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:12Z, 0 min before this update
+- **Last run:** 16:16Z, 6 min before this update
 - **Keeper:** last ran 16:11Z, next wake 19:06Z
 
 ## Needs attention
@@ -39,7 +39,7 @@ Evidence: her data download is assembled in app/server/src/homeowner_portal.rs:6
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 50% of the context window, over its 45% limit
 - PLAN GAP T856 (since 2026-11-27T07:31:36Z, no attempt used; a plan change fixes it): T856: measures 46% of the context window, over its 45% limit
 - PLAN GAP T862 (since 2026-11-27T13:22:09Z, no attempt used; a plan change fixes it): outside ownership: app/server/src/homeowner_portal.rs, app/portals/src/homeowner_portal.rs
-- Strict plan check red: 62 problem(s) on tasks still to run (+603 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
+- Strict plan check red: 60 problem(s) on tasks still to run (+603 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -85,6 +85,7 @@ Evidence: her data download is assembled in app/server/src/homeowner_portal.rs:6
 | T612 | harness: the WEB-029 and WEB-030 runtime checks on every sit | BLOCKED | 1 | 50 min | 18:35Z |  |
 
 ### Plan and harness merges on main
+- 16:15Z Plan: efficiency fixes (D-5971); T734 owns its template line, T862 split with T870 (D-5972) (#1513)
 - 12:14Z Plan: T657 waits on T811 (D-5954); T849 moves j1_homeowner into the late project (D-5955) (#1500)
 - 07:26Z Plan: fraud-refund fix (D-5888), T820 fix (D-5889), T865 draft (D-5900), template line and T868 (D-5901), compliance (D-5907), T856 plan fix (D-5918) (#1
 - 23:18Z Plan: T801 web-chat consent chain re-split, per-request SMS consent, pick code by email (D-5848); T612 font fallback (D-5864); pre-flight fixes (D-5876, 
@@ -92,31 +93,31 @@ Evidence: her data download is assembled in app/server/src/homeowner_portal.rs:6
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 312 of 735 (42.4%) · partial 415 · unstarted 8
-**Tasks merged (throughput only):** 693 of 802
+**Requirements verified:** 464 of 735 (63.1%) · partial 263 · unstarted 8
+**Tasks merged (throughput only):** 693 of 804
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 27 | 8 | 0 | 35 |
-| ai | 2 | 24 | 3 | 29 |
-| businesses | 28 | 29 | 1 | 58 |
-| calls | 16 | 9 | 0 | 25 |
-| consent | 7 | 28 | 0 | 35 |
-| fees | 21 | 31 | 0 | 52 |
-| intake | 2 | 41 | 0 | 43 |
-| job-cards | 6 | 18 | 0 | 24 |
-| licensing | 2 | 46 | 0 | 48 |
-| lifecycle | 7 | 21 | 0 | 28 |
-| messaging | 13 | 32 | 0 | 45 |
-| ops-recovery | 33 | 20 | 1 | 54 |
-| privacy | 12 | 19 | 0 | 31 |
-| quiet-hours | 0 | 9 | 0 | 9 |
-| quotes-pick | 33 | 23 | 0 | 56 |
-| recurring | 8 | 3 | 0 | 11 |
-| security | 8 | 44 | 3 | 55 |
-| terms | 32 | 3 | 0 | 35 |
+| accessibility | 28 | 7 | 0 | 35 |
+| ai | 11 | 15 | 3 | 29 |
+| businesses | 35 | 22 | 1 | 58 |
+| calls | 17 | 8 | 0 | 25 |
+| consent | 18 | 17 | 0 | 35 |
+| fees | 25 | 27 | 0 | 52 |
+| intake | 12 | 31 | 0 | 43 |
+| job-cards | 17 | 7 | 0 | 24 |
+| licensing | 40 | 8 | 0 | 48 |
+| lifecycle | 22 | 6 | 0 | 28 |
+| messaging | 24 | 21 | 0 | 45 |
+| ops-recovery | 35 | 18 | 1 | 54 |
+| privacy | 14 | 17 | 0 | 31 |
+| quiet-hours | 4 | 5 | 0 | 9 |
+| quotes-pick | 37 | 19 | 0 | 56 |
+| recurring | 10 | 1 | 0 | 11 |
+| security | 23 | 29 | 3 | 55 |
+| terms | 35 | 0 | 0 | 35 |
 | website | 27 | 3 | 0 | 30 |
-| wording | 28 | 4 | 0 | 32 |
+| wording | 30 | 2 | 0 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -129,7 +130,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 336 of 374 done
+- stage 5: 336 of 376 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done

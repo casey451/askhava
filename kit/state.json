@@ -27239,7 +27239,8 @@
     "T847",
     "T867",
     "T868",
-    "T869"
+    "T869",
+    "T870"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -27303,7 +27304,8 @@
     "T853",
     "T867",
     "T868",
-    "T869"
+    "T869",
+    "T870"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -27581,7 +27583,8 @@
     "T825",
     "T867",
     "T868",
-    "T869"
+    "T869",
+    "T870"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -32781,7 +32784,8 @@
     "T825",
     "T867",
     "T868",
-    "T869"
+    "T869",
+    "T870"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -32814,7 +32818,8 @@
     "T760",
     "T867",
     "T868",
-    "T869"
+    "T869",
+    "T870"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -32847,7 +32852,8 @@
     "T760",
     "T867",
     "T868",
-    "T869"
+    "T869",
+    "T870"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -82193,7 +82199,8 @@
     "T847",
     "T867",
     "T868",
-    "T869"
+    "T869",
+    "T870"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -82406,7 +82413,8 @@
     "T847",
     "T867",
     "T868",
-    "T869"
+    "T869",
+    "T870"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -109259,7 +109267,8 @@
     "T669",
     "T541",
     "T751",
-    "T813"
+    "T813",
+    "T410"
    ],
    "status": "BLOCKED",
    "attempts": 3,
@@ -119185,7 +119194,8 @@
    "deps": [
     "T810",
     "T814",
-    "T854"
+    "T854",
+    "T871"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -125662,6 +125672,31 @@
     "tests/test_pii_scan.py",
     "tests/test_runner_wip.py"
    ]
+  },
+  {
+   "id": "T871",
+   "deps": [
+    "T810",
+    "T814",
+    "T854"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "link-code-email-send",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T870",
+   "deps": [
+    "T862",
+    "T820"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "conversation-email-download",
+   "type": "build",
+   "stage": "5"
   }
  ],
  "owner_waits": [],
@@ -134219,7 +134254,7 @@
    }
   }
  },
- "updated_at": "2026-11-27T16:12:18Z",
+ "updated_at": "2026-11-27T16:22:46Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -134317,8 +134352,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "278d45f2f12157ae42d8ef63f88c93b67060f062",
- "starter": "manual",
+ "runner_sha": "8df89e31f51507fee6d5023e3d48f9fed04f5ff5",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "c8cd2d18062a7f4f383f8def7362e28a4ccb1f84",
