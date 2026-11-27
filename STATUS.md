@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-27T20:15:56Z by runner e29a4938318b (actions).
+Updated 2026-11-27T21:06:09Z by runner e29a4938318b (actions).
 
-**Idle since 20:10Z; 694 of 804 done; week 18% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Idle since 20:10Z; 694 of 805 done; week 18% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 694 of 804 build tasks (owner gates not counted)
+- **Tasks done:** 694 of 805 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** idle since 20:10Z (no task in progress)
 - **Week:** 18% used, 160.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:11Z, 4 min before this update
+- **Last run:** 20:16Z, 49 min before this update
 - **Keeper:** last ran 20:11Z, next wake 20:31Z
 
 ## Needs attention
@@ -61,6 +61,7 @@ Updated 2026-11-27T20:15:56Z by runner e29a4938318b (actions).
 | T848 | core, payments, inbound text, security: `Clock::real_now()`  | done | 1 | 75 min | 21:12Z |  |
 
 ### Plan and harness merges on main
+- 20:24Z Plan: T857/T865 drafts bound to T856's guard; under-18 refused text; T872 (D-5982) (#1520)
 - 17:23Z Harness: Sonnet-worker trial on T871, T857, T865 from Opus drafts (D-5981) (#1518)
 - 17:02Z Plan: one task at a time, token use assessed after each (D-5980) (#1516)
 - 16:39Z Plan: pre-flight fixes before claim (D-5979) (#1515)
@@ -109,7 +110,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 337 of 376 done
+- stage 5: 337 of 377 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
