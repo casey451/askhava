@@ -54393,15 +54393,19 @@
   {
    "id": "T822",
    "slug": "privacy-policy-portal-link",
-   "title": "docs: the privacy policy names the email link for opted-out numbers and the fuller data file",
-   "goal": "Plan change D-5399 (privacy review job 14, policy finding; PRIV-031). `docs/legal/privacy-policy.md:99` (T800, DONE) describes only a texted code for a copy or delete request; T804 adds, for a number on the suppression list, a request made in the signed-in portal confirmed from a single-use link sent to her confirmed update email (PRIV-031, D-5281, D-5339), and T820 adds withdrawn quotes, job descriptions, intake answers, feedback and STOP, HELP and START records to \"Download my data\". Edit line 99 in place (no line added or removed): keep word for word the three texts pinned there: `tests/docs/test_privacy_policy.py:400` (\"we text a code to the number on file and you type it back, so no one else can ask in your name.\"), `:399` ('\"Download my data\" gives you a file of your requests') and `scripts/check_legal_docs.py:231` and `:239` (PRIV-011's \"We keep your phone number, locked, for 5 years only as proof of your texting permission and opt-out.\" and PRIV-031's \"Download my data\"), add one plain sentence for the email link, and name the file's contents as T820 builds them. `python3 scripts/check_legal_docs.py`, `scripts/check_copy.py`, `scripts/check_ai_smell.py` and `python3 -m pytest tests/docs` pass. Update `docs/decisions.md`. Plan change D-5664 (outside pre-flight): Sonnet writes this docs task; the Opus reviewer stays (privacy, D-483).",
+   "title": "docs: the privacy policy names the email link and the fuller data file and describes photo checks truly; the handyman certification and the Spanish campaign sample are completed",
+   "goal": "Plan change D-5399 (privacy review job 14, policy finding; PRIV-031). `docs/legal/privacy-policy.md:99` (T800, DONE) describes only a texted code for a copy or delete request; T804 adds, for a number on the suppression list, a request made in the signed-in portal confirmed from a single-use link sent to her confirmed update email (PRIV-031, D-5281, D-5339), and T820 adds withdrawn quotes, job descriptions, intake answers, feedback and STOP, HELP and START records to \"Download my data\". Edit line 99 in place (no line added or removed): keep word for word the three texts pinned there: `tests/docs/test_privacy_policy.py:400` (\"we text a code to the number on file and you type it back, so no one else can ask in your name.\"), `:399` ('\"Download my data\" gives you a file of your requests') and `scripts/check_legal_docs.py:231` and `:239` (PRIV-011's \"We keep your phone number, locked, for 5 years only as proof of your texting permission and opt-out.\" and PRIV-031's \"Download my data\"), add one plain sentence for the email link, and name the file's contents as T820 builds them. `python3 scripts/check_legal_docs.py`, `scripts/check_copy.py`, `scripts/check_ai_smell.py` and `python3 -m pytest tests/docs` pass. Update `docs/decisions.md`. Plan change D-5664 (outside pre-flight): Sonnet writes this docs task; the Opus reviewer stays (privacy, D-483). Plan change D-5907 (ChatGPT COMPLIANCE-1, verified by Opus; LIC-025, INT-044, TERMS-007, TERMS-013 (lines unchanged except LIC-025); D-491, D-5278): this task also, editing each line in place so every file keeps its line count unless stated: (a) `docs/legal/privacy-policy.md:84` claims \"Our own server, not an outside AI, checks it for faces, people, house numbers and license plates. It blurs or leaves out what it finds.\", which contradicts INT-044, D-491 and the policy's own `:32` and `:38`; replace those two sentences with \"Our own server checks its format and size and re-encodes it; you confirm it shows no person or house number. Once our AI photo screening is on, faces, house numbers, license plates and readable text are blurred.\" and keep the rest of the line; (b) `docs/legal/business-terms.md:39` becomes \"**Handymen** (not licensed contractors) certify on each quote that it is a full-job price under $1,000 for casual or minor work, not one part of a larger job split up to stay under the limit, with no permit and no gas, smoke-alarm or sprinkler work. A business that breaks this is removed.\" (LIC-025 as D-5907 reworded it), keeping the prefix pinned at `tests/docs/test_terms_clauses.py:402` word for word; (c) `docs/legal/twilio-campaign.md`: after Console sample 5 (`:131` to `:135`) add one line \"Sample 5 is the Spanish version of sample 1. English translation: <Console sample 1's text as written above it>.\", and end the `message_flow` quote (`:43` to `:47`) with the same translation sentence, so the registration carries an English translation of the Spanish sample; every pin in `tests/docs/test_campaign.py` stays green unchanged (the five Console samples still parse as five fenced blocks, the flow line still starts with the first-text sentence and names no chat, widget or code); if a pin cannot hold, stop and report a `PLAN GAP:` rather than edit the test. `python3 scripts/check_legal_docs.py`, `scripts/check_copy.py`, `scripts/check_ai_smell.py` and `python3 -m pytest tests/docs` pass.",
    "type": "docs",
    "phase": 1,
    "stage": "5",
    "module": null,
    "deps": [
     "T820",
-    "T800"
+    "T800",
+    "T428",
+    "T111",
+    "T229",
+    "T113"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -54411,28 +54415,37 @@
     "compliance"
    ],
    "owns": [
-    "docs/legal/privacy-policy.md"
+    "docs/legal/privacy-policy.md",
+    "docs/legal/business-terms.md",
+    "docs/legal/twilio-campaign.md"
    ],
    "reads": [
     "docs/spec/privacy.md",
     "tests/docs/test_privacy_policy.py",
-    "scripts/check_legal_docs.py"
+    "scripts/check_legal_docs.py",
+    "docs/spec/licensing.md",
+    "tests/docs/test_terms_clauses.py",
+    "tests/docs/test_campaign.py",
+    "docs/spec/intake.md"
    ],
    "requirements": [
-    "PRIV-031"
+    "PRIV-031",
+    "LIC-025",
+    "INT-044"
    ],
    "tests": [],
    "decisions": [
     "D-5281",
     "D-5339",
     "D-5399",
-    "D-5664"
+    "D-5664",
+    "D-5907"
    ],
    "cites": [],
    "budget": {
-    "files": 1,
-    "lines": 20,
-    "context_pct": 8
+    "files": 3,
+    "lines": 40,
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -54441,7 +54454,8 @@
    ],
    "branch": "claude/task/T822-privacy-policy-portal-link",
    "prompt": "kit/prompts/T822.md",
-   "acceptance": "Line 99 of the policy describes the code and the email link and the file's contents; the policy keeps its line count; `check_legal_docs.py`, `check_copy.py`, `check_ai_smell.py` and `pytest tests/docs` pass."
+   "acceptance": "Line 99 of the policy describes the code and the email link and the file's contents, and line 84 matches lines 32 and 38; business-terms line 39 carries the casual-or-minor and no-split wording; the campaign file carries the English translation of sample 5; the policy and terms keep their line counts; `check_legal_docs.py`, `check_copy.py`, `check_ai_smell.py` and `pytest tests/docs` pass.",
+   "copy": true
   },
   {
    "id": "T823",
