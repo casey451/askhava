@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-27T05:10:55Z by runner 2e19f8cd4466 (actions).
+Updated 2026-11-27T05:11:53Z by runner b5adbbfa5206 (actions).
 
 **Building: T518 in progress since 04:42Z; 682 of 799 done; week 11% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 682 of 799 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T518 claimed 04:42Z, lease until 07:42Z; lane 3: T612 claimed 03:44Z, lease until 06:44Z; lane 4: T657 claimed 04:46Z, lease until 07:46Z
+- **Lane:** lane 1: T518 claimed 04:42Z, lease until 07:42Z; lane 3: T612 claimed 03:44Z, lease until 06:44Z
 - **Week:** 11% used, 167.9M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:10Z, 0 min before this update
+- **Last run:** 05:11Z, 0 min before this update
 - **Keeper:** last ran 05:10Z, next wake 06:46Z
 
 ## Needs attention
@@ -37,11 +37,12 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 50% of the context window, over its 45% limit
 - PLAN GAP T856 (since 2026-11-27T02:15:00Z, no attempt used; a plan change fixes it): outside ownership: app/intake/src/replies.rs:367 (and replies.rs:204). The chat raw path web_chat::raw_turn -> replies::receive_raw_reply -> answer_name_address -> receive_answer (replies.rs:367) and reply_in's receive_text call (replies.rs:204) reach models::record_consent; T856 does not own replies.rs, TextIn has ~100 unowned builders, so only a runtime flag (set_chat_turn, D-5891) is possible in owned files. Reviewer (agent aec58822cf2c18f01) confirmed the gap with evidence at head c3beeeb4ca4cae1ff578a5f1aa7ea50d5c8e35e3; its only finding is that D-5891 should also cite replies.rs:204.
-- Strict plan check red: 61 problem(s) on tasks still to run (+588 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
+- Strict plan check red: 64 problem(s) on tasks still to run (+589 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T657 | quotes and portals: quote-form and sign-in errors mark the f | QUEUED | 2 | 25 min | 05:11Z | Worker stopped with no edits: start smoke exceeded ~20 min. Finding: J3 step 5 owner sign-in (signInOwner, tests/e2e/own |
 | T849 | server: the e2e web binary serves J1/J2 business time from t | MERGE_PENDING | 1 | 103 min | 05:09Z |  |
 | T843 | runner (harness): a 35-minute pre-session smoke cap, and a p | MERGE_PENDING | 1 | 78 min | 04:51Z |  |
 | T518 | server, ops and payments: the Stripe-or-webhook-errors alert | resync | 1 | 2 h 9 min | 04:13Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
@@ -55,7 +56,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 | T854 | portals and action links: sessions and admissions on `real_n | done | 1 | 2 h 5 min | 23:58Z |  |
 | T744 | picks: a job that reaches a final status ends its pick await | done | 1 | 98 min | 23:54Z |  |
 | T820 | server and portals: "Download my data" also holds withdrawn  | check_failed | 3 | 102 min | 21:46Z | Hand-in time passed. Worker added unit tests in app/portals/src/data_download.rs (commit f4a102dca); portals-only covera |
-| T657 | quotes and portals: quote-form and sign-in errors mark the f | check_failed | 1 | 75 min | 21:40Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-26T |
+| T657 | quotes and portals: quote-form and sign-in errors mark the f | check_failed | 1 | 75 min | 21:40Z |  |
 | T840 | intake and messaging: quote updates reach Email and web-and- | done | 1 | 2 h 10 min | 21:20Z |  |
 | T848 | core, payments, inbound text, security: `Clock::real_now()`  | done | 1 | 75 min | 21:12Z |  |
 | T847 | e2e: J3 step 5 seeds its refused pick at the app clock, so t | done | 1 | 94 min | 20:01Z |  |
@@ -113,7 +114,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T518 (lease until 2026-11-27T07:42:44Z)
 - lane 3: T612 (lease until 2026-11-27T06:44:20Z)
-- lane 4: T657 (lease until 2026-11-27T07:46:01Z)
 
 ## Last usage reading
-- {"task": "T849", "at": "2026-11-27T05:09:03Z", "cache_creation_input_tokens": 255889, "output_tokens": 85795, "input_tokens": 309, "cache_read_input_tokens": 19958298}
+- {"task": "T657", "at": "2026-11-27T05:11:52Z", "cache_read_input_tokens": 2959203, "cache_creation_input_tokens": 82039, "input_tokens": 95, "output_tokens": 17943}
