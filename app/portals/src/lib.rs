@@ -87,4 +87,5 @@ mod step_up_page;
 mod team_page;
 #[cfg(test)]
 mod tests;
+mod text_consent_page;
 mod update_channel;

@@ -270,6 +270,7 @@ wargames/            the Phase 2 war games (Python, standard library): personas,
 - Business settings routes (T733, D-4727, D-4822, D-5318, D-5787; BIZ-010, BIZ-058, SEC-027, BIZ-046, SEC-019, A11Y-030): new `server::business_settings_routes`, merged in `build_router` (`business_pages`), serves `GET`/`POST /b/settings/service-area` (`portals::service_area_settings_page`, `change_service_area`; owner or "Confirm and billing" only), `POST /b/shared-inbox` (`set_inbox_shared`, 303 to `/b` or the step-up page) and `GET /b/contact-card.vcf` (`contact_card` over the voice hooks' masked pool), each behind `business_principal`, `no-store`, `refuse_cross_site` and CSRF on `POST`. No new table, library or task kind.
 - Call texts in her language (T590, D-4052, D-5540; TXT-027, TXT-030, TXT-039): `server` passes `intake::api::job_language` as a `calls::api::JobLanguage` fn pointer to `calls::api::run_whos_calling_in` and `picks::api::run_unreachable_step_in`, since neither `calls` nor `picks` may call `intake`; the who's-calling text, the missed-call text and its email copy follow it, English with no source or a failed read.
 - Final status ends waiting picks (T744, D-4748, D-5664, D-5883 to D-5885; FEE-021, PICK-038, QH-007, PICK-048): the `jobs.final_status` payload gains `at`, the move's own time as RFC 3339 text (`jobs::final_event`); `picks::api::run_final_status` now, in one transaction, calls `messaging::api::expire_job_rows(job, at)` (skipped for a payload with no readable `at`), then `picks::final_status_end::end_for_final`, which sends every `awaiting_confirm`, not-ended pick of the final job through `connect::end_pending` with the new `PendingEnd::JobFinal` (end reason `job_final`, migration 0214 replaces `pick_end_reason_check`), so its PaymentIntent ends through `payments::api::end_pick_intent` and a later success is refunded once; then `no_longer_active`. New cross-module call: `picks` to `messaging::api::expire_job_rows`.
+- Business text-consent page (T522, D-3879, D-3881, D-5913; CON-019, BIZ-036, TXT-035): new `businesses::text_lines` (`member_text_lines`, the phones one member linked with `number_end`, number version and `may_text`), new `portals::text_consent_page` (`text_consent_page`, `record_text_consent` over `record_consent_for`) and template `text_consent.html` (extends `business_layout.html`), new `server::text_consent`, merged in `build_router` (`business_pages`), serving `GET`/`POST /b/texts` behind `business_principal`, `no-store`, `refuse_cross_site` and CSRF on `POST`; the switch is `messaging::api::load_lines`' stored business line. `notice_settings.html` links the page when the channel is text or both; `not_a_fit.html` now extends `business_layout.html` (D-5567). No new table, library or task kind.
 
 ## 3. Modules, what each owns, and its tables
 
@@ -651,6 +652,8 @@ Every HTTP route the `web` process serves or a queued task's goal says it will s
 | GET | /b/billing/statement.csv | portals | yes |
 | GET | /b/notices | portals | yes |
 | POST | /b/notices | portals | yes |
+| GET | /b/texts | portals | yes |
+| POST | /b/texts | portals | yes |
 | GET | /b/step-up | portals | yes |
 | POST | /b/step-up/send | portals | yes |
 | POST | /b/step-up/check | portals | yes |
