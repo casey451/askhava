@@ -1,26 +1,26 @@
 # Ask Hava build status
 
-Updated 2026-11-27T20:11:15Z by runner f40a8e4da247 (actions).
+Updated 2026-11-27T20:15:56Z by runner e29a4938318b (actions).
 
-**Idle since 19:33Z; 693 of 804 done; week 18% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Idle since 20:10Z; 694 of 804 done; week 18% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 693 of 804 build tasks (owner gates not counted)
+- **Tasks done:** 694 of 804 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** idle since 19:33Z (no task in progress)
+- **Lane:** idle since 20:10Z (no task in progress)
 - **Week:** 18% used, 160.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:11Z, 0 min before this update
+- **Last run:** 20:11Z, 4 min before this update
 - **Keeper:** last ran 20:11Z, next wake 20:31Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 50% of the context window, over its 45% limit
-- Strict plan check red: 57 problem(s) on tasks still to run (+603 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
+- Strict plan check red: 58 problem(s) on tasks still to run (+604 on DONE tasks); first: T704: stored context_pct 38% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T856 | intake: a request may be texted only with an `sms` consent r | MERGE_PENDING | 2 | 2 h 16 min | 19:33Z | PLAN GAP: outside ownership: app/intake/src/replies.rs:367 (and replies.rs:204). The chat raw path web_chat::raw_turn -> |
+| T856 | intake: a request may be texted only with an `sms` consent r | done | 2 | 2 h 16 min | 19:33Z | PLAN GAP: outside ownership: app/intake/src/replies.rs:367 (and replies.rs:204). The chat raw path web_chat::raw_turn -> |
 | T749 | messaging: the unused `business_pick_waiting` text template  | check_failed | 1 | 44 min | 16:48Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T849 | server: the e2e web binary serves J1/J2 business time from t | check_failed | 4 | 118 min | 15:27Z | PLAN GAP: outside ownership: tests/e2e/web_chat.spec.ts, tests/a11y/page_states.ts / D-5836 puts inbound SMS and action  |
 | T817 | messaging: a text re-checks the opt-out list after its claim | done | 1 | 67 min | 14:27Z |  |
@@ -73,7 +73,7 @@ Updated 2026-11-27T20:11:15Z by runner f40a8e4da247 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 486 of 735 (66.1%) · partial 241 · unstarted 8
-**Tasks merged (throughput only):** 693 of 804
+**Tasks merged (throughput only):** 694 of 804
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -109,7 +109,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 336 of 376 done
+- stage 5: 337 of 376 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
