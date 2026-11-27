@@ -519,10 +519,65 @@ async fn td_biz_62_a_member_who_is_not_the_owner_is_refused(pool: PgPool) {
     assert_eq!(detached, 0);
 }
 
-/// TD-BIZ-62 (BIZ-051): every detach failing is counted, and the business has still left with
-/// its cards marked removed.
+/// Every log line captured while its guard lives, as `LEVEL message field=value ...`.
+#[derive(Clone, Default)]
+struct Lines(Arc<Mutex<Vec<String>>>);
+
+/// One event's fields, the message first.
+#[derive(Default)]
+struct Fields(String);
+
+impl tracing::field::Visit for Fields {
+    fn record_debug(&mut self, field: &tracing::field::Field, value: &dyn std::fmt::Debug) {
+        if field.name() == "message" {
+            self.0 = format!("{value:?}{}", self.0);
+        } else {
+            self.0.push_str(&format!(" {}={value:?}", field.name()));
+        }
+    }
+}
+
+impl tracing::Subscriber for Lines {
+    fn enabled(&self, _: &tracing::Metadata<'_>) -> bool {
+        true
+    }
+
+    fn new_span(&self, _: &tracing::span::Attributes<'_>) -> tracing::span::Id {
+        tracing::span::Id::from_u64(1)
+    }
+
+    fn record(&self, _: &tracing::span::Id, _: &tracing::span::Record<'_>) {}
+
+    fn record_follows_from(&self, _: &tracing::span::Id, _: &tracing::span::Id) {}
+
+    fn event(&self, event: &tracing::Event<'_>) {
+        let mut fields = Fields::default();
+        event.record(&mut fields);
+        let line = format!("{} {}", event.metadata().level(), fields.0);
+        let mut all = self.0.lock().unwrap_or_else(PoisonError::into_inner);
+        all.push(line);
+    }
+
+    fn enter(&self, _: &tracing::span::Id) {}
+
+    fn exit(&self, _: &tracing::span::Id) {}
+}
+
+impl Lines {
+    fn all(&self) -> Vec<String> {
+        self.0
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .clone()
+    }
+}
+
+/// TD-BIZ-62 (BIZ-051): every detach failing is counted and logged once (`failed=2`), and the
+/// business has still left with its cards marked removed.
 #[sqlx::test(migrator = "MIGRATOR")]
 async fn td_biz_62_a_detach_failure_still_leaves(pool: PgPool) {
+    let lines = Lines::default();
+    let _guard = tracing::subscriber::set_default(lines.clone());
     let (who, jar, session) = owner(&pool).await;
     let (a, _, _, _) = waiting(&pool, who).await;
     cards(&pool, who).await;
@@ -536,6 +591,13 @@ async fn td_biz_62_a_detach_failure_still_leaves(pool: PgPool) {
     assert_eq!(left.status, 200, "{}", left.text);
     let tried = seen.lock().unwrap_or_else(PoisonError::into_inner).len();
     assert_eq!(tried, 2, "both detaches tried, both failed");
+    let logged = lines.all();
+    let failed: Vec<&String> = logged
+        .iter()
+        .filter(|l| l.contains("saved card detach failed"))
+        .collect();
+    assert_eq!(failed.len(), 1, "logged once: {logged:?}");
+    assert!(failed[0].starts_with("WARN ") && failed[0].ends_with(" failed=2"));
     has_left(&app, (&mut db, &jar), who, a).await;
 }
 
@@ -616,9 +678,11 @@ async fn fake_stripe(status: u16) -> (String, Seen) {
 
 /// TD-BIZ-62 (BIZ-051, SEC-018, SEC-032, R6): the adapter sends `POST
 /// /v1/payment_methods/{pm}/detach` with the key as Bearer and a derived idempotency key that
-/// names neither card nor key, through the leave; a refusal's error holds no key.
+/// names neither card nor key, through the leave; a refusal's error and no captured log line holds the key.
 #[sqlx::test(migrator = "MIGRATOR")]
 async fn td_biz_62_the_adapter_detaches_at_a_local_fake_server(pool: PgPool) {
+    let lines = Lines::default();
+    let _guard = tracing::subscriber::set_default(lines.clone());
     let (who, jar, session) = owner(&pool).await;
     cards(&pool, who).await;
     let mut db = pool.acquire().await.expect("db");
@@ -656,4 +720,6 @@ async fn td_biz_62_the_adapter_detaches_at_a_local_fake_server(pool: PgPool) {
         }
     );
     assert!(!format!("{error:?} {error}").contains(FAKE_KEY));
+    let logged = lines.all();
+    assert!(!logged.iter().any(|l| l.contains(FAKE_KEY)), "{logged:?}");
 }
