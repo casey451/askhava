@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-27T02:21:01Z by runner 2e19f8cd4466 (actions).
+Updated 2026-11-27T02:23:24Z by runner 2e19f8cd4466 (actions).
 
-**Building: T849 in progress since 01:34Z; 680 of 799 done; week 9% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Building: T522 in progress since 02:23Z; 680 of 799 done; week 9% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 680 of 799 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T849 claimed 01:34Z, lease until 04:34Z; lane 3: T612 claimed 02:00Z, lease until 05:00Z; lane 4: T518 claimed 02:04Z, lease until 05:04Z; lane 5: T799 claimed 02:20Z, lease until 05:20Z
-- **Week:** 9% used, 173.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:18Z, 2 min before this update
+- **Lane:** lane 1: T522 claimed 02:23Z, lease until 05:23Z; lane 2: T849 claimed 01:34Z, lease until 04:34Z; lane 3: T612 claimed 02:00Z, lease until 05:00Z; lane 4: T518 claimed 02:04Z, lease until 05:04Z; lane 5: T799 claimed 02:20Z, lease until 05:20Z
+- **Week:** 9% used, 172.8M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
+- **Last run:** 02:21Z, 2 min before this update
 - **Keeper:** last ran 02:16Z, next wake 02:36Z
 
 ## Needs attention
@@ -90,7 +90,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-27T02:15:50Z (week)): week: 21.0M used, 173.0M left, resets 2026-12-03T17:00:00Z; projected finish 2026-12-10T16:46:38Z.
+- Pacing (session_reading 2026-11-27T02:15:50Z (week)): week: 21.2M used, 172.8M left, resets 2026-12-03T17:00:00Z; projected finish 2026-12-10T16:49:39Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -105,7 +105,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T522 (lease until 2026-11-27T05:23:13Z)
 - lane 2: T849 (lease until 2026-11-27T04:34:33Z)
 - lane 3: T612 (lease until 2026-11-27T05:00:07Z)
 - lane 4: T518 (lease until 2026-11-27T05:04:26Z)
