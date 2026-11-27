@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-27T17:18:25Z by runner 12679cbd7990 (actions).
+Updated 2026-11-27T19:34:01Z by runner c2cf3bb02c31 (actions).
 
 **Building: T856 in progress since 17:17Z; 693 of 804 done; week 17% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -8,14 +8,15 @@ Updated 2026-11-27T17:18:25Z by runner 12679cbd7990 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T856 claimed 17:17Z, lease until 20:17Z
 - **Week:** 17% used, 160.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:11Z, 6 min before this update
+- **Last run:** 17:18Z, 2 h 15 min before this update
 - **Keeper:** last ran 17:11Z, next wake 17:31Z
+- **WARNING:** no runner cycle logged for over 90 minutes before this update
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 50% of the context window, over its 45% limit
-- Strict plan check red: 57 problem(s) on tasks still to run (+603 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
+- Strict plan check red: 59 problem(s) on tasks still to run (+603 on DONE tasks); first: T704: stored context_pct 38% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -59,9 +60,9 @@ Updated 2026-11-27T17:18:25Z by runner 12679cbd7990 (actions).
 | T840 | intake and messaging: quote updates reach Email and web-and- | done | 1 | 2 h 10 min | 21:20Z |  |
 | T848 | core, payments, inbound text, security: `Clock::real_now()`  | done | 1 | 75 min | 21:12Z |  |
 | T847 | e2e: J3 step 5 seeds its refused pick at the app clock, so t | done | 1 | 94 min | 20:01Z |  |
-| T612 | harness: the WEB-029 and WEB-030 runtime checks on every sit | BLOCKED | 1 | 50 min | 18:35Z |  |
 
 ### Plan and harness merges on main
+- 17:23Z Harness: Sonnet-worker trial on T871, T857, T865 from Opus drafts (D-5981) (#1518)
 - 17:02Z Plan: one task at a time, token use assessed after each (D-5980) (#1516)
 - 16:39Z Plan: pre-flight fixes before claim (D-5979) (#1515)
 - 16:31Z Plan: T849 seeds J3's licence check at the app clock (D-5978) (#1514)
@@ -69,7 +70,6 @@ Updated 2026-11-27T17:18:25Z by runner 12679cbd7990 (actions).
 - 12:14Z Plan: T657 waits on T811 (D-5954); T849 moves j1_homeowner into the late project (D-5955) (#1500)
 - 07:26Z Plan: fraud-refund fix (D-5888), T820 fix (D-5889), T865 draft (D-5900), template line and T868 (D-5901), compliance (D-5907), T856 plan fix (D-5918) (#1
 - 23:18Z Plan: T801 web-chat consent chain re-split, per-request SMS consent, pick code by email (D-5848); T612 font fallback (D-5864); pre-flight fixes (D-5876, 
-- 18:27Z Plan: test clock for the J1/J2 journeys, T222 as J1 core, T799's Spanish wording (D-5836, D-5837) (#1472)
 
 ## Progress (requirements verified)
 
