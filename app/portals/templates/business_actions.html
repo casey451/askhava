@@ -19,7 +19,9 @@
     sign-up's labels, hints and messages, an "Error: " title and focused summary after a refusal,
     and a status line present at load (T249; BIZ-010, BIZ-058, A11Y-030). An action page's one
     labelled number field (Busy's days, Away's hours back) keeps a refused value and shows its
-    error by the field and in a focused summary (T543; BIZ-034, A11Y-030). -#}
+    error by the field and in a focused summary (T543; BIZ-034, A11Y-030). A failed page renders
+    its summary first in main, before the h1 and the stylesheet link; a package fault marks only
+    the named package's name or price (T657; A11Y-030, D-4326). -#}
 {% macro radio(name, value, label, current) %}<div><input type="radio" id="{{ name }}-{{ value }}" name="{{ name }}" value="{{ value }}"{% if current == value %} checked{% endif %}> <label for="{{ name }}-{{ value }}">{{ label }}</label></div>{% endmacro %}
 {% macro err(f, name) %}{% if let Some(m) = f.error_for(name) %}<p id="{{ name }}-error" class="field-error">Error: {{ m }}</p>{% endif %}{% endmacro %}
 {% macro money(pr, name, label, value) %}<label for="{{ name }}">{{ label }}</label>
@@ -29,6 +31,16 @@
 {% macro errby(f, name) %}{% if f.error_for(name).is_some() %} aria-describedby="{{ name }}-error"{% endif %}{% endmacro %}
 {% block title %}{% if let Some(p) = page %}Job {{ p.job_number }}{% else if let Some(a) = action %}{% if a.field_error().is_some() %}Error: {% endif %}{{ a.title }}{% else if let Some(f) = form %}{% if !f.problems.is_empty() || price_error %}Error: {% endif %}Quote job {{ f.job_number }}{% else if let Some(s) = area %}{% if !s.problems.is_empty() %}Error: {% endif %}Where you take jobs{% endif %}{% endblock %}
 {% block main %}
+{% if page.is_some() %}{% else if let Some(a) = action %}{% if let Some(f) = a.field %}{% if let Some(m) = f.error %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
+<h2>Fix this to continue</h2>
+<ul><li><a href="#{{ f.name }}">{{ m }}</a></li></ul>
+</div>{% endif %}{% endif %}{% else if let Some(f) = form %}{% if !f.problems.is_empty() || price_error %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
+<h2>Fix these to send your quote</h2>
+<ul>{% if let Some(pr) = price %}{% if let Some(pp) = pr.problem %}<li><a href="#{{ pp.field() }}">{{ pp.message() }}</a></li>{% endif %}{% if let Some(m) = pr.note_error() %}<li><a href="#notes">{{ m }}</a></li>{% endif %}{% endif %}{% for p in f.problems %}<li><a href="#{{ p.field() }}">{{ p.message() }}</a></li>{% endfor %}</ul>
+</div>{% endif %}{% else if let Some(s) = area %}{% if !s.problems.is_empty() %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
+<h2>Fix these to save</h2>
+<ul>{% for p in s.problems %}<li><a href="#{{ crate::business_signup::area_field(**p).replace('_', "-") }}">{{ crate::business_signup::area_message(**p) }}</a></li>{% endfor %}</ul>
+</div>{% endif %}{% endif %}
 <link rel="stylesheet" href="/static/portals/forms.css">
 {% if let Some(p) = page %}
 <h1>Job {{ p.job_number }}</h1>
@@ -69,10 +81,6 @@
 {% endif %}
 {% else if let Some(a) = action %}
 <h1>{{ a.title }}</h1>
-{% if let Some(f) = a.field %}{% if let Some(m) = f.error %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
-<h2>Fix this to continue</h2>
-<ul><li><a href="#{{ f.name }}">{{ m }}</a></li></ul>
-</div>{% endif %}{% endif %}
 <p id="action-does">{{ a.does }}</p>
 {% if let Some(end) = a.ends_at %}<p id="action-ends">Ends at {{ end }}, Arizona time.</p>{% endif %}
 <form method="post" novalidate>
@@ -85,10 +93,6 @@
 {% else if let Some(f) = form %}
 <h1>Quote job {{ f.job_number }}</h1>
 <p id="job-status">{{ f.status_line() }}</p>
-{% if !f.problems.is_empty() || price_error %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
-<h2>Fix these to send your quote</h2>
-<ul>{% if let Some(pr) = price %}{% if let Some(pp) = pr.problem %}<li><a href="#{{ pp.field() }}">{{ pp.message() }}</a></li>{% endif %}{% if let Some(m) = pr.note_error() %}<li><a href="#notes">{{ m }}</a></li>{% endif %}{% endif %}{% for p in f.problems %}<li><a href="#{{ p.field() }}">{{ p.message() }}</a></li>{% endfor %}</ul>
-</div>{% endif %}
 {% if let Some(price) = f.read_back %}<p id="read-back">We read {{ price }} from your text. Check the price and the answers below. The homeowner won't see anything until you send it.</p>{% endif %}
 <form method="post" novalidate>
 <input type="hidden" name="csrf" value="{{ csrf }}">
@@ -97,12 +101,10 @@
 <input type="hidden" name="format" value="{{ pr.code() }}">
 {% if pr.code() == "range" %}{% call money(pr, "low", "Low price ($)", pr.fields.low) %}{% endcall %}{% call money(pr, "high", "High price ($)", pr.fields.high) %}{% endcall %}<div><input type="checkbox" id="on_site" name="on_site" value="yes"{% if pr.fields.on_site %} checked{% endif %}> <label for="on_site">Range to be confirmed on site</label></div>
 {% else if pr.code() == "tiers" %}<fieldset id="tiers"><legend>Packages (up to 3)</legend>
-{% if let Some(m) = pr.error_for("tier1_name") %}<p id="tier1_name-error" class="field-error">Error: {{ m }}</p>
-{% endif %}{% for (name, cents) in pr.fields.tiers %}<label for="tier{{ loop.index }}_name">Package {{ loop.index }} name</label>
-<input type="text" id="tier{{ loop.index }}_name" name="tier{{ loop.index }}_name" value="{{ name }}"{% if loop.first && pr.error_for("tier1_name").is_some() %} aria-describedby="tier1_name-error" aria-invalid="true"{% endif %}>
-<label for="tier{{ loop.index }}_price">Package {{ loop.index }} price ($)</label>
-<input type="text" id="tier{{ loop.index }}_price" name="tier{{ loop.index }}_price" inputmode="decimal" value="{{ cents }}">
-{% endfor %}</fieldset>
+{% for (name, cents) in pr.fields.tiers %}{% let i = loop.index %}{% let n = format!("tier{i}_name") %}{% let c = format!("tier{i}_price") %}{% let l = format!("Package {i} price ($)") %}<label for="{{ n }}">Package {{ loop.index }} name</label>
+{% if let Some(m) = pr.error_for(n.as_str()) %}<p id="{{ n }}-error" class="field-error">Error: {{ m }}</p>
+{% endif %}<input type="text" id="{{ n }}" name="{{ n }}" value="{{ name }}"{% if pr.error_for(n.as_str()).is_some() %} aria-describedby="{{ n }}-error" aria-invalid="true"{% endif %}>
+{% call money(pr, c.as_str(), l.as_str(), cents) %}{% endcall %}{% endfor %}</fieldset>
 {% else if pr.code() == "monthly" %}{% call money(pr, "amount", "Price ($)", pr.fields.amount) %}{% endcall %}<fieldset id="per"{% if pr.error_for("per").is_some() %} aria-describedby="per-error"{% endif %}><legend>What does this price cover?</legend>
 {% if let Some(m) = pr.error_for("per") %}<p id="per-error" class="field-error">Error: {{ m }}</p>
 {% endif %}{% call radio("per", "week", "One week", pr.fields.per.as_str()) %}{% endcall %}
@@ -148,7 +150,7 @@
 <label for="visit_date">Date</label>
 <p id="visit_date-hint">For example, 2026-11-12 for November 12.</p>
 {% call err(f, "visit_date") %}{% endcall %}
-<input type="text" id="visit_date" name="visit_date" aria-describedby="visit_date-hint{% if f.error_for("visit_date").is_some() %} visit_date-error{% endif %}" value="{{ f.values.visit_date }}">
+<input type="text" id="visit_date" name="visit_date" aria-describedby="visit_date-hint{% if f.error_for("visit_date").is_some() %} visit_date-error{% endif %}"{% if f.error_for("visit_date").is_some() %} aria-invalid="true"{% endif %} value="{{ f.values.visit_date }}">
 <fieldset id="visit_part"{% call errby(f, "visit_part") %}{% endcall %}><legend>Part of the day</legend>
 {% call err(f, "visit_part") %}{% endcall %}
 {% call radio("visit_part", "morning", "Morning", f.values.visit_part.as_str()) %}{% endcall %}
@@ -167,7 +169,7 @@
 <label for="minutes">Minutes this quote took (optional)</label>
 <p id="minutes-hint">A rough guess is fine. The homeowner never sees it.</p>
 {% call err(f, "minutes") %}{% endcall %}
-<input type="text" id="minutes" name="minutes" inputmode="numeric" aria-describedby="minutes-hint{% if f.error_for("minutes").is_some() %} minutes-error{% endif %}" value="{{ f.values.minutes }}">
+<input type="text" id="minutes" name="minutes" inputmode="numeric" aria-describedby="minutes-hint{% if f.error_for("minutes").is_some() %} minutes-error{% endif %}"{% if f.error_for("minutes").is_some() %} aria-invalid="true"{% endif %} value="{{ f.values.minutes }}">
 <h2>Your fee if picked</h2>
 <ul id="fee-lines">{% for line in f.fee_lines %}<li>{{ line }}</li>{% endfor %}</ul>
 {% if let Some(b) = auto_box %}<fieldset id="auto_confirm-box"><legend>Auto-confirm (optional)</legend>
@@ -182,10 +184,6 @@
 </form>
 {% else if let Some(s) = area %}
 <h1>Where you take jobs</h1>
-{% if !s.problems.is_empty() %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
-<h2>Fix these to save</h2>
-<ul>{% for p in s.problems %}<li><a href="#{{ crate::business_signup::area_field(**p).replace('_', "-") }}">{{ crate::business_signup::area_message(**p) }}</a></li>{% endfor %}</ul>
-</div>{% endif %}
 <p id="area-saved" role="status">{% if s.saved %}Saved. New job cards will go by this ZIP code and distance.{% endif %}</p>
 <p id="area-does">You get job cards for the towns you serve. You also get cards for any job within the miles you set below, counted from your base ZIP code.</p>
 <form method="post" action="{{ crate::business_actions::SERVICE_AREA_SETTINGS_ROUTE }}" id="service-area-form" novalidate>
