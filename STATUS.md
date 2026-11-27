@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-27T01:34:43Z by runner 404e829ae740 (actions).
+Updated 2026-11-27T01:35:20Z by runner 404e829ae740 (actions).
 
 **Building: T856 in progress since 00:24Z; 678 of 799 done; week 8% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 678 of 799 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T856 claimed 00:24Z, lease until 03:24Z
-- **Week:** 8% used, 176.9M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:21Z, 13 min before this update
+- **Lane:** lane 1: T856 claimed 00:24Z, lease until 03:24Z; lane 2: T849 claimed 01:34Z, lease until 04:34Z
+- **Week:** 8% used, 176.1M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
+- **Last run:** 01:21Z, 14 min before this update
 - **Keeper:** last ran 01:15Z, next wake 01:35Z
 
 ## Needs attention
@@ -34,7 +34,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 ##[error]Process completed with exit code 1.
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
-- PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 48% of the context window, over its 45% limit
+- PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 50% of the context window, over its 45% limit
 - Strict plan check red: 62 problem(s) on tasks still to run (+585 on DONE tasks); first: T704: stored context_pct 38% but it measures 42%; regenerate
 
 ## Last 24 hours
@@ -87,7 +87,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-27T00:29:39Z (week)): week: 17.1M used, 176.9M left, resets 2026-12-03T17:00:00Z; projected finish 2026-12-10T15:47:11Z.
+- Pacing (session_reading 2026-11-27T01:15:14Z (week)): week: 17.9M used, 176.1M left, resets 2026-12-03T17:00:00Z; projected finish 2026-12-10T15:59:24Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -103,6 +103,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T856 (lease until 2026-11-27T03:24:55Z)
+- lane 2: T849 (lease until 2026-11-27T04:34:33Z)
 
 ## Last usage reading
 - {"task": "T861", "at": "2026-11-27T01:13:59Z", "input_tokens": 109, "cache_creation_input_tokens": 103504, "cache_read_input_tokens": 2261887, "output_tokens": 18238}
