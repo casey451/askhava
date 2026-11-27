@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-27T14:15:57Z by runner febc73c2ddbc (actions).
+Updated 2026-11-27T14:27:55Z by runner 0b4b1a9a386f (actions).
 
 **Building: T849 in progress since 13:29Z; 691 of 802 done; week 15% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-27T14:15:57Z by runner febc73c2ddbc (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T849 claimed 13:29Z, lease until 16:29Z; lane 4: T817 claimed 13:19Z, lease until 16:19Z
 - **Week:** 15% used, 164.1M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:15Z, 0 min before this update
+- **Last run:** 14:16Z, 11 min before this update
 - **Keeper:** last ran 14:15Z, next wake 16:22Z
 
 ## Needs attention
@@ -21,7 +21,7 @@ Evidence: her data download is assembled in app/server/src/homeowner_portal.rs:6
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 50% of the context window, over its 45% limit
 - PLAN GAP T856 (since 2026-11-27T07:31:36Z, no attempt used; a plan change fixes it): T856: measures 46% of the context window, over its 45% limit
 - PLAN GAP T862 (since 2026-11-27T13:22:09Z, no attempt used; a plan change fixes it): outside ownership: app/server/src/homeowner_portal.rs, app/portals/src/homeowner_portal.rs
-- Strict plan check red: 62 problem(s) on tasks still to run (+599 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
+- Strict plan check red: 63 problem(s) on tasks still to run (+601 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
