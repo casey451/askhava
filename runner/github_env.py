@@ -83,7 +83,7 @@ SMOKE_TREE = "askhava-smoke"  # the smoke worktree's fixed folder under RUNNER_T
 SMOKE_MTIMES = "smoke-mtimes.json"  # in the smoke's target dir: each tracked file's blob and the mtime it gets (D-1890)
 SMOKE_RAN = "smoke-ran"  # beside the smoke's target dir: this job ran the smoke, so backup-runner.yml saves its cache (D-1911)
 WARM_TIMEOUT = 1200  # seconds for `--warm-smoke`, a workflow step before the session with no 600-second Bash call (D-2007)
-PRE_SMOKE_TIMEOUT = 1500  # seconds for `--pre-smoke`'s scripts/smoke.sh, the start-routine smoke run before the session (D-2028)
+PRE_SMOKE_TIMEOUT = 2100  # seconds for `--pre-smoke`'s scripts/smoke.sh, the start-routine smoke run before the session (D-2028, D-5682)
 SMOKE_PRE = "smoke-pre.json"  # beside the smoke's target dir: the pre-session smoke's result for `smoke_main` (D-2028)
 SMOKE_PRE_LOG = "smoke-pre.log"  # beside it too: that smoke's output, printed to the step's job log (D-2028)
 PRE_SESSION = "pre-session"  # `smoke_source` when smoke_main used the pre-session result; added to the run's `why` (D-2028)
@@ -94,6 +94,9 @@ PRE_SESSION = "pre-session"  # `smoke_source` when smoke_main used the pre-sessi
 SMOKE_BACKGROUND = "RUNNER_SMOKE_BACKGROUND"  # "1" in the backup job's session step: run the session's smoke detached
 PRE_SMOKE_HEAD = "RUNNER_PRE_SMOKE_HEAD"  # the head a background `--pre-smoke` smokes instead of the checkout's main
 PRE_SMOKE_STATE = "RUNNER_PRE_SMOKE_STATE"  # kit/state.json as the step read it: a reusable green skips the step
+PRE_SMOKE_NIGHTLY = "RUNNER_PRE_SMOKE_NIGHTLY"  # kit/nightly.json as the step read it, for the plan-half check (D-5682)
+PRE_SMOKE_BASE = "RUNNER_PRE_SMOKE_BASE"  # "<base SHA> <its real green at>": a background `--pre-smoke` runs the plan half
+PLAN_HALF = "plan half of"  # added to `smoke_source` for a plan-half result: state.PLAN_HALF_MARK in the run's `why`
 SMOKE_BG = "smoke-bg.json"  # beside the smoke's target dir: the background smoke this job started {sha, job, pid, at}
 SMOKE_BG_LOG = "smoke-bg.log"  # beside it too: that smoke's output
 BACKGROUND = "background"  # `smoke_source` (and the result's `source`) of a background smoke; added to the run's `why`
@@ -236,8 +239,9 @@ def _smoke_env() -> dict[str, str]:
     """The smoke test's environment: CARGO_TARGET_DIR is the smoke's own target dir (`smoke_target_dir`), and
     CARGO_INCREMENTAL is 0 as in `Ci`, since the cache keeps that dir and rustc's incremental data was about a
     third of it (4.7 of 15 GB measured, D-1890). The job's tokens (SMOKE_DROPPED_ENV) are left out: smoke.sh
-    needs none, and it runs plan scripts, third-party build scripts and npm (D-3156)."""
-    kept = {k: v for k, v in os.environ.items() if k not in SMOKE_DROPPED_ENV}
+    needs none, and it runs plan scripts, third-party build scripts and npm (D-3156); so are the live job's nightly
+    and plan-half base (PRE_SMOKE_NIGHTLY, PRE_SMOKE_BASE), which smoke.sh's `pytest tests` must never see (D-5682)."""
+    kept = {k: v for k, v in os.environ.items() if k not in (*SMOKE_DROPPED_ENV, PRE_SMOKE_NIGHTLY, PRE_SMOKE_BASE)}
     return {**kept, "CARGO_TARGET_DIR": str(smoke_target_dir()), "CARGO_INCREMENTAL": "0"}
 
 
@@ -459,6 +463,19 @@ def _pre_result(head: str) -> tuple[dict[str, Any] | None, str]:
     if pre.get("sha") != head:
         return None, f"the pre-session smoke ran on {str(pre.get('sha'))[:12]}, main is now {head[:12]}"
     return pre, ""
+
+
+def _pinned_base() -> tuple[str, str, list[str] | None] | None:
+    """A background `--pre-smoke`'s plan-half base from PRE_SMOKE_BASE, "<40-hex SHA> <at>" (D-5682), else None."""
+    parts = os.environ.get(PRE_SMOKE_BASE, "").split()
+    return (parts[0], parts[1], None) if len(parts) == 2 and SHA.match(parts[0]) else None
+
+
+def _plan_half_line(base: str, head: str, paths: list[str], code: int, last: str, seconds: int | None) -> str:
+    """The one log line of a used plan-half smoke (D-5682)."""
+    shown = ", ".join(paths[:5]) + (", …" if len(paths) > 5 else "")
+    return (f"smoke reused from {base[:12]}: {head[:12]} changes only plan and docs paths since ({len(paths)} paths: "
+            f"{shown}); plan half: exit {code}; {last}; {seconds} s")
 
 
 def _smoke_tail(pre: dict[str, Any]) -> str:
@@ -1374,9 +1391,9 @@ class GitHubEnv:
             self.log.append(f"dry-run: smoke test not run on {head[:12]}")
             return True, head
         self.smoke_timed_out, self.smoke_source, self.smoke_seconds, self.smoke_pending = False, "", None, False
-        pre = self._pre_smoke_for(head)
+        pre, paths = self._pre_smoke_for(head)
         if pre is not None:
-            return self._use_pre_smoke(pre, head)
+            return self._use_pre_smoke(pre, head, paths)
         if self.smoke_background and job_id():
             return self._background_smoke(head)
         tree, began = smoke_tree_dir(), time.monotonic()  # before the try: a seed or pin timeout still has a start
@@ -1399,13 +1416,18 @@ class GitHubEnv:
         self.log.append(f"smoke on {head[:12]}: exit {code}; {tail[-1] if tail else ''}")
         return code == 0, head
 
-    def _pre_smoke_for(self, head: str) -> dict[str, Any] | None:
+    def _pre_smoke_for(self, head: str) -> tuple[dict[str, Any] | None, list[str] | None]:
         """The pre-session smoke's result (SMOKE_PRE, D-2028) when it is for `head` and was written by this very
-        job (`job_id`, never "" here), else None and, inside Actions, a log line saying why the smoke runs here."""
+        job (`job_id`, never "" here), else None and, inside Actions, a log line saying why the smoke runs here.
+        A plan-half result comes with its plan-only paths once `_plan_half_check` accepts it at use; a discarded
+        one is None, so `smoke_main` goes on to the full smoke (D-5682, D-5793)."""
         pre, why = _pre_result(head)
         if pre is None and job_id():
             self.log.append(f"{why}: the smoke runs here")
-        return pre
+        if pre is None or "plan_half_of" not in pre:
+            return pre, None
+        paths = self._plan_half_check(pre, head)
+        return (pre, paths) if paths is not None else (None, None)
 
     def own_smoke_for(self, head: str) -> bool:
         """Whether this job has its own smoke to judge `head` by (D-2560): a pre-session or background result for
@@ -1514,7 +1536,7 @@ class GitHubEnv:
             return self._use_pre_smoke(pre, head) if pre is not None else self._background_lost(head)
         if pid is None or not alive:
             (smoke_target_dir().parent / SMOKE_BG_CHILD).unlink(missing_ok=True)
-            pid = self.bg_start(head, self.root)
+            pid = self._start_background(head)
             _write_json(smoke_target_dir().parent / SMOKE_BG, {"sha": head, "job": job_id(), "pid": pid, "at": _utc_now()})
             _mark_smoke_ran()
             self.log.append(f"smoke on {head[:12]}: started in the background (pid {pid})")
@@ -1544,17 +1566,26 @@ class GitHubEnv:
         self.log.append(f"smoke on {head[:12]}: exit 124; the background smoke ended without a result")
         return False, head
 
-    def _use_pre_smoke(self, pre: dict[str, Any], head: str) -> tuple[bool, str]:
+    def _use_pre_smoke(self, pre: dict[str, Any], head: str, paths: list[str] | None = None) -> tuple[bool, str]:
         """smoke_main's verdict from the pre-session result (D-2028): green only on exit 0; a timeout at its
         PRE_SMOKE_TIMEOUT sets `smoke_timed_out` as an in-session one does (D-1178, D-1970). Its `last` line is
-        redacted again (`_redact_gate_row`) before it reaches the log."""
+        redacted again (`_redact_gate_row`) before it reaches the log. A plan-half result (`plan_half_of`, D-5682)
+        is used only once `_plan_half_check` accepts it (`paths` when the caller already did), and `smoke_source`
+        then adds "plan half of <base>"; a discarded one is `smoke_pending`: no verdict, nothing recorded (D-5793)."""
+        if "plan_half_of" in pre and paths is None:
+            paths = self._plan_half_check(pre, head)
+            if paths is None:
+                self.smoke_pending = True
+                return False, head
         code, timed_out, seconds = int(pre["exit"]), pre.get("timed_out") is True, pre.get("seconds")
         source = BACKGROUND if pre.get("source") == BACKGROUND else PRE_SESSION
-        self.smoke_timed_out, self.smoke_source = timed_out, source
-        self.smoke_seconds = seconds if isinstance(seconds, int) and not isinstance(seconds, bool) else None
         where = "this job's --pre-smoke step" if source == PRE_SESSION else "this session's background smoke"
-        self.log.append(f"smoke on {head[:12]}: exit {code}; {_redact_gate_row(str(pre.get('last') or ''))[:300]} "
-                        f"({source}, {self.smoke_seconds} s, {where})")
+        half = str(pre["plan_half_of"]) if paths is not None else ""
+        self.smoke_timed_out, self.smoke_source = timed_out, f"{source}, {PLAN_HALF} {half}" if half else source
+        self.smoke_seconds = seconds if isinstance(seconds, int) and not isinstance(seconds, bool) else None
+        last = _redact_gate_row(str(pre.get("last") or ""))[:300]
+        self.log.append(_plan_half_line(half, head, paths or [], code, last, self.smoke_seconds) if half else
+                        f"smoke on {head[:12]}: exit {code}; {last} ({source}, {self.smoke_seconds} s, {where})")
         return code == 0 and not timed_out, head
 
     def pre_smoke(self) -> str:
@@ -1567,7 +1598,9 @@ class GitHubEnv:
         a finished build, D-2007); writes no state, lease or log on claude/kit-state; returns the line to print.
         Started by `_background_smoke` (PRE_SMOKE_HEAD set) it smokes that head and marks its result BACKGROUND;
         in the step, when kit/state.json as read into PRE_SMOKE_STATE already records a green run the start routine
-        may reuse for the head (`st.reusable_smoke`), it runs nothing and writes no result (D-2560)."""
+        may reuse for the head (`st.reusable_smoke`), it runs nothing and writes no result (D-2560). D-5682: when
+        `plan_half_for` finds a base (the step: the state and PRE_SMOKE_NIGHTLY's nightly; a background start: its
+        PRE_SMOKE_BASE) it runs `smoke.sh --plan-half` instead and the result carries `plan_half_of` and `plan_half_at`."""
         pinned = os.environ.get(PRE_SMOKE_HEAD, "")
         head = pinned if SHA.match(pinned) else self._checkout_main()
         if self.dry_run or not head or not job_id():
@@ -1579,15 +1612,16 @@ class GitHubEnv:
         reused = "" if pinned else self._reusable_line(head)
         if reused:
             return reused
+        half = _pinned_base() if pinned else self._step_plan_half(head)
         self._drop_smoke_tree(tree)
         self.git("worktree", "add", "--detach", str(tree), head)
         try:
             self._seed_smoke_target(tree)
             self._pin_smoke_tree(tree)
-            code, timed_out, seconds = self._pre_smoke_run(tree, out)
+            code, timed_out, seconds = self._pre_smoke_run(tree, out, half is not None)
         finally:
             self._drop_smoke_tree(tree)
-        return self._record_pre_smoke(head, code, timed_out, seconds, out, BACKGROUND if pinned else "")
+        return self._record_pre_smoke(head, code, timed_out, seconds, out, BACKGROUND if pinned else "", half)
 
     def _reusable_line(self, head: str) -> str:
         """The step's line when the state it read (PRE_SMOKE_STATE) records a green smoke on `head` that the start
@@ -1628,20 +1662,117 @@ class GitHubEnv:
         return (f"pre-session smoke skipped on {head[:12]}: the green smoke of {base[:12]} ({run.get('at')}), "
                 f"{chain.index(base)} proven merge(s) back, stands for it (D-3058, D-3156); the session reuses it")
 
-    def _pre_smoke_run(self, tree: Path, out: Path) -> tuple[int, bool, int]:
-        """smoke.sh through `pre_run` in `tree`: (exit, timed out, seconds); a timeout is exit 124 as in-session."""
-        began = time.monotonic()
+    def plan_diff(self, sha: str) -> list[str] | None:
+        """A commit's first-parent diff (D-5682), `git diff --no-renames --name-only <sha>^1 <sha>`: its paths, or
+        None when git cannot say (a root commit, a commit this clone does not have)."""
+        code, out, _ = self._run(["git", "diff", "--no-renames", "--name-only", f"{sha}^1", sha], None, self.root)
+        return [row for row in out.splitlines() if row.strip()] if code == 0 else None
+
+    def plan_half_for(self, state: State | None, head: str,
+                      nightly: dict[str, Any] | None) -> tuple[str, dict[str, Any], list[str]] | None:
+        """`st.plan_half_base` for `head` (D-5682) over `main_first_parents(head, smoke_ancestry + 1)`, `done_merges`,
+        `green_twin_tree` and `plan_diff` at `clock()`, refused when `nightly` is for a commit from the head to the
+        base, both included, and not a success, or `main_checks_green` is False on one (`cycle._head_doubted`'s
+        rule). None, the full smoke, for no state, no nightly (None: unreadable), `smoke_ancestry` 0, a doubt or any
+        error."""
+        if self.smoke_ancestry < 1 or state is None or nightly is None:
+            return None
         try:
-            code, timed_out = self.pre_run(["bash", "scripts/smoke.sh"], tree, PRE_SMOKE_TIMEOUT, out), False
+            chain = self.main_first_parents(head, self.smoke_ancestry + 1) or []
+            found = (st.plan_half_base(state, chain, st.done_merges(state), self.clock(), self.smoke_ancestry,
+                                       self.green_twin_tree, self.plan_diff) if chain else None)
+            if found is None:
+                return None
+            doubted = any((nightly.get("sha") == c and nightly.get("conclusion") != "success")
+                          or self.main_checks_green(c) is False for c in chain[: chain.index(found[0]) + 1])
+        except Exception:  # noqa: BLE001  # reason: an odd state, git or API failure only means the full smoke (D-5682)
+            return None
+        return None if doubted else found
+
+    def _step_plan_half(self, head: str) -> tuple[str, str, list[str] | None] | None:
+        """The pre-smoke step's plan-half base for `head` (D-5682): `plan_half_for` over the state it read
+        (PRE_SMOKE_STATE) and the nightly (PRE_SMOKE_NIGHTLY; missing or unreadable: none, the full smoke)."""
+        state_path, nightly_path = os.environ.get(PRE_SMOKE_STATE, ""), os.environ.get(PRE_SMOKE_NIGHTLY, "")
+        state = _read_json(Path(state_path)) if state_path else None
+        found = self.plan_half_for(state, head, _read_json(Path(nightly_path)) if nightly_path else None)
+        return (found[0], str(found[1].get("at") or ""), found[2]) if found is not None else None
+
+    def _start_background(self, head: str) -> int:
+        """`bg_start` for `head` (D-2560), with the plan-half base (`_fresh_plan_half`, D-5682) in PRE_SMOKE_BASE only
+        around the call, so no later `bg_start` (the hand-in's full smoke, D-3530) ever inherits it."""
+        os.environ.pop(PRE_SMOKE_BASE, None)
+        found = self._fresh_plan_half(head)
+        if found is None:
+            return self.bg_start(head, self.root)
+        os.environ[PRE_SMOKE_BASE] = f"{found[0]} {found[1].get('at')}"
+        try:
+            pid = self.bg_start(head, self.root)
+        finally:
+            os.environ.pop(PRE_SMOKE_BASE, None)
+        self.log.append(f"smoke on {head[:12]}: the plan half of {found[0][:12]} runs ({len(found[2])} plan and docs paths)")
+        return pid
+
+    def _fresh_plan_half(self, head: str) -> tuple[str, dict[str, Any], list[str]] | None:
+        """`plan_half_for` over a fresh `read_state` and its nightly, the cached heads, blob and states put back as
+        they were (as `_holds_lease` does); None when off or on any read error (D-5682)."""
+        if self.smoke_ancestry < 1:
+            return None
+        saved = (self.state_head, self.lease_head, self.state_blob, self.last_state, self.first_state)
+        try:
+            state, nightly = self.read_state(), self.read_nightly() or {}
+        except Exception:  # noqa: BLE001  # reason: an unreadable state only means the full smoke (D-5682)
+            return None
+        finally:
+            self.state_head, self.lease_head, self.state_blob, self.last_state, self.first_state = saved
+        return self.plan_half_for(state, head, nightly)
+
+    def _plan_half_check(self, pre: dict[str, Any], head: str) -> list[str] | None:
+        """At use (D-5793): a plan-half result's plan-only paths when `plan_half_for`, over the state at `state_head`
+        (no new fetch) and `read_nightly`, still finds its base `plan_half_of` with that base's real green `at` equal
+        to `plan_half_at`; else None after `_discard_plan_half`. Any error or missing field discards it."""
+        base, at = pre.get("plan_half_of"), pre.get("plan_half_at")
+        found = None
+        if isinstance(base, str) and SHA.match(base) and isinstance(at, str) and at:
+            try:
+                raw = self._show(self.state_head, STATE_FILE) if self.state_head else None
+                found = self.plan_half_for(json.loads(raw) if raw else None, head, self.read_nightly() or {})
+            except Exception:  # noqa: BLE001  # reason: an unreadable state discards the result (D-5793)
+                found = None
+        if found is not None and found[0] == base and str(found[1].get("at")) == at:
+            return found[2]
+        self._discard_plan_half(head, str(base))
+        return None
+
+    def _discard_plan_half(self, head: str, base: str) -> None:
+        """Drop a plan-half result of `head` (D-5793): stop this job's background smoke when SMOKE_BG names `head`
+        (`bg_stop`; its records go), remove SMOKE_PRE and log one line. Never a verdict, never red."""
+        target = smoke_target_dir().parent
+        bg = _read_json(target / SMOKE_BG) or {}
+        if bg.get("job") == job_id() and bg.get("sha") == head:
+            self.bg_stop()
+            for name in (SMOKE_BG, SMOKE_BG_CHILD):
+                (target / name).unlink(missing_ok=True)
+        (target / SMOKE_PRE).unlink(missing_ok=True)
+        self.log.append(f"smoke on {head[:12]}: the plan-half result on {base[:12]} is discarded (its base no longer "
+                        f"stands: too old, doubted, red main or unreadable); the full smoke runs")
+
+    def _pre_smoke_run(self, tree: Path, out: Path, half: bool = False) -> tuple[int, bool, int]:
+        """smoke.sh (with `--plan-half` when `half`, D-5682) through `pre_run` in `tree`: (exit, timed out, seconds);
+        a timeout is exit 124 as in-session."""
+        began, args = time.monotonic(), ["bash", "scripts/smoke.sh", *(["--plan-half"] if half else [])]
+        try:
+            code, timed_out = self.pre_run(args, tree, PRE_SMOKE_TIMEOUT, out), False
         except subprocess.TimeoutExpired:
             code, timed_out = 124, True
             _mark_smoke_ran()  # it may have been compiling: keep it, as D-2007 keeps a warm-up that timed out
         return code, timed_out, round(time.monotonic() - began)
 
-    def _record_pre_smoke(self, head: str, code: int, timed_out: bool, seconds: int, out: Path, source: str = "") -> str:
+    def _record_pre_smoke(self, head: str, code: int, timed_out: bool, seconds: int, out: Path, source: str = "",
+                          half: tuple[str, str, list[str] | None] | None = None) -> str:
         """Write the pre-session result (D-2028) with the output's last line, redacted as a gate row is
-        (`_redact_gate_row`, since it reaches the runner log), and `source` when it is a background smoke's
-        (D-2560); return the line to print."""
+        (`_redact_gate_row`, since it reaches the runner log), `source` when it is a background smoke's (D-2560)
+        and, for a plan half, `plan_half_of` and `plan_half_at` (`half`: base, its real green's `at`, the plan-only
+        paths when known, D-5682); return the line to print."""
         try:
             rows = out.read_text(encoding="utf-8", errors="replace").strip().splitlines()
         except OSError:
@@ -1649,8 +1780,11 @@ class GitHubEnv:
         last = f"smoke timed out after {PRE_SMOKE_TIMEOUT} seconds" if timed_out else _redact_gate_row(rows[-1] if rows else "")
         write_pre_smoke({"sha": head, "ok": code == 0 and not timed_out, "timed_out": timed_out, "exit": code,
                          "seconds": seconds, "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-                         "job": job_id(), "last": last[:300], **({"source": source} if source else {})})
-        return f"pre-session smoke on {head[:12]}: exit {code}; {last[:300]}; {seconds} s"
+                         "job": job_id(), "last": last[:300], **({"source": source} if source else {}),
+                         **({"plan_half_of": half[0], "plan_half_at": half[1]} if half else {})})
+        if half and half[2] is not None:
+            return _plan_half_line(half[0], head, half[2], code, last[:300], seconds)
+        return f"pre-session smoke on {head[:12]}{f' ({PLAN_HALF} {half[0][:12]})' if half else ''}: exit {code}; {last[:300]}; {seconds} s"
 
     def _checkout_main(self) -> str:
         """main's head as the checkout has it (`origin/main`, else HEAD), with no fetch: the steps before the
@@ -2787,7 +2921,7 @@ class GitHubEnv:
         while True:
             alive = isinstance(pid, int) and self.bg_alive(pid)
             pre, _ = _pre_result(head)
-            if pre is not None:
+            if pre is not None and "plan_half_of" not in pre:  # the hand-in smoke is always the full one (D-5682)
                 run.update(exit=int(pre["exit"]), timed_out=pre.get("timed_out") is True, output=_smoke_tail(pre))
                 return
             if not alive:

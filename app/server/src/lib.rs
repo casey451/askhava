@@ -79,6 +79,7 @@ pub mod release_sink;
 pub mod request_timeout;
 pub mod rotate_keys;
 pub mod static_files;
+pub mod text_consent;
 pub mod voice_status;
 pub mod watch_checks;
 pub mod webhook_refusals;
@@ -541,7 +542,6 @@ fn business_pages(
         (parts.vault.clone(), parts.reports, parts.owner_flags),
     );
     let tools = owner_tools::routes(pool.clone(), stripe, &parts.confirm, parts.report);
-    let cant_take = cant_take_route::routes(pool.clone());
     let links = webhooks.filter(|_| parts.photos.is_some());
     let job_page = job_page_route::routes(pool.clone(), links.map(|hooks| &hooks.id_secret));
     let homeowner = homeowner_portal::routes(
@@ -558,11 +558,12 @@ fn business_pages(
             (parts.vault.clone(), webhooks),
             parts.help_mail,
         ))
-        .merge(business_settings_routes::served(pool.clone(), voice));
+        .merge(business_settings_routes::served(pool.clone(), voice))
+        .merge(cant_take_route::routes(pool.clone()))
+        .merge(text_consent::routes(pool.clone()));
     let portal_parts = (parts.vault, parts.business_number);
     let portal = business_portal::served(pool, portal_parts, (webhooks, voice))
         .merge(confirm)
-        .merge(cant_take)
         .merge(job_page)
         .merge(step_up);
     (parts.signin)
