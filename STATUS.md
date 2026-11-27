@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-27T12:45:21Z by runner bca3652c0b56 (actions).
+Updated 2026-11-27T12:46:04Z by runner bca3652c0b56 (actions).
 
 **Building: T734 in progress since 12:43Z; 689 of 802 done; week 14% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 689 of 802 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T734 claimed 12:43Z, lease until 15:43Z; lane 2: T820 claimed 10:58Z, lease until 13:58Z; lane 3: T867 claimed 11:15Z, lease until 14:15Z; lane 5: T849 claimed 12:40Z, lease until 15:40Z
+- **Lane:** lane 1: T734 claimed 12:43Z, lease until 15:43Z; lane 3: T867 claimed 11:15Z, lease until 14:15Z; lane 5: T849 claimed 12:40Z, lease until 15:40Z
 - **Week:** 14% used, 161.8M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:43Z, 1 min before this update
+- **Last run:** 12:43Z, 2 min before this update
 - **Keeper:** last ran 12:13Z, next wake 12:33Z
 
 ## Needs attention
@@ -21,6 +21,7 @@ Updated 2026-11-27T12:45:21Z by runner bca3652c0b56 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T820 | server and portals: "Download my data" also holds withdrawn  | MERGE_PENDING | 4 | 106 min | 12:45Z | Hand-in time passed. Worker added unit tests in app/portals/src/data_download.rs (commit f4a102dca); portals-only covera |
 | T734 | server and adapters: a business can leave in the portal, wit | check_failed | 2 | 2 h 44 min | 12:11Z | Ally: failure; E2e: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflo |
 | T778 | jobs, core and server: a dead Payment pending timer is reviv | done | 1 | 114 min | 11:24Z |  |
 | T867 | picks and payments (harness): an early fraud warning before  | check_failed | 1 | 60 min | 10:24Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
@@ -47,7 +48,7 @@ Updated 2026-11-27T12:45:21Z by runner bca3652c0b56 (actions).
 | T309 | server and portals: the business Get help form and the site  | done | 1 | 2 h 8 min | 00:28Z |  |
 | T854 | portals and action links: sessions and admissions on `real_n | done | 1 | 2 h 5 min | 23:58Z |  |
 | T744 | picks: a job that reaches a final status ends its pick await | done | 1 | 98 min | 23:54Z |  |
-| T820 | server and portals: "Download my data" also holds withdrawn  | check_failed | 3 | 102 min | 21:46Z | Hand-in time passed. Worker added unit tests in app/portals/src/data_download.rs (commit f4a102dca); portals-only covera |
+| T820 | server and portals: "Download my data" also holds withdrawn  | check_failed | 3 | 102 min | 21:46Z |  |
 | T657 | quotes and portals: quote-form and sign-in errors mark the f | check_failed | 1 | 75 min | 21:40Z |  |
 | T840 | intake and messaging: quote updates reach Email and web-and- | done | 1 | 2 h 10 min | 21:20Z |  |
 | T848 | core, payments, inbound text, security: `Clock::real_now()`  | done | 1 | 75 min | 21:12Z |  |
@@ -107,9 +108,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T734 (lease until 2026-11-27T15:43:07Z)
-- lane 2: T820 (lease until 2026-11-27T13:58:44Z)
 - lane 3: T867 (lease until 2026-11-27T14:15:35Z)
 - lane 5: T849 (lease until 2026-11-27T15:40:51Z)
 
 ## Last usage reading
-- {"task": "T734", "at": "2026-11-27T12:11:18Z", "cache_creation_input_tokens": 425083, "cache_read_input_tokens": 38766711, "input_tokens": 504, "output_tokens": 130409}
+- {"task": "T820", "at": "2026-11-27T12:45:19Z", "cache_read_input_tokens": 2286620, "input_tokens": 88, "output_tokens": 17794, "cache_creation_input_tokens": 125323}

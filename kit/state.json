@@ -120327,7 +120327,7 @@
     "T745",
     "T819"
    ],
-   "status": "IN_PROGRESS",
+   "status": "MERGE_PENDING",
    "attempts": 3,
    "slug": "data-download-contents",
    "type": "harness",
@@ -120516,6 +120516,29 @@
        "turns": 17
       }
      }
+    },
+    {
+     "attempt": 4,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 60,
+     "head_sha": "bca3652c0b56927e0e9a073d9f53a37ab196a873",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": true,
+     "started_at": "2026-11-27T10:58:44Z",
+     "ended_at": "2026-11-27T12:45:19Z",
+     "result": "MERGE_PENDING",
+     "usage": {
+      "worker": {
+       "tokens": 1784119,
+       "turns": 35
+      },
+      "reviewer": {
+       "tokens": 645706,
+       "turns": 11
+      }
+     }
     }
    ],
    "reviewed_sha": "2cf16103c495706bac130bd53c8c8fa4f17d8281",
@@ -120528,8 +120551,8 @@
    "branch": "claude/task/T820-data-download-contents",
    "auto_merge": {
     "enabled": true,
-    "why": "auto-merge on #1479 (gh pr merge)",
-    "head": "2ac33054b50524d777d27d6f525d1071c1b5b6a1"
+    "why": "auto-merge on #1505 (gh pr merge)",
+    "head": "2cf16103c495706bac130bd53c8c8fa4f17d8281"
    },
    "last_failure": "Hand-in time passed. Worker added unit tests in app/portals/src/data_download.rs (commit f4a102dca); portals-only coverage of data_download.rs measured 73.68 (floor 81.0), the full integration+portals+server measurement never finished (disk full). Smoke green. Ally: 3 failures in tests/a11y/j2_keyboard.spec.ts:149 (business sign-up, no h1 on /b/signup/start), not confirmed whether from main. Next attempt: free disk (target/debug 47G, /mnt/llvm-cov-target), run the llvm-cov for askhava-integration, askhava-portals, askhava-server in background, compare data_download.rs to 81.0, run j2_keyboard on main.\nre-queued after plan fix D-5889: D-5889 (PR #1480, merged 37f92ed): T820's plan fix; T811 makes td_sec_44 exact, so its last red (the random-substring flake) no longer applies",
    "runner_closed_prs": [
@@ -120552,11 +120575,6 @@
      "plan_now": "febe7a5e8af5fe731055e84251ac983028d2ec4d2828fe772d23328104155d6b"
     }
    ],
-   "wip_claim": {
-    "attempt": 4,
-    "remote_sha": "2ac33054b50524d777d27d6f525d1071c1b5b6a1"
-   },
-   "head_check_since": null,
    "update_merges": [
     {
      "from": "bca3652c0b56927e0e9a073d9f53a37ab196a873",
@@ -125043,12 +125061,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T734",
-   "at": "2026-11-27T12:11:18Z",
-   "cache_creation_input_tokens": 425083,
-   "cache_read_input_tokens": 38766711,
-   "input_tokens": 504,
-   "output_tokens": 130409
+   "task": "T820",
+   "at": "2026-11-27T12:45:19Z",
+   "cache_read_input_tokens": 2286620,
+   "input_tokens": 88,
+   "output_tokens": 17794,
+   "cache_creation_input_tokens": 125323
   },
   "source": "session_reading 2026-11-27T12:12:52Z (week)",
   "by_task": {
@@ -133134,14 +133152,14 @@
     "estimated_bytes": 513136,
     "estimated_tokens": 1471878,
     "usage_counting": "message_id",
-    "cache_creation_input_tokens": 499919,
-    "output_tokens": 128501,
-    "cache_read_input_tokens": 27407618,
-    "input_tokens": 585,
-    "worker_tokens": 25923669,
-    "worker_turns": 255,
-    "reviewer_tokens": 2112954,
-    "reviewer_turns": 38,
+    "cache_creation_input_tokens": 625242,
+    "output_tokens": 146295,
+    "cache_read_input_tokens": 29694238,
+    "input_tokens": 673,
+    "worker_tokens": 27707788,
+    "worker_turns": 290,
+    "reviewer_tokens": 2758660,
+    "reviewer_turns": 49,
     "last_model": "claude-opus-5-5"
    },
    "T826": {
@@ -133512,11 +133530,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-27T10:14:36Z",
-    "tokens": 6518059
+    "tokens": 6889926
    },
    "week": {
     "start": "2026-11-26T20:01:04Z",
-    "tokens": 30574251
+    "tokens": 30946118
    }
   },
   "session_reading": {
@@ -133527,7 +133545,7 @@
    }
   }
  },
- "updated_at": "2026-11-27T12:45:21Z",
+ "updated_at": "2026-11-27T12:46:04Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
