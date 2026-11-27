@@ -11578,3 +11578,4 @@
 - 2026-11-27T13:15:30Z runner febc73c2ddbc (actions): {"T820": "MERGE_PENDING -> DONE"}
 - 2026-11-27T13:18:12Z runner febc73c2ddbc (actions): {"T862": "QUEUED -> IN_PROGRESS"}; T862 estimated 1.8M tokens (calibrated); week has 165.1M left (no five-hour budget, D-3056) after 930k still running in another lane (session_reading 2026-11-27T13:11:13Z (week)); claimed
 - 2026-11-27T13:18:40Z runner febc73c2ddbc (actions): {}
+- 2026-11-27T13:19:15Z runner febc73c2ddbc (actions): {"T822": "QUEUED -> IN_PROGRESS"}; T822 estimated 303k tokens (calibrated); week has 163.2M left (no five-hour budget, D-3056) after 2.8M still running in another lane (session_reading 2026-11-27T13:11:13Z (week)); claimed
