@@ -8,7 +8,7 @@
 //! provider did not answer, only on the first opt-out, and never while texting is paused (the
 //! caller emails it instead, CON-030). The provider's START or UNSTOP (`OptOutType=START`) takes
 //! the number off (CON-015) under its opt-out lock, so a START during a re-key lifts every row
-//! (D-5228); anything else from a listed number sends nothing, and an emergency in it or in the
+//! (D-5228), and only when no opt-out after it renewed the listing (D-5383); anything else from a listed number sends nothing, and an emergency in it or in the
 //! opt-out raises a critical alert (CON-016, CON-017). [`suppress`] is the entry for every other
 //! channel (email, email reply, help form, portal switch; owner-recorded via [`suppress_logged`]).
 //! [`send_checked`] is the one way a queued text goes out: it refuses a listed number except the
@@ -140,20 +140,67 @@ pub enum Outcome {
 
 /// Applies one inbound text to the suppression list (CON-008 to CON-011, CON-013, CON-015 to
 /// CON-017, CON-030, CON-035) in one transaction, `now` from the caller's clock, `secret` the
-/// `ID_SECRET` for the confirmation's key.
+/// `ID_SECRET` for the confirmation's key. It takes the number's opt-out lock before it reads
+/// whether the number is listed, so a STOP that waited on a START sees the lift and gets its
+/// CON-009 confirmation (D-5383). START takes that lock and lifts only a listing no later opt-out
+/// renewed: it lifts when no opt-out event of the number is effective after this START's
+/// `messaging.inbox.received_at` (an equal time lifts), else it lifts nothing, logs no `start`
+/// event and answers [`Outcome::Suppressed`], so a rerun of a START received before a later STOP
+/// leaves the number listed (CON-015, D-5228, D-5383, D-5388). A START whose inbox row is missing
+/// (the fake IDs unit tests use) counts as received at `now`; the inbound path calls
+/// [`on_received_text`] instead.
 ///
 /// # Errors
 ///
 /// [`OutboxError::BadPhone`], [`OutboxError::Template`] or [`OutboxError::Database`].
 pub async fn on_inbound_text(
     db: &mut PgConnection,
-    (secret, vault): (&SecretString, &Vault),
+    keys: (&SecretString, &Vault),
     msg: &InboundText<'_>,
     now: Timestamp,
+) -> Result<Outcome, OutboxError> {
+    apply_inbound(db, keys, msg, (now, MissingInbox::ReceivedNow)).await
+}
+
+/// [`on_inbound_text`] for the real inbound path, its delivery and `inbound_retry`'s rerun
+/// (CON-015, CON-035, D-5388): a START whose `messaging.inbox` row is missing, which happens only
+/// when `consent_purge` deleted her data while a retry of it was queued, lifts nothing, logs no
+/// `start` event, raises one Normal `messaging.stale_start` alert whose subject is the inbox ID
+/// (IDs only, PRIV-006) and answers [`Outcome::Suppressed`], so she can text START again.
+///
+/// # Errors
+///
+/// [`OutboxError::BadPhone`], [`OutboxError::Template`] or [`OutboxError::Database`].
+pub async fn on_received_text(
+    db: &mut PgConnection,
+    keys: (&SecretString, &Vault),
+    msg: &InboundText<'_>,
+    now: Timestamp,
+) -> Result<Outcome, OutboxError> {
+    apply_inbound(db, keys, msg, (now, MissingInbox::FailClosed)).await
+}
+
+/// What a START does when its `messaging.inbox` row is missing (D-5383, D-5388).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum MissingInbox {
+    /// It counts as received at the caller's `now` ([`on_inbound_text`]).
+    ReceivedNow,
+    /// It lifts nothing and raises the stale-START alert ([`on_received_text`]).
+    FailClosed,
+}
+
+/// The shared body of [`on_inbound_text`] and [`on_received_text`] (CON-008 to CON-011, CON-013,
+/// CON-015 to CON-017, CON-030, CON-035, D-5383).
+async fn apply_inbound(
+    db: &mut PgConnection,
+    (secret, vault): (&SecretString, &Vault),
+    msg: &InboundText<'_>,
+    (now, missing): (Timestamp, MissingInbox),
 ) -> Result<Outcome, OutboxError> {
     let digests = digests(vault, msg.phone)?;
     let mut tx = db.begin().await.map_err(|_| OutboxError::Database)?;
     record_contact(&mut tx, msg, now).await?;
+    lock_number(&mut tx, &digests).await?;
     let listed = models::listing(&mut tx, &digests).await?.is_some();
     let outcome = match rules::classify(msg.text, msg.provider) {
         Classified::OptOut {
@@ -179,18 +226,7 @@ pub async fn on_inbound_text(
             }
         }
         Classified::Resubscribe if listed => {
-            let event = OptOutEvent {
-                action: "start",
-                channel: RevokeChannel::Text.as_str(),
-                detected: "start",
-                inbox: Some(msg.inbox_id),
-                digest: digests[0],
-                at: now,
-            };
-            lock_number(&mut tx, &digests).await?;
-            models::insert_optout_event(&mut tx, &event).await?;
-            models::lift_suppression(&mut tx, &digests).await?;
-            Outcome::Resubscribed
+            resubscribe(&mut tx, &digests, msg, (now, missing)).await?
         }
         Classified::Resubscribe | Classified::Other if !listed => Outcome::Open,
         Classified::Resubscribe | Classified::Other => Outcome::Suppressed {
@@ -199,6 +235,91 @@ pub async fn on_inbound_text(
     };
     tx.commit().await.map_err(|_| OutboxError::Database)?;
     Ok(outcome)
+}
+
+/// The alert kind raised for a START whose inbox row is gone (D-5388).
+const STALE_START_ALERT: &str = "messaging.stale_start";
+
+/// The provider's START for listed number `digests`, under its opt-out lock held by the caller's
+/// `tx` (CON-015, CON-022, CON-035, D-5228, D-5383, D-5388): logs the `start` event and lifts the
+/// listing only if no opt-out of the number is effective after this START was received; else it
+/// answers as a listed text without START does. A missing inbox row counts as received at `now`
+/// or, for [`MissingInbox::FailClosed`], raises the stale-START alert and lifts nothing.
+async fn resubscribe(
+    tx: &mut PgConnection,
+    digests: &[(u16, [u8; 32])],
+    msg: &InboundText<'_>,
+    (now, missing): (Timestamp, MissingInbox),
+) -> Result<Outcome, OutboxError> {
+    let received = sqlx::query_scalar!(
+        "SELECT received_at FROM messaging.inbox WHERE id = $1",
+        msg.inbox_id
+    )
+    .fetch_optional(&mut *tx)
+    .await
+    .map_err(|_| OutboxError::Database)?;
+    let received = match (received, missing) {
+        (Some(at), _) => at.to_jiff(),
+        (None, MissingInbox::ReceivedNow) => now,
+        (None, MissingInbox::FailClosed) => {
+            let stale = NewAlert {
+                kind: STALE_START_ALERT,
+                severity: Severity::Normal,
+                subject: Some(("messaging.inbox", msg.inbox_id)),
+            };
+            raise_alert(tx, &stale)
+                .await
+                .map_err(|_| OutboxError::Database)?;
+            return suppressed(tx, msg).await;
+        }
+    };
+    if opted_out_after(tx, digests, received).await? {
+        return suppressed(tx, msg).await;
+    }
+    let event = OptOutEvent {
+        action: "start",
+        channel: RevokeChannel::Text.as_str(),
+        detected: "start",
+        inbox: Some(msg.inbox_id),
+        digest: *digests.first().ok_or(OutboxError::Database)?,
+        at: now,
+    };
+    models::insert_optout_event(tx, &event).await?;
+    models::lift_suppression(tx, digests).await?;
+    Ok(Outcome::Resubscribed)
+}
+
+/// What a listed number's text without a START gets: no text, and the CON-017 alert if flagged.
+async fn suppressed(tx: &mut PgConnection, msg: &InboundText<'_>) -> Result<Outcome, OutboxError> {
+    Ok(Outcome::Suppressed {
+        alert: alert(tx, msg).await?,
+    })
+}
+
+/// Whether any opt-out event logged under one of `digests` (any key version) took effect strictly
+/// after `received`, renewing the listing a START received then would lift (CON-015, D-5383).
+async fn opted_out_after(
+    tx: &mut PgConnection,
+    digests: &[(u16, [u8; 32])],
+    received: Timestamp,
+) -> Result<bool, OutboxError> {
+    let versions: Vec<i16> = digests
+        .iter()
+        .map(|(v, _)| i16::try_from(*v).map_err(|_| OutboxError::Database))
+        .collect::<Result<_, _>>()?;
+    let hashes: Vec<Vec<u8>> = digests.iter().map(|(_, h)| h.to_vec()).collect();
+    sqlx::query_scalar!(
+        "SELECT EXISTS (SELECT 1 FROM messaging.optout_event e \
+         JOIN UNNEST($1::smallint[], $2::bytea[]) AS k (v, h) \
+         ON e.index_version = k.v AND e.digest = k.h \
+         WHERE e.action = 'opt_out' AND e.effective_at > $3) AS \"later!\"",
+        &versions,
+        &hashes,
+        received.to_sqlx() as _
+    )
+    .fetch_one(tx)
+    .await
+    .map_err(|_| OutboxError::Database)
 }
 
 /// Records which vault contact sent inbound text `msg`, once (a resent delivery adds nothing): the
@@ -412,7 +533,9 @@ async fn record(
 /// carrier refusal with 21610 lists the number and blocks the row, which is never retried
 /// (CON-014). The claim is stamped at `now`, so `outbox_sender`'s 5-minute sweep counts from the
 /// sender's clock (D-2628). The number read for the list check is handed on to the claim, so the
-/// vault is read once here (D-3149). It applies no quiet-hours rule: the sender, its only
+/// vault is read once here (D-3149), and with the number's digests `service::send_at` reads the
+/// list again after the claim, just before the carrier call, so an opt-out that commits between
+/// this check and the claim still stops the text (D-5382). It applies no quiet-hours rule: the sender, its only
 /// production caller, re-checks the window first (QH-001, QH-008, D-3055).
 ///
 /// # Errors
@@ -444,7 +567,7 @@ pub async fn send_checked(
         (secret, &watch),
         id,
         (to, from),
-        (Some(now), Some(&number)),
+        (Some(now), Some(&number), Some(&digests)),
     )
     .await;
     if sent != Err(OutboxError::Carrier) || !watch.opted_out.load(Ordering::Relaxed) {

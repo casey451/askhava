@@ -12,6 +12,7 @@
 
 use std::collections::{BTreeMap, HashMap};
 
+use askhava_privacy::api::is_format;
 use jiff::{SignedDuration, Timestamp, Zoned, civil::Date, tz::TimeZone};
 use serde_json::from_str;
 use sqlx::types::Uuid;
@@ -500,18 +501,51 @@ pub enum Classified {
 /// (CON-035): a message that is only an opt-out word in any case, spacing and punctuation
 /// (CON-008; "STOP ALL" is stopall), or contains a listed revocation phrase (CON-010); a word used
 /// in another sense ("can stop by at 3") is not one (CON-011), and neither is a word with more
-/// around it ("stop please", D-4764).
+/// around it ("stop please", D-4764). A hidden formatting character may sit inside a word or
+/// between words, both in one message, so each one left by [`fold`] reads as either nothing or a
+/// space, independently: an error falls on the opt-out side (CON-008, CON-010, CON-035, D-5384,
+/// D-5793).
 #[must_use]
 pub fn detect_opt_out(text: &str) -> Option<Detected> {
     let folded = fold(text);
     if let Some(word) = sole_word(&folded) {
         return Some(Detected::Word(word));
     }
-    let padded = format!(" {folded} ");
+    let padded: Vec<char> = format!(" {folded} ").chars().collect();
     OPT_OUT_PHRASES
         .iter()
-        .find(|(_, phrase)| padded.contains(&format!(" {} ", fold(phrase))))
+        .find(|(_, phrase)| {
+            let wanted: Vec<char> = format!(" {} ", fold(phrase)).chars().collect();
+            some_reading_contains(&padded, &wanted)
+        })
         .map(|(id, _)| Detected::Phrase(id))
+}
+
+/// Whether some reading of `text`, each [`MARKER`] in it read as nothing or as a space on its own,
+/// contains `wanted` (which holds no marker) (CON-010, CON-035, D-5793). One pass, tracking which
+/// prefixes of `wanted` the text read so far can end with (at most its length plus one), so the
+/// cost is linear in the text and no reading is ever listed.
+fn some_reading_contains(text: &[char], wanted: &[char]) -> bool {
+    let mut reached = vec![false; wanted.len() + 1];
+    reached[0] = true;
+    for &c in text {
+        let mut next = vec![false; wanted.len() + 1];
+        next[0] = true;
+        for (at, _) in reached.iter().enumerate().filter(|(_, on)| **on) {
+            if c == MARKER {
+                next[at] = true;
+            }
+            let read = if c == MARKER { ' ' } else { c };
+            if wanted.get(at) == Some(&read) {
+                next[at + 1] = true;
+            }
+        }
+        if next[wanted.len()] {
+            return true;
+        }
+        reached = next;
+    }
+    false
 }
 
 /// Classifies an inbound text from what the provider matched and the app's own detector (CON-008,
@@ -569,9 +603,12 @@ pub fn may_send_to(
 /// The listed sole opt-out word that folded text `folded` is, however it is spaced (CON-008,
 /// CON-035, D-4764): the word as listed first, so "opt out" stays the app's own word, then any
 /// listed word that equals the text once both have every space removed, so "stop all" and
-/// "Stop  all" are stopall. Text with any other letter in it is no sole word.
+/// "Stop  all" are stopall. Text with any other letter in it is no sole word. A [`MARKER`] counts
+/// as a space, so "st" U+200D "op" is stop (D-5793).
 fn sole_word(folded: &str) -> Option<&'static str> {
     let words = || PROVIDER_OPT_OUT_WORDS.iter().chain(&APP_OPT_OUT_WORDS);
+    let folded = folded.replace(MARKER, " ");
+    let folded = folded.as_str();
     let squeezed = folded.replace(' ', "");
     words()
         .find(|w| **w == folded)
@@ -579,10 +616,18 @@ fn sole_word(folded: &str) -> Option<&'static str> {
         .copied()
 }
 
+/// What [`fold`] leaves for a hidden formatting character: a control character no message keeps
+/// after folding and no listed word or phrase holds (D-5793).
+const MARKER: char = '\u{1}';
+
 /// Lower-cases, folds Spanish accents (precomposed, or a letter followed by combining marks
 /// U+0300 to U+036F, as some phones send them), drops apostrophes, turns every other non-letter,
 /// non-digit into a space and collapses spaces, so "Don't TEXT me!!" reads "dont text me"
-/// (CON-008, CON-010, D-4764).
+/// (CON-008, CON-010, D-4764). Every hidden formatting character `privacy::api::is_format` lists
+/// (U+00AD, U+200B to U+200F, U+202A to U+202E, U+2060 to U+2064, U+FEFF, the tag characters and
+/// the rest) is kept as one [`MARKER`]: a run of them counts as one, and one next to a space or at
+/// the start or end of the text is dropped before spaces collapse, so the detector reads each one
+/// left inside a word or between two words as nothing or a space (CON-035, D-5384, D-5793).
 fn fold(text: &str) -> String {
     let mut out = String::with_capacity(text.len());
     for c in text.chars().flat_map(char::to_lowercase) {
@@ -594,10 +639,17 @@ fn fold(text: &str) -> String {
             'ú' | 'ù' | 'ü' | 'û' => 'u',
             'ñ' => 'n',
             '\'' | '\u{2018}' | '\u{2019}' | '\u{0300}'..='\u{036F}' => continue,
+            c if is_format(c) => MARKER,
             c if c.is_alphanumeric() => c,
             _ => ' ',
         };
-        out.push(c);
+        if !(c == MARKER && out.ends_with(MARKER)) {
+            out.push(c);
+        }
     }
-    out.split_whitespace().collect::<Vec<_>>().join(" ")
+    out.split_whitespace()
+        .map(|word| word.trim_matches(MARKER))
+        .filter(|word| !word.is_empty())
+        .collect::<Vec<_>>()
+        .join(" ")
 }

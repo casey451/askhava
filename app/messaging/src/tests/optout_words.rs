@@ -230,6 +230,44 @@ fn td_con_04_revocation_phrases_opt_out() {
     }
 }
 
+/// TD-CON-04, CON-008, CON-010, CON-035, D-5384, D-5793: a hidden formatting character inside a
+/// word, between words, or both in one message, hides no opt-out; one beside a word in another
+/// sense makes none.
+#[test]
+fn td_con_04_hidden_characters_never_hide_an_opt_out() {
+    let texting = Some(Detected::Phrase("en.stop_texting"));
+    for text in [
+        "stop tex\u{200B}ting me",
+        "stop\u{200B}texting me",
+        "please stop tex\u{00AD}ting me",
+        "stop\u{200B}tex\u{200B}ting me",
+        "stop tex\u{202E}ting me",
+        "stop tex\u{2066}ting me",
+        "stop \u{200B} texting me",
+        "stop\u{200C}texting me",
+        "stop\u{200B}\u{200B}texting me",
+    ] {
+        assert_eq!(detect_opt_out(text), texting, "{text:?}");
+    }
+    for text in ["\u{FEFF}STOP", "st\u{200D}op"] {
+        assert_eq!(
+            detect_opt_out(text),
+            Some(Detected::Word("stop")),
+            "{text:?}"
+        );
+    }
+    let spanish = Some(Detected::Phrase("es.no_me_escriban"));
+    for text in [
+        "por favor no me escri\u{200B}ban",
+        "no\u{200B}me escri\u{200B}ban",
+    ] {
+        assert_eq!(detect_opt_out(text), spanish, "{text:?}");
+    }
+    for text in ["can stop\u{200B} by at 3", "can\u{200B}stop by at 3"] {
+        assert_eq!(detect_opt_out(text), None, "{text:?}");
+    }
+}
+
 /// TD-CON-04, CON-011: a word in another sense, or a normal request, is not an opt-out.
 #[test]
 fn td_con_04_a_word_in_another_sense_is_not_an_opt_out() {
