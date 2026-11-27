@@ -123405,12 +123405,12 @@
      }
     }
    ],
-   "reviewed_sha": "bdf4c06f6e77700a10258d3179e6c0b90ad4081b",
+   "reviewed_sha": "df1e5bfd1b8fcaf934a3fcd4ab4ecaf5dbd529fc",
    "review_lease": {
     "task": "T849",
-    "session": "actions-45933576849",
-    "expires": "2026-11-27T06:25:59Z",
-    "lane": "2"
+    "session": "actions-45944939631",
+    "expires": "2026-11-27T08:54:12Z",
+    "lane": "5"
    },
    "branch": "claude/task/T849-clock-composition",
    "auto_merge": {
@@ -123418,24 +123418,6 @@
     "why": "auto-merge on #1491 (gh pr merge)",
     "head": "bb0061d28e2ef85c5cada75dc025b4a87b5e424e"
    },
-   "update_merges": [
-    {
-     "from": "1150cbb3e7b2b38090101d33c7d4691f677cbcaf",
-     "to": "bb0061d28e2ef85c5cada75dc025b4a87b5e424e",
-     "main": "bccc571c6527b16015f2f9b3721476c3961f6f9b",
-     "how": "hand-in",
-     "at": "2026-11-27T05:09:05Z"
-    },
-    {
-     "from": "bb0061d28e2ef85c5cada75dc025b4a87b5e424e",
-     "to": "bdf4c06f6e77700a10258d3179e6c0b90ad4081b",
-     "how": "adopted",
-     "at": "2026-11-27T05:20:14Z"
-    }
-   ],
-   "update_waiting_since": null,
-   "update_push_failures": null,
-   "merge_turn_since": "2026-11-27T05:20:14Z",
    "last_failure": "E2e: failure; Ally: failure\nAlly failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing)\n      335 |   await j.drive.press(page.getByRole(\"button\", { name: \"Confirm and pay $25\" }));\n    > 336 |   await expect(page.locator(\"#confirm-status\")).toHaveText(\"We can't take payments right now. Nothing was charged. Try again in a few minutes.\");\n          |                                                 ^\n      337 |   expect(await standInCharges(j.page.request, seeded.pick)).toEqual([]);\n      338 |   return page;\n      339 | }\n        at pressRefused (/home/runner/work/askhava/askhava/tests/e2e/j3.ts:336:49)\n        at step5SafeMode (/home/runner/work/askhava/askhava/tests/e2e/j3.ts:364:19)\n        at /home/runner/work/askhava/askhava/tests/a11y/j3_keyboard.spec.ts:152:3\n    Error Context: test-results/a11y/j3_keyboard-A11Y-005-A11Y--0a910-t-three-widths-on-each-page-late/error-context.md\n    Error Context: test-results/a11y/j3_keyboard-A11Y-005-A11Y--0a910-t-three-widths-on-each-page-late/error-context.md\n  1 failed\n    [late] \u203a tests/a11y/j3_keyboard.spec.ts:142:1 \u203a A11Y-005 A11Y-021 J3 keyboard-only: sign-in, pause, refund, fee mode, safe mode, audit log, closing checks; axe at three widths on each page \n  1555 passed (11.7m)\n##[error]Process completed with exit code 1.\nE2e failed at step: The journeys (npx playwright test tests/e2e)",
    "wip_claim": {
     "attempt": 2,
@@ -123443,7 +123425,8 @@
    },
    "runner_closed_prs": [
     1491
-   ]
+   ],
+   "head_check_since": null
   },
   {
    "id": "T850",
@@ -132469,7 +132452,7 @@
    }
   }
  },
- "updated_at": "2026-11-27T07:32:37Z",
+ "updated_at": "2026-11-27T07:36:43Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -132567,7 +132550,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "37f92ed093111a42071e9044252b0f7066aad712",
+ "runner_sha": "df1e5bfd1b8fcaf934a3fcd4ab4ecaf5dbd529fc",
  "starter": "actions",
  "smoke_runs": [
   {
