@@ -7,7 +7,9 @@
 //! or 503 with a `no-store` JSON body naming the two states and the age in seconds of the newest
 //! lease or finish; it shows no secret, contact detail or setting value. [`web_health`] gives
 //! T476's health page the process's start time and the same state as one plain value.
-//! `check` holds no HTTP type, so T518's worker task can call it in process.
+//! `check` holds no HTTP type, so T518's worker task can call it in process. A queue read that
+//! fails or times out after the round trip passed answers 503 with the database up and the
+//! worker unknown (T778, D-5081 F36), never as the database being down.
 
 use std::io;
 use std::sync::OnceLock;
@@ -77,13 +79,16 @@ pub struct HealthState {
     pub worker_down: bool,
     /// The age of the newest lease or finish; `None` before any worker served this database.
     pub activity_age: Option<SignedDuration>,
+    /// The database answered but the queue read failed or timed out: the worker's state is not
+    /// known (D-5081 F36). Built only here; never healthy.
+    pub worker_unknown: bool,
 }
 
 impl HealthState {
-    /// OPS-007: healthy when the database is up and the worker is not down.
+    /// OPS-007: healthy when the database is up and the worker is known and not down.
     #[must_use]
     pub fn healthy(&self) -> bool {
-        self.database_up && !self.worker_down
+        self.database_up && !self.worker_down && !self.worker_unknown
     }
 }
 
@@ -96,19 +101,21 @@ pub struct WebHealth {
     pub state: HealthState,
 }
 
-/// OPS-007, D-4044: the database and worker check at `now`, with no HTTP type.
+/// OPS-007, D-4044, D-5081: the database and worker check at `now`, with no HTTP type. A failed
+/// or timed-out queue read after a good round trip leaves the database up and the worker unknown.
 pub(crate) async fn check(pool: &PgPool, now: Timestamp, limits: &HealthLimits) -> HealthState {
-    let down = HealthState {
-        database_up: false,
+    let unknown = |database_up| HealthState {
+        database_up,
         worker_down: false,
         activity_age: None,
+        worker_unknown: true,
     };
     if !crate::liveness::round_trip(pool).await {
-        return down;
+        return unknown(false);
     }
     match tokio::time::timeout(PROBE_TIMEOUT, queue_health(pool, now)).await {
         Ok(Ok(queue)) => judge(queue, now, limits),
-        _ => down,
+        _ => unknown(true),
     }
 }
 
@@ -121,6 +128,7 @@ pub(crate) fn judge(queue: QueueHealth, now: Timestamp, limits: &HealthLimits) -
             .oldest_waiting
             .is_some_and(|due| age(due) > limits.worker_down),
         activity_age: queue.newest_activity.map(age),
+        worker_unknown: false,
     }
 }
 
@@ -153,7 +161,10 @@ async fn healthz(State(pool): State<PgPool>) -> Response {
 
 /// The probe's JSON: `ok` or `down`, the database and worker states and the activity age.
 pub(crate) fn body(health: &HealthState) -> axum::Json<serde_json::Value> {
-    let worker = match (health.database_up, health.worker_down) {
+    let worker = match (
+        health.database_up && !health.worker_unknown,
+        health.worker_down,
+    ) {
         (false, _) => "unknown",
         (true, true) => "down",
         (true, false) => "up",
