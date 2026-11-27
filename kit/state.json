@@ -124828,7 +124828,7 @@
     "T744",
     "T799"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 1,
    "slug": "fraud-end-real-states",
    "type": "harness",
@@ -124916,13 +124916,70 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 53,
      "head_sha": "0855538a4ae46cbd488447a837671855ef281138",
-     "pr": null,
-     "checks": null,
+     "pr": 1506,
+     "checks": [
+      {
+       "name": "backup lane 3",
+       "conclusion": null
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-27T11:15:35Z",
      "ended_at": "2026-11-27T12:57:25Z",
-     "result": "MERGE_PENDING",
+     "result": "done",
      "usage": {
       "worker": {
        "tokens": 1523916,
@@ -124974,7 +125031,32 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "merge_turn_since": "2026-11-27T13:15:23Z"
+   "merge_turn_since": "2026-11-27T13:15:23Z",
+   "merged_sha": "9ba0b6363b7e2637c02be40e12b8d9cee809c92d",
+   "merged_at": "2026-11-27T13:41:41Z",
+   "files": [
+    ".sqlx/query-3480639e94e22c3e344987c705eb3c582d3a9f35796c756d1b0734300298fdfe.json",
+    ".sqlx/query-77d2c830de5485254a5670fbeb023ef7acaf161905fe68e8e5604db770eea9e1.json",
+    ".sqlx/query-7ace69ab8a5fe6d4afcb042d9a0179f09a8259d39eab7c15effb31c495496251.json",
+    ".sqlx/query-85033a7a60912835248cb4c66ffa1e7d2f94c82e62751a979c11c041273fb260.json",
+    ".sqlx/query-8bc76e36bd82bd41706d0fec904340453369c2880134c19297b234407921aa53.json",
+    ".sqlx/query-94e1b6d302ae3407bf5b4deb33db9e0d52a6483905f8a8c89e8c5a354f47c55f.json",
+    ".sqlx/query-c7f28acac89638fea10c2051475f5ffafb7af2c8f91f43007d9498f3ced8f89d.json",
+    "app/payments/NOTES.md",
+    "app/payments/src/payment_hold.rs",
+    "app/picks/CLAUDE.md",
+    "app/picks/NOTES.md",
+    "app/picks/src/connect.rs",
+    "app/picks/src/pick_ended.rs",
+    "app/picks/src/status.rs",
+    "app/picks/src/unreachable_refund.rs",
+    "docs/decisions.md",
+    "tests/integration/tests/fraud_end_real_states.rs",
+    "tests/integration/tests/release_fraud_race.rs",
+    "tests/integration/tests/unreachable_refund.rs",
+    "tests/integration/tests/unreachable_refund_states.rs",
+    "tests/integration/tests/unreachable_steps.rs"
+   ]
   },
   {
    "id": "T868",
@@ -133782,7 +133864,7 @@
    }
   }
  },
- "updated_at": "2026-11-27T13:29:56Z",
+ "updated_at": "2026-11-27T13:45:13Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -133880,7 +133962,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "febc73c2ddbc732b28ceed160a5dce512ae8d67e",
+ "runner_sha": "9ba0b6363b7e2637c02be40e12b8d9cee809c92d",
  "starter": "actions",
  "smoke_runs": [
   {

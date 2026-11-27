@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-27T13:29:56Z by runner febc73c2ddbc (actions).
+Updated 2026-11-27T13:45:13Z by runner 9ba0b6363b7e (actions).
 
-**Building: T822 in progress since 13:18Z; 690 of 802 done; week 14% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Building: T822 in progress since 13:18Z; 691 of 802 done; week 14% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 690 of 802 build tasks (owner gates not counted)
+- **Tasks done:** 691 of 802 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T822 claimed 13:18Z, lease until 16:18Z; lane 2: T849 claimed 13:29Z, lease until 16:29Z; lane 4: T817 claimed 13:19Z, lease until 16:19Z
 - **Week:** 14% used, 164.1M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:24Z, 5 min before this update
+- **Last run:** 13:30Z, 14 min before this update
 - **Keeper:** last ran 13:23Z, next wake 15:43Z
 
 ## Needs attention
@@ -21,14 +21,14 @@ Evidence: her data download is assembled in app/server/src/homeowner_portal.rs:6
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 50% of the context window, over its 45% limit
 - PLAN GAP T856 (since 2026-11-27T07:31:36Z, no attempt used; a plan change fixes it): T856: measures 46% of the context window, over its 45% limit
 - PLAN GAP T862 (since 2026-11-27T13:22:09Z, no attempt used; a plan change fixes it): outside ownership: app/server/src/homeowner_portal.rs, app/portals/src/homeowner_portal.rs
-- Strict plan check red: 62 problem(s) on tasks still to run (+599 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
+- Strict plan check red: 62 problem(s) on tasks still to run (+600 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T862 | privacy: the email she types in her own conversation is kept | BLOCKED | 1 | 4 min | 13:22Z | PLAN GAP: outside ownership: app/server/src/homeowner_portal.rs, app/portals/src/homeowner_portal.rs / Evidence: her dat |
 | T734 | server and adapters: a business can leave in the portal, wit | BLOCKED | 3 | 26 min | 13:10Z | PLAN GAP: app/portals/templates/business_leave.html:25 owned by T228 and T410, not T734. Smallest plan change: let T734  |
-| T867 | picks and payments (harness): an early fraud warning before  | MERGE_PENDING | 2 | 101 min | 12:57Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
+| T867 | picks and payments (harness): an early fraud warning before  | done | 2 | 101 min | 12:57Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
 | T820 | server and portals: "Download my data" also holds withdrawn  | done | 4 | 106 min | 12:45Z | Hand-in time passed. Worker added unit tests in app/portals/src/data_download.rs (commit f4a102dca); portals-only covera |
 | T734 | server and adapters: a business can leave in the portal, wit | check_failed | 2 | 2 h 44 min | 12:11Z |  |
 | T778 | jobs, core and server: a dead Payment pending timer is reviv | done | 1 | 114 min | 11:24Z |  |
@@ -72,7 +72,7 @@ Evidence: her data download is assembled in app/server/src/homeowner_portal.rs:6
 ## Progress (requirements verified)
 
 **Requirements verified:** 465 of 735 (63.3%) · partial 262 · unstarted 8
-**Tasks merged (throughput only):** 690 of 802
+**Tasks merged (throughput only):** 691 of 802
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -108,7 +108,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 333 of 374 done
+- stage 5: 334 of 374 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
