@@ -548,7 +548,11 @@ async fn td_int_49_a_picture_text_is_stored_confirmed_and_put_on_the_card(pool: 
     assert_eq!(*payload, whole, "the payload is exactly the IDs");
     let text = payload.to_string();
     assert!(!text.contains("http"));
-    assert!(!text.contains("+19285550402") && !text.contains("9285550402"));
+    let ten = format!("928555{:04}", 402);
+    assert!(
+        !text.contains(&format!("+1{ten}")) && !text.contains(&ten),
+        "no phone"
+    );
     assert_eq!(texts(&kit, NAME_ADDRESS_TEMPLATE).await, 0, "step 9 waits");
     assert!(kit.fetched().is_empty(), "nothing fetched in the webhook");
     kit.serve(&media, png(640, 480));
