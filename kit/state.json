@@ -109270,7 +109270,7 @@
     "T813",
     "T410"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 3,
    "slug": "business-leave-served",
    "type": "build",
@@ -109284,7 +109284,7 @@
     5932,
     5933
    ],
-   "last_failure": "PLAN GAP: app/portals/templates/business_leave.html:25 owned by T228 and T410, not T734. Smallest plan change: let T734 own that template for one line, <link rel=\"stylesheet\" href=\"/static/portals/forms.css\"> at the top of {% block main %}, as get_help.html:9 and notice_settings.html:8 carry.\nEvidence: the six reason radios on /b/leave and /b/pause-reason have no visible edge without forms.css (FORMS_CSS, app/portals/src/feedback.rs:73), so the A11Y-007 edge check (tests/a11y/targets_contrast.spec.ts:80) fails at 320, 768 and 1280 px. The reviewer confirmed from kit/tasks.json that T734 does not own the template, and no file T734 owns can fix it cleanly.\nThe J1 step 6 e2e failure looks unrelated (a flake or the D-5955 clock issue): J1 and business_leave passed together locally.",
+   "last_failure": "PLAN GAP: app/portals/templates/business_leave.html:25 owned by T228 and T410, not T734. Smallest plan change: let T734 own that template for one line, <link rel=\"stylesheet\" href=\"/static/portals/forms.css\"> at the top of {% block main %}, as get_help.html:9 and notice_settings.html:8 carry.\nEvidence: the six reason radios on /b/leave and /b/pause-reason have no visible edge without forms.css (FORMS_CSS, app/portals/src/feedback.rs:73), so the A11Y-007 edge check (tests/a11y/targets_contrast.spec.ts:80) fails at 320, 768 and 1280 px. The reviewer confirmed from kit/tasks.json that T734 does not own the template, and no file T734 owns can fix it cleanly.\nThe J1 step 6 e2e failure looks unrelated (a flake or the D-5955 clock issue): J1 and business_leave passed together locally.\nre-queued after plan fix D-5972: D-5972 (PR #1513): T734 owns business_leave.html for the forms.css link at the top of {% block main %}",
    "history": [
     {
      "attempt": 1,
@@ -109420,7 +109420,22 @@
    "runner_closed_prs": [
     1504
    ],
-   "reason": "plan gap reported: PLAN GAP: app/portals/templates/business_leave.html:25 owned by T228 and T410, not T734. Smallest plan change: let T734 own that template for one line, <link rel=\"stylesheet\" href=\"/static/portals/forms.css\"> at the top of {% block main %}, as get_help.html:9 and notice_settings.html:8 carry.\nEvidence: the six reason radios on /b/leave and /b/pause-reason have no visible edge without forms.css (FORMS_CSS, app/portals/src/feedback.rs:73), so the A11Y-007 edge check (tests/a11y/targets_contrast.spec.ts:80) fails at 320, 768 and 1280 px. The reviewer confirmed from kit/tasks.json that T734 does n; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T734 --plan-fix D-### --reason \"...\"` (D-2859)"
+   "reason": null,
+   "requeues": [
+    {
+     "at": "2026-11-27T17:03:08Z",
+     "reason": "D-5972 (PR #1513): T734 owns business_leave.html for the forms.css link at the top of {% block main %}",
+     "by": "manual-61e2b39625a6",
+     "was": "plan gap reported: PLAN GAP: app/portals/templates/business_leave.html:25 owned by T228 and T410, not T734. Smallest plan change: let T734 own that template for one line, <link rel=\"stylesheet\" href=\"/static/portals/forms.css\"> at the top of {% block main %}, as get_help.html:9 and notice_settings.html:8 carry.\nEvidence: the six reason radios on /b/leave and /b/pause-reason have no visible edge without forms.css (FORMS_CSS, app/portals/src/feedback.rs:73), so the A11Y-007 edge check (tests/a11y/targets_contrast.spec.ts:80) fails at 320, 768 and 1280 px. The reviewer confirmed from kit/tasks.json that T734 does n; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T734 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 3,
+     "plan_fix": "D-5972",
+     "plan_since": "2026-11-27T12:43:07Z",
+     "plan_base": "703f1b55401fe152096746097375aa07db11f6ca",
+     "plan_head": "12679cbd7990c6b73767ebccaa6bc74bb5c4cf21",
+     "plan_then": "2e1f331cc43178452ec26b65ee08df0f80ce86b04514e6a0501c68ca915b8b55",
+     "plan_now": "384809c1b632117a9dc8d38033280f7c86d7dd22987ba9dee8d0570c71dca250"
+    }
+   ]
   },
   {
    "id": "T735",
@@ -134315,7 +134330,7 @@
    }
   }
  },
- "updated_at": "2026-11-27T17:02:26Z",
+ "updated_at": "2026-11-27T17:03:08Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-27T17:02:26Z by runner 12679cbd7990 (manual).
+Updated 2026-11-27T17:03:08Z by runner 12679cbd7990 (manual).
 
 **Idle since 16:48Z; 693 of 804 done; week 17% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -8,12 +8,10 @@ Updated 2026-11-27T17:02:26Z by runner 12679cbd7990 (manual).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** idle since 16:48Z (no task in progress)
 - **Week:** 17% used, 164.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:52Z, 10 min before this update
+- **Last run:** 17:03Z, 0 min before this update
 - **Keeper:** last ran 16:51Z, next wake 22:31Z
 
 ## Needs attention
-- BLOCKED T734: plan gap reported: PLAN GAP: app/portals/templates/business_leave.html:25 owned by T228 and T410, not T734. Smallest plan change: let T734 own that template for one line, <link rel="stylesheet" href="/static/portals/forms.css"> at the top of {% block main %}, as get_help.html:9 and notice_settings.html:8 carry.
-Evidence: the six reason radios on /b/leave and /b/pause-reason have no visible edge without forms.css (FORMS_CSS, app/portals/src/feedback.rs:73), so the A11Y-007 edge check (tests/a11y/targets_contrast.spec.ts:80) fails at 320, 768 and 1280 px. The reviewer confirmed from kit/tasks.json that T734 does n; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T734 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T849: E2e: failure; Ally: failure
 Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing)
       335 |   await j.drive.press(page.getByRole("button", { name: "Confirm and pay $25" }));
