@@ -3,7 +3,8 @@
 //!
 //! No table records the worker's heartbeat: the queue itself shows whether work is being done.
 //! [`queue_health`] reads, from `core.task` alone, the oldest task that is due and waiting (no
-//! `done_at`, no `dead_at`, no live lease) and the newest sign of a worker (the newest finish or
+//! `done_at`, no `dead_at`, no live lease, attempts left, so a row no claim can take, waiting for
+//! the reaper, never counts: T778, D-5081 F35) and the newest sign of a worker (the newest finish or
 //! lease). `server`'s probe judges it; `server` may name no `core.` table itself.
 
 use jiff::{SignedDuration, Timestamp};
@@ -15,13 +16,14 @@ use crate::tasks::{Lease, TaskError};
 /// What the queue shows about the worker at one moment (OPS-007, D-3144). Holds times only.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct QueueHealth {
-    /// When the oldest task that is due with no `done_at`, `dead_at` or live lease fell due.
+    /// When the oldest task that is due with no `done_at`, `dead_at` or live lease, and with
+    /// attempts left, fell due.
     pub oldest_waiting: Option<Timestamp>,
     /// The newest finish or lease start; `None` when no worker has served this database yet.
     pub newest_activity: Option<Timestamp>,
 }
 
-/// OPS-007, D-3144: reads [`QueueHealth`] at `now`. A lease's start is its end less
+/// OPS-007, D-3144, D-5081: reads [`QueueHealth`] at `now`. A lease's start is its end less
 /// [`Lease::WORKER`]'s length, the only lease the claim loop takes.
 ///
 /// # Errors
@@ -30,7 +32,8 @@ pub async fn queue_health(pool: &PgPool, now: Timestamp) -> Result<QueueHealth, 
     let row = sqlx::query!(
         r#"SELECT
              (SELECT min(run_at) FROM core.task WHERE done_at IS NULL AND dead_at IS NULL
-                AND run_at <= $1 AND (lease_until IS NULL OR lease_until < $1)) AS oldest,
+                AND run_at <= $1 AND attempts < max_attempts
+                AND (lease_until IS NULL OR lease_until < $1)) AS oldest,
              (SELECT max(done_at) FROM core.task) AS finished,
              (SELECT max(lease_until) FROM core.task) AS leased"#,
         now.to_sqlx() as _,

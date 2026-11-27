@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT\n             (SELECT min(run_at) FROM core.task WHERE done_at IS NULL AND dead_at IS NULL\n                AND run_at <= $1 AND (lease_until IS NULL OR lease_until < $1)) AS oldest,\n             (SELECT max(done_at) FROM core.task) AS finished,\n             (SELECT max(lease_until) FROM core.task) AS leased",
+  "query": "SELECT\n             (SELECT min(run_at) FROM core.task WHERE done_at IS NULL AND dead_at IS NULL\n                AND run_at <= $1 AND attempts < max_attempts\n                AND (lease_until IS NULL OR lease_until < $1)) AS oldest,\n             (SELECT max(done_at) FROM core.task) AS finished,\n             (SELECT max(lease_until) FROM core.task) AS leased",
   "describe": {
     "columns": [
       {
@@ -33,5 +33,5 @@
       null
     ]
   },
-  "hash": "b3be578a78413df8e92737c14c38e679f159569a8ff5edcafc69e62602d3eeb4"
+  "hash": "de5b57ec5797a65b9c27105ea995e50fddb6570df6424464bc1a4f99c405750b"
 }
