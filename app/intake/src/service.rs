@@ -208,7 +208,7 @@ async fn handle(
 /// (`web_chat` records only) gets the consent text and its record from her first text; a chat
 /// turn's input stays "request open", so it never queues a consent text or writes a record. A
 /// request with no record at all, which only this crate's tests' [`on_text`] opens (every other
-/// opening writes its record in its own transaction), keeps "consent sent" (D-5890).
+/// opening writes its record in its own transaction), keeps "consent sent" (D-5891).
 async fn consent_sent(
     db: &mut PgConnection,
     open: Option<Uuid>,
@@ -304,24 +304,70 @@ pub async fn receive_answer(
     let handled = handle(&mut tx, secret, msg, settings, (asked, Via::Carrier)).await?;
     let sent = handled.texts.iter().find(|q| is_consent(q.template));
     if let (Some(consent), Some(id)) = (sent, handled.conversation) {
-        let row = models::conversation(&mut tx, id)
-            .await?
-            .ok_or(IntakeError::Database)?;
-        let language = language_from_code(&row.language);
-        let body = render(
-            consent.template,
-            language,
-            settings.spanish_conversations_on,
-            &[],
-        )
-        .map_err(|_| IntakeError::Template)?
-        .body;
-        let version = consent_version(consent.template, language, &body);
-        let ids = (row.homeowner_id, id, msg.inbox_id);
-        models::record_consent(&mut tx, ids, &version, msg.received_at).await?;
+        record_sms(&mut tx, consent.template, (id, msg), settings).await?;
     }
     tx.commit().await.map_err(|_| IntakeError::Database)?;
     Ok(handled)
+}
+
+/// The `sms` consent record of carrier text `msg` in request `id` (CON-005, D-419): this text's ID
+/// and time and the version of consent template `template` in the request's language.
+async fn record_sms(
+    tx: &mut PgConnection,
+    template: &'static str,
+    (id, msg): (Uuid, &TextIn<'_>),
+    settings: Settings,
+) -> Result<(), IntakeError> {
+    let row = models::conversation(tx, id)
+        .await?
+        .ok_or(IntakeError::Database)?;
+    let language = language_from_code(&row.language);
+    let body = render(template, language, settings.spanish_conversations_on, &[])
+        .map_err(|_| IntakeError::Template)?
+        .body;
+    let version = consent_version(template, language, &body);
+    let ids = (row.homeowner_id, id, msg.inbox_id);
+    models::record_consent(tx, ids, &version, msg.received_at).await
+}
+
+/// Her first carrier text into web-opened request `id` that a reply step answers before the
+/// screen (a LIST, an under-18 stop, a close, a "<n> YES" pick, a check-in or HELP-window answer;
+/// D-5893): as [`first_text_in`], with the row locked and the record checked again, the consent
+/// text is queued under this text's ID and the `sms` record appended, so the request can be texted
+/// from then on. `None` when the request has its `sms` record (or no record at all, D-5891), is
+/// closed, or another text won the race. The caller skips opt-outs, HELP and 911-list matches,
+/// which keep their own order (INT-002, INT-004).
+///
+/// # Errors
+///
+/// As [`on_text`]; nothing is kept on an error.
+pub(crate) async fn consent_on_first_reply(
+    tx: &mut PgConnection,
+    secret: &SecretString,
+    msg: &TextIn<'_>,
+    (id, settings): (Uuid, Settings),
+) -> Result<Option<Queued>, IntakeError> {
+    if !models::lock_conversation(tx, id).await?
+        || models::sms_consented(tx, id).await?
+        || models::consent_records(tx, id).await?.is_empty()
+    {
+        return Ok(None);
+    }
+    let inbound = Inbound {
+        emergency: false,
+        ..msg.inbound
+    };
+    let (template, language) = consent_of(&plan(false, &inbound, settings));
+    let step = Step {
+        secret,
+        msg,
+        settings,
+        check: Check::Clear,
+    };
+    request_text(tx, Some(id), TextKind::CarrierConsent).await?;
+    let queued = queue(tx, &step, (template, language), &[id, msg.inbox_id], &[]).await?;
+    record_sms(tx, queued.template, (id, msg), settings).await?;
+    Ok(Some(queued))
 }
 
 /// The chat's own service entry (CON-005, CON-025, D-5848, D-5918): a web-chat turn after the code

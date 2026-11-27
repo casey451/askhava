@@ -72,7 +72,9 @@ use crate::rules::{
     AgeStop, CloseReading, Settings, age_stop, close_reading, language_from_code,
     split_name_address,
 };
-use crate::service::{Asked, Handled, Queued, Screened, TextIn, receive_answer, receive_chat};
+use crate::service::{
+    Asked, Handled, Queued, Screened, TextIn, consent_on_first_reply, receive_answer, receive_chat,
+};
 use crate::text_pick_reply::text_pick_reply;
 
 /// What [`receive_reply`] did with one inbound text.
@@ -227,17 +229,18 @@ async fn reply_in(
     // INT-002, INT-004, D-5081: a 911-list match is no check-in answer; it goes on to the screen.
     let on_911_list = matches!(check(msg.inbound.words, false), Check::Match(_));
     let check_in = !answered_elsewhere && !on_911_list;
+    let open = models::open_conversation(&mut tx, msg.contact).await?;
+    let first = consent_first(&mut tx, secret, msg, (open, settings), entry, check_in).await?;
     if check_in && let Some(job) = check_in_reply(&mut tx, msg).await? {
         tx.commit().await.map_err(|_| IntakeError::Database)?;
         return Ok(Reply::CheckedIn(job));
     }
-    let open = models::open_conversation(&mut tx, msg.contact).await?;
     if let Some(conversation) = open.filter(|_| !answered_elsewhere)
         && let Some(reply) =
             after_help(&mut tx, secret, (msg, raw), (conversation, settings)).await?
     {
         tx.commit().await.map_err(|_| IntakeError::Database)?;
-        return Ok(reply);
+        return Ok(with_first(reply, first));
     }
     let (mut step_11, mut mention) = (None, None);
     if let Some(conversation) = open.filter(|_| !answered_elsewhere) {
@@ -245,7 +248,7 @@ async fn reply_in(
         let (ended, said) = in_request(&mut tx, secret, (msg, raw), request, entry).await?;
         if let Some(reply) = ended {
             tx.commit().await.map_err(|_| IntakeError::Database)?;
-            return Ok(reply);
+            return Ok(with_first(reply, first));
         }
         mention = said;
         step_11 = (!closes(msg.inbound.words)).then_some(conversation);
@@ -263,7 +266,47 @@ async fn reply_in(
         first_text(&mut tx, secret, msg, &mut handled, settings).await?;
     }
     tx.commit().await.map_err(|_| IntakeError::Database)?;
-    Ok(Reply::Handled(handled))
+    Ok(with_first(Reply::Handled(handled), first))
+}
+
+/// D-5893 (CON-001, CON-005, D-5848): a carrier text into an open request with no `sms` record of
+/// its own, not an opt-out, HELP or 911-list match (`plain`), gets the consent text and the `sms`
+/// record before any reply step can answer it ([`consent_on_first_reply`]), so a LIST, a close or
+/// a "<n> YES" as her first text still lets the request be texted. A chat turn never does.
+async fn consent_first(
+    tx: &mut PgConnection,
+    secret: &SecretString,
+    msg: &TextIn<'_>,
+    (open, settings): (Option<Uuid>, Settings),
+    entry: Entry,
+    plain: bool,
+) -> Result<Option<Queued>, IntakeError> {
+    match open {
+        Some(id) if plain && entry == Entry::Carrier => {
+            consent_on_first_reply(tx, secret, msg, (id, settings)).await
+        }
+        _ => Ok(None),
+    }
+}
+
+/// `reply` with consent text `first` ([`consent_first`]) first among the texts it lists; a reply
+/// that lists none keeps it only in the outbox, where it was queued first.
+fn with_first(reply: Reply, first: Option<Queued>) -> Reply {
+    match reply {
+        Reply::Listed(mut texts) => {
+            texts.splice(0..0, first);
+            Reply::Listed(texts)
+        }
+        Reply::Handled(mut handled) => {
+            handled.texts.splice(0..0, first);
+            Reply::Handled(handled)
+        }
+        Reply::NameAddress(taken, mut handled) => {
+            handled.texts.splice(0..0, first);
+            Reply::NameAddress(taken, handled)
+        }
+        other => other,
+    }
 }
 
 /// A text in open request `conversation` that is not an opt-out or HELP (TXT-031, INT-019,

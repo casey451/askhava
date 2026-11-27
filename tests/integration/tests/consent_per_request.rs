@@ -8,13 +8,16 @@
 //! `may_text_request` true (the owner's help reply goes by email only); that a chat turn writes no
 //! record and queues no consent text, also when her request closed under it; that the guard keeps
 //! the chat exemption and refuses a request with no record; and that the INT-004 text still goes
-//! before the consent text. Fake numbers, IDs and words only.
+//! before the consent text. Her first carrier text through the reply entry that a reply step answers
+//! before the screen (a CLOSE, a "<n> YES", a LIST) also gets the consent text and one `sms`
+//! record (D-5893). Fake numbers, IDs and words only.
 
 use askhava_intake::api::rules::{Inbound, SAFETY_TEMPLATE, Settings, consent_template};
 use askhava_intake::api::{
     ChatAnswer, ChatError, ChatIn, ChatSettings, Checked, CodeStep, Delivery, Handled, IntakeError,
-    TextIn, TextKind, chat_contact, chat_message, check_code, consent_records, may_text,
-    may_text_request, receive_text, request_text, send_code, start_chat,
+    JobStart, Opened, RawReply, Reply, TextIn, TextKind, begin_job, chat_contact, chat_message,
+    check_code, consent_records, may_text, may_text_request, receive_raw_reply, receive_reply,
+    receive_text, request_text, send_code, start_chat,
 };
 use askhava_messaging::api::Language;
 use askhava_ops::api::{Asker, HelpLimits, open_help_request};
@@ -342,4 +345,80 @@ async fn the_owner_help_reply_to_a_web_chat_only_number_is_email_only(pool: sqlx
     let reply = (opened.request(), press, "We will look at it today.");
     let sent = send_owner_reply(&mut db, (None, Some(&secret)), reply, at(7)).await;
     assert_eq!(sent, Err(ReplyRefusal::EmailOnly));
+}
+
+/// Her consent texts queued in the outbox.
+async fn consent_texts(db: &mut PgConnection, contact: Uuid) -> i64 {
+    sqlx::query_scalar(
+        "SELECT count(*) FROM messaging.outbox WHERE recipient_id = $1 AND template_id = $2",
+    )
+    .bind(contact)
+    .bind(consent())
+    .fetch_one(db)
+    .await
+    .expect("consent texts")
+}
+
+/// A carrier text through the route's reply entry, with its raw words.
+async fn raw_reply(db: &mut PgConnection, msg: &TextIn<'_>) -> Reply {
+    let (raw, vault) = (SecretString::from(msg.inbound.words.to_owned()), vault());
+    let keys = RawReply {
+        raw: &raw,
+        vault: &vault,
+    };
+    receive_raw_reply(db, &secret(), (msg, keys), (Settings::default(), &[]))
+        .await
+        .expect("reply")
+}
+
+/// Asserts web-opened request `id` got one consent text more than its opening's `before` and one
+/// `sms` record under `inbox`.
+async fn texted_in(db: &mut PgConnection, (id, contact): (Uuid, Uuid), inbox: u128, before: i64) {
+    assert_eq!(consent_texts(db, contact).await, before + 1);
+    let sms = ("sms".to_owned(), Some(Uuid::from_u128(inbox)));
+    assert_eq!(channels(db, id).await[1..], [sms]);
+    assert!(may_text_request(db, id).await.expect("sms"));
+}
+
+/// D-5893, CON-005: a CLOSE as her first carrier text into a web-opened request, answered by the
+/// close step before the screen, still queues the consent text and appends one `sms` record.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn a_close_as_her_first_text_still_gets_consent_and_a_record(pool: sqlx::PgPool) {
+    let mut db = pool.acquire().await.expect("conn");
+    let (id, contact) = web_request(&mut db, 8).await;
+    let before = consent_texts(&mut db, contact).await;
+    let start = JobStart {
+        conversation: id,
+        words: "my sink leaks",
+        emergency: false,
+        trade: "plumbing",
+        at: at(4),
+    };
+    let Opened::Created(_) = begin_job(&mut db, &start).await.expect("job") else {
+        panic!("a new job");
+    };
+    let reply = raw_reply(&mut db, &text(contact, 0x8001, "CLOSE", 6)).await;
+    assert!(matches!(reply, Reply::Closed(..)), "{reply:?}");
+    texted_in(&mut db, (id, contact), 0x8001, before).await;
+}
+
+/// D-5893, PICK-015, TXT-031: a "2 YES" from her phone and a LIST as her first carrier text into a
+/// web-opened request each get the consent text first and one `sms` record.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn a_pick_or_list_as_her_first_text_gets_consent_and_a_record(pool: sqlx::PgPool) {
+    let mut db = pool.acquire().await.expect("conn");
+    let (id, contact) = web_request(&mut db, 9).await;
+    let before = consent_texts(&mut db, contact).await;
+    let reply = raw_reply(&mut db, &text(contact, 0x9001, "2 YES", 6)).await;
+    if let Reply::Handled(handled) = &reply {
+        assert_eq!(templates(handled)[..1], [consent()]);
+    }
+    texted_in(&mut db, (id, contact), 0x9001, before).await;
+    let (id, contact) = web_request(&mut db, 10).await;
+    let before = consent_texts(&mut db, contact).await;
+    let list = text(contact, 0x9002, "LIST", 6);
+    receive_reply(&mut db, &secret(), &list, (Settings::default(), &[]))
+        .await
+        .expect("list");
+    texted_in(&mut db, (id, contact), 0x9002, before).await;
 }
