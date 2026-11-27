@@ -129,11 +129,6 @@
     "segments": 2,
     "text": "{brand_short}: Job {job}: no call yet. Call within 72 hours of the release, or the fee can't be refunded. Call between 8 a.m. and 8 p.m. Arizona time (any hour on an emergency job). Your 2 attempts must be at least 3 hours apart and can be on different days."
   },
-  "business_pick_waiting": {
-    "audience": "business",
-    "segments": 1,
-    "text": "{brand_short}: A homeowner picked your quote for job {job}. Accept by {time}."
-  },
   "beep_question": {
     "audience": "homeowner",
     "segments": 1,

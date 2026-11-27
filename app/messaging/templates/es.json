@@ -162,12 +162,6 @@
     "segments": 5,
     "text": "{brand_short}: Trabajo {job}: aún no hay llamada. Llame dentro de 72 horas de recibir los datos del propietario, o la tarifa no se puede reembolsar. Llame entre las 8 a.m. y las 8 p.m., hora de Arizona (a cualquier hora en un trabajo de emergencia). Sus 2 intentos deben tener al menos 3 horas de diferencia y pueden ser en días distintos."
   },
-  "business_pick_waiting": {
-    "audience": "business",
-    "draft": true,
-    "segments": 2,
-    "text": "{brand_short}: Un propietario eligió su cotización del trabajo {job}. Acepte antes de {time}."
-  },
   "beep_question": {
     "audience": "homeowner",
     "draft": true,
