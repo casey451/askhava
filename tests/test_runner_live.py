@@ -1356,6 +1356,36 @@ def test_renew_command_renews_on_the_fresh_state(repo: dict[str, Path], tmp_path
     assert entry.renew(stranger, env).startswith("renew_refused")
 
 
+def test_renew_with_a_note_keeps_a_clean_progress_line(repo: dict[str, Path], tmp_path: Path) -> None:
+    """D-5988: the note joins the task's `progress` in the renewing write, cleaned; the lease moves as without it."""
+    env = claimed_on_origin(repo, tmp_path)
+    later = NOW + timedelta(minutes=10)
+    cfg = cycle.Config([TASK], MODELS, [], [], env.outbox_dir, "session-a", lambda: later)
+    note = "step 3;\x07 done: tests; call 928-555-0142 or (602) 555 0177, mail a.b@example.com\nnext: docs"
+    assert entry.renew(cfg, env, note) == "renewed"
+    stored = json.loads(origin_file(repo, "claude/kit-state", "kit/state.json"))
+    kept = st.entry(stored, "K10")["progress"]
+    assert kept == [{"at": "2026-11-01T12:10:00Z", "attempt": 1, "note": "step 3; done: tests; call [redacted] or [redacted], mail [redacted] next: docs"}]
+    doc = json.loads(origin_file(repo, "claude/lease", "lease.json"))
+    assert doc["lease"]["expires"] == "2026-11-01T15:10:00Z"
+    assert entry.clean_note("y" * 300) == "y" * 200
+
+
+def test_renew_without_a_note_keeps_no_progress(repo: dict[str, Path], tmp_path: Path) -> None:
+    env = claimed_on_origin(repo, tmp_path)
+    cfg = cycle.Config([TASK], MODELS, [], [], env.outbox_dir, "session-a", lambda: NOW + timedelta(minutes=31))
+    assert entry.renew(cfg, env) == "renewed"
+    stored = json.loads(origin_file(repo, "claude/kit-state", "kit/state.json"))
+    assert "progress" not in st.entry(stored, "K10")
+
+
+def test_a_note_without_renew_is_refused() -> None:
+    with pytest.raises(SystemExit):
+        entry.parse_args(["--note", "hello"])
+    assert entry.parse_args(["--renew", "--note", "hello"]).note == "hello"
+    assert entry.parse_args(["--renew"]).note is None
+
+
 def test_update_state_survives_a_failed_read_and_restores_the_heads(repo: dict[str, Path], tmp_path: Path) -> None:
     """D-515 review, medium: a fetch or read failure is a lost try, never an exception."""
     env = make_env(repo["a"], tmp_path)
