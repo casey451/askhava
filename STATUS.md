@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-27T14:48:03Z by runner bebca1305743 (actions).
+Updated 2026-11-27T14:48:58Z by runner bebca1305743 (actions).
 
 **Building: T849 in progress since 13:29Z; 692 of 802 done; week 15% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-27T14:48:03Z by runner bebca1305743 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T849 claimed 13:29Z, lease until 16:29Z
 - **Week:** 15% used, 164.1M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:47Z, 0 min before this update
-- **Keeper:** last ran 14:29Z, next wake 16:31Z
+- **Last run:** 14:48Z, 0 min before this update
+- **Keeper:** last ran 14:48Z, next wake 16:31Z
 
 ## Needs attention
 - BLOCKED T734: plan gap reported: PLAN GAP: app/portals/templates/business_leave.html:25 owned by T228 and T410, not T734. Smallest plan change: let T734 own that template for one line, <link rel="stylesheet" href="/static/portals/forms.css"> at the top of {% block main %}, as get_help.html:9 and notice_settings.html:8 carry.
