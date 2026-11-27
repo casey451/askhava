@@ -81,7 +81,7 @@ Our texts are automated. Ask "is this a person?" at any time and we'll tell you.
 
 ## 7. Photos
 
-Photos are optional; a request goes out the same way without them. When you send one, our software removes its hidden data (location, device and time) before it is stored or shown to anyone. Our own server, not an outside AI, checks it for faces, people, house numbers and license plates. It blurs or leaves out what it finds. You see each photo as businesses will see it and can remove it before your card goes out. Photos you keep go on your job card to the businesses that get it. Please leave people, house numbers and license plates out of photos. A photo sent by text is copied to our storage and deleted from our texting provider.
+Photos are optional; a request goes out the same way without them. When you send one, our software removes its hidden data (location, device and time) before it is stored or shown to anyone. Our own server checks its format and size and re-encodes it; you confirm it shows no person or house number. Once our AI photo screening is on, faces, house numbers, license plates and readable text are blurred. You see each photo as businesses will see it and can remove it before your card goes out. Photos you keep go on your job card to the businesses that get it. Please leave people, house numbers and license plates out of photos. A photo sent by text is copied to our storage and deleted from our texting provider.
 
 ## 8. How long we keep it
 
@@ -96,7 +96,7 @@ Photos are optional; a request goes out the same way without them. When you send
 
 ## 9. Your choices
 
-You can see and change your details (properties, language, texts on or off) on your homeowner page. You can also get a copy there: "Download my data" gives you a file of your requests, quotes, messages and the texting-permission records we still hold. You can ask us to delete your data there or by emailing help@laftly.com. Before we act on a delete or copy request sent by email or the help form, we text a code to the number on file and you type it back, so no one else can ask in your name. We answer each request within 30 days. When we delete, we keep only what the law or proof of your texting choices requires, without your other details. We keep your phone number, locked, for 5 years only as proof of your texting permission and opt-out.
+You can see and change your details (properties, language, texts on or off) on your homeowner page. You can also get a copy there: "Download my data" gives you a file of your requests, job descriptions, intake answers, quotes (even ones a business withdrew), messages, feedback, and the texting records we still hold, such as your STOP, HELP and START texts. You can ask us to delete your data there or by emailing help@laftly.com. Before we act on a delete or copy request sent by email or the help form, we text a code to the number on file and you type it back, so no one else can ask in your name. If your number is on our opt-out list, we can't text you a code. Ask on your homeowner page, and we email a one-time link to your update email. We answer each request within 30 days. When we delete, we keep only what the law or proof of your texting choices requires, without your other details. We keep your phone number, locked, for 5 years only as proof of your texting permission and opt-out.
 
 ## 10. How we protect it
 
