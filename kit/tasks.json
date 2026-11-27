@@ -16443,7 +16443,7 @@
    "id": "T222",
    "slug": "journeys-full-variants",
    "title": "Journey J1 full core: homeowner text through day-3 DONE (SMS mode)",
-   "goal": "Plan change D-5836 (Fable's scope decision section 2 and clock decisions C1 to C5, Nov 26, 2026; `docs/handoff/2026-11-24-fable-scope-T801-T222.md`): this task is rewritten as J1's full core and every earlier version of this goal is history (its three attempts failed on scope and on a web binary serving real time while the worker ran on the test clock; T849 fixes the second). J2 moves to T851, the variants to T852 and T853, the web-chat start to T533. In `tests/e2e/j1_full.spec.ts`, its steps in `tests/e2e/j1_full.ts` (exported for T532, T533 and T852), J1 in the INT-043 order, `docs/test-design.md:77` to `:84`: (1) \"AC blowing warm air\" from a fake number is the consent (CON-005), no safety or heat text (INT-002, D-436), the consent text first and the next text with no reply asked (D-419); (2) ZIP and area first (INT-016), the stored job type `ac_repair` and the coverage line's count (INT-017); the two stand-in AI readings of TD-INT-03 are not driven here: the AI reading is served only from T299 (phase 2, `inbound_text.rs:164` to `:170`), so that clause stays unclaimed (D-5836); (3) \"How soon?\" 2 (INT-030), the hvac questions one at a time with the AI off (INT-039), two photos asked and one sent by picture text, checked and shown back (INT-044), first name and address to the vault (INT-027), no own-or-rent question; (4) the card shown by link and SEND (INT-041); five seeded businesses (R-39, R-39R that ticked AC repair, R-39 that ticked only heating, one paused, one in Kingman), exactly the first two get the card with the photo (CARD-001, CARD-013), the cards-out text (TXT-032), no updates question; (5) two diagnostic-visit quotes (PICK-053), the first-quote text's free line, LIST line and link (TXT-016), the quote page in arrival order with WORD-005's line, licence lines and review links, announced by `aria-live`; (6) pick quote 2: the share box unticked and required (PICK-049, D-492), only \"By picking, you agree to the Terms\" beside Pick, \"Go back\", pick again, a wrong code then the right one, masked call, no call window and no who-lets-in question (D-440), focus on the result heading; (7) the business confirms, stripe-mock succeeds, the same signed webhook twice (SEC-017), one charge and one release of first name and address without the phone (PICK-022, PICK-023), a person-placed masked call of 50 seconds (CALL-007), the clock advanced from the release to day 3, the worker's check-in, \"DONE\" → Done → one private feedback request (JOB-017), a second DONE adds nothing, the other quoter's PICK-026 notice once. TD-BIZ-22's and TD-BIZ-25's J1 half: no call to a business phone except a person-placed masked call (D-492). Seeds take the app clock through T850's options; sessions stay real (C5). Every driven journey ends with the four closing checks of `docs/test-design.md:75` (no duplicate message or charge, ledger equals Stripe, every status change audited, no sentinel outside the vault), each asserting its expected positive evidence first (an empty log is not a pass). Fake data and stand-ins only; no SQL-seeded quote, pick, Connected, DONE or authorization claimed as a journey step; no clock rewind, retry or loosened assertion; T098's and T099's specs stay unchanged; a step whose served path is missing is a `PLAN GAP:` with file:line, never seeded around. Shared steps live in helper modules (`tests/e2e/j1_full.ts`, `tests/e2e/j2_full.ts`), never in a `.spec.ts` (Playwright refuses importing one, D-3892); iterate with `--no-deps` (T536). Not claimed: TD-TXT-15's parked clauses (T533), PICK-029. Update `docs/decisions.md`. Plan change D-5848: this task follows T861, which makes J1's existing spec read a sent text from the fake carrier once the sender clears its body.",
+   "goal": "Plan change D-5836 (Fable's scope decision section 2 and clock decisions C1 to C5, Nov 26, 2026; `docs/handoff/2026-11-24-fable-scope-T801-T222.md`): this task is rewritten as J1's full core and every earlier version of this goal is history (its three attempts failed on scope and on a web binary serving real time while the worker ran on the test clock; T849 fixes the second). J2 moves to T851, the variants to T852 and T853, the web-chat start to T533. In `tests/e2e/j1_full.spec.ts`, its steps in `tests/e2e/j1_full.ts` (exported for T532, T533 and T852), J1 in the INT-043 order, `docs/test-design.md:77` to `:84`: (1) \"AC blowing warm air\" from a fake number is the consent (CON-005), no safety or heat text (INT-002, D-436), the consent text first and the next text with no reply asked (D-419); (2) ZIP and area first (INT-016), the stored job type `ac_repair` and the coverage line's count (INT-017); the two stand-in AI readings of TD-INT-03 are not driven here: the AI reading is served only from T299 (phase 2, `inbound_text.rs:164` to `:170`), so that clause stays unclaimed (D-5836); (3) \"How soon?\" 2 (INT-030), the hvac questions one at a time with the AI off (INT-039), two photos asked and one sent by picture text, checked and shown back (INT-044), first name and address to the vault (INT-027), no own-or-rent question; (4) the card shown by link and SEND (INT-041); five seeded businesses (R-39, R-39R that ticked AC repair, R-39 that ticked only heating, one paused, one in Kingman), exactly the first two get the card with the photo (CARD-001, CARD-013), the cards-out text (TXT-032), no updates question; (5) two diagnostic-visit quotes (PICK-053), the first-quote text's free line, LIST line and link (TXT-016), the quote page in arrival order with WORD-005's line, licence lines and review links, announced by `aria-live`; (6) pick quote 2: the share box unticked and required (PICK-049, D-492), only \"By picking, you agree to the Terms\" beside Pick, \"Go back\", pick again, a wrong code then the right one, masked call, no call window and no who-lets-in question (D-440), focus on the result heading; (7) the business confirms, stripe-mock succeeds, the same signed webhook twice (SEC-017), one charge and one release of first name and address without the phone (PICK-022, PICK-023), a person-placed masked call of 50 seconds (CALL-007), the clock advanced from the release to day 3, the worker's check-in, \"DONE\" → Done → one private feedback request (JOB-017), a second DONE adds nothing, the other quoter's PICK-026 notice once. TD-BIZ-22's and TD-BIZ-25's J1 half: no call to a business phone except a person-placed masked call (D-492). Seeds take the app clock through T850's options; sessions stay real (C5). Every driven journey ends with the four closing checks of `docs/test-design.md:75` (no duplicate message or charge, ledger equals Stripe, every status change audited, no sentinel outside the vault), each asserting its expected positive evidence first (an empty log is not a pass). Fake data and stand-ins only; no SQL-seeded quote, pick, Connected, DONE or authorization claimed as a journey step; no clock rewind, retry or loosened assertion; T098's and T099's specs stay unchanged; a step whose served path is missing is a `PLAN GAP:` with file:line, never seeded around. Shared steps live in helper modules (`tests/e2e/j1_full.ts`, `tests/e2e/j2_full.ts`), never in a `.spec.ts` (Playwright refuses importing one, D-3892); iterate with `--no-deps` (T536). Not claimed: TD-TXT-15's parked clauses (T533), PICK-029. Update `docs/decisions.md`. Plan change D-5848: this task follows T861, which makes J1's existing spec read a sent text from the fake carrier once the sender clears its body. Plan change D-5979 (pre-flight): each step takes a `Driver` (as `tests/e2e/j3.ts:19` to `:31`), default `MOUSE`, so T532 reuses them keyboard-only.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -16531,7 +16531,7 @@
    "budget": {
     "files": 2,
     "lines": 600,
-    "context_pct": 19
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -16539,7 +16539,8 @@
     "Ally"
    ],
    "branch": "claude/task/T222-journeys-full-variants",
-   "prompt": "kit/prompts/T222.md"
+   "prompt": "kit/prompts/T222.md",
+   "acceptance": "Each step in `tests/e2e/j1_full.ts` takes a `Driver`, default `MOUSE`."
   },
   {
    "id": "T533",
@@ -16617,7 +16618,7 @@
    "id": "T532",
    "slug": "journeys-full-keyboard",
    "title": "Journeys J1 and J2 full variants, keyboard-only",
-   "goal": "Plan change D-3889 (split from T222, Fable's pre-claim check, Nov 16, 2026): every web step of J1 and J2 and of each variant that has one (web-chat start, quote page, pick, quote form, Confirm; the text-only variants have nothing to drive by keyboard) runs again keyboard-only in `tests/a11y/j_full_keyboard.spec.ts`, every step reached and used with Tab, Shift+Tab, Enter and Space alone (A11Y-005), with the keyboard checks `tests/a11y/j2_keyboard.spec.ts` makes for the stage-4 slice, each journey ending with the closing checks (A11Y-021) as in T222's J1 and J2. Shared steps are imported from T222's helper modules `tests/e2e/j1_full.ts` and `tests/e2e/j2_full.ts`, `tests/e2e/j2.ts` and `tests/e2e/keyed.ts`, never from a `.spec.ts` (Playwright refuses that) and never copied; at most two form sign-ups per run (`portals::limits::SIGNUPS_PER_IP` allows five per address per Arizona day and `j2_keyboard` already uses three), the other variant businesses seeded through the `keyed.ts` and `j2.ts` helpers; the spec seeds from the app clock and uses the e2e `test` with `test.use({ controlSecret: controlSecret() })` when it needs the `control` fixture. Fake data only. Update `docs/decisions.md`. Plan change D-3892 (Opus pre-claim check, Nov 16, 2026): the closing checks need the keyed worker, and the spec moves the shared clock, so this task depends on T536, which runs `j_full_keyboard*` in the a11y late project after the PAGE_STATES specs; iterate with `--no-deps`. Budget 600 lines, as D-3889 set for each part of the split. Plan change D-5836: the keyboard runs cover the two cores, T222's J1 (`tests/e2e/j1_full.ts`) and T851's J2 (`tests/e2e/j2_full.ts`); the variants' web pages are the same pages the cores drive, and the web-chat start's keyboard run is T533's. Sessions and sign-up limits run on real time (C5), so the two-sign-up ceiling above still holds.",
+   "goal": "Plan change D-3889 (split from T222, Fable's pre-claim check, Nov 16, 2026): every web step of J1 and J2 and of each variant that has one (web-chat start, quote page, pick, quote form, Confirm; the text-only variants have nothing to drive by keyboard) runs again keyboard-only in `tests/a11y/j_full_keyboard.spec.ts`, every step reached and used with Tab, Shift+Tab, Enter and Space alone (A11Y-005), with the keyboard checks `tests/a11y/j2_keyboard.spec.ts` makes for the stage-4 slice, each journey ending with the closing checks (A11Y-021) as in T222's J1 and J2. Shared steps are imported from T222's helper modules `tests/e2e/j1_full.ts` and `tests/e2e/j2_full.ts`, `tests/e2e/j2.ts` and `tests/e2e/keyed.ts`, never from a `.spec.ts` (Playwright refuses that) and never copied; at most two form sign-ups per run (`portals::limits::SIGNUPS_PER_IP` allows five per address per Arizona day and `j2_keyboard` already uses three), the other variant businesses seeded through the `keyed.ts` and `j2.ts` helpers; the spec seeds from the app clock and uses the e2e `test` with `test.use({ controlSecret: controlSecret() })` when it needs the `control` fixture. Fake data only. Update `docs/decisions.md`. Plan change D-3892 (Opus pre-claim check, Nov 16, 2026): the closing checks need the keyed worker, and the spec moves the shared clock, so this task depends on T536, which runs `j_full_keyboard*` in the a11y late project after the PAGE_STATES specs; iterate with `--no-deps`. Budget 600 lines, as D-3889 set for each part of the split. Plan change D-5836: the keyboard runs cover the two cores, T222's J1 (`tests/e2e/j1_full.ts`) and T851's J2 (`tests/e2e/j2_full.ts`); the variants' web pages are the same pages the cores drive, and the web-chat start's keyboard run is T533's. Sessions and sign-up limits run on real time (C5), so the two-sign-up ceiling above still holds. Plan change D-5979: T222's and T851's steps take a `Driver` (as `tests/e2e/j3.ts:19` to `:31`); pass the keyboard driver to them, never copy a step.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -33068,7 +33069,8 @@
     "T847",
     "T867",
     "T868",
-    "T869"
+    "T869",
+    "T870"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -33324,7 +33326,8 @@
     "T847",
     "T867",
     "T868",
-    "T869"
+    "T869",
+    "T870"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -34141,7 +34144,8 @@
     "T847",
     "T867",
     "T868",
-    "T869"
+    "T869",
+    "T870"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -35651,7 +35655,8 @@
     "T853",
     "T867",
     "T868",
-    "T869"
+    "T869",
+    "T870"
    ],
    "model": null,
    "effort": null,
@@ -38571,7 +38576,8 @@
     "T825",
     "T867",
     "T868",
-    "T869"
+    "T869",
+    "T870"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -38676,7 +38682,8 @@
     "T760",
     "T867",
     "T868",
-    "T869"
+    "T869",
+    "T870"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -38776,7 +38783,8 @@
     "T760",
     "T867",
     "T868",
-    "T869"
+    "T869",
+    "T870"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -39085,7 +39093,8 @@
     "T825",
     "T867",
     "T868",
-    "T869"
+    "T869",
+    "T870"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -49090,7 +49099,7 @@
    "id": "T723",
    "slug": "intake-order-job-unsure",
    "title": "intake: a job type still unsure after \"Which fits best?\" gets INT-040's path: the count over businesses covering every offered job type, else the `job_unsure` text and the OPS-041 email, never a wrong Not covered",
-   "goal": "Plan change D-4602 (T715's plan gap, Nov 19, 2026; split from T716 at Opus review round 2). After T716 a request whose trade had no job type named reaches `Candidates::fit_step`'s `KeepAll` on \"Not sure\" or a second unusable reply (`Candidates::fit_step`, `app/intake/src/matching.rs`), and a trade with no keyword job type (pool repair: `matching::job_types_of` is empty, so `which_fits` is `None`) reaches it at once; its candidates hold `<trade>_other`, which no business lists (`candidate_jobs`' `listed:` test, `app/quotes/src/card_pool.rs:199`), so the request is closed as not covered (`app/intake/src/routing.rs:385`) though businesses cover the trade's job types (INT-017, INT-040). Extend `app/intake/src/order_dispatch.rs` (`routing.rs`, `conversation.rs` and `service.rs` are not edited, D-4360): (1) When the kept candidates include `<trade>_other`, it is replaced by the trade's job types offered in \"Which fits best?\" (for a trade with no keyword job type, its catalog-listed job types, `docs/catalog/categories.yaml`); the other candidates (license-boundary and licensed-only pairs, the `kw.boundary` and `kw.licensed_only` loop in `matching::candidates`) stay. The kept candidates are stored as T716's (5) stores job types: each stored as a step-marker row with question `job_type.<trade>` and choice the label folded to lower case with every run of other characters as `_` (the `intake.intake_answer.choice` check, `migrations/0053_intake_tables.sql:68`, allows only `^[a-z0-9][a-z0-9_.]{0,63}$`; the longest keyword label, 33 characters, and the longest catalog job type, 48, fit), read back only by matching the labels `matching::stored_job_types_of(trade)` gives (T716, D-4618: the keyword job types and the trade's licensed-only job types) or the catalog's job types of the trade, folded the same way (`stored_job_types_of` only matches stored rows and never supplies the options that replace `<trade>_other`: pool repair's replacement is its catalog job types only, never \"gas pool heater\", which stays only when her words named it, D-4618); a choice that matches none is dropped; each set is written in one turn at that turn's `received_at` (every row of the set with the same `answered_at`); step 5 and the card read only the rows with the newest `answered_at` for `job_type.<trade>`, so a later set replaces an earlier one. (2) INT-040 then applies: the count covers only businesses covering every kept job type, with `routing_confidence::after_fit`'s not-certain mark (`Outgoing::not_certain`) stored as a step-marker row with question `fit_unsure.<trade>` and choice `not_certain`, written at that turn's `received_at` (D-4618: not under `job_type.`, so no `job_type.<trade>` reader takes it for a job type, nor under `job.` or `card.`, which other readers match with `LIKE`); when none covers them all, the new template `job_unsure` (English, INT-040 word for word with the brand and trade as its placeholders: \"Laftly: We couldn't tell which kind of <trade> job this is, so we can't send it yet. Reply with a little more about what's wrong, or send a photo.\"; in the shared `app/messaging/templates/en.json` and `es.json`, the Spanish a draft marked for native-speaker review, TXT-003; in `NOT_UPDATE_TEXTS`, `app/quotes/src/update_texts.rs:116`; passing `scripts/check_copy.py` and `scripts/check_ai_smell.py`, WORD-028) and the OPS-041 email, with no Not covered move. The email (deliberately, D-4602: the request's `recruiting_demand` row counts toward OPS-041's and BIZ-048's monthly not-covered count and is kept even if her next reply finds coverage): in one transaction, `models::insert_demand(tx, conversation, (town, trade, None), at)` (`app/intake/src/models.rs:816`), then one `intake::api::NOT_COVERED_KIND` task with dedupe key `intake.not_covered.<conversation>.<trade>`, in the payload `businesses::coverage_notice`'s `payload` checks (`app/businesses/src/coverage_notice.rs:80` to `:103`: `conversation`, `trade`, `label`, `town`, `number`, `month_count` at least 1; no homeowner detail), its `month_count` from a new crate-visible `order_dispatch::demand_month_count` (the count `routing.rs`'s private `month_count`, `:531` to `:545`, makes; T704 then points `log_demand` at it and removes the private copy, so no duplicate body stays). Never INT-017's reply while some business in the trade covers at least one kept job type; when none covers any, INT-017 applies as today. (3) Her next reply after `job_unsure` gives the set `matching::candidates(trade, [r, r], &keyword_reading(reply))` for the job's trade, with AI off `r = Reading { trade, job_type: None }`, as `rebuilt` already calls it (`fn rebuilt`, `app/intake/src/order_dispatch.rs:1093`; `matching::candidates`), so its `boundary` and `licensed_only` pairs are in it, not only `job_types` (D-4618): when that set holds a job type of the job's trade other than `<trade>_other` (a keyword or licensed-only one), the whole set replaces the candidates (stored as in (1)), and step 5's count runs again for the existing job; otherwise nothing is sent, and INT-019's job wait applies. For a plumbing job at `job_unsure` (\"need a plumber\"), \"water heater is leaking\" keeps leak repair and `water_heater_replacement`, and \"it's the water heater\" gets the licensed-only pair alone, not a wait; both are asserted in this task's tests. A picture text is stored by T675's path and moves nothing on. No reply opens a second job or gets `trade_ask`. (4) This applies at every job's coverage step, including the job ALSO, TAMBIÉN or SPLIT opens (T711, T717), whose coverage line goes at once (TD-INT-54): for a job whose \"Which fits best?\" was never asked, `<trade>_other` is replaced by the options `which_fits` would give, else the catalog job types; a reply goes first to the open question of the earlier job, and is read against the `job_unsure` job only when that job has no open question; when the kept candidates span two trades, CARD-001's split offer goes before `job_unsure`. This closes D-1272's text gap; the card-line gap (no card line shows the \"Job type not certain\" mark) stays open. Tests (TD-INT-57) in the new `tests/integration/tests/intake_order_job_unsure.rs`, PostgreSQL, fake data and 555 numbers only, through `intake::api::receive_raw_reply`. Before hand-in, run every test that posts to `/webhooks/twilio/sms` or calls `receive_reply`/`receive_raw_reply`; a failing one not owned here is a plan gap to report, not to edit. Update `app/intake/CLAUDE.md` and `docs/decisions.md`. Plan change D-5550 (pre-flight job 23; INT-040, INT-017): the `job_unsure` path applies only while some business in the trade covers at least one kept job type; when none covers any, only INT-017 applies as today, with no `job_unsure` text and no `NOT_COVERED_KIND` task from this path; INT-017's own demand row and `NOT_COVERED_KIND` task go as today (`app/intake/src/routing.rs:520`); the `job_unsure` path adds none. Plan change D-5670 (outside pre-flight, checked on `main` 52bc3014): cites refreshed and anchored by symbol (`matching.rs`, `order_dispatch.rs` and `card_pool.rs` are T716's first). Plan change D-5876 (pre-flight PF-P1-2b 10): `rebuilt` (`order_dispatch.rs:1093`) keeps every stored pair of `trade` that is not keyword-named as its own job-type candidate (no single `plain`), so the count, `final_pairs` and `send_pairs` read the same full set; a TD-INT-57 case with pool repair's catalog job types asserts the card recipients are the businesses covering all of them.",
+   "goal": "Plan change D-4602 (T715's plan gap, Nov 19, 2026; split from T716 at Opus review round 2). After T716 a request whose trade had no job type named reaches `Candidates::fit_step`'s `KeepAll` on \"Not sure\" or a second unusable reply (`Candidates::fit_step`, `app/intake/src/matching.rs`), and a trade with no keyword job type (pool repair: `matching::job_types_of` is empty, so `which_fits` is `None`) reaches it at once; its candidates hold `<trade>_other`, which no business lists (`candidate_jobs`' `listed:` test, `app/quotes/src/card_pool.rs:199`), so the request is closed as not covered (`app/intake/src/routing.rs:385`) though businesses cover the trade's job types (INT-017, INT-040). Extend `app/intake/src/order_dispatch.rs` (`routing.rs`, `conversation.rs` and `service.rs` are not edited, D-4360): (1) When the kept candidates include `<trade>_other`, it is replaced by the trade's job types offered in \"Which fits best?\" (for a trade with no keyword job type, its catalog-listed job types, `docs/catalog/categories.yaml`); the other candidates (license-boundary and licensed-only pairs, the `kw.boundary` and `kw.licensed_only` loop in `matching::candidates`) stay. The kept candidates are stored as T716's (5) stores job types: each stored as a step-marker row with question `job_type.<trade>` and choice the label folded to lower case with every run of other characters as `_` (the `intake.intake_answer.choice` check, `migrations/0053_intake_tables.sql:68`, allows only `^[a-z0-9][a-z0-9_.]{0,63}$`; the longest keyword label, 33 characters, and the longest catalog job type, 48, fit), read back only by matching the labels `matching::stored_job_types_of(trade)` gives (T716, D-4618: the keyword job types and the trade's licensed-only job types) or the catalog's job types of the trade, folded the same way (`stored_job_types_of` only matches stored rows and never supplies the options that replace `<trade>_other`: pool repair's replacement is its catalog job types only, never \"gas pool heater\", which stays only when her words named it, D-4618); a choice that matches none is dropped; each set is written in one turn at that turn's `received_at` (every row of the set with the same `answered_at`); step 5 and the card read only the rows with the newest `answered_at` for `job_type.<trade>`, so a later set replaces an earlier one. (2) INT-040 then applies: the count covers only businesses covering every kept job type, with `routing_confidence::after_fit`'s not-certain mark (`Outgoing::not_certain`) stored as a step-marker row with question `fit_unsure.<trade>` and choice `not_certain`, written at that turn's `received_at` (D-4618: not under `job_type.`, so no `job_type.<trade>` reader takes it for a job type, nor under `job.` or `card.`, which other readers match with `LIKE`); when none covers them all, the new template `job_unsure` (English, INT-040 word for word with the brand and trade as its placeholders: \"Laftly: We couldn't tell which kind of <trade> job this is, so we can't send it yet. Reply with a little more about what's wrong, or send a photo.\"; in the shared `app/messaging/templates/en.json` and `es.json`, the Spanish a draft marked for native-speaker review, TXT-003; in `NOT_UPDATE_TEXTS`, `app/quotes/src/update_texts.rs:116`; passing `scripts/check_copy.py` and `scripts/check_ai_smell.py`, WORD-028) and the OPS-041 email, with no Not covered move. The email (deliberately, D-4602: the request's `recruiting_demand` row counts toward OPS-041's and BIZ-048's monthly not-covered count and is kept even if her next reply finds coverage): in one transaction, `models::insert_demand(tx, conversation, (town, trade, None), at)` (`app/intake/src/models.rs:832`; D-5979: open `models.rs` only at that function and `insert_answer`, `:508`, not whole), then one `intake::api::NOT_COVERED_KIND` task with dedupe key `intake.not_covered.<conversation>.<trade>`, in the payload `businesses::coverage_notice`'s `payload` checks (`app/businesses/src/coverage_notice.rs:80` to `:103`: `conversation`, `trade`, `label`, `town`, `number`, `month_count` at least 1; no homeowner detail), its `month_count` from a new crate-visible `order_dispatch::demand_month_count` (the count `routing.rs`'s private `month_count`, `:531` to `:545`, makes; T704 then points `log_demand` at it and removes the private copy, so no duplicate body stays). Never INT-017's reply while some business in the trade covers at least one kept job type; when none covers any, INT-017 applies as today. (3) Her next reply after `job_unsure` gives the set `matching::candidates(trade, [r, r], &keyword_reading(reply))` for the job's trade, with AI off `r = Reading { trade, job_type: None }`, as `rebuilt` already calls it (`fn rebuilt`, `app/intake/src/order_dispatch.rs:1093`; `matching::candidates`), so its `boundary` and `licensed_only` pairs are in it, not only `job_types` (D-4618): when that set holds a job type of the job's trade other than `<trade>_other` (a keyword or licensed-only one), the whole set replaces the candidates (stored as in (1)), and step 5's count runs again for the existing job; otherwise nothing is sent, and INT-019's job wait applies. For a plumbing job at `job_unsure` (\"need a plumber\"), \"water heater is leaking\" keeps leak repair and `water_heater_replacement`, and \"it's the water heater\" gets the licensed-only pair alone, not a wait; both are asserted in this task's tests. A picture text is stored by T675's path and moves nothing on. No reply opens a second job or gets `trade_ask`. (4) This applies at every job's coverage step, including the job ALSO, TAMBIÉN or SPLIT opens (T711, T717), whose coverage line goes at once (TD-INT-54): for a job whose \"Which fits best?\" was never asked, `<trade>_other` is replaced by the options `which_fits` would give, else the catalog job types; a reply goes first to the open question of the earlier job, and is read against the `job_unsure` job only when that job has no open question; when the kept candidates span two trades, CARD-001's split offer goes before `job_unsure`. This closes D-1272's text gap; the card-line gap (no card line shows the \"Job type not certain\" mark) stays open. Tests (TD-INT-57) in the new `tests/integration/tests/intake_order_job_unsure.rs`, PostgreSQL, fake data and 555 numbers only, through `intake::api::receive_raw_reply`. Before hand-in, run every test that posts to `/webhooks/twilio/sms` or calls `receive_reply`/`receive_raw_reply`; a failing one not owned here is a plan gap to report, not to edit. Update `app/intake/CLAUDE.md` and `docs/decisions.md`. Plan change D-5550 (pre-flight job 23; INT-040, INT-017): the `job_unsure` path applies only while some business in the trade covers at least one kept job type; when none covers any, only INT-017 applies as today, with no `job_unsure` text and no `NOT_COVERED_KIND` task from this path; INT-017's own demand row and `NOT_COVERED_KIND` task go as today (`app/intake/src/routing.rs:520`); the `job_unsure` path adds none. Plan change D-5670 (outside pre-flight, checked on `main` 52bc3014): cites refreshed and anchored by symbol (`matching.rs`, `order_dispatch.rs` and `card_pool.rs` are T716's first). Plan change D-5876 (pre-flight PF-P1-2b 10): `rebuilt` (`order_dispatch.rs:1093`) keeps every stored pair of `trade` that is not keyword-named as its own job-type candidate (no single `plain`), so the count, `final_pairs` and `send_pairs` read the same full set; a TD-INT-57 case with pool repair's catalog job types asserts the card recipients are the businesses covering all of them.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -49114,7 +49123,6 @@
    ],
    "reads": [
     "docs/architecture.md",
-    "docs/code-docs.md",
     "docs/spec/intake.md",
     "docs/spec/ops-recovery.md",
     "docs/spec/messaging.md",
@@ -49123,9 +49131,7 @@
     "app/intake/src/routing_confidence.rs",
     "app/intake/src/routing.rs",
     "app/businesses/src/coverage_notice.rs",
-    "app/messaging/src/coverage_email.rs",
     "docs/brains/rust-production.md",
-    "app/intake/src/models.rs",
     "docs/catalog/categories.yaml",
     "docs/spec/job-cards.md"
    ],
@@ -49158,7 +49164,7 @@
    "budget": {
     "files": 3,
     "lines": 600,
-    "context_pct": 41
+    "context_pct": 42
    },
    "checks": [
     "Ci",
@@ -49251,7 +49257,7 @@
    "id": "T718",
    "slug": "intake-order-second-job-steps",
    "title": "intake: the dispatcher's steps 8 to 12 for a request's second job: its trade questions, photos and card, after the first job's",
-   "goal": "Plan change D-4441 (INT-032, INT-043, INT-039, INT-041, INT-029; D-1020). After T711 a request can hold two live jobs (ALSO, TAMBIÉN, SPLIT), but steps 6 to 12 as T672, T673 and T675 built them drive the request's first job (`intake.conversation.job_id`) only, so the second job never gets its trade questions, photos or card. Extend `app/intake/src/order_dispatch.rs`, calling only existing step functions (`routing.rs`, `conversation.rs`, `service.rs`, `summary_step.rs` and `cards_out.rs` are not edited): \"How soon?\", the INT-006 choice (with the night count) and the name and address stay the request's, asked once, and apply to every live job of it; the trade questions (INT-039), the photos (INT-044), the design step and the card (INT-041; on the emergency path the emergency card, INT-029) run for each live job in turn, first job first, the second job's starting once the first job's card is approved: on SEND, OK, YES or ENVIAR in that reply's turn; on the 30-minute auto-send (`summary_step::run_card_timer_at`, `app/intake/src/summary_step.rs:340`, registered for `CARD_TIMER_KIND` on the worker clock in the shared `app/server/src/lib.rs`, the `CARD_TIMER_KIND` registration in `register_handlers`) through a new handler in `order_dispatch.rs` registered there in its place, which runs the card-timer step on the handler's own transaction (its `begin` becomes a savepoint) and queues the second job's first question in that same transaction, as a text that is not a direct reply (quiet hours, QH-001: held to 8 a.m.); because `card_timer_step` reports the approval only on the approving run (`summary_step.rs:291` to `:302`), the question is decided from stored rows (the first job's card approved, the second job's first question not yet asked) and queued under a dedupe key derived from the job and the step (JOB-006, rust brain R12), so a rerun after the approval queues it exactly once; its asked row carries no inbox ID; on the emergency path, where step 12 is skipped and the cards went at the choice, in the turn that answers the first job's step 11, a direct reply; a job that left Intake (Not covered, closed) is skipped; `ask_open_again` names the job its open question belongs to as the `two_jobs` text does. Bank answers are per job after T745 (`order.rs`, not edited or read here); TD-INT-55 asserts a question ID in both jobs' sets (`details`) is asked again for the second job and stored under `bank.<job, 32 hex>.details`. Plan change D-5553: `summary_step.rs` is no longer a whole read; open it only at `:222` to `:366` (`answer_card`, `CardTimer`, `card_timer_step`, `run_card_timer_at`, `approved_card`) and `:455` (its `parse` is private, so the new handler builds `CardTimer` from the payload's public fields). The build logs in `docs/decisions.md` how each step's stored rows tell the two jobs apart. Tests (TD-INT-55) in the new `tests/integration/tests/intake_order_second_job.rs`, PostgreSQL, the stand-ins, fake data and 555 numbers only, through `intake::api::receive_raw_reply`. Before hand-in, run every test that posts to `/webhooks/twilio/sms` or calls `receive_reply`/`receive_raw_reply`; a failing one not owned here is a plan gap to report, not to edit. Update `app/intake/CLAUDE.md` and `docs/decisions.md`. Plan change D-5670 (outside pre-flight, checked on `main` 52bc3014): the card-timer registration is anchored by symbol (`CARD_TIMER_KIND` in `register_handlers`, `app/server/src/lib.rs`).",
+   "goal": "Plan change D-4441 (INT-032, INT-043, INT-039, INT-041, INT-029; D-1020). After T711 a request can hold two live jobs (ALSO, TAMBIÉN, SPLIT), but steps 6 to 12 as T672, T673 and T675 built them drive the request's first job (`intake.conversation.job_id`) only, so the second job never gets its trade questions, photos or card. Extend `app/intake/src/order_dispatch.rs`, calling only existing step functions (`routing.rs`, `conversation.rs`, `service.rs`, `summary_step.rs` and `cards_out.rs` are not edited): \"How soon?\", the INT-006 choice (with the night count) and the name and address stay the request's, asked once, and apply to every live job of it; the trade questions (INT-039), the photos (INT-044), the design step and the card (INT-041; on the emergency path the emergency card, INT-029) run for each live job in turn, first job first, the second job's starting once the first job's card is approved: on SEND, OK, YES or ENVIAR in that reply's turn; on the 30-minute auto-send (`summary_step::run_card_timer_at`, `app/intake/src/summary_step.rs:340`, registered for `CARD_TIMER_KIND` on the worker clock in the shared `app/server/src/lib.rs`, the `CARD_TIMER_KIND` registration in `register_handlers`, `:1135`; a shared path, so this task replaces that one registration and opens the file only there, D-5979) through a new handler in `order_dispatch.rs` registered there in its place, which runs the card-timer step on the handler's own transaction (its `begin` becomes a savepoint) and queues the second job's first question in that same transaction, as a text that is not a direct reply (quiet hours, QH-001: held to 8 a.m.); because `card_timer_step` reports the approval only on the approving run (`summary_step.rs:291` to `:302`), the question is decided from stored rows (the first job's card approved, the second job's first question not yet asked) and queued under a dedupe key derived from the job and the step (JOB-006, rust brain R12), so a rerun after the approval queues it exactly once; its asked row carries no inbox ID; on the emergency path, where step 12 is skipped and the cards went at the choice, in the turn that answers the first job's step 11, a direct reply; a job that left Intake (Not covered, closed) is skipped; `ask_open_again` names the job its open question belongs to as the `two_jobs` text does. Bank answers are per job after T745 (`order.rs`, not edited or read here); TD-INT-55 asserts a question ID in both jobs' sets (`details`) is asked again for the second job and stored under `bank.<job, 32 hex>.details`. Plan change D-5553: `summary_step.rs` is no longer a whole read; open it only at `:222` to `:366` (`answer_card`, `CardTimer`, `card_timer_step`, `run_card_timer_at`, `approved_card`) and `:455` (its `parse` is private, so the new handler builds `CardTimer` from the payload's public fields). The build logs in `docs/decisions.md` how each step's stored rows tell the two jobs apart. Tests (TD-INT-55) in the new `tests/integration/tests/intake_order_second_job.rs`, PostgreSQL, the stand-ins, fake data and 555 numbers only, through `intake::api::receive_raw_reply`. Before hand-in, run every test that posts to `/webhooks/twilio/sms` or calls `receive_reply`/`receive_raw_reply`; a failing one not owned here is a plan gap to report, not to edit. Update `app/intake/CLAUDE.md` and `docs/decisions.md`. Plan change D-5670 (outside pre-flight, checked on `main` 52bc3014): the card-timer registration is anchored by symbol (`CARD_TIMER_KIND` in `register_handlers`, `app/server/src/lib.rs`).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -49270,7 +49276,6 @@
    ],
    "owns": [
     "app/intake/src/order_dispatch.rs",
-    "app/server/src/lib.rs",
     "tests/integration/tests/intake_order_second_job.rs"
    ],
    "reads": [
@@ -49305,9 +49310,9 @@
    ],
    "cites": [],
    "budget": {
-    "files": 3,
+    "files": 2,
     "lines": 450,
-    "context_pct": 45
+    "context_pct": 33
    },
    "checks": [
     "Ci",
@@ -49322,7 +49327,7 @@
    "id": "T719",
    "slug": "intake-request-no-reply",
    "title": "intake: a request with no job yet gets INT-019's no-reply wait at request level: a reminder at 24 hours and the close at 72",
-   "goal": "Plan change D-4441 (round-1 review, finding 5; INT-049, INT-019, QH-001; changes file `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:111`). INT-049 says INT-019's no-reply wait still applies while Laftly waits for a usable ZIP (`docs/spec/intake.md:53`), but INT-019's wait is per job (`handlers::schedule_no_reply`, `app/intake/src/handlers.rs:135`), and after T715 and T716 a request can have no job (a first text naming a trade in one or two words, before the ZIP; a request whose words name no trade), so it stays open for ever and takes later texts as step answers. `handlers.rs` is T402's and is not edited. A new `app/intake/src/request_wait.rs` gives a request with no live job INT-019's wait at request level, on `handlers.rs`' pattern: from the request's opening and each heard reply (`conversation::hear` writes the heard row; the walker in `app/intake/src/order_dispatch.rs` queues the pair at the first text and on each reply while the request has no job), a reminder at 24 hours moved into the texting window (QH-001) and a close at 72 hours, each a queued `core.task` whose dedupe key names the request, the step and the start; a run does nothing when the request is closed, has a job (the job's own wait took over) or heard her after the start; each run checks the request's consent record (as `tell`'s `card_allowed` check (`app/intake/src/handlers.rs:356`) does) and `service::may_text`, and sends nothing without them; the close closes the request (`models::close_request`) with its text and an IDs-only audit row in the same transaction (JOB-005, as `routing.rs:331` to `:340`). INT-019's texts name the request number, a job's number, so a request with no job gets two new templates drafted from INT-019's words without it (`request_reminder`, `request_closed_no_reply`, the close keeping INT-019's restart line \"Text us any time and we'll start again.\"; draft copy for the copy panel, WORD-028), in the shared `app/messaging/templates/en.json` and `es.json` (Spanish drafts marked for native-speaker review, TXT-003), passing `scripts/check_copy.py` and `scripts/check_ai_smell.py`, and in `NOT_UPDATE_TEXTS` (`app/quotes/src/update_texts.rs:116`, D-1293). Register the kind in the shared `app/server/src/lib.rs`. Tests (TD-INT-56) in the new `tests/integration/tests/request_no_reply.rs`, PostgreSQL, fake data and 555 numbers only, the clock set. Before hand-in, run every test that posts to `/webhooks/twilio/sms` or calls `receive_reply`/`receive_raw_reply`; a failing one not owned here is a plan gap to report. Update `app/intake/CLAUDE.md` and `docs/decisions.md`. Plan change D-5568: the two templates are this task's own copy, so neither the \"Customer copy: none changed\" line nor End step 2's \"stop and report\" covers them: run `scripts/check_ai_smell.py`, the cold read and the copy panel on those two texts. Plan change D-5670 (outside pre-flight, checked on `main` 52bc3014): the `card_allowed` cite is refreshed (`tell`, `app/intake/src/handlers.rs:356`).",
+   "goal": "Plan change D-4441 (round-1 review, finding 5; INT-049, INT-019, QH-001; changes file `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:111`). INT-049 says INT-019's no-reply wait still applies while Laftly waits for a usable ZIP (`docs/spec/intake.md:53`), but INT-019's wait is per job (`handlers::schedule_no_reply`, `app/intake/src/handlers.rs:135`), and after T715 and T716 a request can have no job (a first text naming a trade in one or two words, before the ZIP; a request whose words name no trade), so it stays open for ever and takes later texts as step answers. `handlers.rs` is T402's and is not edited. A new `app/intake/src/request_wait.rs` gives a request with no live job INT-019's wait at request level, on `handlers.rs`' pattern: from the request's opening and each heard reply (`conversation::hear` writes the heard row; the walker in `app/intake/src/order_dispatch.rs` queues the pair at the first text and on each reply while the request has no job), a reminder at 24 hours moved into the texting window (QH-001) and a close at 72 hours, each a queued `core.task` whose dedupe key names the request, the step and the start; a run does nothing when the request is closed, has a job (the job's own wait took over) or heard her after the start; each run checks the request's consent record (as `tell`'s `card_allowed` check (`app/intake/src/handlers.rs:356`) does) and `service::may_text`, and sends nothing without them; the close closes the request (`models::close_request`) with its text and an IDs-only audit row in the same transaction (JOB-005, as `routing.rs:331` to `:340`). INT-019's texts name the request number, a job's number, so a request with no job gets two new templates drafted from INT-019's words without it (`request_reminder`, `request_closed_no_reply`, the close keeping INT-019's restart line \"Text us any time and we'll start again.\"; draft copy for the copy panel, WORD-028), in the shared `app/messaging/templates/en.json` and `es.json` (Spanish drafts marked for native-speaker review, TXT-003), passing `scripts/check_copy.py` and `scripts/check_ai_smell.py`, and in `NOT_UPDATE_TEXTS` (`app/quotes/src/update_texts.rs:116`, D-1293). Register the kind in the shared `app/server/src/lib.rs` (one line in `register_handlers`; a shared path, opened only there, D-5979). Tests (TD-INT-56) in the new `tests/integration/tests/request_no_reply.rs`, PostgreSQL, fake data and 555 numbers only, the clock set. Before hand-in, run every test that posts to `/webhooks/twilio/sms` or calls `receive_reply`/`receive_raw_reply`; a failing one not owned here is a plan gap to report. Update `app/intake/CLAUDE.md` and `docs/decisions.md`. Plan change D-5568: the two templates are this task's own copy, so neither the \"Customer copy: none changed\" line nor End step 2's \"stop and report\" covers them: run `scripts/check_ai_smell.py`, the cold read and the copy panel on those two texts. Plan change D-5670 (outside pre-flight, checked on `main` 52bc3014): the `card_allowed` cite is refreshed (`tell`, `app/intake/src/handlers.rs:356`).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -49341,7 +49346,6 @@
     "app/intake/src/request_wait.rs",
     "app/intake/src/order_dispatch.rs",
     "app/quotes/src/update_texts.rs",
-    "app/server/src/lib.rs",
     "tests/integration/tests/request_no_reply.rs"
    ],
    "reads": [
@@ -49374,9 +49378,9 @@
    ],
    "cites": [],
    "budget": {
-    "files": 5,
+    "files": 4,
     "lines": 450,
-    "context_pct": 45
+    "context_pct": 33
    },
    "checks": [
     "Ci",
@@ -49993,7 +49997,7 @@
    "id": "T734",
    "slug": "business-leave-served",
    "title": "server and adapters: a business can leave in the portal, with the optional reason, its saved cards detached at Stripe",
-   "goal": "Plan change D-4727 (C (c); BIZ-051, BIZ-054, SEC-038, PICK-047, PICK-046, PICK-051; D-446, D-463, D-3045). `portals::api::leave`, `leave_page` and the pause question (`app/portals/src/business_left.rs:141`; `LEAVE_ROUTE` and `PAUSE_REASON_ROUTE` at `:36`, `:38`) are not served (\"not served yet\", D-3045) and no production type implements `CardDetach` (`:96`), so no business can leave and BIZ-054's pause question is never asked. (1) New `app/adapters/src/card_detach.rs`: the Stripe call `POST /v1/payment_methods/{pm}/detach` with the configured Stripe client (base URL, key and timeout as `app/adapters/src/payments.rs` reads them, never a key in a log), exposed as an adapter-owned detach call, with no `CardDetach` impl in `adapters` (D-5670). (2) New `app/server/src/business_leave_routes.rs`: `GET /b/leave` (the leave screen, the BIZ-054 question while `reason_asked` is false), `POST /b/leave` (owner only, the fresh code `leave` requires; a stale code answers the step-up form; success shows the left screen with every session already ended, so the response clears the session cookie), `GET /b/pause-reason` (the question once a self-pause passed `PAUSE_ASK_AFTER_DAYS`, `pause_ask_due`; otherwise 303 to the home) and `POST /b/pause-reason`; `refuse_cross_site` and CSRF first, `no_store`. For each `Left.picks` item the homeowner's PICK-047 (moved to her backup) or PICK-046 (no backup) text is queued by the sender T669's ended pending pick uses, never a second one; `Backup::Done` queues nothing. A detach failure is counted and logged once (the cards stay marked removed, so none can be charged); T751 (D-4749) gives the Stripe stand-in the detach endpoint and a failure switch, and the new `tests/e2e/business_leave.spec.ts` (fake data only) leaves through the served pages against the stand-in and asserts both outcomes: with the switch off the cards are detached at the stand-in and no `detach_failed` is counted; with it on the leave still completes, the cards stay marked removed and one `detach_failed` is counted and logged (D-4748, Fable's decision (9)). (3) `business_home.html` gains a \"Leave Laftly\" link and a link to the pause question (both unconditional, D-5670). Section 13 rows (added `T734` by D-4727) marked `yes`; the three screens' states go in the shared `tests/a11y/page_states.ts`. Tests in the new `app/server/tests/business_leave_route.rs` (TD-BIZ-62), the assembled router with a fake `CardDetach` and one case with the adapter against a local fake HTTP server, fake data only. Update the `server` and `adapters` notes and `docs/decisions.md`. Plan change D-5670 (outside pre-flight, checked on `main` 52bc3014): (a) `CardDetach` is `portals`' trait (`app/portals/src/business_left.rs:96` to `:100`, `portals::api` `:73`) and `adapters` may call no other module (`kit/layers.json`), so `card_detach.rs` exposes the detach call only; `business_leave_routes.rs` defines a server-local wrapper type implementing `portals::api::CardDetach` by delegating to it (the orphan rule rules out implementing a `portals` trait on an `adapters` type in `server`), and the shared `build_router` composes the wrapper. (b) TD-BIZ-62 is amended: T751's stand-in detach endpoint (`stand_ins/stripe.py:315` to `:322`) records a leave's cards detached, and with the `stripe_detach` `fail` fault (`stand_ins/server.py:28`, D-4749, D-4875) the leave completes and records `detach_failed`. (c) The home page's links carry no conditions: an owner flag or `pause_ask_due` would need new `HomeView` fields (`app/portals/src/business_portal.rs:209` to `:224`, owned by T812 and T813) and the home handler's (`async fn home`, `app/server/src/business_portal.rs:428`, owned by T668, in progress), so \"Leave Laftly\" shows to every member and the pause-question link always shows; this task does not edit either file. `GET /b/leave` from a member who is not the owner answers 303 to the business home, and `POST /b/leave` from one answers a bare 403 with `no_store` (as `app/server/src/business_signup.rs:1280` does), storing nothing (`LeaveError::NotOwner`, `app/portals/src/business_left.rs:148`); `GET /b/pause-reason` answers 303 to the home unless the principal is the owner or a \"Confirm and billing\" member and `pause_ask_due` holds, as `pause_reason` reads it (`business_left.rs:265` to `:270`); this task adds no new copy. (d) `tests/e2e/fixtures.ts`'s `Faults` (`:44` to `:52`) has no `stripe_detach` key and that file is an earlier task's test (only a harness task may change it), so `business_leave.spec.ts` sets the fault with one typed cast (`{ stripe_detach: \"fail\" } as Faults`, or a local type extending `Faults`) and does not edit `fixtures.ts`. Plan change D-5876 (pre-flight PF-P1-2b 9): `GET /b/pause-reason` answers the fixture's unpaused business with the goal's 303, but `app/server/tests/door_matrix.rs:551` to `:555` admits a strict GET only on 200; this task (harness for that file) makes one narrow change there: strict GET also admits a no-store 303 whose `Location` is `/b`, for `GET /b/pause-reason` alone; the refusal, leak, no-store and CSRF checks are unchanged. T731, the next owner of that file, follows this task.",
+   "goal": "Plan change D-4727 (C (c); BIZ-051, BIZ-054, SEC-038, PICK-047, PICK-046, PICK-051; D-446, D-463, D-3045). `portals::api::leave`, `leave_page` and the pause question (`app/portals/src/business_left.rs:141`; `LEAVE_ROUTE` and `PAUSE_REASON_ROUTE` at `:36`, `:38`) are not served (\"not served yet\", D-3045) and no production type implements `CardDetach` (`:96`), so no business can leave and BIZ-054's pause question is never asked. (1) New `app/adapters/src/card_detach.rs`: the Stripe call `POST /v1/payment_methods/{pm}/detach` with the configured Stripe client (base URL, key and timeout as `app/adapters/src/payments.rs` reads them, never a key in a log), exposed as an adapter-owned detach call, with no `CardDetach` impl in `adapters` (D-5670). (2) New `app/server/src/business_leave_routes.rs`: `GET /b/leave` (the leave screen, the BIZ-054 question while `reason_asked` is false), `POST /b/leave` (owner only, the fresh code `leave` requires; a stale code answers the step-up form; success shows the left screen with every session already ended, so the response clears the session cookie), `GET /b/pause-reason` (the question once a self-pause passed `PAUSE_ASK_AFTER_DAYS`, `pause_ask_due`; otherwise 303 to the home) and `POST /b/pause-reason`; `refuse_cross_site` and CSRF first, `no_store`. For each `Left.picks` item the homeowner's PICK-047 (moved to her backup) or PICK-046 (no backup) text is queued by the sender T669's ended pending pick uses, never a second one; `Backup::Done` queues nothing. A detach failure is counted and logged once (the cards stay marked removed, so none can be charged); T751 (D-4749) gives the Stripe stand-in the detach endpoint and a failure switch, and the new `tests/e2e/business_leave.spec.ts` (fake data only) leaves through the served pages against the stand-in and asserts both outcomes: with the switch off the cards are detached at the stand-in and no `detach_failed` is counted; with it on the leave still completes, the cards stay marked removed and one `detach_failed` is counted and logged (D-4748, Fable's decision (9)). (3) `business_home.html` gains a \"Leave Laftly\" link and a link to the pause question (both unconditional, D-5670). Section 13 rows (added `T734` by D-4727) marked `yes`; the three screens' states go in the shared `tests/a11y/page_states.ts`. Tests in the new `app/server/tests/business_leave_route.rs` (TD-BIZ-62), the assembled router with a fake `CardDetach` and one case with the adapter against a local fake HTTP server, fake data only. Update the `server` and `adapters` notes and `docs/decisions.md`. Plan change D-5670 (outside pre-flight, checked on `main` 52bc3014): (a) `CardDetach` is `portals`' trait (`app/portals/src/business_left.rs:96` to `:100`, `portals::api` `:73`) and `adapters` may call no other module (`kit/layers.json`), so `card_detach.rs` exposes the detach call only; `business_leave_routes.rs` defines a server-local wrapper type implementing `portals::api::CardDetach` by delegating to it (the orphan rule rules out implementing a `portals` trait on an `adapters` type in `server`), and the shared `build_router` composes the wrapper. (b) TD-BIZ-62 is amended: T751's stand-in detach endpoint (`stand_ins/stripe.py:315` to `:322`) records a leave's cards detached, and with the `stripe_detach` `fail` fault (`stand_ins/server.py:28`, D-4749, D-4875) the leave completes and records `detach_failed`. (c) The home page's links carry no conditions: an owner flag or `pause_ask_due` would need new `HomeView` fields (`app/portals/src/business_portal.rs:209` to `:224`, owned by T812 and T813) and the home handler's (`async fn home`, `app/server/src/business_portal.rs:428`, owned by T668, in progress), so \"Leave Laftly\" shows to every member and the pause-question link always shows; this task does not edit either file. `GET /b/leave` from a member who is not the owner answers 303 to the business home, and `POST /b/leave` from one answers a bare 403 with `no_store` (as `app/server/src/business_signup.rs:1280` does), storing nothing (`LeaveError::NotOwner`, `app/portals/src/business_left.rs:148`); `GET /b/pause-reason` answers 303 to the home unless the principal is the owner or a \"Confirm and billing\" member and `pause_ask_due` holds, as `pause_reason` reads it (`business_left.rs:265` to `:270`); this task adds no new copy. (d) `tests/e2e/fixtures.ts`'s `Faults` (`:44` to `:52`) has no `stripe_detach` key and that file is an earlier task's test (only a harness task may change it), so `business_leave.spec.ts` sets the fault with one typed cast (`{ stripe_detach: \"fail\" } as Faults`, or a local type extending `Faults`) and does not edit `fixtures.ts`. Plan change D-5876 (pre-flight PF-P1-2b 9): `GET /b/pause-reason` answers the fixture's unpaused business with the goal's 303, but `app/server/tests/door_matrix.rs:551` to `:555` admits a strict GET only on 200; this task (harness for that file) makes one narrow change there: strict GET also admits a no-store 303 whose `Location` is `/b`, for `GET /b/pause-reason` alone; the refusal, leak, no-store and CSRF checks are unchanged. T731, the next owner of that file, follows this task. Plan change D-5972 (attempt 3's confirmed plan gap): this task owns `app/portals/templates/business_leave.html` for one line: `<link rel=\"stylesheet\" href=\"/static/portals/forms.css\">` at the top of `{% block main %}` (`:7`), as `get_help.html:9` and `notice_settings.html:8` carry, so the six reason radios on `/b/leave` and `/b/pause-reason` get a visible edge and the A11Y-007 edge check (`tests/a11y/targets_contrast.spec.ts:80`) passes; nothing else in the template changes.",
    "type": "harness",
    "phase": 1,
    "stage": "5",
@@ -50003,7 +50007,8 @@
     "T669",
     "T541",
     "T751",
-    "T813"
+    "T813",
+    "T410"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -50020,7 +50025,8 @@
     "app/portals/templates/business_home.html",
     "app/server/tests/business_leave_route.rs",
     "tests/e2e/business_leave.spec.ts",
-    "app/server/tests/door_matrix.rs"
+    "app/server/tests/door_matrix.rs",
+    "app/portals/templates/business_leave.html"
    ],
    "reads": [
     "docs/architecture.md",
@@ -50053,13 +50059,14 @@
     "D-4749",
     "D-5314",
     "D-5670",
-    "D-5876"
+    "D-5876",
+    "D-5972"
    ],
    "cites": [],
    "budget": {
-    "files": 6,
+    "files": 7,
     "lines": 600,
-    "context_pct": 33
+    "context_pct": 34
    },
    "checks": [
     "Ci",
@@ -50683,7 +50690,7 @@
    "id": "T746",
    "slug": "job-answers-shown",
    "title": "server and portals: the business's Quote page and Confirm page show the job's intake answers",
-   "goal": "Plan change D-4748 (Fable's decision (5a), the follow-up to T745; CARD-023, PICK-022; D-3189, D-4349). The business job page already draws the answers (`app/portals/templates/business_actions.html:59` to `:60`, `quotes::api::PageParts.answers`, `app/quotes/src/job_page.rs:41`), but every caller passes none: the Quote link's page (`PageParts { … answers: Vec::new() … }`, `app/server/src/action_links.rs:366`) and the card's job page (T666's `app/server/src/job_page_route.rs`) because `intake::api` had no reader, and the business Confirm page (`confirm_page`, `render_page` (`:239`) and `served_page` (`:1280`) in `app/portals/src/confirm_pay.rs`, `confirm_pay.html`; D-5876) shows the card only. After T745 (`intake::api::job_answers`): (1) the new `app/server/src/job_answers.rs` turns a job's answers into `PageParts.answers` pairs, each question's label and each code's wording read from the question bank through `catalog::api` (`quotes` may not call `intake`, `kit/layers.json`), the contact questions never included; `action_links.rs` and `job_page_route.rs` call it on the connection they already hold. (2) The Confirm page lists the same answers under the card (portals may call `intake` and `catalog`), as a description list under a heading, as the job page does; nothing new before the PICK-022 share. Tests in the new `app/server/tests/job_answers_shown.rs` through the assembled router, fake data only: the Quote link's page, the job page and the Confirm page each show the job's answers, an ALSO-reply job its own and none of another job's, and no page shows a name, street address, phone or email. If a page state needs the answers for `Ally`, it goes in the shared `tests/a11y/page_states.ts`. Opus worker, Opus privacy, security and accessibility review. Update the `server` and `portals` notes and `docs/decisions.md`. Plan change D-5319: after T745, the \"Known limit (D-3719)\" sentence in the doc comment of `her_jobs` (`app/portals/src/confirm_pay.rs:1365` on `main` 52bc3014) is stale, because ALSO-reply jobs are now listed; reword that comment to say so, and change nothing else in it. Plan change D-5670 (outside pre-flight, checked on `main` 52bc3014): cites refreshed and anchored by symbol (T811 owns `action_links.rs` and `confirm_pay.rs` too).",
+   "goal": "Plan change D-4748 (Fable's decision (5a), the follow-up to T745; CARD-023, PICK-022; D-3189, D-4349). The business job page already draws the answers (`app/portals/templates/business_actions.html:59` to `:60`, `quotes::api::PageParts.answers`, `app/quotes/src/job_page.rs:41`), but every caller passes none: the Quote link's page (`PageParts { … answers: Vec::new() … }`, `app/server/src/action_links.rs:366`) and the card's job page (T666's `app/server/src/job_page_route.rs`) because `intake::api` had no reader, and the business Confirm page (`confirm_page`, `render_page` (`:239`) and `served_page` (`:1280`) in `app/portals/src/confirm_pay.rs`, `confirm_pay.html`; D-5876) shows the card only. After T745 (`intake::api::job_answers`): (1) the new `app/server/src/job_answers.rs` turns a job's answers into `PageParts.answers` pairs, each question's label and each code's wording read from the question bank through `catalog::api` (`quotes` may not call `intake`, `kit/layers.json`), the contact questions never included; `action_links.rs` and `job_page_route.rs` call it on the connection they already hold. (2) The Confirm page lists the same answers under the card (portals may call `intake` and `catalog`), as a description list under a heading, as the job page does; nothing new before the PICK-022 share. Tests in the new `app/server/tests/job_answers_shown.rs` through the assembled router, fake data only: the Quote link's page, the job page and the Confirm page each show the job's answers, an ALSO-reply job its own and none of another job's, and no page shows a name, street address, phone or email. If a page state needs the answers for `Ally`, it goes in the shared `tests/a11y/page_states.ts`. Opus worker, Opus privacy, security and accessibility review. Update the `server` and `portals` notes and `docs/decisions.md`. Plan change D-5319: after T745, the \"Known limit (D-3719)\" sentence in the doc comment of `her_jobs` (`app/portals/src/confirm_pay.rs:1365` on `main` 52bc3014) is stale, because ALSO-reply jobs are now listed; reword that comment to say so, and change nothing else in it. Plan change D-5670 (outside pre-flight, checked on `main` 52bc3014): cites refreshed and anchored by symbol (T811 owns `action_links.rs` and `confirm_pay.rs` too). Plan change D-5979 (pre-flight): do not add a field to `ConfirmFacts` (`app/portals/src/confirm_pay.rs:130`): the unowned tests `tests/integration/tests/confirm_terms.rs:89` and `tests/integration/tests/tier_pick_pages.rs:364` build it as a struct literal; pass the answers through a separate parameter (a new `confirm_page_with_answers` or an argument of `render_page`), keeping `confirm_page` (`:208`) and the other existing entry points and their callers unchanged.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -50723,7 +50730,6 @@
    ],
    "reads": [
     "docs/architecture.md",
-    "docs/code-docs.md",
     "docs/spec/job-cards.md",
     "docs/spec/quotes-pick.md",
     "docs/spec/accessibility.md"
@@ -50755,7 +50761,7 @@
    ],
    "branch": "claude/task/T746-job-answers-shown",
    "prompt": "kit/prompts/T746.md",
-   "acceptance": "`app/server/tests/job_answers_shown.rs` passes through the assembled router; every Quote link, job page and Confirm route test passes unchanged; `Ally` passes; no page shows a contact detail before the share."
+   "acceptance": "`app/server/tests/job_answers_shown.rs` passes through the assembled router; every Quote link, job page and Confirm route test passes unchanged; `Ally` passes; no page shows a contact detail before the share. `ConfirmFacts` gains no field."
   },
   {
    "id": "T747",
@@ -53696,8 +53702,8 @@
   {
    "id": "T811",
    "slug": "confirm-code-by-email",
-   "title": "server and portals: a person with no texting phone gets the Confirm link code by email",
-   "goal": "Plan change D-5315 (outside review job 8, SEC-004 email fallback, checked on `main` 62c2b1c; Fable's decision for Casey). SEC-004 and TD-BIZ-25 send the Confirm code by email to the sign-in address of a person with no phone that gets texts, but `LinkCodeAddress::find` returns `CodeTo::Email(SecretString::default())` (`app/server/src/action_links.rs:812` to `:814`) and `send_confirm_code` answers `NoPhone` for any email (`NoPhone`, `app/portals/src/confirm_pay.rs:497` to `:499`); D-3889 (7) left it out. Build it now against the stand-in Verify's email channel (`CodeChannel::Email`, D-2769); the live email account is a Gate C item, not a blocker. (1) `LinkCodeAddress::find` returns the member's real sign-in address when they have no texting line, read from the vault with `privacy::api::read_business_mailbox` under `BusinessPurpose::SignInCode` on the member's `mailbox` (as `MemberCodeAddress::find` does, `app/server/src/business_signin.rs:328` to `:335`; that type is not reused, its client is task-local to sign-in, D-5112 (2)). (2) `send_confirm_code` and `check_confirm_code` stay as they are, texting only (the press path never emails, and a shared inbox needs a phone; `tests/integration/tests/confirm_terms.rs:257` to `:258` and `:386` to `:399`, DONE, pin `NoPhone` for an email-only person and pass unchanged); new link-only `send_link_code` and `check_link_code` beside them in `confirm_pay.rs`, exported through the shared `portals::api`, send and check by email to that address when `code_to` is `CodeTo::Email`, and as the press functions do for a phone, and the Confirm link's code step in `server::action_links` calls them instead; `CodeSent` gains an emailed variant whose line says the code went to their email (the link page's words go through the cold read); never by email while the person's inbox is marked shared (SEC-027: that answer stays `NoPhone`'s link-a-phone line, nothing sent), never by a call (BIZ-046); the SEC-014 send and SEC-020 try limits apply as for a text; the address is never logged or shown and is dropped after the send. (3) Tests: this task owns `app/server/tests/action_links_route.rs` after T399, T455, T301, T456, T543, T463, T457, T458, T714, T813 and T814 (line numbers below are on `main` 62c2b1c; find them by their test names). The third block of `td_sec_44_without_codes_or_a_texting_phone_the_confirm_link_uses_nothing` (`:1251` to `:1256`, codes set, no texting phone) changes by logged spec change (D-5315; SEC-004, `docs/spec/security.md:8`; `BUILD_BRIEF.md:69`) to assert one email code sent to the member's fake sign-in address, no text and no call, and the link still unused; the no-codes block (`:1243` to `:1250`) stays. New cases for TD-BIZ-25's Confirm email case: the right emailed code signs that browser in, opens the Confirm page and uses the link once; a wrong code uses nothing; a person with no texting phone whose inbox is marked shared (set in the database, since the switch refuses it) gets no email and nothing used. Fake data only. Update `app/server/NOTES.md`, `app/portals/NOTES.md` and `docs/decisions.md`. Plan change D-5568 (Grok systemic check): `CodeSent`'s emailed line is this task's own copy, so neither the \"Customer copy: none changed\" line nor End step 2's \"stop and report\" covers it: run `scripts/check_ai_smell.py`, the cold read and the copy panel on that line (not flagged `copy`, which would push the prompt past its context limit). Plan change D-5670 (outside pre-flight, checked on `main` 52bc3014): in `td_sec_44_without_codes_or_a_texting_phone_the_confirm_link_uses_nothing` the block that changes is the `coded(&pool, false)` block (`:1402` to `:1407` on the plan branch); the no-codes block (`:1252` to `:1259`) stays; the test's doc comment (`:1247` to `:1249`, \"a person with no phone that gets texts is told to link one, with nothing sent or used\") is reworded to the emailed code, by the same logged spec change. Other cites refreshed: `CodeTo::Email(SecretString::default())` `:812` to `:814`, `NoPhone` `:497` to `:499`. Plan change D-5876 (pre-flight PF-P1-2b 11): in (3) `FakeVerify` records each (to, `CodeChannel`), the email `FakeAddress` gives a fake `@example.com` address, the test asserts exactly one `CodeChannel::Email` send to it and none by SMS or call, and one case runs the real `LinkCodeAddress::find` against a vault-sealed fake mailbox. Plan change D-5889 (Fable's T820 diagnosis): `td_sec_44`'s last assert (`app/server/tests/action_links_route.rs:545` to `:548`, `!again.text.contains(\"990\")` over the whole page) flakes about 2% of runs because the page carries a random CSRF token, a job UUID and a link token; make it exact, never weaker: assert from the database that the stored quote amount is still 32500 cents, and look for \"$990\" only in the page's quote line, not the whole page; every other assertion in the test stays.",
+   "title": "server: the Confirm link's code goes by email to a person with no texting phone; td_sec_44 made exact",
+   "goal": "Plan change D-5315 (outside review job 8, SEC-004 email fallback; Fable's decision for Casey), split by D-5971: T871 adds the link-only `send_link_code` and `check_link_code` (`app/portals/src/confirm_pay.rs`, through `portals::api`) and `CodeSent`'s emailed variant; this task wires them into the Confirm link. `LinkCodeAddress::find` returns `CodeTo::Email(SecretString::default())` for a person with no texting line (`app/server/src/action_links.rs:889` to `:891`). (1) It returns the member's real sign-in address instead, read from the vault with `privacy::api::read_business_mailbox` under `BusinessPurpose::SignInCode` on the member's `mailbox` (as `MemberCodeAddress::find` does, `app/server/src/business_signin.rs:328` to `:335`; that type is not reused, its client is task-local to sign-in, D-5112 (2)); the address is never logged or shown. (2) The Confirm link's code step calls `send_link_code` and `check_link_code` in place of `send_confirm_code` and `check_confirm_code` (`action_links.rs:809`, `:844`); the press path is unchanged. (3) Tests in `app/server/tests/action_links_route.rs` (owned after T399, T455, T301, T456, T543, T463, T457, T458, T714, T813 and T814): in `td_sec_44_without_codes_or_a_texting_phone_the_confirm_link_uses_nothing` the `coded(&pool, false)` block (`:1402`) changes by logged spec change (D-5315; SEC-004, `docs/spec/security.md:8`; `BUILD_BRIEF.md:69`) to assert exactly one `CodeChannel::Email` send to the member's fake `@example.com` sign-in address, none by SMS or call, and the link still unused (`FakeVerify` records each (to, `CodeChannel`)); the no-codes block stays; the test's doc comment (\"a person with no phone that gets texts is told to link one, with nothing sent or used\") is reworded to the emailed code by the same change. New cases for TD-BIZ-25's Confirm email case: the right emailed code signs that browser in, opens the Confirm page and uses the link once; a wrong code uses nothing; a person with no texting phone whose inbox is marked shared (set in the database, since the switch refuses it) gets no email and nothing used; one case runs the real `LinkCodeAddress::find` against a vault-sealed fake mailbox. (4) Plan change D-5889: `td_sec_44_the_quote_form_acts_once_and_bounces_a_phone_number`'s last assert (`:546` to `:549`, `!again.text.contains(\"990\")` over the whole page) flakes about 2% of runs because the page carries a random CSRF token, a job UUID and a link token; make it exact, never weaker: assert from the database that the stored quote amount is still 32500 cents, and look for \"$990\" only in the page's quote line; every other assertion stays. Fake data only. Update `app/server/NOTES.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -53705,7 +53711,8 @@
    "deps": [
     "T810",
     "T814",
-    "T854"
+    "T854",
+    "T871"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -53716,7 +53723,6 @@
    ],
    "owns": [
     "app/server/src/action_links.rs",
-    "app/portals/src/confirm_pay.rs",
     "app/server/tests/action_links_route.rs"
    ],
    "reads": [
@@ -53726,8 +53732,7 @@
    ],
    "requirements": [
     "SEC-004",
-    "SEC-027",
-    "TXT-038"
+    "SEC-027"
    ],
    "tests": [
     "TD-BIZ-25",
@@ -53744,13 +53749,14 @@
     "D-5670",
     "D-5836",
     "D-5876",
-    "D-5889"
+    "D-5889",
+    "D-5971"
    ],
    "cites": [],
    "budget": {
-    "files": 3,
-    "lines": 400,
-    "context_pct": 44
+    "files": 2,
+    "lines": 300,
+    "context_pct": 39
    },
    "checks": [
     "Ci",
@@ -55233,7 +55239,7 @@
    "id": "T849",
    "slug": "clock-composition",
    "title": "server: the e2e web binary serves J1/J2 business time from the test-control clock",
-   "goal": "Plan change D-5836 (Fable C1 to C5 with the overseer's round-1 corrections; after T848 and T854). The web binary takes `control.clock()` once (`app/server/src/main.rs:63` to `:75`; the worker already does, `bin/worker.rs:49` to `:50`) and passes clones into new `build_router_with_clock`, `webhooks_with_clock` and `stripe_webhook_with_clock` constructors in `app/server/src/lib.rs`; the old functions stay as `SystemClock` wrappers with their signatures, because about 50 DONE test files call `build_router(pool, Router::new(), ...)` (e.g. `app/server/tests/action_links_route.rs:161`). The clock reaches `Webhooks.clock` (`lib.rs:962`: inbound SMS dispatch `inbound_text.rs:350`, voice, voice status and call status through the shared Arc, `lib.rs:993`), the pick flow (`lib.rs:672`), the quote page (`lib.rs:837`), action links (`lib.rs:591`), feedback (`lib.rs:598`), check-in (`app/server/src/checkin.rs:19`, merged at `lib.rs:599`) and `stripe_webhook` (`app/server/src/release_sink.rs:492`: `PickReleaser` `:121`, `:139`, Confirm, Stripe dispatch). Settling: `app/picks/src/settle.rs` gains `settle_at(tx, cleared, at)`, and `settle` stays as its `Timestamp::now()` wrapper; `settle_at` uses `at` for Connected (`:114`), `end_pending` (`:115`) and the accepted-quote task's `run_at` (`:164`); `release_sink.rs:167` and `:394` call `settle_at` with the release instant, so day 3's check-in is due from the release. The worker's session sweep and rate-limit prune take their cutoff from `real_now()` and keep their scheduling on `now()` (the daily dedupe chain, `migrations/0020_core_task_queue.sql:22`, `app/core/src/tasks.rs:180`, must stay on the worker clock): `run_session_sweep_at` (`app/portals/src/session.rs:274` to `:286`, scheduling through `schedule_session_sweep` `:258`) and `run_prune_at` (`app/core/src/rate_limit.rs:332` to `:342`) each gain a variant taking `(schedule_now, cutoff_now)`, the old functions kept as wrappers passing one instant to both, and `lib.rs:2964` to `:2969` call the variants with `at.now()` and `at.real_now()`. Stay on `SystemClock`: the business portal (its statement month, `business_portal.rs:368`, `:415`, compares with `ledger_entry.recorded_at`, a database `DEFAULT now()`, `migrations/0090_payments_ledger.sql:21`), owner pages, help and digest (`lib.rs:476`, `:482`), RefusalLog (`lib.rs:676`), the job page, sign-in and sign-up, and the worker's Stripe hooks (`lib.rs:1144`). The release build is unchanged (`test_control.rs:86` to `:96`; `:163` to `:165` refuses Test and Live) and no TestControl error is replaced by system time. Tests in `app/server/tests/clock_composition.rs`, built with `*_with_clock` and an advanced clock: a signed inbound text after a 3-day advance is stored at the advanced instant; the router composes with no webhook keys; a Stripe webhook signed at real time after a 5-day advance is accepted and settles once; after a 100-day advance a business session issued at real time still opens Confirm and the charge lands, and the ledger row it writes shows in the business portal's statement for the current month, the CSV equal to the ledger; a released pick's Connected `status_at` equals the release instant; a session the sweep runs over after the advance is kept. Tests use a small local `Clock` impl defined in the test file (`now()` advanced, `real_now()` at system time), since `ManualClock`'s `real_now()` equals its `now()`. Update `docs/architecture.md` (the composition) and `docs/decisions.md`. Plan change D-5955 (plan, November 27, 2026; decided by Fable on Casey's delegation): `tests/e2e/j1_homeowner.spec.ts:219` advances the forward-only clock inside the `main` project, since `LATE` (`tests/e2e/playwright.config.ts:21`) omits it, against D-3892's rule; once the web binary serves the control clock, that advance expires the 2-hour links and sessions later `main` specs rely on (`tests/e2e/web_chat.spec.ts:64` to `:68`, `tests/a11y/page_states.ts:249` to `:250`). So this task adds `\"**/j1_homeowner.spec.ts\"` to `LATE`; action links stay on the control clock (D-5836), and `web_chat.spec.ts` and `page_states.ts` are not edited. Because `playwright.config.ts` is a test file earlier harness tasks own (T173, T227, T536), this task is now a `harness` task (`scripts/validate_tasks.py:633` to `:638`; CLAUDE.md rule 7), still on Opus with an Opus reviewer. As a harness task, T849 changes `kit/plan.lock` only as its own files require. The move relies on `j1_homeowner.spec.ts` sorting before `j3_*.spec.ts` within `late` (one worker, alphabetical), because its visit date at `tests/e2e/j1_homeowner.spec.ts:183` is filled from real time. Acceptance stays the full e2e and a11y suites. T120, which also owns `playwright.config.ts`, runs after this task.",
+   "goal": "Plan change D-5836 (Fable C1 to C5 with the overseer's round-1 corrections; after T848 and T854). The web binary takes `control.clock()` once (`app/server/src/main.rs:63` to `:75`; the worker already does, `bin/worker.rs:49` to `:50`) and passes clones into new `build_router_with_clock`, `webhooks_with_clock` and `stripe_webhook_with_clock` constructors in `app/server/src/lib.rs`; the old functions stay as `SystemClock` wrappers with their signatures, because about 50 DONE test files call `build_router(pool, Router::new(), ...)` (e.g. `app/server/tests/action_links_route.rs:161`). The clock reaches `Webhooks.clock` (`lib.rs:962`: inbound SMS dispatch `inbound_text.rs:350`, voice, voice status and call status through the shared Arc, `lib.rs:993`), the pick flow (`lib.rs:672`), the quote page (`lib.rs:837`), action links (`lib.rs:591`), feedback (`lib.rs:598`), check-in (`app/server/src/checkin.rs:19`, merged at `lib.rs:599`) and `stripe_webhook` (`app/server/src/release_sink.rs:492`: `PickReleaser` `:121`, `:139`, Confirm, Stripe dispatch). Settling: `app/picks/src/settle.rs` gains `settle_at(tx, cleared, at)`, and `settle` stays as its `Timestamp::now()` wrapper; `settle_at` uses `at` for Connected (`:114`), `end_pending` (`:115`) and the accepted-quote task's `run_at` (`:164`); `release_sink.rs:167` and `:394` call `settle_at` with the release instant, so day 3's check-in is due from the release. The worker's session sweep and rate-limit prune take their cutoff from `real_now()` and keep their scheduling on `now()` (the daily dedupe chain, `migrations/0020_core_task_queue.sql:22`, `app/core/src/tasks.rs:180`, must stay on the worker clock): `run_session_sweep_at` (`app/portals/src/session.rs:274` to `:286`, scheduling through `schedule_session_sweep` `:258`) and `run_prune_at` (`app/core/src/rate_limit.rs:332` to `:342`) each gain a variant taking `(schedule_now, cutoff_now)`, the old functions kept as wrappers passing one instant to both, and `lib.rs:2964` to `:2969` call the variants with `at.now()` and `at.real_now()`. Stay on `SystemClock`: the business portal (its statement month, `business_portal.rs:368`, `:415`, compares with `ledger_entry.recorded_at`, a database `DEFAULT now()`, `migrations/0090_payments_ledger.sql:21`), owner pages, help and digest (`lib.rs:476`, `:482`), RefusalLog (`lib.rs:676`), the job page, sign-in and sign-up, and the worker's Stripe hooks (`lib.rs:1144`). The release build is unchanged (`test_control.rs:86` to `:96`; `:163` to `:165` refuses Test and Live) and no TestControl error is replaced by system time. Tests in `app/server/tests/clock_composition.rs`, built with `*_with_clock` and an advanced clock: a signed inbound text after a 3-day advance is stored at the advanced instant; the router composes with no webhook keys; a Stripe webhook signed at real time after a 5-day advance is accepted and settles once; after a 100-day advance a business session issued at real time still opens Confirm and the charge lands, and the ledger row it writes shows in the business portal's statement for the current month, the CSV equal to the ledger; a released pick's Connected `status_at` equals the release instant; a session the sweep runs over after the advance is kept. Tests use a small local `Clock` impl defined in the test file (`now()` advanced, `real_now()` at system time), since `ManualClock`'s `real_now()` equals its `now()`. Update `docs/architecture.md` (the composition) and `docs/decisions.md`. Plan change D-5955 (plan, November 27, 2026; decided by Fable on Casey's delegation): `tests/e2e/j1_homeowner.spec.ts:219` advances the forward-only clock inside the `main` project, since `LATE` (`tests/e2e/playwright.config.ts:21`) omits it, against D-3892's rule; once the web binary serves the control clock, that advance expires the 2-hour links and sessions later `main` specs rely on (`tests/e2e/web_chat.spec.ts:64` to `:68`, `tests/a11y/page_states.ts:249` to `:250`). So this task adds `\"**/j1_homeowner.spec.ts\"` to `LATE`; action links stay on the control clock (D-5836), and `web_chat.spec.ts` and `page_states.ts` are not edited. Because `playwright.config.ts` is a test file earlier harness tasks own (T173, T227, T536), this task is now a `harness` task (`scripts/validate_tasks.py:633` to `:638`; CLAUDE.md rule 7), still on Opus with an Opus reviewer. As a harness task, T849 changes `kit/plan.lock` only as its own files require. The move relies on `j1_homeowner.spec.ts` sorting before `j3_*.spec.ts` within `late` (one worker, alphabetical), because its visit date at `tests/e2e/j1_homeowner.spec.ts:183` is filled from real time. Acceptance stays the full e2e and a11y suites. T120, which also owns `playwright.config.ts`, runs after this task. Plan change D-5978 (attempts 1 and 4 failed J3 step 5 at `tests/e2e/j3.ts:336`): with the Confirm route on the control clock (D-5836), PICK-020's re-check (`app/portals/src/confirm_moves.rs:88` to `:106`, called at `:128`; `check_at_confirm`'s `fresh_active`, `app/picks/src/confirm.rs:159` to `:172`, `:216`, wants an ROC check under 24 hours old at `now`) reads licence freshness at the app clock, but `seedPick`'s `ownerSql` stamps the ROC check at database `now()` (`tests/e2e/keyed.ts:126` to `:127`), so after J3's 24-hour advance (`j3.ts:308`) the refused pick seeded at `j3.ts:362` ends as MovedOn (\"This pick can't be confirmed anymore\", `app/portals/src/confirm_pay.rs:330` to `:334`) before the OPS-024 pause answer (`confirm_moves.rs:159`). `ownerSql` takes `when` and dates the new business's `licensing.license_check` `checked_at` at `when` and `list_date` at `(when AT TIME ZONE 'America/Phoenix')::date`, unchanged (`now()`) without `at`; The `ownerSql` change plus the existing `at` at `j3.ts:362` is the fix; passing `at: await j.control.now()` at `j3.ts:216` and `:272` too is optional consistency (a near-24-hour `j1_homeowner` advance then cannot stale those seeds). No assertion is changed or weakened and no product code changes. Use the kept branch `claude/task/T849-clock-composition-a3` as the runner prepares it (ecb8e6fc plus the runner's update merge 182ad72, PR #1512), never recreate, rebase or reset it to ecb8e6fc; before fixing, confirm that the received text at `j3.ts:336` is the MovedOn line and, in the database, that the refused pick ended `ineligible` (the licence re-check, `app/picks/src/confirm.rs:246`); any other J3 break is a `PLAN GAP:` report.",
    "type": "harness",
    "phase": 1,
    "stage": "5",
@@ -55241,7 +55247,8 @@
    "deps": [
     "T681",
     "T707",
-    "T854"
+    "T854",
+    "T847"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -55261,7 +55268,9 @@
     "app/server/tests/clock_composition.rs",
     "app/portals/src/session.rs",
     "app/core/src/rate_limit.rs",
-    "tests/e2e/playwright.config.ts"
+    "tests/e2e/playwright.config.ts",
+    "tests/e2e/keyed.ts",
+    "tests/e2e/j3.ts"
    ],
    "reads": [
     "docs/code-docs.md",
@@ -55277,13 +55286,14 @@
    "tests": [],
    "decisions": [
     "D-5836",
-    "D-5955"
+    "D-5955",
+    "D-5978"
    ],
    "cites": [],
    "budget": {
-    "files": 9,
-    "lines": 480,
-    "context_pct": 35
+    "files": 11,
+    "lines": 800,
+    "context_pct": 41
    },
    "checks": [
     "Ci",
@@ -55347,7 +55357,7 @@
    "id": "T851",
    "slug": "journey-j2-full-core",
    "title": "Journey J2 full core: business sign-up through charge and statement",
-   "goal": "Plan change D-5836 (Fable's scope decision section 2; split from T222). J2 in SMS mode, `docs/test-design.md:88` to `:93`, in `tests/e2e/j2_full.spec.ts` with its steps in `tests/e2e/j2_full.ts` (exported for T532, T533 and T853): (1) sign-up for an R-37 plumbing business on a fixture ROC record, E-SIGN unticked at first (CON-019), the licence class read back (LIC-006, LIC-027); (2) the identity code by Verify to the record phone (BIZ-002), automatic activation (BIZ-016), the Google and Yelp links and licence number saved (BIZ-052), the sign-up email verified (BIZ-040), email the only channel with business texting off (BIZ-036), the welcome email before the first card; (3) a card by email (CARD-020) opens the quote form; a quote with a phone number bounces (PICK-007); a firm $650.00 faucet quote with a note is accepted (PICK-053, PICK-052); no text to any business phone (TXT-037); (4) the homeowner picks it (\"Done. <Business> has your pick. ...\", PICK-045), the pick email (\"Accept by <time>\" with \"Can't take it\", PICK-050), no call to any business phone, Confirm signed out from the email through the code step (T457), the review step with $75 and \"Go back\", the Stripe test element; (5) charged once, details in the portal after release, the statement CSV equals the ledger (BIZ-015, FEE-030; the statement compares with the ledger row's database time, so it shows the charge in the current real month whatever the advance, D-5836); HOLD, Away and BUSY on the served links (T456, T463). A separate real pick takes \"Can't take it\" (never decline and then confirm one pick). TD-BIZ-22's and TD-BIZ-25's J2 half: the fake voice provider records no call to a business phone except a masked call a person placed (D-492). Advances move the shared clock; no assertion on away or month text beyond step 5 and none on a per-number code cap across an advance (C2). Every driven journey ends with the four closing checks of `docs/test-design.md:75` (no duplicate message or charge, ledger equals Stripe, every status change audited, no sentinel outside the vault), each asserting its expected positive evidence first (an empty log is not a pass). Fake data and stand-ins only; no SQL-seeded quote, pick, Connected, DONE or authorization claimed as a journey step; no clock rewind, retry or loosened assertion; T098's and T099's specs stay unchanged; a step whose served path is missing is a `PLAN GAP:` with file:line, never seeded around. Shared steps live in helper modules (`tests/e2e/j1_full.ts`, `tests/e2e/j2_full.ts`), never in a `.spec.ts` (Playwright refuses importing one, D-3892); iterate with `--no-deps` (T536). Update `docs/decisions.md`.",
+   "goal": "Plan change D-5836 (Fable's scope decision section 2; split from T222). J2 in SMS mode, `docs/test-design.md:88` to `:93`, in `tests/e2e/j2_full.spec.ts` with its steps in `tests/e2e/j2_full.ts` (exported for T532, T533 and T853): (1) sign-up for an R-37 plumbing business on a fixture ROC record, E-SIGN unticked at first (CON-019), the licence class read back (LIC-006, LIC-027); (2) the identity code by Verify to the record phone (BIZ-002), automatic activation (BIZ-016), the Google and Yelp links and licence number saved (BIZ-052), the sign-up email verified (BIZ-040), email the only channel with business texting off (BIZ-036), the welcome email before the first card; (3) a card by email (CARD-020) opens the quote form; a quote with a phone number bounces (PICK-007); a firm $650.00 faucet quote with a note is accepted (PICK-053, PICK-052); no text to any business phone (TXT-037); (4) the homeowner picks it (\"Done. <Business> has your pick. ...\", PICK-045), the pick email (\"Accept by <time>\" with \"Can't take it\", PICK-050), no call to any business phone, Confirm signed out from the email through the code step (T457), the review step with $75 and \"Go back\", the Stripe test element; (5) charged once, details in the portal after release, the statement CSV equals the ledger (BIZ-015, FEE-030; the statement compares with the ledger row's database time, so it shows the charge in the current real month whatever the advance, D-5836); HOLD, Away and BUSY on the served links (T456, T463). A separate real pick takes \"Can't take it\" (never decline and then confirm one pick). TD-BIZ-22's and TD-BIZ-25's J2 half: the fake voice provider records no call to a business phone except a masked call a person placed (D-492). Advances move the shared clock; no assertion on away or month text beyond step 5 and none on a per-number code cap across an advance (C2). Every driven journey ends with the four closing checks of `docs/test-design.md:75` (no duplicate message or charge, ledger equals Stripe, every status change audited, no sentinel outside the vault), each asserting its expected positive evidence first (an empty log is not a pass). Fake data and stand-ins only; no SQL-seeded quote, pick, Connected, DONE or authorization claimed as a journey step; no clock rewind, retry or loosened assertion; T098's and T099's specs stay unchanged; a step whose served path is missing is a `PLAN GAP:` with file:line, never seeded around. Shared steps live in helper modules (`tests/e2e/j1_full.ts`, `tests/e2e/j2_full.ts`), never in a `.spec.ts` (Playwright refuses importing one, D-3892); iterate with `--no-deps` (T536). Update `docs/decisions.md`. Plan change D-5979 (pre-flight): each step takes a `Driver` (as `tests/e2e/j3.ts:19` to `:31`), default `MOUSE`, so T532 reuses them keyboard-only.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -55395,7 +55405,7 @@
    "budget": {
     "files": 2,
     "lines": 600,
-    "context_pct": 22
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -55403,7 +55413,8 @@
     "Ally"
    ],
    "branch": "claude/task/T851-journey-j2-full-core",
-   "prompt": "kit/prompts/T851.md"
+   "prompt": "kit/prompts/T851.md",
+   "acceptance": "Each step in `tests/e2e/j2_full.ts` takes a `Driver`, default `MOUSE`."
   },
   {
    "id": "T852",
@@ -55583,7 +55594,7 @@
    "id": "T856",
    "slug": "consent-per-request",
    "title": "intake: a request may be texted only with an `sms` consent record of its own; the guard primitive",
-   "goal": "Plan change D-5848 (task A of the T801 chain; Fable's T2, scope decision section 1). (1) New `models::sms_consented(conversation)`, exposed as `service::may_text_request`: true only when an `sms` consent record exists for that request's conversation (`intake.consent_record.conversation_id`, no migration). It decides `rules::plan`'s consent input in `service::handle` (`service.rs:154`, `:182`, in place of `open.is_some()`) and the text uses of `card_allowed` (`tell`, `handlers.rs:350` to `:377`). `card_allowed` stays per request and keeps counting any record (CON-007's web-chat card). `models::contact_consented`, read by `service::may_text`, counts only `sms` records (R1-01); `may_text` stays only for the one caller with no request in hand, the owner's help reply (`app/portals/src/owner_help.rs:199`, D-5848): a number with only `web_chat` records gets `ReplyRefusal::EmailOnly` there (a test in this task's test file), and the opt-out and texting-switch checks at send are unchanged. (2) Every text-opened request gets its own `sms` record from its first inbound text, whether or not the consent text is queued again (`receive_answer`, `service.rs:222` to `:249`); her first text into a web-opened request queues the consent text and appends the `sms` record, then the request goes on by text (Fable's b); the append locks the conversation row (`SELECT ... FOR UPDATE`) so two racing first texts give one consent text and one `sms` record; reword `app/intake/CLAUDE.md:16` (\"One consent record per request, none from a reply\") and NOTES never 27 to allow that appended record. (3) An `sms` record is written only from a carrier inbound, structurally: the chat path (`web_chat.rs:333` reads the open request before its transaction at `:337`) never calls `models::record_consent` and never passes a browser message ID as an `inbox_id` (R2-02, R2-03), with a test; if a re-read of the open request stays, it is `SELECT ... FOR UPDATE` on the conversation row; `app/server/src/inbound_text.rs` is not edited. The chat's `text_turn` gets its own service entry, not `receive_text` or `receive_answer`: its `rules::plan` input stays \"request open\" and it never writes a consent record (test: a chat turn on a `web_chat`-only request queues no second consent text and writes no record). (4) In `open_verified` (`web_chat.rs:764` to `:773`) the `web_chat` record is written before the consent and Spanish texts are queued, in the same transaction; the chat exemption applies only with at least one `web_chat` record and no `sms` record, and a request with no record is refused. A guard primitive for request texts in the new `app/intake/src/consent_guard.rs`: given the request and the text kind it answers Outbox, or refuses with an error (fail closed); named exemptions only: the consent text of a carrier-inbound first text, the INT-004 safety text for a carrier-inbound request with no consent record yet (a web request's safety text is shown on the page, `docs/spec/intake.md:62`, CON-005), the carrier keyword replies, the business sign-up reply, and the chat exemption: a branch of T856's guard (`app/intake/src/consent_guard.rs`) under which a request whose only consent records are `web_chat` keeps outbox delivery until T801, whatever the caller (T649's fixture `ask()` calls `answer_zip` and `ask_name_address` straight through `intake::api`, `app/server/tests/web_chat_after_code.rs:231` to `:234`, and asserts a NAME_ADDRESS outbox row at `:325` to `:330`); its constant `CHAT_LEGACY_TEXTS` may stay in `web_chat.rs`, and T801 deletes both the constant and the branch. Use it at this task's own call sites; T857 and T865 put every caller behind it. Tests in the new `tests/integration/tests/consent_per_request.rs`: a returning number's second text-opened request is textable; a web-opened request is not textable until her first text, which gets the consent text and one `sms` record; a `web_chat` record never makes `may_text` or `may_text_request` true; the stale-read race writes no `sms` record; 911 before consent unchanged (INT-002). Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`. Plan change D-5918 (requeue after attempt 1's confirmed plan gap; Fable's pre-flight question): on the retry use the branch the runner prepares and never recreate, reset or rebase it (attempt 1's work was not kept: its WIP save was refused by the scanner false positive D-5918 (3) fixes). `app/intake/src/rules.rs` leaves the owned files: `rules::plan` takes the consent input as a value (`rules.rs:93`), so `service.rs` alone decides it. The chat raw path (`web_chat::raw_turn`, `web_chat.rs:340`, to `replies::receive_raw_reply` to `answer_name_address` to `receive_answer`, `app/intake/src/replies.rs:367`) and `reply_in`'s `receive_text` call (`replies.rs:204`) reach `models::record_consent` (`service.rs:245`), so this task now owns `app/intake/src/replies.rs` and makes the chat path structurally unable to write a consent record: `web_chat.rs` calls a chat entry in `replies.rs` that never reaches `receive_text` or `receive_answer`'s consent write, and `receive_raw_reply` keeps its signature for its carrier caller `app/server/src/inbound_text.rs:839`, which is not edited;  Callers checked and out of scope are listed in D-5918 (1).",
+   "goal": "Plan change D-5848 (task A of the T801 chain; Fable's T2, scope decision section 1). (1) New `models::sms_consented(conversation)`, exposed as `service::may_text_request`: true only when an `sms` consent record exists for that request's conversation (`intake.consent_record.conversation_id`, no migration). It decides `rules::plan`'s consent input in `service::handle` (`service.rs:154`, `:182`, in place of `open.is_some()`) and the text uses of `card_allowed` (`tell`, `handlers.rs:350` to `:377`). `card_allowed` stays per request and keeps counting any record (CON-007's web-chat card). `models::contact_consented`, read by `service::may_text`, counts only `sms` records (R1-01); `may_text` stays only for the one caller with no request in hand, the owner's help reply (`app/portals/src/owner_help.rs:199`, D-5848): a number with only `web_chat` records gets `ReplyRefusal::EmailOnly` there (a test in this task's test file), and the opt-out and texting-switch checks at send are unchanged. (2) Every text-opened request gets its own `sms` record from its first inbound text, whether or not the consent text is queued again (`receive_answer`, `service.rs:222` to `:249`); her first text into a web-opened request queues the consent text and appends the `sms` record, then the request goes on by text (Fable's b); the append locks the conversation row (`SELECT ... FOR UPDATE`) so two racing first texts give one consent text and one `sms` record; reword `app/intake/CLAUDE.md:16` (\"One consent record per request, none from a reply\") and NOTES never 27 to allow that appended record. (3) An `sms` record is written only from a carrier inbound, structurally: the chat path (`web_chat.rs:333` reads the open request before its transaction at `:337`) never calls `models::record_consent` and never passes a browser message ID as an `inbox_id` (R2-02, R2-03), with a test; if a re-read of the open request stays, it is `SELECT ... FOR UPDATE` on the conversation row; `app/server/src/inbound_text.rs` is not edited. The chat's `text_turn` gets its own service entry, not `receive_text` or `receive_answer`: its `rules::plan` input stays \"request open\" and it never writes a consent record (test: a chat turn on a `web_chat`-only request queues no second consent text and writes no record). (4) In `open_verified` (`web_chat.rs:764` to `:773`) the `web_chat` record is written before the consent and Spanish texts are queued, in the same transaction; the chat exemption applies only with at least one `web_chat` record and no `sms` record, and a request with no record is refused. A guard primitive for request texts in the new `app/intake/src/consent_guard.rs`: given the request and the text kind it answers Outbox, or refuses with an error (fail closed); named exemptions only: the consent text of a carrier-inbound first text, the INT-004 safety text for a carrier-inbound request with no consent record yet (a web request's safety text is shown on the page, `docs/spec/intake.md:62`, CON-005), the carrier keyword replies, the business sign-up reply, and the chat exemption: a branch of T856's guard (`app/intake/src/consent_guard.rs`) under which a request whose only consent records are `web_chat` keeps outbox delivery until T801, whatever the caller (T649's fixture `ask()` calls `answer_zip` and `ask_name_address` straight through `intake::api`, `app/server/tests/web_chat_after_code.rs:231` to `:234`, and asserts a NAME_ADDRESS outbox row at `:325` to `:330`); its constant `CHAT_LEGACY_TEXTS` may stay in `web_chat.rs`, and T801 deletes both the constant and the branch. Use it at this task's own call sites; T857 and T865 put every caller behind it. Tests in the new `tests/integration/tests/consent_per_request.rs`: a returning number's second text-opened request is textable; a web-opened request is not textable until her first text, which gets the consent text and one `sms` record; a `web_chat` record never makes `may_text` or `may_text_request` true; the stale-read race writes no `sms` record; 911 before consent unchanged (INT-002). Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`. Plan change D-5918 (requeue after attempt 1's confirmed plan gap; Fable's pre-flight question): on the retry use the branch the runner prepares and never recreate, reset or rebase it (attempt 1's work was not kept: its WIP save was refused by the scanner false positive D-5918 (3) fixes). `app/intake/src/rules.rs` leaves the owned files: `rules::plan` takes the consent input as a value (`rules.rs:93`), so `service.rs` alone decides it. The chat raw path (`web_chat::raw_turn`, `web_chat.rs:340`, to `replies::receive_raw_reply` to `answer_name_address` to `receive_answer`, `app/intake/src/replies.rs:367`) and `reply_in`'s `receive_text` call (`replies.rs:204`) reach `models::record_consent` (`service.rs:245`), so this task now owns `app/intake/src/replies.rs` and makes the chat path structurally unable to write a consent record: `web_chat.rs` calls a chat entry in `replies.rs` that never reaches `receive_text` or `receive_answer`'s consent write, and `receive_raw_reply` keeps its signature for its carrier caller `app/server/src/inbound_text.rs:839`, which is not edited; callers checked and out of scope are listed in D-5918 (1). Plan change D-5971: `app/intake/src/conversation.rs` is not owned: `queue_text` (`:585`) is T857's seam and keeps its signature; this task calls its guard at its own call sites (`open_verified` in `web_chat.rs`, `service.rs`) before them.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -55609,7 +55620,6 @@
    "owns": [
     "app/intake/src/models.rs",
     "app/intake/src/service.rs",
-    "app/intake/src/conversation.rs",
     "app/intake/src/handlers.rs",
     "app/intake/src/web_chat.rs",
     "app/intake/src/replies.rs",
@@ -55634,13 +55644,14 @@
    "tests": [],
    "decisions": [
     "D-5848",
-    "D-5918"
+    "D-5918",
+    "D-5971"
    ],
    "cites": [],
    "budget": {
-    "files": 8,
+    "files": 7,
     "lines": 500,
-    "context_pct": 45
+    "context_pct": 43
    },
    "checks": [
     "Ci",
@@ -56089,7 +56100,7 @@
    "id": "T862",
    "slug": "conversation-email",
    "title": "privacy: the email she types in her own conversation is kept apart as her conversation address",
-   "goal": "Plan change D-5848 (PKE part 1; Fable's T1; D-1612's missing conversation address). No web-chat step of the Intake order table collects her email (`docs/spec/intake.md:60` to `:72`), and `privacy.contact.email` holds only the address shared at the page pick (`app/privacy/src/vault.rs:449`), which never gets a code (D-050). New migration `migrations/0218_privacy_conversation_email.sql`: `privacy.conversation_email`, one row per contact, sealed under `VAULT_KEY` bound to its row (as `privacy.update_email`, `app/privacy/src/update_email.rs`). An email address in a message she types in her own text or web-chat conversation (INT-012's \"my email is ...\") is taken where her raw words are scrubbed with her contact in hand (`privacy::api::read_inbound_for`, `app/privacy/src/scrub_context.rs`; the scrub already cuts it, `scrub.rs:745`) and stored there, replacing an earlier one, audited without the value; the scrubbed text is unchanged. New read for `picks` only under the `(Picks, PickCode)` grant, audited and counted; the contact purge deletes the row. Her data download (`app/portals/src/data_download.rs`, after T820) includes her conversation address (PRIV-021). No other caller outside `privacy` is edited here. Tests in the new `tests/integration/tests/conversation_email.rs`: a typed address is stored once and sealed; a quote-page or page-pick address is never returned by the new read; the purge removes it. Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-5848 (PKE part 1; Fable's T1; D-1612's missing conversation address). No web-chat step of the Intake order table collects her email (`docs/spec/intake.md:60` to `:72`), and `privacy.contact.email` holds only the address shared at the page pick (`app/privacy/src/vault.rs:449`), which never gets a code (D-050). New migration `migrations/0218_privacy_conversation_email.sql`: `privacy.conversation_email`, one row per contact, sealed under `VAULT_KEY` bound to its row (as `privacy.update_email`, `app/privacy/src/update_email.rs`). An email address in a message she types in her own text or web-chat conversation (INT-012's \"my email is ...\") is taken where her raw words are scrubbed with her contact in hand (`privacy::api::read_inbound_for`, `app/privacy/src/scrub_context.rs`; the scrub already cuts it, `scrub.rs:745`) and stored there, replacing an earlier one, audited without the value; the scrubbed text is unchanged. New read for `picks` only under the `(Picks, PickCode)` grant, audited and counted; the contact purge deletes the row. Plan change D-5972: it adds the own-record read of her conversation address under `(PortalsHomeowner, OwnRecord)`, taking the vault and `HomeownerSessionProof`, as `read_own_contact` (`app/privacy/src/api.rs:317`) does, and T870 puts it in her download. No other caller outside `privacy` is edited here. Tests in the new `tests/integration/tests/conversation_email.rs`: a typed address is stored once and sealed; a quote-page or page-pick address is never returned by the new read; the purge removes it; with rows for A and B, A's proof returns only A's address; the read takes no contact ID besides the proof's (SEC-046); each read is audited without the value. Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -56117,7 +56128,6 @@
     "app/privacy/src/scrub.rs",
     "app/privacy/src/models.rs",
     "app/privacy/src/purge.rs",
-    "app/portals/src/data_download.rs",
     "tests/integration/tests/conversation_email.rs"
    ],
    "reads": [
@@ -56139,13 +56149,14 @@
    ],
    "tests": [],
    "decisions": [
-    "D-5848"
+    "D-5848",
+    "D-5972"
    ],
    "cites": [],
    "budget": {
-    "files": 8,
+    "files": 7,
     "lines": 450,
-    "context_pct": 36
+    "context_pct": 32
    },
    "checks": [
     "Ci",
@@ -56154,7 +56165,7 @@
    ],
    "branch": "claude/task/T862-conversation-email",
    "prompt": "kit/prompts/T862.md",
-   "acceptance": "The conversation address is sealed in its own table, read only by `picks` under the pick-code grant (its new reader, the only PickCode read of an email; `privacy.contact.email` stays unreadable under PickCode, with a test) and by her own data copy under `(PortalsHomeowner, OwnRecord)`; it is never filled from the quote page or the page pick and is purged with the contact; every existing test passes unchanged; two Opus review rounds."
+   "acceptance": "The conversation address is sealed in its own table, read only by `picks` under the pick-code grant (its new reader, the only PickCode read of an email; `privacy.contact.email` stays unreadable under PickCode, with a test) and by her own-record read under `(PortalsHomeowner, OwnRecord)`, which T870 puts in her data copy; it is never filled from the quote page or the page pick and is purged with the contact; every existing test passes unchanged; two Opus review rounds."
   },
   {
    "id": "T863",
@@ -56389,6 +56400,127 @@
    "branch": "claude/task/T869-wip-trailer-scan",
    "prompt": "kit/prompts/T869.md",
    "acceptance": "`python3 -m pytest tests/test_pii_scan.py tests/test_runner_wip.py` passes, the new trailer cases failing before the fix; `python3 scripts/pii_scan.py --root .` stays at 0 findings; the decision entry names the cause of the 6 `.github` refusals."
+  },
+  {
+   "id": "T871",
+   "slug": "link-code-email-send",
+   "title": "portals: the link-only code send and check that email a person with no texting phone",
+   "goal": "Plan change D-5315 (outside review job 8, SEC-004 email fallback; Fable's decision for Casey), split from T811 by D-5971: this task builds the portals half; T811 then wires it into the Confirm link. SEC-004 and TD-BIZ-25 send the Confirm code by email to the sign-in address of a person with no phone that gets texts, but `send_confirm_code` answers `NoPhone` for any email (`app/portals/src/confirm_pay.rs:498` to `:500`); D-3889 (7) left it out. Build it against the stand-in Verify's email channel (`CodeChannel::Email`, D-2769); the live email account is a Gate C item, not a blocker. (1) `send_confirm_code` and `check_confirm_code` stay as they are, texting only (the press path never emails, and a shared inbox needs a phone; `tests/integration/tests/confirm_terms.rs:257` to `:258` and `:386` to `:399`, DONE, pin `NoPhone` for an email-only person and pass unchanged). (2) New link-only `send_link_code` and `check_link_code` beside them in `confirm_pay.rs`, exported through the shared `portals::api`, take the `CodeTo` the link found and send and check by email to that address when it is `CodeTo::Email` with an address, and as the press functions do for a phone; an empty address answers `NoPhone`, nothing sent. `CodeSent` gains an emailed variant whose line says the code went to their email; never by email while the person's inbox is marked shared (SEC-027: that answer stays `NoPhone`'s link-a-phone line, nothing sent), never by a call (BIZ-046); the SEC-014 send and SEC-020 try limits apply as for a text; the address is never logged or shown and is dropped after the send. Plan change D-5568: the emailed line is this task's own copy: run `scripts/check_ai_smell.py`, the cold read and the copy panel on that line. (3) Tests in the new `tests/integration/tests/link_code_email.rs` (a `FakeVerify` recording each (to, `CodeChannel`), as in `tests/integration/tests/confirm_press_code.rs:179`; fake `@example.com` addresses): an email address gets exactly one `CodeChannel::Email` send and none by SMS or call; the right code checks and a wrong one does not; a shared inbox gets `NoPhone` and nothing sent; a phone gets the text as the press path does; the send limit refuses as for a text. Fake data only. Update `app/portals/NOTES.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "portals",
+   "deps": [
+    "T810",
+    "T814",
+    "T854"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "privacy"
+   ],
+   "owns": [
+    "app/portals/src/confirm_pay.rs",
+    "tests/integration/tests/link_code_email.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/spec/security.md",
+    "docs/spec/messaging.md"
+   ],
+   "requirements": [
+    "SEC-004",
+    "SEC-027",
+    "TXT-038"
+   ],
+   "tests": [
+    "TD-BIZ-25"
+   ],
+   "decisions": [
+    "D-5315",
+    "D-3889",
+    "D-2769",
+    "D-3562",
+    "D-5319",
+    "D-5568",
+    "D-5876",
+    "D-5971"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 250,
+    "context_pct": 30
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T871-link-code-email-send",
+   "prompt": "kit/prompts/T871.md",
+   "acceptance": "`cargo test -p askhava-integration --test link_code_email` passes; `send_confirm_code` and `check_confirm_code` are unchanged and every other test passes unchanged, `confirm_terms.rs` included."
+  },
+  {
+   "id": "T870",
+   "slug": "conversation-email-download",
+   "title": "server and portals: her data download includes the conversation address she typed",
+   "goal": "Plan change D-5972 (split from T862 on its confirmed plan gap). Her \"Download my data\" file (PRIV-031) is built by `held_file` (`app/server/src/homeowner_portal.rs:621`), which has neither the vault nor her proof, so it cannot open the sealed conversation address T862 stores (`privacy.conversation_email`, `app/privacy/src/conversation_email.rs`). The download handler's `her` (`:517`) already holds both: the proof from `signed_in` (`:426`, called at `:518`) and `hooks.vault` (`:519` to `:525`); pass them to `held_file` and read her address only through T862's own-record read under `(PortalsHomeowner, OwnRecord)` (as `read_own_contact`, `app/privacy/src/api.rs:317`, SEC-046), then add her conversation address unmasked as one item in the existing `requests` section of `app/portals/src/data_download.rs` (no new key: `download_file` masks contact details in every section but `requests` and `consent`, `:487` to `:489`, `:761` to `:779`, and `tests/e2e/homeowner_portal_served.spec.ts:116` pins exactly the seven keys, D-5399), Debug-safe and never logged. Tests in the new `tests/integration/tests/conversation_email_download.rs`, PostgreSQL and a vault with a fake key, fake `@example.com` addresses: her file carries her own conversation address once, in `requests`; another homeowner's address never appears in it; with none on file no item is added; a quote-page or page-pick address is not shown as her conversation address. Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "portals",
+   "deps": [
+    "T862",
+    "T820"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "app/portals/src/data_download.rs",
+    "app/server/src/homeowner_portal.rs",
+    "tests/integration/tests/conversation_email_download.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/privacy.md",
+    "docs/spec/security.md",
+    "app/privacy/src/conversation_email.rs"
+   ],
+   "requirements": [
+    "PRIV-031",
+    "SEC-046"
+   ],
+   "tests": [
+    "TD-PRIV-15"
+   ],
+   "decisions": [
+    "D-5848",
+    "D-5972"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 250,
+    "context_pct": 32
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T870-conversation-email-download",
+   "prompt": "kit/prompts/T870.md",
+   "acceptance": "Her download carries her own conversation address and no one else's, in the `requests` section and no item when none is on file, the file's seven keys unchanged; the address is read only through T862's own-record read; every existing download and portal test passes unchanged; two Opus review rounds."
   }
  ]
 }
