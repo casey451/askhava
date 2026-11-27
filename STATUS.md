@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-27T12:14:34Z by runner 703f1b55401f (manual).
+Updated 2026-11-27T12:15:10Z by runner 703f1b55401f (manual).
 
 **Building: T820 in progress since 10:58Z; 689 of 802 done; week 14% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -8,30 +8,10 @@ Updated 2026-11-27T12:14:34Z by runner 703f1b55401f (manual).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T820 claimed 10:58Z, lease until 13:58Z; lane 3: T867 claimed 11:15Z, lease until 14:15Z
 - **Week:** 14% used, 161.3M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:14Z, 0 min before this update
+- **Last run:** 12:15Z, 0 min before this update
 - **Keeper:** last ran 12:13Z, next wake 12:33Z
 
 ## Needs attention
-- BLOCKED T657: Ci: failure; Coverage: failure
-Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)
-test td_sec_80_a_text_token_elsewhere_or_appended_is_not_found ... ok
-test td_sec_80_an_emailed_confirm_session_still_answers_at_29_days ... ok
-test td_sec_80_only_a_text_minted_grant_is_text_started ... ok
-test td_sec_80_only_confirm_is_minted_by_text ... ok
-failures:
----- td_sec_44_the_quote_form_acts_once_and_bounces_a_phone_number stdout ----
-thread 'td_sec_44_the_quote_form_acts_once_and_bounces_a_phone_number' (42044) panicked at app/server/tests/action_links_route.rs:546:5:
-the second price is not stored
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-failures:
-    td_sec_44_the_quote_form_acts_once_and_bounces_a_phone_number
-test result: FAILED. 30 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 14.90s
-error: test failed, to rerun pass `-p askhava-server --test action_links_route`
-error: process didn't exit successfully: `/home/runner/.rustup/toolchains/nightly-2026-10-15-x86_64-unknown-linux-gnu/bin/cargo test --tests --manifest-path /home/runner/work/askhava/askhava/Cargo.tom
-##[error]Process completed with exit code 101.
-Ci failed at step: All five jobs passed
-Checks: success, Lint and slow tests: success, Python: success, Coverage: failure, E2e: success
-##[error]Process completed with exit code 1.
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 50% of the context window, over its 45% limit

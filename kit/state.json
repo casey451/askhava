@@ -97924,7 +97924,7 @@
     "T543",
     "T410"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 3,
    "slug": "portal-form-error-fields",
    "type": "build",
@@ -98111,7 +98111,7 @@
     "why": "auto-merge on #1495 (gh pr merge)",
     "head": "1ce20868bc8601534fa32b06b9e283d7d047f065"
    },
-   "last_failure": "Worker stopped with no edits: start smoke exceeded ~20 min. Finding: J3 step 5 owner sign-in (signInOwner, tests/e2e/owner_session.ts:175) never reaches /owner/step-up on T657's branch (CI runs 45899799797, 45900538467); no auth_failed/csrf_rejected logged, so likely a silent rate-limit refusal (admit_owner_ip/admit_owner_account, app/portals/src/limits.rs:38, 5 password tries per IP per hour) caused by tests/e2e/portal_form_errors.spec.ts spending owner password tries. T847 does not fix it. Next: run owner_signin_served, portal_form_errors and j3_operator specs with and without the new spec; if it breaks J3, change only portal_form_errors.spec.ts so it spends no owner tries from the shared budget; decision D-5872.",
+   "last_failure": "Worker stopped with no edits: start smoke exceeded ~20 min. Finding: J3 step 5 owner sign-in (signInOwner, tests/e2e/owner_session.ts:175) never reaches /owner/step-up on T657's branch (CI runs 45899799797, 45900538467); no auth_failed/csrf_rejected logged, so likely a silent rate-limit refusal (admit_owner_ip/admit_owner_account, app/portals/src/limits.rs:38, 5 password tries per IP per hour) caused by tests/e2e/portal_form_errors.spec.ts spending owner password tries. T847 does not fix it. Next: run owner_signin_served, portal_form_errors and j3_operator specs with and without the new spec; if it breaks J3, change only portal_form_errors.spec.ts so it spends no owner tries from the shared budget; decision D-5872.\nre-queued after plan fix D-5954: D-5954 (PR #1500, merged 703f1b5): attempt 3 was red only on the td_sec_44 flake; T657 now waits on T811 and re-hands-in its kept branch with no product-code change",
    "lane": "4",
    "runner_closed_prs": [
     1478
@@ -98140,7 +98140,22 @@
    "update_waiting_since": null,
    "update_push_failures": null,
    "merge_turn_since": "2026-11-27T08:13:44Z",
-   "reason": "Ci: failure; Coverage: failure\nCoverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)\ntest td_sec_80_a_text_token_elsewhere_or_appended_is_not_found ... ok\ntest td_sec_80_an_emailed_confirm_session_still_answers_at_29_days ... ok\ntest td_sec_80_only_a_text_minted_grant_is_text_started ... ok\ntest td_sec_80_only_confirm_is_minted_by_text ... ok\nfailures:\n---- td_sec_44_the_quote_form_acts_once_and_bounces_a_phone_number stdout ----\nthread 'td_sec_44_the_quote_form_acts_once_and_bounces_a_phone_number' (42044) panicked at app/server/tests/action_links_route.rs:546:5:\nthe second price is not stored\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\n    td_sec_44_the_quote_form_acts_once_and_bounces_a_phone_number\ntest result: FAILED. 30 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 14.90s\nerror: test failed, to rerun pass `-p askhava-server --test action_links_route`\nerror: process didn't exit successfully: `/home/runner/.rustup/toolchains/nightly-2026-10-15-x86_64-unknown-linux-gnu/bin/cargo test --tests --manifest-path /home/runner/work/askhava/askhava/Cargo.tom\n##[error]Process completed with exit code 101.\nCi failed at step: All five jobs passed\nChecks: success, Lint and slow tests: success, Python: success, Coverage: failure, E2e: success\n##[error]Process completed with exit code 1."
+   "reason": null,
+   "requeues": [
+    {
+     "at": "2026-11-27T12:15:10Z",
+     "reason": "D-5954 (PR #1500, merged 703f1b5): attempt 3 was red only on the td_sec_44 flake; T657 now waits on T811 and re-hands-in its kept branch with no product-code change",
+     "by": "manual-f9268d1147f7",
+     "was": "Ci: failure; Coverage: failure\nCoverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)\ntest td_sec_80_a_text_token_elsewhere_or_appended_is_not_found ... ok\ntest td_sec_80_an_emailed_confirm_session_still_answers_at_29_days ... ok\ntest td_sec_80_only_a_text_minted_grant_is_text_started ... ok\ntest td_sec_80_only_confirm_is_minted_by_text ... ok\nfailures:\n---- td_sec_44_the_quote_form_acts_once_and_bounces_a_phone_number stdout ----\nthread 'td_sec_44_the_quote_form_acts_once_and_bounces_a_phone_number' (42044) panicked at app/server/tests/action_links_route.rs:546:5:\nthe second price is not stored\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\n    td_sec_44_the_quote_form_acts_once_and_bounces_a_phone_number\ntest result: FAILED. 30 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 14.90s\nerror: test failed, to rerun pass `-p askhava-server --test action_links_route`\nerror: process didn't exit successfully: `/home/runner/.rustup/toolchains/nightly-2026-10-15-x86_64-unknown-linux-gnu/bin/cargo test --tests --manifest-path /home/runner/work/askhava/askhava/Cargo.tom\n##[error]Process completed with exit code 101.\nCi failed at step: All five jobs passed\nChecks: success, Lint and slow tests: success, Python: success, Coverage: failure, E2e: success\n##[error]Process completed with exit code 1.",
+     "attempts": 3,
+     "plan_fix": "D-5954",
+     "plan_since": "2026-11-27T06:50:45Z",
+     "plan_base": "c8cd2d18062a7f4f383f8def7362e28a4ccb1f84",
+     "plan_head": "703f1b55401fe152096746097375aa07db11f6ca",
+     "plan_then": "b6b874342aeb3e5b760a2549dfa11e1f6c2afe75496c03c10088c5192a05901e",
+     "plan_now": "33152bb3a2c99fdfa77e125118c80ba3464c5792dbbb3ac1e420cc40b2754d24"
+    }
+   ]
   },
   {
    "id": "T658",
@@ -133461,7 +133476,7 @@
    }
   }
  },
- "updated_at": "2026-11-27T12:14:34Z",
+ "updated_at": "2026-11-27T12:15:10Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
