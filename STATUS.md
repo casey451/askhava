@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-27T23:15:05Z by runner 8ff8dd521bd2 (manual).
+Updated 2026-11-27T23:37:50Z by runner 8ff8dd521bd2 (actions).
 
-**Idle since 23:00Z; 694 of 805 done; week 19% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Idle since 23:00Z; 694 of 805 done; week 20% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 694 of 805 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** idle since 23:00Z (no task in progress)
-- **Week:** 19% used, 158.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:12Z, 2 min before this update
+- **Week:** 20% used, 158.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
+- **Last run:** 23:37Z, 0 min before this update
 - **Keeper:** last ran 23:12Z, next wake 23:32Z
 
 ## Needs attention
@@ -68,7 +68,6 @@ Updated 2026-11-27T23:15:05Z by runner 8ff8dd521bd2 (manual).
 - 16:15Z Plan: efficiency fixes (D-5971); T734 owns its template line, T862 split with T870 (D-5972) (#1513)
 - 12:14Z Plan: T657 waits on T811 (D-5954); T849 moves j1_homeowner into the late project (D-5955) (#1500)
 - 07:26Z Plan: fraud-refund fix (D-5888), T820 fix (D-5889), T865 draft (D-5900), template line and T868 (D-5901), compliance (D-5907), T856 plan fix (D-5918) (#1
-- 23:18Z Plan: T801 web-chat consent chain re-split, per-request SMS consent, pick code by email (D-5848); T612 font fallback (D-5864); pre-flight fixes (D-5876, 
 
 ## Progress (requirements verified)
 
