@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-27T15:29:09Z by runner ecb8e6fc2be5 (actions).
+Updated 2026-11-27T15:29:55Z by runner febc73c2ddbc (actions).
 
 **Idle since 15:27Z; 692 of 802 done; week 15% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-27T15:29:09Z by runner ecb8e6fc2be5 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** idle since 15:27Z (no task in progress)
 - **Week:** 15% used, 164.1M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:28Z, 0 min before this update
-- **Keeper:** last ran 15:19Z, next wake 16:31Z
+- **Last run:** 15:29Z, 0 min before this update
+- **Keeper:** last ran 15:29Z, next wake 15:49Z
 
 ## Needs attention
 - BLOCKED T734: plan gap reported: PLAN GAP: app/portals/templates/business_leave.html:25 owned by T228 and T410, not T734. Smallest plan change: let T734 own that template for one line, <link rel="stylesheet" href="/static/portals/forms.css"> at the top of {% block main %}, as get_help.html:9 and notice_settings.html:8 carry.
@@ -21,7 +21,7 @@ Evidence: her data download is assembled in app/server/src/homeowner_portal.rs:6
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 50% of the context window, over its 45% limit
 - PLAN GAP T856 (since 2026-11-27T07:31:36Z, no attempt used; a plan change fixes it): T856: measures 46% of the context window, over its 45% limit
 - PLAN GAP T862 (since 2026-11-27T13:22:09Z, no attempt used; a plan change fixes it): outside ownership: app/server/src/homeowner_portal.rs, app/portals/src/homeowner_portal.rs
-- Strict plan check red: 63 problem(s) on tasks still to run (+601 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
+- Strict plan check red: 62 problem(s) on tasks still to run (+599 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
