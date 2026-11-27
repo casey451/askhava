@@ -2,16 +2,22 @@
 //! `*_with_clock` constructors carry the clock `main` takes once from `TestControl::clock()`, so
 //! under an advance a signed inbound text is stored at the advanced instant, a released pick's
 //! Connected `status_at` is the release instant (day 3's check-in is due from it) and the pick
-//! settles once; the worker's session sweep schedules on `now()` but cuts off at `real_now()`, so
+//! settles once; a Stripe success signed at real time is accepted after an advance and released
+//! by the wired sink at the advanced instant, and a Confirm 100 days ahead shows once in the
+//! statement CSV; the worker's session sweep schedules on `now()` but cuts off at `real_now()`, so
 //! a live session is kept. The router composes with no webhook keys. Each case uses [`Ahead`], a
 //! local clock whose `now()` is advanced and whose `real_now()` is system time, as the
 //! test-control offset clock is (`ManualClock`'s `real_now()` equals its `now()`). Fake data only.
 
 use std::collections::BTreeSet;
+use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::path::Path;
 use std::sync::Arc;
 
-use askhava_adapters::api::{MaskedPool, TwilioConfig};
+use askhava_adapters::api::{
+    AdapterError, AdapterMode, Charge, IdempotencyKey, IntentMetadata, MaskedPool, PaymentIntent,
+    PaymentsAdapter, TwilioConfig,
+};
 use askhava_businesses::api::{AccountStatus, add_owner};
 use askhava_core::api::{
     Clock, Lease, MIGRATOR, NewTask, Settings, TestControl, WorkerId, claim, enqueue,
@@ -21,15 +27,20 @@ use askhava_intake::api::{Answer, TextIn, receive_text, record_answer};
 use askhava_jobs::api::{JobStatus, create, current, move_to, record_job_facts};
 use askhava_licensing::api::{ClassMap, Holder, Job, LicenseKind};
 use askhava_ops::api::Actor;
-use askhava_payments::api::{EntryKind, LedgerEntry, NewEntry, ledger_append, no_fee_release};
+use askhava_payments::api::{
+    BusinessId, ChargeOutcome, EntryKind, IntentStripe, LedgerEntry, NewEntry, PickNow, Press,
+    STRIPE_WEBHOOK_PATH, StripeWebhook, business_statement, confirm_and_pay, ensure_customer,
+    ledger_append, no_fee_release, stripe_webhook_routes,
+};
 use askhava_picks::api::{ConfirmSettings, PagePick, Released, page_pick};
+use askhava_portals::api::statement_csv;
 use askhava_portals::api::{CookieJar, Realm, SESSION_SWEEP_KIND, start_session};
 use askhava_privacy::api::{NewContact, Vault, store_contact};
 use askhava_quotes::api::{
     CardBusiness, CardJob, Format, OfferTown, Price, QuoteForm, QuoteRules, parse_quote,
     send_cards, submit_quote,
 };
-use askhava_server::release_sink::PickReleaser;
+use askhava_server::release_sink::{PickReleaser, stripe_webhook_with_clock};
 use axum::Router;
 use axum::body::Body;
 use axum::extract::ConnectInfo;
@@ -40,6 +51,7 @@ use hmac::{Hmac, KeyInit, Mac};
 use jiff::{SignedDuration, Timestamp};
 use secrecy::SecretString;
 use sha1::Sha1;
+use sha2::Sha256;
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use sqlx::types::Uuid;
@@ -48,6 +60,9 @@ use tower::ServiceExt;
 const BASE: &str = "https://hooks.example.test";
 const TOKEN: &str = "fake_twilio_auth_token";
 const ID_SECRET: &str = "test-only-id-secret-not-a-real-key-0849";
+const FAKE_DB: &str = "postgres://fake@127.0.0.1:1/none";
+const WHSEC: &str = "whsec_fake_value_0849";
+const INTENT: &str = "pi_fake849paid";
 
 /// `now()` fixed `days` past the system time at creation (whole seconds, as the database keeps
 /// them); `real_now()` the system time.
@@ -80,10 +95,7 @@ fn pairs(with_hooks: bool) -> Vec<(String, String)> {
     std::fs::create_dir_all(&dir).expect("storage dir");
     let mut all = vec![
         ("ASKHAVA_APP_ENV", "dev".to_owned()),
-        (
-            "ASKHAVA_DATABASE_URL",
-            "postgres://fake@127.0.0.1:1/none".into(),
-        ),
+        ("ASKHAVA_DATABASE_URL", FAKE_DB.into()),
         ("ASKHAVA_ID_SECRET", ID_SECRET.into()),
         (
             "ASKHAVA_STORAGE_BASE_URL",
@@ -103,6 +115,20 @@ fn pairs(with_hooks: bool) -> Vec<(String, String)> {
         ]);
     }
     all.into_iter().map(|(k, v)| (k.to_owned(), v)).collect()
+}
+
+/// [`pairs`] with the hooks and the Stripe webhook secret, key and account.
+fn stripe_pairs() -> Vec<(String, String)> {
+    let mut pairs = pairs(true);
+    pairs.extend(
+        [
+            ("ASKHAVA_STRIPE_WEBHOOK_SECRET", WHSEC),
+            ("ASKHAVA_STRIPE_SECRET_KEY", "sk_test_fake_value_0849"),
+            ("ASKHAVA_STRIPE_ACCOUNT_ID", "acct_testfake"),
+        ]
+        .map(|(k, v)| (k.to_owned(), v.to_owned())),
+    );
+    pairs
 }
 
 /// The router as `main` builds it on `clock`, with or without the Twilio webhooks.
@@ -193,19 +219,9 @@ async fn an_inbound_text_after_an_advance_is_stored_at_the_advanced_instant(pool
 async fn the_hooks_carry_the_clock_they_are_given() {
     let ahead = Ahead::days(5);
     let clock: Arc<dyn Clock> = ahead.clone();
-    let mut pairs = pairs(true);
-    pairs.extend(
-        [
-            ("ASKHAVA_STRIPE_WEBHOOK_SECRET", "whsec_fake_value_0849"),
-            ("ASKHAVA_STRIPE_SECRET_KEY", "sk_test_fake_value_0849"),
-            ("ASKHAVA_STRIPE_ACCOUNT_ID", "acct_testfake"),
-        ]
-        .map(|(k, v)| (k.to_owned(), v.to_owned())),
-    );
+    let pairs = stripe_pairs();
     let settings = Settings::from_pairs(pairs.clone()).expect("settings");
-    let pool = PgPoolOptions::new()
-        .connect_lazy("postgres://fake@127.0.0.1:1/none")
-        .expect("pool");
+    let pool = PgPoolOptions::new().connect_lazy(FAKE_DB).expect("pool");
     let hooks =
         askhava_server::webhooks_with_clock(&settings, pool.clone(), pairs.clone(), clock.clone());
     assert_eq!(hooks.expect("ok").expect("set").clock.now(), ahead.0);
@@ -391,29 +407,10 @@ fn quote() -> askhava_quotes::api::Quote {
 /// release instant, not at system time, and a second clearing settles nothing again.
 #[sqlx::test(migrator = "MIGRATOR")]
 async fn a_released_pick_is_connected_at_the_release_instant(pool: PgPool) {
-    let (at, ahead) = (Timestamp::now(), Ahead::days(5));
-    let vault = Vault::new(
-        &SecretString::from(key(0x59)),
-        &SecretString::from(key(0x69)),
-        &SecretString::from("postgres://askhava_app@db.invalid/askhava".to_owned()),
-    )
-    .expect("vault");
-    let mut db = pool.acquire().await.expect("db");
-    let business = askhava_businesses::api::create(&mut db, false, at)
-        .await
-        .expect("business");
-    add_owner(&mut db, business, Uuid::new_v4(), at)
-        .await
-        .expect("owner");
-    drop(db);
-    let job = quoted_job(&pool, business, at).await;
-    her_request(&pool, &vault, job, at).await;
-    let mut tx = pool.begin().await.expect("tx");
-    let picked = page_pick(&mut tx, (job, false), 1, Actor::System, at).await;
-    tx.commit().await.expect("commit");
-    let PagePick::Picked(pick) = picked.expect("pick") else {
-        panic!("no new pick")
-    };
+    let ahead = Ahead::days(5);
+    let (business, job, pick) = picked(&pool).await;
+    let vault = Vault::new(&key(0x41).into(), &key(0x42).into(), &FAKE_DB.into());
+    let vault = vault.expect("vault");
     let mut db = pool.acquire().await.expect("db");
     let key = format!("t849.free.{job}");
     let entry = LedgerEntry::new(NewEntry {
@@ -448,4 +445,205 @@ fn masked() -> MaskedPool {
         .expect("pool")
         .pool()
         .clone()
+}
+
+/// A business, its $325 firm quote and her request, paged and picked at system time; the
+/// business, job and pick. Her contact is sealed under the vault keys of [`pairs`].
+async fn picked(pool: &PgPool) -> (Uuid, Uuid, Uuid) {
+    let at = Timestamp::now();
+    let vault = Vault::new(&key(0x41).into(), &key(0x42).into(), &FAKE_DB.into());
+    let mut db = pool.acquire().await.expect("db");
+    let business = askhava_businesses::api::create(&mut db, false, at)
+        .await
+        .expect("business");
+    add_owner(&mut db, business, Uuid::new_v4(), at)
+        .await
+        .expect("owner");
+    drop(db);
+    let job = quoted_job(pool, business, at).await;
+    her_request(pool, &vault.expect("vault"), job, at).await;
+    let mut tx = pool.begin().await.expect("tx");
+    let picked = page_pick(&mut tx, (job, false), 1, Actor::System, at).await;
+    tx.commit().await.expect("commit");
+    let PagePick::Picked(pick) = picked.expect("pick") else {
+        panic!("no new pick")
+    };
+    (business, job, pick)
+}
+
+/// The hooks `stripe_webhook_with_clock` builds on `clock`, its own `PickReleaser` kept and only
+/// the Stripe client swapped for [`FakeStripe`] from this host, so the wired sink is the one run.
+fn wired_hooks(pool: &PgPool, clock: Arc<dyn Clock>, pick: Uuid) -> FakeHooks {
+    let pairs = stripe_pairs();
+    let settings = Settings::from_pairs(pairs.clone()).expect("settings");
+    let built = stripe_webhook_with_clock(&settings, pool.clone(), pairs, clock);
+    let Ok(hooks) = Arc::try_unwrap(built.expect("ok").expect("set")) else {
+        panic!("one owner")
+    };
+    Arc::new(StripeWebhook {
+        pool: hooks.pool,
+        stripe: FakeStripe { pick },
+        secret: hooks.secret,
+        account: hooks.account,
+        mode: AdapterMode::StandIn,
+        stand_in_host: IpAddr::V4(Ipv4Addr::LOCALHOST),
+        client_ip: hooks.client_ip,
+        clock: hooks.clock,
+        sink: hooks.sink,
+    })
+}
+
+type FakeHooks = Arc<StripeWebhook<FakeStripe, PickReleaser>>;
+
+/// The $25 Confirm-and-pay press at `at` with the fake Stripe (FEE-016).
+async fn confirm(pool: &PgPool, (business, job, pick): (Uuid, Uuid, Uuid), at: Timestamp) {
+    let stripe = FakeStripe { pick };
+    let secret = SecretString::from(ID_SECRET);
+    ensure_customer(pool, &stripe, &secret, BusinessId(business))
+        .await
+        .expect("customer");
+    let press = Press {
+        pick,
+        business: BusinessId(business),
+        job,
+        amount_cents: 2500,
+        payment_method: "pm_fake849",
+        press: Uuid::new_v4(),
+        emergency: false,
+        now: PickNow::Payable,
+    };
+    let charged = confirm_and_pay(pool, &stripe, &secret, &press, at).await;
+    assert!(matches!(
+        charged.expect("charge"),
+        ChargeOutcome::Succeeded(_)
+    ));
+}
+
+/// One `payment_intent.succeeded` for `pick`, signed at system time, from the stand-in's host.
+async fn deliver(hooks: FakeHooks, pick: Uuid) -> StatusCode {
+    let body = format!(
+        r#"{{"id":"evt_fake849","type":"payment_intent.succeeded","livemode":false,"data":{{"object":{{"id":"{INTENT}","metadata":{{"pick_id":"{pick}"}}}}}}}}"#
+    );
+    let signed = Timestamp::now().as_second();
+    let mut mac = <Hmac<Sha256> as KeyInit>::new_from_slice(WHSEC.as_bytes()).expect("key");
+    mac.update(format!("{signed}.{body}").as_bytes());
+    let sig: String = mac
+        .finalize()
+        .into_bytes()
+        .iter()
+        .map(|b| format!("{b:02x}"))
+        .collect();
+    let mut request = Request::post(STRIPE_WEBHOOK_PATH)
+        .header("stripe-signature", format!("t={signed},v1={sig}"))
+        .body(Body::from(body))
+        .expect("request");
+    let peer = SocketAddr::from(([127, 0, 0, 1], 443));
+    request.extensions_mut().insert(ConnectInfo(peer));
+    let routes = stripe_webhook_routes(hooks);
+    routes.oneshot(request).await.expect("answer").status()
+}
+
+/// Confirmed at `confirm_at`, then the success delivered twice to the wired hooks on `ahead`:
+/// both accepted (signature freshness on `real_now()`), the job Connected at `ahead`'s instant;
+/// the business's statement CSV from system time to past `ahead`.
+async fn paid_and_released(pool: &PgPool, ahead: &Arc<Ahead>, confirm_at: Timestamp) -> String {
+    let (business, job, pick) = picked(pool).await;
+    confirm(pool, (business, job, pick), confirm_at).await;
+    let hooks = wired_hooks(pool, ahead.clone(), pick);
+    for _ in 0..2 {
+        assert_eq!(deliver(Arc::clone(&hooks), pick).await, StatusCode::OK);
+    }
+    let mut db = pool.acquire().await.expect("db");
+    let row = current(&mut db, job).await.expect("job");
+    let connected = JobStatus::Connected.code();
+    assert_eq!((row.status.code(), row.status_at), (connected, ahead.0));
+    let from = Timestamp::now() - SignedDuration::from_hours(24);
+    let span = (from, ahead.0 + SignedDuration::from_hours(24));
+    let statement = business_statement(pool, business, span).await;
+    statement_csv(&statement.expect("statement"))
+}
+
+/// SEC-017, PICK-022, D-5836: a Stripe success signed at real time after a 5-day advance is
+/// accepted by the hooks `stripe_webhook_with_clock` builds, settles once, and its sink releases
+/// at the advanced instant.
+#[sqlx::test(migrator = "MIGRATOR")]
+async fn a_stripe_success_signed_at_real_time_after_an_advance_settles_once(pool: PgPool) {
+    let ahead = Ahead::days(5);
+    let csv = paid_and_released(&pool, &ahead, Timestamp::now()).await;
+    assert_eq!(csv.lines().filter(|l| l.ends_with(",25.00")).count(), 1);
+}
+
+/// FEE-016, BIZ-015, D-5836: Confirm at the instant 100 days ahead, then its success, charges
+/// once and the statement CSV holds that one $25 charge.
+#[sqlx::test(migrator = "MIGRATOR")]
+async fn a_confirm_after_a_100_day_advance_shows_once_in_the_statement_csv(pool: PgPool) {
+    let ahead = Ahead::days(100);
+    let csv = paid_and_released(&pool, &ahead, ahead.0).await;
+    assert_eq!(csv.lines().filter(|l| l.ends_with(",25.00")).count(), 1);
+    assert!(csv.starts_with("date,entry,job,amount\n"));
+}
+
+/// A Stripe fake whose intents all succeed for `pick` at $25.
+struct FakeStripe {
+    pick: Uuid,
+}
+
+impl FakeStripe {
+    fn succeeded(&self, id: &str) -> PaymentIntent {
+        PaymentIntent {
+            id: id.to_owned(),
+            status: "succeeded".to_owned(),
+            amount: 2500,
+            currency: "usd".to_owned(),
+            customer: "cus_fake849".to_owned(),
+            metadata: IntentMetadata {
+                pick_id: self.pick.to_string(),
+            },
+            livemode: Some(false),
+            latest_charge: Some(id.replacen("pi_", "ch_", 1)),
+        }
+    }
+}
+
+impl PaymentsAdapter for FakeStripe {
+    async fn create_customer(&self, _: &IdempotencyKey, _: &str) -> Result<String, AdapterError> {
+        Ok("cus_fake849".to_owned())
+    }
+
+    async fn create_payment_intent(
+        &self,
+        _: &IdempotencyKey,
+        _: Charge<'_>,
+    ) -> Result<PaymentIntent, AdapterError> {
+        Err(AdapterError::NotSent)
+    }
+
+    async fn fetch_payment_intent(&self, id: &str) -> Result<PaymentIntent, AdapterError> {
+        Ok(self.succeeded(id))
+    }
+
+    async fn create_refund(&self, _: &IdempotencyKey, _: &str) -> Result<String, AdapterError> {
+        Err(AdapterError::NotSent)
+    }
+}
+
+impl IntentStripe for FakeStripe {
+    async fn create_intent(
+        &self,
+        _: &IdempotencyKey,
+        _: &str,
+        _: u32,
+        _: &str,
+    ) -> Result<String, AdapterError> {
+        Ok(INTENT.to_owned())
+    }
+
+    async fn confirm_intent(
+        &self,
+        _: &IdempotencyKey,
+        intent: &str,
+        _: &str,
+    ) -> Result<PaymentIntent, AdapterError> {
+        Ok(self.succeeded(intent))
+    }
 }
