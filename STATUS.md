@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-27T09:18:01Z by runner 02eda79e70d5 (actions).
+Updated 2026-11-27T09:19:17Z by runner 02eda79e70d5 (actions).
 
 **Building: T868 in progress since 08:48Z; 686 of 802 done; week 13% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -8,10 +8,30 @@ Updated 2026-11-27T09:18:01Z by runner 02eda79e70d5 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T868 claimed 08:48Z, lease until 11:48Z
 - **Week:** 13% used, 166.5M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:17Z, 0 min before this update
+- **Last run:** 09:18Z, 0 min before this update
 - **Keeper:** last ran 09:18Z, next wake 09:38Z
 
 ## Needs attention
+- BLOCKED T657: Ci: failure; Coverage: failure
+Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)
+test td_sec_80_a_text_token_elsewhere_or_appended_is_not_found ... ok
+test td_sec_80_an_emailed_confirm_session_still_answers_at_29_days ... ok
+test td_sec_80_only_a_text_minted_grant_is_text_started ... ok
+test td_sec_80_only_confirm_is_minted_by_text ... ok
+failures:
+---- td_sec_44_the_quote_form_acts_once_and_bounces_a_phone_number stdout ----
+thread 'td_sec_44_the_quote_form_acts_once_and_bounces_a_phone_number' (42044) panicked at app/server/tests/action_links_route.rs:546:5:
+the second price is not stored
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+failures:
+    td_sec_44_the_quote_form_acts_once_and_bounces_a_phone_number
+test result: FAILED. 30 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 14.90s
+error: test failed, to rerun pass `-p askhava-server --test action_links_route`
+error: process didn't exit successfully: `/home/runner/.rustup/toolchains/nightly-2026-10-15-x86_64-unknown-linux-gnu/bin/cargo test --tests --manifest-path /home/runner/work/askhava/askhava/Cargo.tom
+##[error]Process completed with exit code 101.
+Ci failed at step: All five jobs passed
+Checks: success, Lint and slow tests: success, Python: success, Coverage: failure, E2e: success
+##[error]Process completed with exit code 1.
 - BLOCKED T849: plan gap reported: PLAN GAP: outside ownership: tests/e2e/web_chat.spec.ts, tests/a11y/page_states.ts
 D-5836 puts inbound SMS and action links on the test-control clock. web_chat.spec.ts:64-68 (consentsSince with no contact, DB real clock_timestamp) and page_states.ts:249-250 (action link expires_at = now() + 2 hours in DB time) are not owned by T849. After j1_homeowner.spec.ts:219 advances the clock up to a day, 4 web_chat tests (:111,:131,:183,:206) and 3 site_speed.spec.ts:256 tests (404) fail. Reviewer confirmed. Fix: T849 owns web_chat.spec.ts and filters consentsSince by contact, and page_states.ts seeds l; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T849 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
@@ -29,7 +49,7 @@ D-5836 puts inbound SMS and action links on the test-control clock. web_chat.spe
 | T869 | harness: the PII scan allows the Co-Authored-By no-reply add | MERGE_PENDING | 1 | 82 min | 08:53Z |  |
 | T849 | server: the e2e web binary serves J1/J2 business time from t | check_failed | 2 | 45 min | 08:29Z |  |
 | T688 | server: a call to the Laftly main number hears the greeting  | done | 1 | 85 min | 08:17Z |  |
-| T657 | quotes and portals: quote-form and sign-in errors mark the f | MERGE_PENDING | 3 | 75 min | 08:05Z | Worker stopped with no edits: start smoke exceeded ~20 min. Finding: J3 step 5 owner sign-in (signInOwner, tests/e2e/own |
+| T657 | quotes and portals: quote-form and sign-in errors mark the f | check_failed | 3 | 75 min | 08:05Z | Worker stopped with no edits: start smoke exceeded ~20 min. Finding: J3 step 5 owner sign-in (signInOwner, tests/e2e/own |
 | T849 | server: the e2e web binary serves J1/J2 business time from t | resync | 2 | 102 min | 07:36Z |  |
 | T612 | harness: the WEB-029 and WEB-030 runtime checks on every sit | done | 3 | 2 h 5 min | 05:50Z | Reviewer on head 700f50e1fce2ee8fc4392587b89d7a82a956f72f still ended REVIEW-VERDICT: FINDINGS after the fix round: / 1. |
 | T518 | server, ops and payments: the Stripe-or-webhook-errors alert | done | 1 | 51 min | 05:34Z |  |
