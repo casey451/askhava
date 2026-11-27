@@ -1,20 +1,21 @@
 # Ask Hava build status
 
-Updated 2026-11-27T21:06:09Z by runner e29a4938318b (actions).
+Updated 2026-11-27T21:06:58Z by runner e29a4938318b (actions).
 
-**Idle since 20:10Z; 694 of 805 done; week 18% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Building: T871 in progress since 21:06Z; 694 of 805 done; week 18% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 694 of 805 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** idle since 20:10Z (no task in progress)
-- **Week:** 18% used, 160.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:16Z, 49 min before this update
+- **Lane:** lane 1: T871 claimed 21:06Z, lease until 00:06Z
+- **Week:** 18% used, 158.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
+- **Last run:** 20:16Z, 50 min before this update
 - **Keeper:** last ran 20:11Z, next wake 20:31Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 50% of the context window, over its 45% limit
+- PLAN GAP T872 (since 2026-11-27T21:06:06Z, no attempt used; a plan change fixes it): T872: prompt kit/prompts/T872.md is missing; run scripts/gen_prompts.py; T872: branch claude/task/T872-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
 - Strict plan check red: 58 problem(s) on tasks still to run (+604 on DONE tasks); first: T704: stored context_pct 38% but it measures 44%; regenerate
 
 ## Last 24 hours
@@ -102,7 +103,7 @@ Updated 2026-11-27T21:06:09Z by runner e29a4938318b (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-27T17:10:29Z (week)): week: 34.0M used, 160.0M left, resets 2026-12-03T17:00:00Z; projected finish 2026-12-11T09:35:19Z.
+- Pacing (session_reading 2026-11-27T20:10:37Z (week)): week: 36.0M used, 158.0M left, resets 2026-12-03T17:00:00Z; projected finish 2026-12-11T11:30:15Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -117,7 +118,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T871 (lease until 2026-11-28T00:06:06Z)
 
 ## Last usage reading
 - {"task": "T856", "at": "2026-11-27T19:33:59Z", "cache_read_input_tokens": 13734057, "input_tokens": 325, "cache_creation_input_tokens": 357397, "output_tokens": 100341}

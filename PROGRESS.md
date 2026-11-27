@@ -11664,3 +11664,4 @@
 - 2026-11-27T20:11:15Z runner f40a8e4da247 (actions): {}
 - 2026-11-27T20:15:56Z runner e29a4938318b (actions): {"T856": "MERGE_PENDING -> DONE"}
 - 2026-11-27T21:06:09Z runner e29a4938318b (actions): {"T872": "None -> QUEUED"}
+- 2026-11-27T21:06:58Z runner e29a4938318b (actions): {"T871": "QUEUED -> IN_PROGRESS"}; T871 estimated 632k tokens (calibrated); week has 158.0M left (no five-hour budget, D-3056) (session_reading 2026-11-27T20:10:37Z (week)); claimed
