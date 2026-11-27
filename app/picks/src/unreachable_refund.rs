@@ -16,6 +16,10 @@
 //! under the pick's row lock (a `picks.release` row, or the caller's `true`) and, for a pick not
 //! released, commits one `picks.fraud_hold` row that the release claim refuses, before the refund
 //! is asked for; `end_pick` keeps its status-only guard for the other ends.
+//!
+//! T867 (FEE-052, JOB-014, D-5888): after the refund reads `Succeeded`, [`fraud_warning`] re-reads
+//! the pick and job under the pick's row lock and ends the states that really occur: a waiting
+//! pick in Payment pending, or a `paid` pick on a Connected job with no release.
 
 use askhava_adapters::api::PaymentsAdapter;
 use askhava_businesses::api::{NoticePurpose, notice_addresses};
@@ -39,9 +43,10 @@ use serde_json::json;
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection, PgPool};
 
+use crate::connect::{PendingEnd, end_connected_fraud, end_pending};
 use crate::models::PicksError;
 use crate::money_notices::BUSINESS_NOTICE_KIND;
-use crate::status::PickStatus;
+use crate::status::{PickStatus, awaits_charge, connected};
 
 /// TXT-030: the missed-call text to the homeowner (an important text, TXT-014).
 pub const MISSED_CALL_TEMPLATE: &str = "caller_missed";
@@ -526,17 +531,18 @@ pub async fn dispute_auto_submit(
         .map_err(|_| PicksError::Database)
 }
 
-/// FEE-052, JOB-014, D-491, D-1819, D-1836: an early fraud warning goes to
+/// FEE-052, JOB-014, PICK-047, D-491, D-1819, D-1836, D-5888: an early fraud warning goes to
 /// `payments::api::early_fraud_warning` (the alert, and the refund of an unreleased charge); only
-/// when `payments::api::refund_state` then reads an unreleased pick's refund as `Succeeded` its
-/// job returns from Payment pending to Quotes ready and the pick ends as fraud-refunded, together;
-/// a refund in flight, blocked or failed, or a job no longer in Payment pending, changes nothing.
-/// `true` when moved. Only a `paid` pick ends (FEE-052 never applies to a fee-free pick). Before
-/// any of it, [`hold_unreleased`] decides `released` under the pick's row lock and holds an
-/// unreleased pick against a later release, so a refunded charge is never also released (D-2627).
+/// when `payments::api::refund_state` then reads an unreleased pick's refund as `Succeeded`,
+/// [`end_warned`] ends the pick as fraud-refunded and returns its job to Quotes ready with her
+/// backup offer, from the state the pick and job really hold; a refund in flight, blocked or
+/// failed changes nothing. `true` when ended. Before any of it, [`hold_unreleased`] decides
+/// `released` under the pick's row lock and holds an unreleased pick against a later release, so
+/// a refunded charge is never also released (D-2627).
 ///
 /// # Errors
-/// `Database`, `Job`; `MovedOn` when the pick is no longer `paid` (the move is rolled back).
+/// `Database`, `Job`; `MovedOn` for a free pick (FEE-052 never applies to a fee-free pick) or a
+/// pick or job that moved on mid-step (the end is rolled back).
 pub async fn fraud_warning(
     pool: &PgPool,
     (stripe, secret): (&impl PaymentsAdapter, &SecretString),
@@ -550,17 +556,63 @@ pub async fn fraud_warning(
     if released || refund_waiting(read_refund(pool, pick).await?).is_some() {
         return Ok(false);
     }
-    let mut conn = pool.acquire().await.map_err(|_| PicksError::Database)?;
-    let mut tx = conn.begin().await.map_err(|_| PicksError::Database)?;
-    let arrow = (JobStatus::PaymentPending, JobStatus::QuotesReady);
-    let moved = move_to(&mut tx, job, arrow, now, Actor::System).await;
-    if moved.map_err(|_| PicksError::Job)? == Guarded::MovedOn {
+    let mut tx = pool.begin().await.map_err(|_| PicksError::Database)?;
+    let ended = end_warned(&mut tx, (pick, job), now).await?;
+    tx.commit().await.map_err(|_| PicksError::Database)?;
+    Ok(ended)
+}
+
+/// FEE-052, JOB-014, D-2627, D-5888: re-reads pick `pick` under its row lock (the lock the release
+/// claim takes first), then in a separate statement its release row and its job, and ends it by
+/// the real state: a pick `awaiting_confirm` on `job` in Payment pending through
+/// `connect::end_pending` ([`PendingEnd::FraudRefunded`]), a `paid` one on `job` Connected through
+/// `connect::end_connected_fraud`. A free pick is `MovedOn`; a released, ended or other pick, or
+/// a job in any other status (a final one, or Awaiting confirm under PICK-048), is `false`.
+async fn end_warned(
+    tx: &mut PgConnection,
+    (pick, job): (Uuid, Uuid),
+    now: Timestamp,
+) -> Result<bool, PicksError> {
+    let row = sqlx::query!(
+        r#"SELECT job_id, business_id, status = $2 AS "free!",
+                  status = $3 AND ended_at IS NULL AS "waiting!",
+                  status = $4 AND ended_at IS NULL AS "paid!"
+           FROM picks.pick WHERE id = $1 FOR UPDATE"#,
+        pick,
+        PickStatus::Free.code(),
+        PickStatus::AwaitingConfirm.code(),
+        PickStatus::Paid.code(),
+    )
+    .fetch_optional(&mut *tx)
+    .await
+    .map_err(|_| PicksError::Database)?;
+    let Some(row) = row.filter(|r| r.job_id == job) else {
+        return Ok(false);
+    };
+    if row.free {
+        return Err(PicksError::MovedOn);
+    }
+    let released = sqlx::query_scalar!(
+        r#"SELECT EXISTS (SELECT 1 FROM picks.release WHERE pick_id = $1) AS "released!""#,
+        pick
+    )
+    .fetch_one(&mut *tx)
+    .await
+    .map_err(|_| PicksError::Database)?;
+    if released {
         return Ok(false);
     }
-    let paid = (pick, &[PickStatus::Paid][..]);
-    end_pick(&mut tx, paid, PickStatus::FraudRefunded, now).await?;
-    tx.commit().await.map_err(|_| PicksError::Database)?;
-    Ok(true)
+    let status = current(tx, job).await.map_err(|_| PicksError::Job)?.status;
+    if row.waiting && awaits_charge(status) {
+        let by = (Actor::System, now);
+        end_pending(tx, (pick, job), PendingEnd::FraudRefunded, by).await?;
+        return Ok(true);
+    }
+    if row.paid && connected(status) {
+        end_connected_fraud(tx, (pick, job, row.business_id), now).await?;
+        return Ok(true);
+    }
+    Ok(false)
 }
 
 /// FEE-052, PICK-022, PRIV-005, D-2627, D-3118: one short transaction that locks pick `pick`'s row
