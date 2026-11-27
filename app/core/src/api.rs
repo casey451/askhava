@@ -37,7 +37,8 @@ pub use crate::rate_limit::{
     PRUNE_KIND as RATE_LIMIT_PRUNE_KIND, RateDecision, RateLimitError, hit as rate_limit_hit,
     hit_on as rate_limit_hit_on, ip_bucket, prune as prune_rate_limits,
     prune_batch as prune_rate_limit_batch, prune_cutoff as rate_limit_prune_cutoff,
-    run_prune_at as run_rate_limit_prune_at, schedule_prune as schedule_rate_limit_prune,
+    run_prune_at as run_rate_limit_prune_at, run_prune_on as run_rate_limit_prune_on,
+    schedule_prune as schedule_rate_limit_prune,
 };
 pub use crate::settings::{
     DEFAULT_GOLDEN_TARGET_PERCENT, DEFAULT_SPOT_CHECK_EVERY_DAYS, Environment, OwnerFlagLimits,

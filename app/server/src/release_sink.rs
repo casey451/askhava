@@ -53,7 +53,7 @@ use askhava_payments::api::{
     late_success, reclear_release,
 };
 use askhava_picks::api::{
-    Released, Settled, awaiting_address, contact_choice, is_released, release, settle,
+    Released, Settled, awaiting_address, contact_choice, is_released, release, settle_at,
 };
 use askhava_privacy::api::{ReleaseBasis, Vault};
 use jiff::Timestamp;
@@ -164,7 +164,7 @@ impl PickReleaser {
             .begin()
             .await
             .map_err(|_| ReleaseError::Database)?;
-        let settled = settle(&mut tx, &cleared)
+        let settled = settle_at(&mut tx, &cleared, at)
             .await
             .map_err(|_| ReleaseError::Database)?;
         if job_went_final(&mut tx, settled, cleared.pick()).await? {
@@ -391,7 +391,7 @@ async fn rerelease(
         Err(ReleaseError::Database) => return Err(ReleaseError::Database),
         Err(_) => return Ok(Released::MovedOn),
     };
-    let settled = settle(&mut tx, &cleared)
+    let settled = settle_at(&mut tx, &cleared, at)
         .await
         .map_err(|_| ReleaseError::Database)?;
     if job_went_final(&mut tx, settled, pick).await? {
@@ -467,6 +467,24 @@ pub fn stripe_webhook<I>(
 where
     I: IntoIterator<Item = (String, String)>,
 {
+    stripe_webhook_with_clock(settings, pool, pairs, Arc::new(SystemClock))
+}
+
+/// [`stripe_webhook`] on `clock` (D-5836): the web binary passes the test-control clock, so the
+/// event cap and signature window read its `real_now()` and the [`PickReleaser`]'s settle,
+/// release and Confirm its `now()`.
+///
+/// # Errors
+/// As [`stripe_webhook`].
+pub fn stripe_webhook_with_clock<I>(
+    settings: &Settings,
+    pool: PgPool,
+    pairs: I,
+    clock: Arc<dyn Clock>,
+) -> io::Result<Option<StripeHooks>>
+where
+    I: IntoIterator<Item = (String, String)>,
+{
     let pairs: Vec<(String, String)> = pairs.into_iter().collect();
     let get = |key: &str| {
         pairs
@@ -489,7 +507,6 @@ where
         .ok_or_else(|| missing("VAULT_KEY and VAULT_INDEX_KEY"))?;
     let twilio = TwilioConfig::from_settings(settings, pairs.clone()).map_err(io::Error::other)?;
     let client_ip = ClientIpPolicy::from_pairs(pairs).map_err(io::Error::other)?;
-    let clock: Arc<dyn Clock> = Arc::new(SystemClock);
     let sink = PickReleaser::new(
         pool.clone(),
         vault,

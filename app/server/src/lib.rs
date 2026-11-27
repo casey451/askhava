@@ -605,7 +605,7 @@ fn link_and_site_pages(
     pool: &PgPool,
     statics: &StaticRoot,
     site: SiteParts,
-    webhooks: Option<&inbound_text::Webhooks>,
+    (webhooks, clock): (Option<&inbound_text::Webhooks>, Arc<dyn Clock>),
 ) -> Router {
     let intake = webhooks.map_or_else(IntakeSettings::default, |h| h.intake);
     let SiteParts {
@@ -615,15 +615,14 @@ fn link_and_site_pages(
         link_codes,
         quote_keys: _,
     } = site;
-    let clock: Arc<dyn Clock> = Arc::new(SystemClock);
     let not_found = askhava_site::api::not_found(pool.clone());
     let chat = askhava_site::api::chat_routes(
         pool.clone(),
         (environment, intake),
         (chat_codes::scrubbed, chat),
     );
-    feedback_routes(pool.clone(), Arc::new(SystemClock))
-        .merge(checkin::routes(pool.clone()))
+    feedback_routes(pool.clone(), Arc::clone(&clock))
+        .merge(checkin::routes_with(pool.clone(), Arc::clone(&clock)))
         .merge(action_links::routes_with(pool.clone(), clock, link_codes))
         .merge(static_files::router(statics))
         .merge(askhava_site::api::site_routes())
@@ -689,18 +688,47 @@ fn link_and_site_pages(
 /// runs under the whole-request time limit (`request_timeout`, 503 with `Retry-After`, D-1870)
 /// and, innermost, the panic layer (500 naming no panic message, D-2208).
 pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterParts>) -> Router {
+    let clock: Arc<dyn Clock> = Arc::new(SystemClock);
+    composed(pool, test_control, parts.into(), clock)
+        .layer(axum::middleware::from_fn(security_headers))
+}
+
+/// [`build_router`] with the homeowner and business time of the quote page, the pick flow, the
+/// feedback, check-in and action-link pages on `clock` (D-5836): the web binary passes its
+/// test-control clock, the one it gives [`webhooks_with_clock`] and
+/// [`release_sink::stripe_webhook_with_clock`], so an e2e clock advance moves them all. The business
+/// portal, owner pages, help, digest, job page, sign-in, sign-up and the refusal log stay on the
+/// system clock.
+pub fn build_router_with_clock(
+    pool: PgPool,
+    test_control: Router,
+    parts: impl Into<RouterParts>,
+    clock: Arc<dyn Clock>,
+) -> Router {
+    composed(pool, test_control, parts.into(), clock)
+        .layer(axum::middleware::from_fn(security_headers))
+}
+
+/// Every route of [`build_router`] on `clock`, under every layer but the outermost SEC-012
+/// headers, which both public constructors add last.
+fn composed(
+    pool: PgPool,
+    test_control: Router,
+    parts: RouterParts,
+    clock: Arc<dyn Clock>,
+) -> Router {
     let RouterParts {
         hooks,
         limit,
         statics,
         business,
         mut site,
-    } = parts.into();
+    } = parts;
     let (webhooks, voice, pick_keys, stripe) = hooks;
     let business = business_pages(business, pool.clone(), (&webhooks, &voice, &stripe));
-    let quote_page = quote_routes(&pool, &mut site);
-    let pick_flow = pick_flow_routes(pool.clone(), Arc::new(SystemClock), pick_keys);
-    let pages = link_and_site_pages(&pool, &statics, site, webhooks.as_deref());
+    let quote_page = quote_routes(&pool, &mut site, Arc::clone(&clock));
+    let pick_flow = pick_flow_routes(pool.clone(), Arc::clone(&clock), pick_keys);
+    let pages = link_and_site_pages(&pool, &statics, site, (webhooks.as_deref(), clock));
     // Each 403 of these four is a source or signature refusal, recorded as a capped
     // `webhook_signature_failed` security event (SEC-048, SEC-016, T319).
     let refusals = webhook_refusals::RefusalLog::new(pool.clone(), Arc::new(SystemClock));
@@ -740,7 +768,6 @@ pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterP
         .layer(TraceLayer::new_for_http().make_span_with(request_span::<Body>))
         .layer(PropagateRequestIdLayer::x_request_id())
         .layer(SetRequestIdLayer::x_request_id(MakeRequestUuid))
-        .layer(axum::middleware::from_fn(security_headers))
 }
 
 /// The Confirm route's settings part from `settings` and `pairs` (T261, D-3813, D-3717): the
@@ -863,8 +890,8 @@ where
 }
 
 /// The quote page's routes with the parts' update keys, taken out of `site` (T729, TXT-018).
-fn quote_routes(pool: &PgPool, site: &mut SiteParts) -> Router {
-    quote_page_routes_with(pool.clone(), Arc::new(SystemClock), site.quote_keys.take())
+fn quote_routes(pool: &PgPool, site: &mut SiteParts, clock: Arc<dyn Clock>) -> Router {
+    quote_page_routes_with(pool.clone(), clock, site.quote_keys.take())
 }
 
 /// The quote page's update keys (T729, TXT-018, D-5340): the vault from [`vault_from`] and
@@ -964,6 +991,25 @@ pub fn webhooks<I>(
 where
     I: IntoIterator<Item = (String, String)>,
 {
+    webhooks_with_clock(settings, pool, pairs, Arc::new(SystemClock))
+}
+
+/// [`webhooks`] on `clock` (D-5836): the inbound-text, voice, voice-status and call-status routes
+/// share the returned state, so the web binary's test-control clock times them all; the
+/// signature window reads its `real_now()`.
+///
+/// # Errors
+///
+/// As [`webhooks`].
+pub fn webhooks_with_clock<I>(
+    settings: &Settings,
+    pool: PgPool,
+    pairs: I,
+    clock: Arc<dyn Clock>,
+) -> io::Result<Option<Arc<inbound_text::Webhooks>>>
+where
+    I: IntoIterator<Item = (String, String)>,
+{
     let Some(base) = settings.public_base_url() else {
         return match settings.environment() {
             Environment::Dev | Environment::Ci => Ok(None),
@@ -989,7 +1035,7 @@ where
     let vault = Vault::new(&seal, &index, settings.database_url()).map_err(io::Error::other)?;
     Ok(Some(Arc::new(inbound_text::Webhooks {
         pool,
-        clock: Arc::new(SystemClock),
+        clock,
         public_base: base.to_owned(),
         auth_token: twilio.auth_token().clone(),
         id_secret,
@@ -2978,7 +3024,8 @@ fn register_daily_purges(registry: &mut Registry, clock: &Arc<dyn Clock>) {
 
 /// SEC-004, SEC-014, SEC-040, D-2207, D-2306 (T436): `portals`' daily sweep of sessions expired
 /// more than a day earlier and `core`'s daily prune of rate-limit windows older than the longest
-/// window plus a day, both at `clock`'s now; each queues the next day's run first, and
+/// window plus a day, each cut off at `clock`'s `real_now()` and queueing the next day's run
+/// first at its `now()` (D-5836); and
 /// `schedule_start` in `worker.rs` seeds both. OPS-046, D-3883 (T531): `messaging`'s daily
 /// deferral check the same way; CON-024, D-3881 (T107): its weekly opt-out rate check.
 fn register_daily_sweeps(registry: &mut Registry, clock: &Arc<dyn Clock>) {
@@ -2995,12 +3042,18 @@ fn register_daily_sweeps(registry: &mut Registry, clock: &Arc<dyn Clock>) {
     let at = Arc::clone(clock);
     registry.register(
         askhava_portals::api::SESSION_SWEEP_KIND,
-        move |pool, task| askhava_portals::api::run_session_sweep_at(pool, task, at.now()),
+        move |pool, task| {
+            let times = (at.now(), at.real_now());
+            askhava_portals::api::run_session_sweep_on(pool, task, times)
+        },
     );
     let at = Arc::clone(clock);
     registry.register(
         askhava_core::api::RATE_LIMIT_PRUNE_KIND,
-        move |pool, task| askhava_core::api::run_rate_limit_prune_at(pool, task, at.now()),
+        move |pool, task| {
+            let times = (at.now(), at.real_now());
+            askhava_core::api::run_rate_limit_prune_on(pool, task, times)
+        },
     );
 }
 

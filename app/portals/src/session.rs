@@ -273,17 +273,33 @@ pub async fn schedule_session_sweep(
 /// A fixed [`HandlerError`] when a database call fails.
 pub async fn run_session_sweep_at(
     pool: PgPool,
-    _task: Claimed,
+    task: Claimed,
     now: Timestamp,
+) -> Result<(), HandlerError> {
+    run_session_sweep_on(pool, task, (now, now)).await
+}
+
+/// SEC-004, D-2207, D-5836: [`run_session_sweep_at`] with the next day's sweep scheduled from
+/// `schedule_now` (the worker's clock, so the daily dedupe chain stays on it) and the expiry
+/// cut-off a day before `cutoff_now` (the clock's `real_now()`, the time sessions are issued and
+/// read at), so a test-control advance never deletes a session still live in real time.
+///
+/// # Errors
+///
+/// A fixed [`HandlerError`] when a database call fails.
+pub async fn run_session_sweep_on(
+    pool: PgPool,
+    _task: Claimed,
+    (schedule_now, cutoff_now): (Timestamp, Timestamp),
 ) -> Result<(), HandlerError> {
     let failed = HandlerError("session sweep database call failed");
     {
         let mut conn = pool.acquire().await.map_err(|_| failed)?;
-        schedule_session_sweep(&mut conn, now)
+        schedule_session_sweep(&mut conn, schedule_now)
             .await
             .map_err(|_| failed)?;
     }
-    let before = now - DAY;
+    let before = cutoff_now - DAY;
     let full = u64::try_from(SWEEP_BATCH).unwrap_or(u64::MAX);
     loop {
         let deleted = sweep_batch(&pool, before, SWEEP_BATCH)

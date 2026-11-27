@@ -292,8 +292,8 @@ pub use crate::security::{
 pub use crate::session::{
     PRE_SESSION_COOKIE, PortalsError, Realm, SESSION_COOKIE, SWEEP_BATCH as SESSION_SWEEP_BATCH,
     SWEEP_KIND as SESSION_SWEEP_KIND, Session, csrf_matches, csrf_token, current_session,
-    ensure_pre_session, run_session_sweep_at, schedule_session_sweep, start_session,
-    sweep_batch as session_sweep_batch,
+    ensure_pre_session, run_session_sweep_at, run_session_sweep_on, schedule_session_sweep,
+    start_session, sweep_batch as session_sweep_batch,
 };
 pub use crate::step_up_page::{
     BUSINESS_STEP_UP_CHECK_ROUTE, BUSINESS_STEP_UP_ROUTE, BUSINESS_STEP_UP_SEND_ROUTE,

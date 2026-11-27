@@ -2,7 +2,8 @@
 //!
 //! Installs the TLS provider, refuses to start on bad settings (SEC-002),
 //! starts the JSON log, builds the router over the app pool (with the test-control routes only in a
-//! `test-control` build, SEC-035) (each request queues its request-log
+//! `test-control` build, SEC-035; its clock, taken once, times the webhooks, the Stripe release and
+//! the homeowner and action pages, D-5836) (each request queues its request-log
 //! line, OPS-011; Twilio's inbound-text and status webhooks once `ASKHAVA_PUBLIC_BASE_URL` is
 //! set, SEC-016, T241; the page pick's code keys once the vault keys are set, D-1516; Stripe's
 //! webhook and the release once `ASKHAVA_STRIPE_WEBHOOK_SECRET` is set, T254; every request under
@@ -24,6 +25,7 @@
 use std::future::IntoFuture;
 use std::io;
 use std::net::Ipv4Addr;
+use std::sync::Arc;
 
 use askhava_core::api::TestControl;
 use askhava_server::help_forms::help_mail;
@@ -63,17 +65,14 @@ async fn main() -> io::Result<()> {
     askhava_server::catalog_start::store_catalog(&pool).await?;
     let control =
         TestControl::from_settings(&settings, std::env::vars()).map_err(io::Error::other)?;
-    let webhooks = askhava_server::webhooks(&settings, pool.clone(), std::env::vars())?;
-    let voice = askhava_server::voice_hooks(&settings, webhooks.as_ref(), std::env::vars())?;
-    let pick_keys = askhava_server::pick_code_keys(&settings, std::env::vars())?;
-    let stripe =
-        askhava_server::release_sink::stripe_webhook(&settings, pool.clone(), std::env::vars())?;
+    // One clock for business time, as the worker's (D-5836): the system clock in the release build.
+    let clock = control.clock();
+    let hooks = served_hooks(&settings, &pool, &clock)?;
     let limit = askhava_server::request_timeout::RequestTimeout::from_settings(&settings);
-    let hooks = (webhooks, voice, pick_keys, stripe);
     let statics = askhava_server::static_files::StaticRoot::from_settings(&settings);
     let parts = business_parts(&settings, &pool, vault, (hooks, limit, statics).into())?;
     let watch = askhava_server::liveness::watch_web(pool.clone(), liveness_limit()?);
-    let app = askhava_server::build_router(pool, control.router(), parts);
+    let app = askhava_server::build_router_with_clock(pool, control.router(), parts, clock);
     let serve = axum::serve(
         listener,
         app.into_make_service_with_connect_info::<std::net::SocketAddr>(),
@@ -83,6 +82,30 @@ async fn main() -> io::Result<()> {
         served = serve.into_future() => served,
         failed = watch => Err(failed),
     }
+}
+
+/// The webhook, voice, pick-code and Stripe parts over `pool`, the webhooks and the Stripe release
+/// on `clock`, the one the router gets (D-5836).
+fn served_hooks(
+    settings: &askhava_core::api::Settings,
+    pool: &sqlx::PgPool,
+    clock: &Arc<dyn askhava_core::api::Clock>,
+) -> io::Result<askhava_server::Hooks> {
+    let webhooks = askhava_server::webhooks_with_clock(
+        settings,
+        pool.clone(),
+        std::env::vars(),
+        Arc::clone(clock),
+    )?;
+    let voice = askhava_server::voice_hooks(settings, webhooks.as_ref(), std::env::vars())?;
+    let pick_keys = askhava_server::pick_code_keys(settings, std::env::vars())?;
+    let stripe = askhava_server::release_sink::stripe_webhook_with_clock(
+        settings,
+        pool.clone(),
+        std::env::vars(),
+        Arc::clone(clock),
+    )?;
+    Ok((webhooks, voice, pick_keys, stripe))
 }
 
 /// `server rotate-keys` or `server retire-index-version <version>` over one app-role connection,
