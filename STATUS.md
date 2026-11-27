@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-27T04:07:48Z by runner 5883cbf7c46e (actions).
+Updated 2026-11-27T04:08:31Z by runner 5883cbf7c46e (actions).
 
-**Building: T522 in progress since 02:23Z; 681 of 799 done; week 11% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Building: T849 in progress since 03:25Z; 681 of 799 done; week 11% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 681 of 799 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T522 claimed 02:23Z, lease until 05:23Z; lane 2: T849 claimed 03:25Z, lease until 06:25Z; lane 3: T612 claimed 03:44Z, lease until 06:44Z; lane 4: T518 claimed 02:04Z, lease until 05:04Z; lane 5: T843 claimed 03:33Z, lease until 06:33Z
+- **Lane:** lane 2: T849 claimed 03:25Z, lease until 06:25Z; lane 3: T612 claimed 03:44Z, lease until 06:44Z; lane 4: T518 claimed 02:04Z, lease until 05:04Z; lane 5: T843 claimed 03:33Z, lease until 06:33Z
 - **Week:** 11% used, 167.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:45Z, 22 min before this update
+- **Last run:** 03:45Z, 23 min before this update
 - **Keeper:** last ran 03:38Z, next wake 03:58Z
 
 ## Needs attention
@@ -42,6 +42,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T522 | server and portals: the business text-consent box is served  | MERGE_PENDING | 1 | 104 min | 04:07Z |  |
 | T612 | harness: the WEB-029 and WEB-030 runtime checks on every sit | QUEUED | 2 | 96 min | 03:36Z | Reviewer on head 700f50e1fce2ee8fc4392587b89d7a82a956f72f still ended REVIEW-VERDICT: FINDINGS after the fix round: / 1. |
 | T799 | Templates and tests (harness): copy review fixes (refund att | done | 2 | 31 min | 02:52Z | PLAN GAP: contradiction: D-5401 requires es.json text "dentro de 72 horas de recibir los datos del cliente" (5 keys), bu |
 | T856 | intake: a request may be texted only with an `sms` consent r | BLOCKED | 1 | 110 min | 02:15Z | PLAN GAP: outside ownership: app/intake/src/replies.rs:367 (and replies.rs:204). The chat raw path web_chat::raw_turn -> |
@@ -107,11 +108,11 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T522 (lease until 2026-11-27T05:23:13Z)
+- nothing
 - lane 2: T849 (lease until 2026-11-27T06:25:59Z)
 - lane 3: T612 (lease until 2026-11-27T06:44:20Z)
 - lane 4: T518 (lease until 2026-11-27T05:04:26Z)
 - lane 5: T843 (lease until 2026-11-27T06:33:11Z)
 
 ## Last usage reading
-- {"task": "T612", "at": "2026-11-27T03:36:43Z", "cache_read_input_tokens": 9621577, "cache_creation_input_tokens": 275101, "output_tokens": 80643, "input_tokens": 238}
+- {"task": "T522", "at": "2026-11-27T04:07:46Z", "output_tokens": 62522, "input_tokens": 217, "cache_creation_input_tokens": 233834, "cache_read_input_tokens": 12043377}
