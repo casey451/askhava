@@ -110,8 +110,8 @@ pub use crate::models::{EmailError, EmailLog, InboxError, OutboxError};
 pub use crate::open_cards_digest::{DigestFacts, MIN_LEFT, digest_goes, listable, slot_due};
 pub use crate::optout::{
     FollowUp, InboundText, ListingKey, OPTOUT_FOLLOWUP_KIND, Outcome, RevokeChannel, listed_by,
-    listing_key, on_inbound_text, queue_optout_followup, run_optout_followup, send_checked,
-    still_unlisted, suppress, suppress_indexed, suppress_logged,
+    listing_key, on_inbound_text, on_received_text, queue_optout_followup, run_optout_followup,
+    send_checked, still_unlisted, suppress, suppress_indexed, suppress_logged,
 };
 pub use crate::optout_email::{
     OPTOUT_CONFIRMATION_EMAIL, OPTOUT_WROTE_AGAIN_EMAIL, OptOutEmailSender, WROTE_AGAIN_ACTION,

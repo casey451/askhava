@@ -15,7 +15,7 @@
 //! repeat stops here), the sender's lookup (blind index only), `privacy::api::read_inbound_for` (a
 //! homeowner's text, scrubbed with her vault name and the names she stated before, AI-003, AI-020,
 //! D-1752) or `read_inbound` (a business phone's, empty context; the raw `Body` goes no further),
-//! `messaging::api::on_inbound_text` (an opt-out stops here, CON-008; a homeowner's read that
+//! `messaging::api::on_received_text` (an opt-out stops here, CON-008; a homeowner's read that
 //! failed on a vault value other than a database or audit error falls back to the empty-context
 //! read for this and the HELP step and then stops before `intake`, D-2088),
 //! `messaging::api::reply_to_help` (HELP, INFO, AYUDA: the reply is queued, also to a listed
@@ -59,7 +59,7 @@
 //! back from Twilio and runs [`rerun`]: the same steps after the inbox insert. A listed sender's
 //! failure (`Halt::Settled`) and a `BadWebhook` delivery are not retried. Each step is safe to run
 //! again: the sender lookup and store are keyed by phone, the reads write audit rows only,
-//! `on_inbound_text` is retried only when it listed nothing (an `Open` or `Resubscribed` repeat
+//! `on_received_text` is retried only when it listed nothing (an `Open` or `Resubscribed` repeat
 //! writes nothing), the HELP reply, the business auto reply, the paused emergency claim and the
 //! safety call are keyed per inbox row, and SEC-014's count and `receive_raw_reply` share one
 //! savepoint, so a failed `receive_raw_reply` keeps no count. A 911-list first text that opened a
@@ -98,7 +98,7 @@ use askhava_messaging::api::{
     APP_OPT_OUT_WORDS, Detected, EmergencyFacts, FollowUp, HelpSettings, InboundText, InboxError,
     Language, ModeStateError, NewText, OutboxError, Outcome, PROVIDER_OPT_OUT_WORDS,
     ProviderKeyword, RESUBSCRIBE_WORDS, Relation, SendingNumber, detect_opt_out, emergency_plan,
-    enqueue, keyword, listed_by, load_lines, on_inbound_text, queue_optout_followup,
+    enqueue, keyword, listed_by, load_lines, on_received_text, queue_optout_followup,
     queue_paused_safety, raise_emergency, receive_inbound, receive_status, render, reply_to_help,
     sender_line, spanish_switch,
 };
@@ -976,7 +976,7 @@ async fn screen(
     (to, now): (&str, Timestamp),
 ) -> Step<bool> {
     let keys = (h.id_secret, h.vault);
-    let outcome = on_inbound_text(db, keys, msg, now)
+    let outcome = on_received_text(db, keys, msg, now)
         .await
         .map_err(outbox_halt)?;
     let listed = match outcome {
