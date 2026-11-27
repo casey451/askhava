@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-27T03:26:12Z by runner 2e19f8cd4466 (actions).
+Updated 2026-11-27T03:31:04Z by runner a546a2d2ec95 (actions).
 
-**Building: T522 in progress since 02:23Z; 680 of 799 done; week 10% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Building: T522 in progress since 02:23Z; 681 of 799 done; week 10% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 680 of 799 build tasks (owner gates not counted)
+- **Tasks done:** 681 of 799 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T522 claimed 02:23Z, lease until 05:23Z; lane 2: T849 claimed 03:25Z, lease until 06:25Z; lane 3: T612 claimed 02:00Z, lease until 05:00Z; lane 4: T518 claimed 02:04Z, lease until 05:04Z
 - **Week:** 10% used, 170.3M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:21Z, 4 min before this update
+- **Last run:** 03:26Z, 4 min before this update
 - **Keeper:** last ran 03:21Z, next wake 03:41Z
 
 ## Needs attention
@@ -42,7 +42,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T799 | Templates and tests (harness): copy review fixes (refund att | MERGE_PENDING | 2 | 31 min | 02:52Z | PLAN GAP: contradiction: D-5401 requires es.json text "dentro de 72 horas de recibir los datos del cliente" (5 keys), bu |
+| T799 | Templates and tests (harness): copy review fixes (refund att | done | 2 | 31 min | 02:52Z | PLAN GAP: contradiction: D-5401 requires es.json text "dentro de 72 horas de recibir los datos del cliente" (5 keys), bu |
 | T856 | intake: a request may be texted only with an `sms` consent r | BLOCKED | 1 | 110 min | 02:15Z | PLAN GAP: outside ownership: app/intake/src/replies.rs:367 (and replies.rs:204). The chat raw path web_chat::raw_turn -> |
 | T861 | e2e (harness): J1 reads a sent text from the fake carrier on | done | 1 | 42 min | 01:13Z |  |
 | T783 | intake: a picture text's media is deleted at the provider af | done | 1 | 2 h 19 min | 00:37Z |  |
@@ -63,7 +63,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 ## Progress (requirements verified)
 
 **Requirements verified:** 467 of 735 (63.5%) · partial 260 · unstarted 8
-**Tasks merged (throughput only):** 680 of 799
+**Tasks merged (throughput only):** 681 of 799
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -99,7 +99,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 323 of 371 done
+- stage 5: 324 of 371 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
