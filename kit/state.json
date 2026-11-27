@@ -124724,12 +124724,12 @@
      }
     }
    ],
-   "reviewed_sha": "41451b970cc10b578fa6ffe8f7d63f8539ee16ee",
+   "reviewed_sha": "f9b7886e3faa7293cb0f98fb037e62c90ad93904",
    "review_lease": {
     "task": "T867",
-    "session": "actions-45972393407",
-    "expires": "2026-11-27T13:20:15Z",
-    "lane": "5"
+    "session": "actions-45987936679",
+    "expires": "2026-11-27T14:15:35Z",
+    "lane": "3"
    },
    "branch": "claude/task/T867-fraud-end-real-states",
    "auto_merge": {
@@ -124737,22 +124737,6 @@
     "why": "auto-merge on #1502 (gh pr merge)",
     "head": "a3b9b1faa78be2e1b5673bfb854856e41a2c86f6"
    },
-   "merge_turn_since": "2026-11-27T10:46:06Z",
-   "update_merges": [
-    {
-     "from": "a3b9b1faa78be2e1b5673bfb854856e41a2c86f6",
-     "to": "41451b970cc10b578fa6ffe8f7d63f8539ee16ee",
-     "main": "f3fc11156d59ca60d298fd27653337bf8f454749",
-     "how": "runner",
-     "checks": {
-      "Ally": "success",
-      "Twin": "success"
-     },
-     "at": "2026-11-27T10:46:06Z"
-    }
-   ],
-   "update_waiting_since": null,
-   "update_push_failures": null,
    "last_failure": "Ci: failure; Coverage: failure\nCoverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered floor (D-694)\napp/picks/src/settle.rs: 100.0 (floor 95.0)\napp/picks/src/unreachable_refund.rs: 86.36363636363636 (floor 87.0)\napp/picks/src/unreachable_steps.rs: 88.0 (floor 86.0)\napp/portals/src/business_left.rs: 66.66666666666667 (floor 64.0)\napp/portals/src/confirm_pay.rs: 75.0 (floor 70.0)\napp/portals/src/confirm_waiver.rs: 50.0 (floor 48.0)\napp/portals/src/data_download.rs: 83.33333333333333 (floor 81.0)\napp/portals/src/job_release.rs: 53.333333333333336 (floor 51.0)\napp/quotes/src/job_text.rs: 100.0 (floor 95.0)\napp/server/src/business_contacts.rs: 70.0 (floor 68.0)\napp/server/src/inbound_text.rs: 40.17857142857143 (floor 25.0)\napp/server/src/offdb_stream.rs: 35.714285714285715 (floor 21.0)\napp/server/src/release_sink.rs: 86.66666666666667 (floor 78.0)\nFAIL: app/picks/src/unreachable_refund.rs 86.36 is below the floor 87.0\n##[error]Process completed with exit code 1.\nCi failed at step: All five jobs passed\nChecks: success, Lint and slow tests: success, Python: success, Coverage: failure, E2e: success\n##[error]Process completed with exit code 1.",
    "wip_claim": {
     "attempt": 2,
@@ -124760,7 +124744,19 @@
    },
    "runner_closed_prs": [
     1502
-   ]
+   ],
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "0855538a4ae46cbd488447a837671855ef281138",
+     "to": "f9b7886e3faa7293cb0f98fb037e62c90ad93904",
+     "main": "703f1b55401fe152096746097375aa07db11f6ca",
+     "how": "hand-in",
+     "at": "2026-11-27T12:58:04Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T868",
@@ -133546,7 +133542,7 @@
    }
   }
  },
- "updated_at": "2026-11-27T12:57:16Z",
+ "updated_at": "2026-11-27T12:58:04Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -133644,7 +133640,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "703f1b55401fe152096746097375aa07db11f6ca",
+ "runner_sha": "0855538a4ae46cbd488447a837671855ef281138",
  "starter": "actions",
  "smoke_runs": [
   {
