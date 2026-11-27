@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-27T01:50:41Z by runner 404e829ae740 (actions).
+Updated 2026-11-27T02:00:19Z by runner 404e829ae740 (actions).
 
-**Building: T856 in progress since 00:24Z; 678 of 799 done; week 9% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Building: T856 in progress since 00:24Z; 679 of 799 done; week 9% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 678 of 799 build tasks (owner gates not counted)
+- **Tasks done:** 679 of 799 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T856 claimed 00:24Z, lease until 03:24Z; lane 2: T849 claimed 01:34Z, lease until 04:34Z
 - **Week:** 9% used, 176.1M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:50Z, 0 min before this update
+- **Last run:** 01:51Z, 9 min before this update
 - **Keeper:** last ran 01:50Z, next wake 02:10Z
 
 ## Needs attention
@@ -41,7 +41,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T861 | e2e (harness): J1 reads a sent text from the fake carrier on | MERGE_PENDING | 1 | 42 min | 01:13Z |  |
-| T783 | intake: a picture text's media is deleted at the provider af | MERGE_PENDING | 1 | 2 h 19 min | 00:37Z |  |
+| T783 | intake: a picture text's media is deleted at the provider af | done | 1 | 2 h 19 min | 00:37Z |  |
 | T309 | server and portals: the business Get help form and the site  | done | 1 | 2 h 8 min | 00:28Z |  |
 | T854 | portals and action links: sessions and admissions on `real_n | done | 1 | 2 h 5 min | 23:58Z |  |
 | T744 | picks: a job that reaches a final status ends its pick await | done | 1 | 98 min | 23:54Z |  |
@@ -59,7 +59,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 ## Progress (requirements verified)
 
 **Requirements verified:** 467 of 735 (63.5%) · partial 260 · unstarted 8
-**Tasks merged (throughput only):** 678 of 799
+**Tasks merged (throughput only):** 679 of 799
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -95,7 +95,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 321 of 371 done
+- stage 5: 322 of 371 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
