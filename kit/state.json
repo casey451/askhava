@@ -109261,8 +109261,8 @@
     "T751",
     "T813"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 2,
+   "status": "BLOCKED",
+   "attempts": 3,
    "slug": "business-leave-served",
    "type": "build",
    "stage": "5",
@@ -109275,7 +109275,7 @@
     5932,
     5933
    ],
-   "last_failure": "Ally: failure; E2e: failure\nAlly failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing)\n      79 |       expect((await axeScan(page, [\"color-contrast\", \"link-in-text-block\"])).violations).toEqual([]);\n    > 80 |       expect(await page.evaluate(edgeProblems)).toEqual([]);\n         |                                                 ^\n      81 |     });\n      82 |   }\n      83 | }\n        at /home/runner/work/askhava/askhava/tests/a11y/targets_contrast.spec.ts:80:49\n    Error Context: test-results/a11y/targets_contrast-A11Y-006--2c0d5-er-a-15-day-pause-at-1280px-main/error-context.md\n  3 failed\n    [main] \u203a tests/a11y/targets_contrast.spec.ts:76:5 \u203a A11Y-006 A11Y-007: targets and contrast on /b/pause-reason (pause question after a 15-day pause) at 320px \n    [main] \u203a tests/a11y/targets_contrast.spec.ts:76:5 \u203a A11Y-006 A11Y-007: targets and contrast on /b/pause-reason (pause question after a 15-day pause) at 768px \n    [main] \u203a tests/a11y/targets_contrast.spec.ts:76:5 \u203a A11Y-006 A11Y-007: targets and contrast on /b/pause-reason (pause question after a 15-day pause) at 1280px \n  1 did not run\n  1609 passed (12.1m)\n##[error]Process completed with exit code 1.\nE2e failed at step: The journeys (npx playwright test tests/e2e)\n##[error]  1) [main] \u203a tests/e2e/j1_homeowner.spec.ts:302:1 \u203a J1 step 6 PICK-016 PICK-013 PICK-017 PICK-018: review, Go back, pick again, a wrong code then the right one, masked call, focus on the res",
+   "last_failure": "PLAN GAP: app/portals/templates/business_leave.html:25 owned by T228 and T410, not T734. Smallest plan change: let T734 own that template for one line, <link rel=\"stylesheet\" href=\"/static/portals/forms.css\"> at the top of {% block main %}, as get_help.html:9 and notice_settings.html:8 carry.\nEvidence: the six reason radios on /b/leave and /b/pause-reason have no visible edge without forms.css (FORMS_CSS, app/portals/src/feedback.rs:73), so the A11Y-007 edge check (tests/a11y/targets_contrast.spec.ts:80) fails at 320, 768 and 1280 px. The reviewer confirmed from kit/tasks.json that T734 does not own the template, and no file T734 owns can fix it cleanly.\nThe J1 step 6 e2e failure looks unrelated (a flake or the D-5955 clock issue): J1 and business_leave passed together locally.",
    "history": [
     {
      "attempt": 1,
@@ -109359,6 +109359,29 @@
        "turns": 56
       }
      }
+    },
+    {
+     "attempt": 3,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 114,
+     "head_sha": "51920bfa82677512ab832d4bbcfac2958348175d",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-27T12:43:07Z",
+     "ended_at": "2026-11-27T13:10:00Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 4720952,
+       "turns": 67
+      },
+      "reviewer": {
+       "tokens": 209947,
+       "turns": 8
+      }
+     }
     }
    ],
    "reviewed_sha": "f795e4bf0098ddc0bc5b685ae3aef2bdb78abbc1",
@@ -109385,13 +109408,10 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "wip_claim": {
-    "attempt": 3,
-    "remote_sha": "f795e4bf0098ddc0bc5b685ae3aef2bdb78abbc1"
-   },
    "runner_closed_prs": [
     1504
-   ]
+   ],
+   "reason": "plan gap reported: PLAN GAP: app/portals/templates/business_leave.html:25 owned by T228 and T410, not T734. Smallest plan change: let T734 own that template for one line, <link rel=\"stylesheet\" href=\"/static/portals/forms.css\"> at the top of {% block main %}, as get_help.html:9 and notice_settings.html:8 carry.\nEvidence: the six reason radios on /b/leave and /b/pause-reason have no visible edge without forms.css (FORMS_CSS, app/portals/src/feedback.rs:73), so the A11Y-007 edge check (tests/a11y/targets_contrast.spec.ts:80) fails at 320, 768 and 1280 px. The reviewer confirmed from kit/tasks.json that T734 does n; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T734 --plan-fix D-### --reason \"...\"` (D-2859)"
   },
   {
    "id": "T735",
@@ -125076,12 +125096,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T867",
-   "at": "2026-11-27T12:57:25Z",
-   "cache_read_input_tokens": 2482119,
-   "output_tokens": 18225,
-   "input_tokens": 97,
-   "cache_creation_input_tokens": 121796
+   "task": "T734",
+   "at": "2026-11-27T13:10:00Z",
+   "cache_creation_input_tokens": 116509,
+   "input_tokens": 144,
+   "cache_read_input_tokens": 4789958,
+   "output_tokens": 24288
   },
   "source": "session_reading 2026-11-27T12:12:52Z (week)",
   "by_task": {
@@ -133475,14 +133495,14 @@
     "estimated_bytes": 675247,
     "estimated_tokens": 1936674,
     "usage_counting": "message_id",
-    "cache_creation_input_tokens": 425083,
-    "cache_read_input_tokens": 38766711,
-    "input_tokens": 504,
-    "output_tokens": 130409,
-    "worker_tokens": 36110357,
-    "worker_turns": 203,
-    "reviewer_tokens": 3212350,
-    "reviewer_turns": 56,
+    "cache_creation_input_tokens": 541592,
+    "cache_read_input_tokens": 43556669,
+    "input_tokens": 648,
+    "output_tokens": 154697,
+    "worker_tokens": 40831309,
+    "worker_turns": 270,
+    "reviewer_tokens": 3422297,
+    "reviewer_turns": 64,
     "last_model": "claude-opus-5-5"
    },
    "T869": {
@@ -133545,11 +133565,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-27T10:14:36Z",
-    "tokens": 7278255
+    "tokens": 7898191
    },
    "week": {
     "start": "2026-11-26T20:01:04Z",
-    "tokens": 31334447
+    "tokens": 31954383
    }
   },
   "session_reading": {
@@ -133560,7 +133580,7 @@
    }
   }
  },
- "updated_at": "2026-11-27T13:10:32Z",
+ "updated_at": "2026-11-27T13:10:42Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -133658,7 +133678,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "703f1b55401fe152096746097375aa07db11f6ca",
+ "runner_sha": "51920bfa82677512ab832d4bbcfac2958348175d",
  "starter": "actions",
  "smoke_runs": [
   {

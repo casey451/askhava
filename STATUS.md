@@ -1,29 +1,32 @@
 # Ask Hava build status
 
-Updated 2026-11-27T13:10:32Z by runner 703f1b55401f (actions).
+Updated 2026-11-27T13:10:42Z by runner 51920bfa8267 (actions).
 
-**Building: T734 in progress since 12:43Z; 689 of 802 done; week 14% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Building: T849 in progress since 12:40Z; 689 of 802 done; week 14% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 689 of 802 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T734 claimed 12:43Z, lease until 15:43Z; lane 5: T849 claimed 12:40Z, lease until 15:40Z
+- **Lane:** lane 5: T849 claimed 12:40Z, lease until 15:40Z
 - **Week:** 14% used, 161.8M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
 - **Last run:** 13:10Z, 0 min before this update
 - **Keeper:** last ran 13:10Z, next wake 15:43Z
 
 ## Needs attention
+- BLOCKED T734: plan gap reported: PLAN GAP: app/portals/templates/business_leave.html:25 owned by T228 and T410, not T734. Smallest plan change: let T734 own that template for one line, <link rel="stylesheet" href="/static/portals/forms.css"> at the top of {% block main %}, as get_help.html:9 and notice_settings.html:8 carry.
+Evidence: the six reason radios on /b/leave and /b/pause-reason have no visible edge without forms.css (FORMS_CSS, app/portals/src/feedback.rs:73), so the A11Y-007 edge check (tests/a11y/targets_contrast.spec.ts:80) fails at 320, 768 and 1280 px. The reviewer confirmed from kit/tasks.json that T734 does n; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T734 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 50% of the context window, over its 45% limit
 - PLAN GAP T856 (since 2026-11-27T07:31:36Z, no attempt used; a plan change fixes it): T856: measures 46% of the context window, over its 45% limit
-- Strict plan check red: 62 problem(s) on tasks still to run (+596 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
+- Strict plan check red: 63 problem(s) on tasks still to run (+596 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T734 | server and adapters: a business can leave in the portal, wit | BLOCKED | 3 | 26 min | 13:10Z | PLAN GAP: app/portals/templates/business_leave.html:25 owned by T228 and T410, not T734. Smallest plan change: let T734  |
 | T867 | picks and payments (harness): an early fraud warning before  | MERGE_PENDING | 2 | 101 min | 12:57Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
 | T820 | server and portals: "Download my data" also holds withdrawn  | MERGE_PENDING | 4 | 106 min | 12:45Z | Hand-in time passed. Worker added unit tests in app/portals/src/data_download.rs (commit f4a102dca); portals-only covera |
-| T734 | server and adapters: a business can leave in the portal, wit | check_failed | 2 | 2 h 44 min | 12:11Z | Ally: failure; E2e: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflo |
+| T734 | server and adapters: a business can leave in the portal, wit | check_failed | 2 | 2 h 44 min | 12:11Z |  |
 | T778 | jobs, core and server: a dead Payment pending timer is reviv | done | 1 | 114 min | 11:24Z |  |
 | T867 | picks and payments (harness): an early fraud warning before  | check_failed | 1 | 60 min | 10:24Z |  |
 | T868 | tests (harness): two DONE tests that can fail by chance are  | done | 1 | 85 min | 10:14Z |  |
@@ -108,8 +111,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T734 (lease until 2026-11-27T15:43:07Z)
+- nothing
 - lane 5: T849 (lease until 2026-11-27T15:40:51Z)
 
 ## Last usage reading
-- {"task": "T867", "at": "2026-11-27T12:57:25Z", "cache_read_input_tokens": 2482119, "output_tokens": 18225, "input_tokens": 97, "cache_creation_input_tokens": 121796}
+- {"task": "T734", "at": "2026-11-27T13:10:00Z", "cache_creation_input_tokens": 116509, "input_tokens": 144, "cache_read_input_tokens": 4789958, "output_tokens": 24288}
