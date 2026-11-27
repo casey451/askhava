@@ -120287,7 +120287,8 @@
    },
    "last_failure": "Hand-in time passed. Worker added unit tests in app/portals/src/data_download.rs (commit f4a102dca); portals-only coverage of data_download.rs measured 73.68 (floor 81.0), the full integration+portals+server measurement never finished (disk full). Smoke green. Ally: 3 failures in tests/a11y/j2_keyboard.spec.ts:149 (business sign-up, no h1 on /b/signup/start), not confirmed whether from main. Next attempt: free disk (target/debug 47G, /mnt/llvm-cov-target), run the llvm-cov for askhava-integration, askhava-portals, askhava-server in background, compare data_download.rs to 81.0, run j2_keyboard on main.\nre-queued after plan fix D-5889: D-5889 (PR #1480, merged 37f92ed): T820's plan fix; T811 makes td_sec_44 exact, so its last red (the random-substring flake) no longer applies",
    "runner_closed_prs": [
-    1465
+    1465,
+    1479
    ],
    "update_merges": [
     {
@@ -120315,7 +120316,11 @@
      "plan_then": "a081b61c3800e1cef4505e252918e5017bef7cd74f3e34b13ba660540245ca12",
      "plan_now": "febe7a5e8af5fe731055e84251ac983028d2ec4d2828fe772d23328104155d6b"
     }
-   ]
+   ],
+   "wip_claim": {
+    "attempt": 4,
+    "remote_sha": "2ac33054b50524d777d27d6f525d1071c1b5b6a1"
+   }
   },
   {
    "id": "T821",
@@ -132925,7 +132930,7 @@
    }
   }
  },
- "updated_at": "2026-11-27T09:21:19Z",
+ "updated_at": "2026-11-27T09:21:51Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
