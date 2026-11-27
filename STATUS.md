@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-27T23:00:11Z by runner e7d740d4ef96 (actions).
+Updated 2026-11-27T23:00:52Z by runner e7d740d4ef96 (actions).
 
-**Building: T871 in progress since 21:06Z; 694 of 805 done; week 18% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Idle since 23:00Z; 694 of 805 done; week 18% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 694 of 805 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T871 claimed 21:06Z, lease until 00:06Z
+- **Lane:** idle since 23:00Z (no task in progress)
 - **Week:** 18% used, 158.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:12Z, 47 min before this update
+- **Last run:** 22:12Z, 48 min before this update
 - **Keeper:** last ran 20:11Z, next wake 20:31Z
 
 ## Needs attention
@@ -21,6 +21,7 @@ Updated 2026-11-27T23:00:11Z by runner e7d740d4ef96 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T871 | portals: the link-only code send and check that email a pers | MERGE_PENDING | 1 | 114 min | 23:00Z |  |
 | T856 | intake: a request may be texted only with an `sms` consent r | done | 2 | 2 h 16 min | 19:33Z | PLAN GAP: outside ownership: app/intake/src/replies.rs:367 (and replies.rs:204). The chat raw path web_chat::raw_turn -> |
 | T749 | messaging: the unused `business_pick_waiting` text template  | check_failed | 1 | 44 min | 16:48Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T849 | server: the e2e web binary serves J1/J2 business time from t | check_failed | 4 | 118 min | 15:27Z | PLAN GAP: outside ownership: tests/e2e/web_chat.spec.ts, tests/a11y/page_states.ts / D-5836 puts inbound SMS and action  |
@@ -115,7 +116,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T871 (lease until 2026-11-28T00:06:06Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T856", "at": "2026-11-27T19:33:59Z", "cache_read_input_tokens": 13734057, "input_tokens": 325, "cache_creation_input_tokens": 357397, "output_tokens": 100341}
+- {"task": "T871", "at": "2026-11-27T23:00:09Z", "input_tokens": 84, "cache_read_input_tokens": 2183726, "cache_creation_input_tokens": 122355, "output_tokens": 17523}
