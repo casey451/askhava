@@ -325,6 +325,8 @@ def claim(
     # The task remembers its lane, so a MERGE_PENDING task keeps that lane busy after its lease is
     # released (D-620); lane "1" is the default and is not written, so a one-lane state is unchanged.
     placed = {"lane": lane} if lane != LANE_ONE or "lane" in entry(state, task_id) else {}
+    # A new attempt starts with no progress notes (D-5988); a task that never had any gets no key.
+    placed |= {"progress": []} if "progress" in entry(state, task_id) else {}
     out = with_task(state, task_id, status=IN_PROGRESS, attempt_started_at=iso(now), **placed)
     out = with_lease(out, lane, _lease_for(task_id, session, now))
     out["current"] = task_id
@@ -339,6 +341,20 @@ def renew(state: State, task_id: str, session: str, now: datetime, lane: str = L
     if parse(lease["expires"]) <= now:
         raise LeaseError("lease already expired; the task went back to the queue")
     return with_lease(state, lane, _lease_for(task_id, session, now))
+
+
+PROGRESS_KEEP = 6  # progress notes kept per task, newest last (D-5988)
+NOTE_CHARS = 200  # a progress note's length cap (D-5988)
+
+
+def with_progress(state: State, task_id: str, note: str, now: datetime) -> State:
+    """Append one already-cleaned progress note `{"at", "attempt", "note"}` to the task's `progress`, keeping
+    the last PROGRESS_KEEP (D-5988: the worker's short update, sent with `--renew --note`); `attempt` is the
+    one in flight (failed attempts so far, plus one). A claim starts the list empty."""
+    task = entry(state, task_id)
+    note_row = {"at": iso(now), "attempt": int(task.get("attempts", 0)) + 1, "note": note[:NOTE_CHARS]}
+    kept = list(task.get("progress", [])) + [note_row]
+    return with_task(state, task_id, progress=kept[-PROGRESS_KEEP:])
 
 
 def renewal_due(state: State, now: datetime, lane: str = LANE_ONE) -> bool:
