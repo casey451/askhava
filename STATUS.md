@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-27T05:17:56Z by runner bccc571c6527 (actions).
+Updated 2026-11-27T05:20:21Z by runner bccc571c6527 (actions).
 
-**Building: T518 in progress since 04:42Z; 682 of 799 done; week 11% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Building: T518 in progress since 04:42Z; 683 of 799 done; week 11% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 682 of 799 build tasks (owner gates not counted)
+- **Tasks done:** 683 of 799 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T518 claimed 04:42Z, lease until 07:42Z; lane 3: T612 claimed 03:44Z, lease until 06:44Z
 - **Week:** 11% used, 167.9M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:17Z, 0 min before this update
+- **Last run:** 05:18Z, 1 min before this update
 - **Keeper:** last ran 05:17Z, next wake 05:37Z
 
 ## Needs attention
@@ -44,7 +44,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 |---|---|---|---|---|---|---|
 | T657 | quotes and portals: quote-form and sign-in errors mark the f | QUEUED | 2 | 25 min | 05:11Z | Worker stopped with no edits: start smoke exceeded ~20 min. Finding: J3 step 5 owner sign-in (signInOwner, tests/e2e/own |
 | T849 | server: the e2e web binary serves J1/J2 business time from t | MERGE_PENDING | 1 | 103 min | 05:09Z |  |
-| T843 | runner (harness): a 35-minute pre-session smoke cap, and a p | MERGE_PENDING | 1 | 78 min | 04:51Z |  |
+| T843 | runner (harness): a 35-minute pre-session smoke cap, and a p | done | 1 | 78 min | 04:51Z |  |
 | T518 | server, ops and payments: the Stripe-or-webhook-errors alert | resync | 1 | 2 h 9 min | 04:13Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
 | T522 | server and portals: the business text-consent box is served  | done | 1 | 104 min | 04:07Z |  |
 | T612 | harness: the WEB-029 and WEB-030 runtime checks on every sit | QUEUED | 2 | 96 min | 03:36Z | Reviewer on head 700f50e1fce2ee8fc4392587b89d7a82a956f72f still ended REVIEW-VERDICT: FINDINGS after the fix round: / 1. |
@@ -69,7 +69,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 ## Progress (requirements verified)
 
 **Requirements verified:** 467 of 735 (63.5%) · partial 260 · unstarted 8
-**Tasks merged (throughput only):** 682 of 799
+**Tasks merged (throughput only):** 683 of 799
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -105,7 +105,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 325 of 371 done
+- stage 5: 326 of 371 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
