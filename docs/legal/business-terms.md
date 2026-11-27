@@ -36,7 +36,7 @@ Businesses on Laftly are independent. Laftly never directs, controls, schedules,
 - Your license class comes from the state record, never typed in. We confirm your identity with a code sent only to a contact on the public record (the state license record, or the Lake Havasu City business-license list for trades with no state license).
 - A business in a trade with no state license must match the city's active business-license list.
 - **Trades licensed by the Arizona Department of Agriculture:** you state at sign-up that you hold the active Department business license and give its number. Laftly does not check it, and homeowners are told so. A false statement gets you removed.
-- **Handymen** (not licensed contractors) certify on each quote that it is a full-job price under $1,000 with no permit and no gas, smoke-alarm or sprinkler work. A business that breaks this is removed.
+- **Handymen** (not licensed contractors) certify on each quote that it is a full-job price under $1,000 for casual or minor work, not one part of a larger job split up to stay under the limit, with no permit and no gas, smoke-alarm or sprinkler work. A business that breaks this is removed.
 - You add your own team members and choose their roles. You're responsible for what your team does on Laftly.
 
 ## 3. Job requests and quotes
