@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-27T02:16:18Z by runner c3beeeb4ca4c (actions).
+Updated 2026-11-27T02:16:47Z by runner 5ca4c08df875 (actions).
 
 **Building: T849 in progress since 01:34Z; 679 of 799 done; week 9% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-27T02:16:18Z by runner c3beeeb4ca4c (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T849 claimed 01:34Z, lease until 04:34Z; lane 3: T612 claimed 02:00Z, lease until 05:00Z; lane 4: T518 claimed 02:04Z, lease until 05:04Z
 - **Week:** 9% used, 172.5M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:15Z, 0 min before this update
-- **Keeper:** last ran 02:06Z, next wake 03:27Z
+- **Last run:** 02:16Z, 0 min before this update
+- **Keeper:** last ran 02:16Z, next wake 02:36Z
 
 ## Needs attention
 - BLOCKED T820: Ci: failure; Checks: failure
@@ -37,7 +37,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 50% of the context window, over its 45% limit
 - PLAN GAP T856 (since 2026-11-27T02:15:00Z, no attempt used; a plan change fixes it): outside ownership: app/intake/src/replies.rs:367 (and replies.rs:204). The chat raw path web_chat::raw_turn -> replies::receive_raw_reply -> answer_name_address -> receive_answer (replies.rs:367) and reply_in's receive_text call (replies.rs:204) reach models::record_consent; T856 does not own replies.rs, TextIn has ~100 unowned builders, so only a runtime flag (set_chat_turn, D-5891) is possible in owned files. Reviewer (agent aec58822cf2c18f01) confirmed the gap with evidence at head c3beeeb4ca4cae1ff578a5f1aa7ea50d5c8e35e3; its only finding is that D-5891 should also cite replies.rs:204.
-- Strict plan check red: 63 problem(s) on tasks still to run (+585 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
+- Strict plan check red: 61 problem(s) on tasks still to run (+583 on DONE tasks); first: T704: stored context_pct 38% but it measures 42%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
