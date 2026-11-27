@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-27T04:14:24Z by runner 4e32ecc653df (actions).
+Updated 2026-11-27T04:15:08Z by runner 4e32ecc653df (actions).
 
 **Building: T849 in progress since 03:25Z; 681 of 799 done; week 11% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-27T04:14:24Z by runner 4e32ecc653df (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T849 claimed 03:25Z, lease until 06:25Z; lane 3: T612 claimed 03:44Z, lease until 06:44Z; lane 5: T843 claimed 03:33Z, lease until 06:33Z
 - **Week:** 11% used, 167.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:10Z, 3 min before this update
+- **Last run:** 04:14Z, 0 min before this update
 - **Keeper:** last ran 04:10Z, next wake 05:07Z
 
 ## Needs attention
