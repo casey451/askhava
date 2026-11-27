@@ -18,18 +18,21 @@
 //!
 //! Callers (D-1575, D-4361): `settle` calls [`lost_notices`] in the transaction that records the
 //! pick `paid` or `free`; `jobs` queues one `jobs.final_status` task with every move into a final
-//! status, whose handler [`run_final_status`] calls [`no_longer_active`]; `refused_at_confirm` and
+//! status, whose handler [`run_final_status`] expires the job's held texts (QH-007), ends its
+//! waiting picks (`final_status_end`, FEE-021) and calls [`no_longer_active`]; `refused_at_confirm` and
 //! `end_pending` with `ineligible` call [`refused_after_confirm`] in their transaction.
 
 use askhava_businesses::api::{NoticePurpose, notice_addresses};
 use askhava_core::api::{Claimed, HandlerError, NewTask, enqueue};
 use askhava_jobs::api::{current, job_number};
+use askhava_messaging::api::expire_job_rows;
 use askhava_quotes::api::{Period, Price, QuotedPrice, card_holders, quoted_prices};
 use jiff::Timestamp;
 use serde_json::{Value, json};
 use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
+use crate::final_status_end::end_for_final;
 use crate::models::{PicksError, waiting_pick};
 use crate::money_notices::BUSINESS_NOTICE_KIND;
 use crate::status::PickStatus;
@@ -361,9 +364,20 @@ pub async fn refused_after_confirm(
 const BAD_FINAL: HandlerError = HandlerError("bad jobs final status payload");
 const FINAL_FAILED: HandlerError = HandlerError("no longer active notices failed");
 
-/// The `jobs.final_status` handler (`jobs::api::FINAL_STATUS_KIND`; PICK-026, D-044, D-1575,
-/// D-4361): [`no_longer_active`] on the task's job in one transaction. It re-reads the job's status
-/// and every send has its own key, so it is safe to run twice (JOB-006, R12).
+/// The close time a final-status payload carries (`jobs`' `at`, RFC 3339; D-5664): `None` when it
+/// is absent (queued before T744) or unreadable, never the handler's own clock.
+fn closed_at(payload: &Value) -> Option<Timestamp> {
+    payload["at"].as_str().and_then(|s| s.parse().ok())
+}
+
+/// The `jobs.final_status` handler (`jobs::api::FINAL_STATUS_KIND`; PICK-026, FEE-021, QH-007,
+/// D-044, D-1575, D-4361, D-4748, D-5664), in one transaction: first
+/// `messaging::api::expire_job_rows` with the payload's close time (none when the payload has no
+/// readable `at`), then `final_status_end::end_for_final` on the job's waiting picks, ended at the
+/// close time (the clock only for a payload without one), then
+/// [`no_longer_active`]. It re-reads the job's status, a replay finds no waiting pick, rows the
+/// first delivery queued are newer than the close, and every send has its own key, so it is safe
+/// to run twice (JOB-006, R12, D-1576).
 ///
 /// # Errors
 ///
@@ -374,6 +388,19 @@ pub async fn run_final_status(pool: PgPool, task: Claimed) -> Result<(), Handler
         .and_then(|s| Uuid::parse_str(s).ok())
         .ok_or(BAD_FINAL)?;
     let mut tx = pool.begin().await.map_err(|_| FINAL_FAILED)?;
+    let closed = closed_at(&task.payload);
+    if let Some(at) = closed {
+        expire_job_rows(&mut tx, job, at)
+            .await
+            .map_err(|_| FINAL_FAILED)?;
+    }
+    let status = current(&mut tx, job)
+        .await
+        .map_err(|_| FINAL_FAILED)?
+        .status;
+    end_for_final(&mut tx, job, status, closed.unwrap_or_else(Timestamp::now))
+        .await
+        .map_err(|_| FINAL_FAILED)?;
     no_longer_active(&mut tx, job)
         .await
         .map_err(|_| FINAL_FAILED)?;
