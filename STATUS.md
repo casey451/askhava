@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-27T06:52:50Z by runner 71a7f5f83c4f (actions).
+Updated 2026-11-27T06:54:41Z by runner c8cd2d18062a (actions).
 
 **Building: T688 in progress since 06:52Z; 685 of 799 done; week 12% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 685 of 799 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T688 claimed 06:52Z, lease until 09:52Z; lane 4: T657 claimed 06:50Z, lease until 09:50Z; lane 5: T849 claimed 05:54Z, lease until 08:54Z
-- **Week:** 12% used, 167.6M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:51Z, 0 min before this update
+- **Lane:** lane 2: T688 claimed 06:52Z, lease until 09:52Z; lane 3: T734 claimed 06:54Z, lease until 09:54Z; lane 4: T657 claimed 06:50Z, lease until 09:50Z; lane 5: T849 claimed 05:54Z, lease until 08:54Z
+- **Week:** 12% used, 166.5M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
+- **Last run:** 06:52Z, 1 min before this update
 - **Keeper:** last ran 06:47Z, next wake 07:07Z
 
 ## Needs attention
@@ -37,7 +37,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 50% of the context window, over its 45% limit
 - PLAN GAP T856 (since 2026-11-27T02:15:00Z, no attempt used; a plan change fixes it): outside ownership: app/intake/src/replies.rs:367 (and replies.rs:204). The chat raw path web_chat::raw_turn -> replies::receive_raw_reply -> answer_name_address -> receive_answer (replies.rs:367) and reply_in's receive_text call (replies.rs:204) reach models::record_consent; T856 does not own replies.rs, TextIn has ~100 unowned builders, so only a runtime flag (set_chat_turn, D-5891) is possible in owned files. Reviewer (agent aec58822cf2c18f01) confirmed the gap with evidence at head c3beeeb4ca4cae1ff578a5f1aa7ea50d5c8e35e3; its only finding is that D-5891 should also cite replies.rs:204.
-- Strict plan check red: 64 problem(s) on tasks still to run (+591 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
+- Strict plan check red: 67 problem(s) on tasks still to run (+595 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -99,7 +99,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-27T06:46:44Z (week)): week: 26.4M used, 167.6M left, resets 2026-12-03T17:00:00Z; projected finish 2026-12-10T17:36:44Z.
+- Pacing (session_reading 2026-11-27T06:46:44Z (week)): week: 27.5M used, 166.5M left, resets 2026-12-03T17:00:00Z; projected finish 2026-12-10T18:25:01Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -116,6 +116,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T688 (lease until 2026-11-27T09:52:09Z)
+- lane 3: T734 (lease until 2026-11-27T09:54:33Z)
 - lane 4: T657 (lease until 2026-11-27T09:50:45Z)
 - lane 5: T849 (lease until 2026-11-27T08:54:12Z)
 
