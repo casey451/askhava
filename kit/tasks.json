@@ -33062,7 +33062,8 @@
     "T841",
     "T846",
     "T847",
-    "T867"
+    "T867",
+    "T868"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -33316,7 +33317,8 @@
     "T841",
     "T846",
     "T847",
-    "T867"
+    "T867",
+    "T868"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -34131,7 +34133,8 @@
     "T841",
     "T846",
     "T847",
-    "T867"
+    "T867",
+    "T868"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -35639,7 +35642,8 @@
     "T843",
     "T852",
     "T853",
-    "T867"
+    "T867",
+    "T868"
    ],
    "model": null,
    "effort": null,
@@ -38557,7 +38561,8 @@
     "T818",
     "T821",
     "T825",
-    "T867"
+    "T867",
+    "T868"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -38660,7 +38665,8 @@
     "T758",
     "T759",
     "T760",
-    "T867"
+    "T867",
+    "T868"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -38758,7 +38764,8 @@
     "T758",
     "T759",
     "T760",
-    "T867"
+    "T867",
+    "T868"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -39065,7 +39072,8 @@
     "T818",
     "T821",
     "T825",
-    "T867"
+    "T867",
+    "T868"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -56241,6 +56249,55 @@
    "branch": "claude/task/T867-fraud-end-real-states",
    "prompt": "kit/prompts/T867.md",
    "acceptance": "`tests/integration/tests/fraud_end_real_states.rs` passes against PostgreSQL with cases (a) and (b) failing on `main` before the change; the re-seeded fraud cases in `unreachable_refund.rs`, `release_fraud_race.rs`, `unreachable_refund_states.rs` and `unreachable_steps.rs` pass on reachable seeds with no assertion weakened; every other pick, payment-wait and release test passes unchanged; `app/payments/` keeps its 95% branch floor."
+  },
+  {
+   "id": "T868",
+   "slug": "chance-failure-tests",
+   "title": "tests (harness): two DONE tests that can fail by chance are made exact",
+   "goal": "Plan change D-5901 (Fable's decision on Casey's \"Have fable make any decisions\" and \"most efficient without degrading quality\"; ChatGPT FLAKE-AUDIT-1, verified by Opus on `main` 404e829ae: 2 of its 8 findings hold; TD-OPS-41 and TD-INT-49 lines unchanged; no requirement changes). Two DONE tests can fail by chance with correct code; tighten each, never weaken it. (1) `tests/integration/tests/db_metrics.rs:187` to `:203` (`td_ops_41_a_held_connection_makes_the_second_acquire_wait`, T416): `tokio::time::sleep(HOLD)` fixes its deadline before the waiter's `pool.acquire()` starts its own clock, so a preempted thread can make the measured wait shorter than the hold; the waiter sends on a `tokio::sync::oneshot` immediately before `pool.acquire()`, and the test awaits it before `sleep(HOLD)`; every assertion stays as it is (acquires 2, max and sum at least the hold, the bucket slot, the deltas sum, the pool (1, 1)). (2) `tests/integration/tests/intake_order_photos.rs:541` (`td_int_49_a_picture_text_is_stored_confirmed_and_put_on_the_card`, T675): `!payload.to_string().contains(\"555\")` also scans the random inbox UUID (about 0.5% per run); read the inbox id with `SELECT id FROM messaging.inbox WHERE message_sid = $1` (the `message` SID), assert the whole payload equals `{\"inbox\": <that id>, \"media\": [media], \"message\": message}` exactly, keep the `!contains(\"http\")` check, and replace the \"555\" check with the absence of the setup's full fake phone number in its E.164 and 10-digit forms; every other assertion stays. (3) Optional, only if it takes 4 changed lines or fewer: `tests/integration/tests/offdb_stream.rs` (`:207`, T017) derives the expected folder date from the same `at` the writer stamps on the request line, not a later `Timestamp::now()`, so a UTC-midnight crossing cannot fail it; otherwise leave the file unchanged and say so. No product code changes. Opus worker, Opus harness review. Update `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T416",
+    "T675",
+    "T017"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness"
+   ],
+   "owns": [
+    "tests/integration/tests/db_metrics.rs",
+    "tests/integration/tests/intake_order_photos.rs",
+    "tests/integration/tests/offdb_stream.rs"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "docs/test-design.md"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-5901"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 60,
+    "context_pct": 11
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T868-chance-failure-tests",
+   "prompt": "kit/prompts/T868.md",
+   "acceptance": "Both tests pass against PostgreSQL with every assertion kept or made exact; the photo test's payload is compared whole; no product code changes; `tests/integration/tests/db_metrics.rs` and `intake_order_photos.rs` pass 20 runs in a row locally."
   }
  ]
 }
