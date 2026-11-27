@@ -25,14 +25,18 @@ const KB = 1024;
 const QUOTE_ROUTE = "/q/{token}";
 const SITE_SRC = join(import.meta.dirname, "..", "..", "app", "site", "src");
 
-/** Every GET route of the site crate's router: `.route(PATH, get(` with a `const` path resolved. */
-function siteRoutes(): string[] {
-  const text = readdirSync(SITE_SRC).filter((f) => f.endsWith(".rs")).map((f) => readFileSync(join(SITE_SRC, f), "utf8")).join("\n");
+/** Every GET route in `text`, read as tests/a11y/fixtures.ts reads them: each `.route(` call holding `get(`,
+ * its path a literal or a `const`; a path it can't read, or a `.route(` it misses, is an "unread" entry. */
+function siteRoutes(text: string): string[] {
   const consts = new Map([...text.matchAll(/const ([A-Z0-9_]+): &str = "([^"]*)";/g)].map((m) => [m[1] ?? "", m[2] ?? ""]));
-  const calls = [...text.matchAll(/\.route\(\s*(?:"([^"]+)"|([A-Z0-9_]+))\s*,\s*get\(/g)];
-  return [...new Set(calls.map((m) => m[1] ?? consts.get(m[2] ?? "") ?? `unread ${m[2] ?? ""}`))];
+  const calls = [...text.matchAll(/\.route\(\s*([^,]+),([\s\S]*?)(?=\.route\(|\.route_service\(|\.fallback|\.nest|\.with_state|\.layer|;)/g)];
+  const pathOf = (arg: string): string => /^"([^"]+)"$/.exec(arg.trim())?.[1] ?? consts.get(arg.trim()) ?? `unread ${arg.trim()}`;
+  const missed = text.split(".route(").length - 1 - calls.length;
+  const read = calls.map((m) => [pathOf(m[1] ?? ""), m[2] ?? ""] as const)
+    .flatMap(([path, rest]) => (path.startsWith("unread") || /\bget\(/.test(rest) ? [path] : []));
+  return [...new Set([...read, ...(missed === 0 ? [] : [`unread: ${String(missed)} .route( calls missed`])])];
 }
-const SITE_ROUTES = siteRoutes();
+const SITE_ROUTES = siteRoutes(readdirSync(SITE_SRC).filter((f) => f.endsWith(".rs")).map((f) => readFileSync(join(SITE_SRC, f), "utf8")).join("\n"));
 
 /** Runs before the page's own code (D-5864): records each CSS animation and transition as it starts. */
 function recordMotion(): void {
@@ -77,10 +81,8 @@ function limitProblems(seen: Motion[]): string[] {
     ...(m.end > 900 ? [`${m.what} ends at ${String(m.end)} ms`] : []),
   ]);
 }
-
 /** WEB-029, D-4252: outside the quote page nothing moves on load. */
 const loadProblems = (seen: Motion[]): string[] => seen.map((m) => `${m.what} moves on load`);
-
 /** Runs in the page: each button whose transition (delay plus duration) lasts 350 ms or more. */
 function transitionsOf(): string[] {
   const ms = (list: string): number[] => list.split(",").map((v) => parseFloat(v) * (v.trim().endsWith("ms") ? 1 : 1000));
@@ -109,19 +111,18 @@ async function buttonProblems(page: Page): Promise<string[]> {
 /** Runs in the page: the italic and uppercase rules of DESIGN_SPEC section 3 (D-4246, D-4252). */
 function typeProblems(): string[] {
   const italic = (el: Element | null): boolean => el !== null && /italic|oblique/.test(getComputedStyle(el).fontStyle);
-  const outer = [...document.querySelectorAll("body *")].filter((el) => italic(el) && !italic(el.parentElement));
+  const all = [...document.querySelectorAll("body *")].filter((el) => italic(el));
+  const outer = all.filter((el) => !italic(el.parentElement));
   const out = outer.length > 1 ? [`${String(outer.length)} outermost italic elements`] : [];
-  for (const el of outer) if (el.closest(".quote, form, button, a")) out.push(`italic <${el.tagName}> inside a quote card, form, button or link`);
+  for (const el of all) if (el.closest(".quote, form, button, a")) out.push(`italic <${el.tagName}> inside a quote card, form, button or link`);
   const upper = [...document.querySelectorAll("h1, h2, h3, h4, h5, h6, label, button, a")].filter((el) => getComputedStyle(el).textTransform === "uppercase");
   return [...out, ...upper.map((el) => `<${el.tagName}> is uppercase`)];
 }
 
 /** WEB-029: no stylesheet the page loads or holds has `@view-transition` (read as text). */
 async function sheetProblems(page: Page): Promise<string[]> {
-  const { hrefs, inline } = await page.evaluate(() => ({
-    hrefs: [...document.querySelectorAll<HTMLLinkElement>('link[rel~="stylesheet"]')].map((l) => l.href),
-    inline: [...document.querySelectorAll("style")].map((s) => s.textContent),
-  }));
+  const { hrefs, inline } = await page.evaluate(() => ({ inline: [...document.querySelectorAll("style")].map((s) => s.textContent),
+    hrefs: [...document.querySelectorAll<HTMLLinkElement>('link[rel~="stylesheet"]')].map((l) => l.href) }));
   const texts = [...inline, ...(await Promise.all(hrefs.map(async (h) => (await page.request.get(h)).text())))];
   return texts.some((t) => t.includes("@view-transition")) ? ["a stylesheet holds @view-transition"] : [];
 }
@@ -132,7 +133,6 @@ function watchScripts(page: Page): string[] {
   page.on("request", (r) => { if (r.resourceType() === "script") seen.push(`requests script ${new URL(r.url()).pathname}`); });
   return seen;
 }
-
 /** Runs in the page: each `<script>` element. */
 const scriptElements = (): string[] => [...document.querySelectorAll("script")].map((s) => `<script> ${s.src}`);
 
@@ -145,8 +145,7 @@ async function fontProblems(): Promise<string[]> {
     .some((m) => new URL(m[1] ?? "", r.parentStyleSheet?.href ?? location.href).href === href))
     .map((r) => `${bare(r.style.getPropertyValue("font-family"))} ${r.style.getPropertyValue("font-style") || "normal"} ${r.style.getPropertyValue("font-weight")}`);
   const loaded = new Set([...document.fonts].filter((f) => f.status === "loaded").map((f) => `${bare(f.family)} ${f.style} ${f.weight}`));
-  const out: string[] = [];
-  const preloaded: string[] = [];
+  const [out, preloaded]: [string[], string[]] = [[], []];
   for (const link of document.querySelectorAll<HTMLLinkElement>('link[rel~="preload"][as="font"]')) {
     const url = new URL(link.href);
     const faces = facesAt(url.href);
@@ -169,7 +168,6 @@ function heroOf(): { problems: string[]; urls: string[] } {
   const urls = [img.getAttribute("src") ?? "", ...sets.flatMap((s) => s.split(",").map((c) => c.trim().split(/\s+/)[0] ?? ""))];
   return { problems, urls: [...new Set(urls.filter((u) => u !== "").map((u) => new URL(u, location.href).href))] };
 }
-
 /** WEB-030: each hero address over 100 KB. */
 const heavyProblems = (sizes: [string, number][]): string[] =>
   sizes.filter(([, bytes]) => bytes > 100 * KB).map(([url, bytes]) => `${new URL(url).pathname} is ${String(bytes)} bytes, over 100 KB`);
@@ -207,12 +205,14 @@ async function plant(page: Page, html: string): Promise<void> {
   await page.route("**/__planted", (r) => r.fulfill({ contentType: "text/html", body: html }));
   await page.goto("/__planted");
 }
-
 const QUOTES = PAGE_STATES.find((s) => s.name === "three quotes, #2 gone");
 
-test("WEB-030: the site router's GET routes are read, the home page among them", () => {
+test("WEB-030: every .route( call of the site router is read, the home page among them; planted unread calls fail", () => {
   expect(SITE_ROUTES).toContain("/");
   expect(SITE_ROUTES.filter((r) => r.startsWith("unread"))).toEqual([]);
+  expect(siteRoutes('const A: &str = "/a";\n.route(A, post(x).get(y)).route(B, post(z)).route("/c",\n axum::routing::get(w));'))
+    .toEqual(["/a", "unread B", "/c"]);
+  expect(siteRoutes(".route(only)")).toEqual(["unread: 1 .route( calls missed"]);
 });
 
 for (const route of SITE_ROUTES) {
@@ -275,14 +275,14 @@ test("WEB-029: a planted page's animations, @starting-style entrance, slow butto
     h1 { transition: opacity 400ms, translate 400ms } button { transition: color 400ms } em { font-style: italic }
     h2, label, a { text-transform: uppercase } @view-transition { navigation: auto; }</style>
     <main><h1>Planted</h1><h2>Head</h2><p class="fade">Fades</p><p class="spin">Spins</p><p class="slow">Slow</p>
-    <p><em>One</em></p><form><label>Name <em>Two</em></label><button>Planted</button></form><a href="/">Home</a></main>`);
+    <p><em>One <a href="/">see</a></em></p><form><label>Name <em>Two</em></label><button>Planted</button></form><a href="/">Home</a></main>`);
   const seen = await motionSeen(page);
   expect(limitProblems(seen)).toEqual(expect.arrayContaining(["<P> fade changes opacity", "<P> spin repeats 4 times",
     "<P> spin ends at 950 ms", "<H1> opacity changes opacity", "<H1> translate changes translate"]));
   expect(loadProblems(seen)).toEqual(expect.arrayContaining(["<H1> opacity moves on load", "<P> fade moves on load"]));
   expect(await buttonProblems(page)).toEqual(['<BUTTON> "Planted" transition lasts 400 ms']);
-  expect(await page.evaluate(typeProblems)).toEqual(["2 outermost italic elements", "italic <EM> inside a quote card, form, button or link",
-    "<H2> is uppercase", "<LABEL> is uppercase", "<A> is uppercase"]);
+  expect(await page.evaluate(typeProblems)).toEqual(["2 outermost italic elements", "italic <A> inside a quote card, form, button or link",
+    "italic <EM> inside a quote card, form, button or link", "<H2> is uppercase", "<A> is uppercase", "<LABEL> is uppercase", "<A> is uppercase"]);
   expect(await sheetProblems(page)).toEqual(["a stylesheet holds @view-transition"]);
 });
 
