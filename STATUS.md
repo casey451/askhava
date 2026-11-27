@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-27T16:38:25Z by runner 5de506af5c92 (actions).
+Updated 2026-11-27T16:42:05Z by runner 84f4b331d069 (manual).
 
 **Building: T749 in progress since 16:03Z; 693 of 804 done; week 16% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-27T16:38:25Z by runner 5de506af5c92 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T749 claimed 16:03Z, lease until 19:03Z
 - **Week:** 16% used, 164.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:38Z, 0 min before this update
+- **Last run:** 16:38Z, 3 min before this update
 - **Keeper:** last ran 16:38Z, next wake 19:06Z
 
 ## Needs attention
@@ -39,7 +39,7 @@ Evidence: her data download is assembled in app/server/src/homeowner_portal.rs:6
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 50% of the context window, over its 45% limit
 - PLAN GAP T856 (since 2026-11-27T07:31:36Z, no attempt used; a plan change fixes it): T856: measures 46% of the context window, over its 45% limit
 - PLAN GAP T862 (since 2026-11-27T13:22:09Z, no attempt used; a plan change fixes it): outside ownership: app/server/src/homeowner_portal.rs, app/portals/src/homeowner_portal.rs
-- Strict plan check red: 60 problem(s) on tasks still to run (+603 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
+- Strict plan check red: 57 problem(s) on tasks still to run (+603 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -85,6 +85,7 @@ Evidence: her data download is assembled in app/server/src/homeowner_portal.rs:6
 | T612 | harness: the WEB-029 and WEB-030 runtime checks on every sit | BLOCKED | 1 | 50 min | 18:35Z |  |
 
 ### Plan and harness merges on main
+- 16:39Z Plan: pre-flight fixes before claim (D-5979) (#1515)
 - 16:31Z Plan: T849 seeds J3's licence check at the app clock (D-5978) (#1514)
 - 16:15Z Plan: efficiency fixes (D-5971); T734 owns its template line, T862 split with T870 (D-5972) (#1513)
 - 12:14Z Plan: T657 waits on T811 (D-5954); T849 moves j1_homeowner into the late project (D-5955) (#1500)
