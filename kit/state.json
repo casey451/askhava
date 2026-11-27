@@ -97924,7 +97924,7 @@
     "T543",
     "T410"
    ],
-   "status": "IN_PROGRESS",
+   "status": "MERGE_PENDING",
    "attempts": 2,
    "slug": "portal-form-error-fields",
    "type": "build",
@@ -98028,6 +98028,29 @@
        "turns": 0
       }
      }
+    },
+    {
+     "attempt": 3,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 85,
+     "head_sha": "c751c7465aaa1fb2edfe2a0b72108702d0ed6edb",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": true,
+     "started_at": "2026-11-27T06:50:45Z",
+     "ended_at": "2026-11-27T08:05:57Z",
+     "result": "MERGE_PENDING",
+     "usage": {
+      "worker": {
+       "tokens": 2861658,
+       "turns": 49
+      },
+      "reviewer": {
+       "tokens": 1238876,
+       "turns": 27
+      }
+     }
     }
    ],
    "reviewed_sha": "1ce20868bc8601534fa32b06b9e283d7d047f065",
@@ -98040,19 +98063,14 @@
    "branch": "claude/task/T657-portal-form-error-fields",
    "auto_merge": {
     "enabled": true,
-    "why": "auto-merge on #1478 (gh pr merge)",
-    "head": "3005eff2378ac7282d031bc2d469e069f262286d"
+    "why": "auto-merge on #1495 (gh pr merge)",
+    "head": "1ce20868bc8601534fa32b06b9e283d7d047f065"
    },
    "last_failure": "Worker stopped with no edits: start smoke exceeded ~20 min. Finding: J3 step 5 owner sign-in (signInOwner, tests/e2e/owner_session.ts:175) never reaches /owner/step-up on T657's branch (CI runs 45899799797, 45900538467); no auth_failed/csrf_rejected logged, so likely a silent rate-limit refusal (admit_owner_ip/admit_owner_account, app/portals/src/limits.rs:38, 5 password tries per IP per hour) caused by tests/e2e/portal_form_errors.spec.ts spending owner password tries. T847 does not fix it. Next: run owner_signin_served, portal_form_errors and j3_operator specs with and without the new spec; if it breaks J3, change only portal_form_errors.spec.ts so it spends no owner tries from the shared budget; decision D-5872.",
    "lane": "4",
    "runner_closed_prs": [
     1478
    ],
-   "wip_claim": {
-    "attempt": 3,
-    "remote_sha": "3005eff2378ac7282d031bc2d469e069f262286d"
-   },
-   "head_check_since": null,
    "update_merges": [
     {
      "from": "c751c7465aaa1fb2edfe2a0b72108702d0ed6edb",
@@ -124136,12 +124154,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T849",
-   "at": "2026-11-27T07:36:40Z",
-   "input_tokens": 214,
-   "cache_creation_input_tokens": 198900,
-   "output_tokens": 38999,
-   "cache_read_input_tokens": 6839128
+   "task": "T657",
+   "at": "2026-11-27T08:05:57Z",
+   "cache_creation_input_tokens": 124590,
+   "output_tokens": 29775,
+   "input_tokens": 147,
+   "cache_read_input_tokens": 3946022
   },
   "source": "session_reading 2026-11-27T07:37:59Z (week)",
   "by_task": {
@@ -132395,14 +132413,14 @@
     "estimated_bytes": 504908,
     "estimated_tokens": 1450091,
     "usage_counting": "message_id",
-    "cache_read_input_tokens": 9842041,
-    "output_tokens": 59033,
-    "input_tokens": 272,
-    "cache_creation_input_tokens": 247714,
-    "worker_tokens": 8993045,
-    "worker_turns": 113,
-    "reviewer_tokens": 1156015,
-    "reviewer_turns": 26,
+    "cache_read_input_tokens": 13788063,
+    "output_tokens": 88808,
+    "input_tokens": 419,
+    "cache_creation_input_tokens": 372304,
+    "worker_tokens": 11854703,
+    "worker_turns": 162,
+    "reviewer_tokens": 2394891,
+    "reviewer_turns": 53,
     "last_model": "claude-opus-5-5"
    },
    "T854": {
@@ -132533,11 +132551,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-27T05:09:03Z",
-    "tokens": 5309447
+    "tokens": 5858561
    },
    "week": {
     "start": "2026-11-26T20:01:04Z",
-    "tokens": 22311460
+    "tokens": 22860574
    }
   },
   "session_reading": {
@@ -132548,7 +132566,7 @@
    }
   }
  },
- "updated_at": "2026-11-27T08:05:59Z",
+ "updated_at": "2026-11-27T08:06:32Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
