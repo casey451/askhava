@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-27T10:25:28Z by runner a3b9b1faa78b (actions).
+Updated 2026-11-27T10:26:21Z by runner 02eda79e70d5 (actions).
 
 **Building: T778 in progress since 09:29Z; 687 of 802 done; week 13% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-27T10:25:28Z by runner a3b9b1faa78b (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T778 claimed 09:29Z, lease until 12:29Z; lane 3: T820 claimed 09:21Z, lease until 12:21Z; lane 4: T734 claimed 09:27Z, lease until 12:27Z
 - **Week:** 13% used, 161.2M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:25Z, 0 min before this update
-- **Keeper:** last ran 10:24Z, next wake 12:24Z
+- **Last run:** 10:26Z, 0 min before this update
+- **Keeper:** last ran 10:26Z, next wake 12:23Z
 
 ## Needs attention
 - BLOCKED T657: Ci: failure; Coverage: failure
@@ -39,7 +39,7 @@ D-5836 puts inbound SMS and action links on the test-control clock. web_chat.spe
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 50% of the context window, over its 45% limit
 - PLAN GAP T849 (since 2026-11-27T09:16:18Z, no attempt used; a plan change fixes it): outside ownership: tests/e2e/web_chat.spec.ts, tests/a11y/page_states.ts
 - PLAN GAP T856 (since 2026-11-27T07:31:36Z, no attempt used; a plan change fixes it): T856: measures 46% of the context window, over its 45% limit
-- Strict plan check red: 63 problem(s) on tasks still to run (+596 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
+- Strict plan check red: 63 problem(s) on tasks still to run (+595 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
