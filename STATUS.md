@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-27T09:10:07Z by runner 02eda79e70d5 (actions).
+Updated 2026-11-27T09:14:07Z by runner 57702771a704 (actions).
 
 **Building: T868 in progress since 08:48Z; 686 of 802 done; week 12% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 686 of 802 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T868 claimed 08:48Z, lease until 11:48Z; lane 3: T734 claimed 06:54Z, lease until 09:54Z; lane 5: T849 claimed 09:09Z, lease until 12:09Z
+- **Lane:** lane 2: T868 claimed 08:48Z, lease until 11:48Z; lane 5: T849 claimed 09:09Z, lease until 12:09Z
 - **Week:** 12% used, 166.5M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:05Z, 4 min before this update
+- **Last run:** 09:10Z, 3 min before this update
 - **Keeper:** last ran 09:05Z, next wake 09:25Z
 
 ## Needs attention
@@ -16,11 +16,12 @@ Updated 2026-11-27T09:10:07Z by runner 02eda79e70d5 (actions).
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 50% of the context window, over its 45% limit
 - PLAN GAP T856 (since 2026-11-27T07:31:36Z, no attempt used; a plan change fixes it): T856: measures 46% of the context window, over its 45% limit
-- Strict plan check red: 63 problem(s) on tasks still to run (+595 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
+- Strict plan check red: 68 problem(s) on tasks still to run (+594 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T734 | server and adapters: a business can leave in the portal, wit | QUEUED | 1 | 2 h 19 min | 09:14Z | session ended without handing in |
 | T869 | harness: the PII scan allows the Co-Authored-By no-reply add | MERGE_PENDING | 1 | 82 min | 08:53Z |  |
 | T849 | server: the e2e web binary serves J1/J2 business time from t | check_failed | 2 | 45 min | 08:29Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-27T |
 | T688 | server: a call to the Laftly main number hears the greeting  | done | 1 | 85 min | 08:17Z |  |
@@ -55,8 +56,8 @@ Updated 2026-11-27T09:10:07Z by runner 02eda79e70d5 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 464 of 735 (63.1%) · partial 263 · unstarted 8
-**Tasks merged (throughput only):** 686 of 802
+**Requirements verified:** 467 of 735 (63.5%) · partial 260 · unstarted 8
+**Tasks merged (throughput only):** 686 of 799
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -65,10 +66,10 @@ Updated 2026-11-27T09:10:07Z by runner 02eda79e70d5 (actions).
 | businesses | 35 | 22 | 1 | 58 |
 | calls | 17 | 8 | 0 | 25 |
 | consent | 18 | 17 | 0 | 35 |
-| fees | 25 | 27 | 0 | 52 |
+| fees | 27 | 25 | 0 | 52 |
 | intake | 12 | 31 | 0 | 43 |
 | job-cards | 17 | 7 | 0 | 24 |
-| licensing | 40 | 8 | 0 | 48 |
+| licensing | 41 | 7 | 0 | 48 |
 | lifecycle | 22 | 6 | 0 | 28 |
 | messaging | 24 | 21 | 0 | 45 |
 | ops-recovery | 35 | 18 | 1 | 54 |
@@ -101,7 +102,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T868 (lease until 2026-11-27T11:48:44Z)
-- lane 3: T734 (lease until 2026-11-27T09:54:33Z)
 - lane 5: T849 (lease until 2026-11-27T12:09:15Z)
 
 ## Last usage reading
