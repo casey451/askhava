@@ -26,6 +26,7 @@ use std::io;
 use std::net::Ipv4Addr;
 
 use askhava_core::api::TestControl;
+use askhava_server::help_forms::help_mail;
 use tokio::net::TcpListener;
 
 #[tokio::main]
@@ -111,7 +112,7 @@ fn liveness_limit() -> io::Result<askhava_server::liveness::LivenessLimit> {
 /// T261), the step-up page's Verify part (T364), the quote page's update keys (T729), the homeowner sign-in's Verify part (T307), the web chat's code-step keys (T489) and the
 /// site pages' settings (T102) with the business number for the business page's WEB-024 line
 /// (T769, D-4931) and the homeowner number with the Gate C launch date for the home pages' texting
-/// number (T725, WEB-017, D-4709) and the owner reports' settings (T305, D-5775); each errors as its own builder does, naming a key, never a value.
+/// number (T725, WEB-017, D-4709) and the owner reports' settings (T305, D-5775) and the Get help answer email's key (T309); each errors as its own builder does, naming a key, never a value.
 fn business_parts(
     settings: &askhava_core::api::Settings,
     pool: &sqlx::PgPool,
@@ -152,6 +153,7 @@ fn business_parts(
         .with_homeowner_verify(homeowner)
         .with_photos(photos)
         .with_data_link_postal(data_link)
+        .with_help_mail(help_mail(settings, std::env::vars())?)
         .with_vault(vault)
         .with_business_number(number.clone())
         .with_confirm_part(confirm)
