@@ -123694,7 +123694,7 @@
     "expires": "2026-11-27T10:44:33Z",
     "lane": "5"
    },
-   "branch": "claude/task/T849-clock-composition",
+   "branch": "claude/task/T849-clock-composition-a3",
    "auto_merge": {
     "enabled": true,
     "why": "auto-merge on #1497 (gh pr merge)",
@@ -123715,7 +123715,11 @@
      ],
      "at": "2026-11-27T07:44:33Z"
     }
-   ]
+   ],
+   "wip_claim": {
+    "attempt": 3,
+    "remote_sha": ""
+   }
   },
   {
    "id": "T850",
@@ -132822,7 +132826,7 @@
    }
   }
  },
- "updated_at": "2026-11-27T09:09:29Z",
+ "updated_at": "2026-11-27T09:10:07Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
