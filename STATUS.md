@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-27T07:07:02Z by runner c8cd2d18062a (actions).
+Updated 2026-11-27T07:26:16Z by runner 37f92ed09311 (manual).
 
-**Building: T688 in progress since 06:52Z; 685 of 799 done; week 12% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Building: T688 in progress since 06:52Z; 685 of 802 done; week 12% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 685 of 799 build tasks (owner gates not counted)
+- **Tasks done:** 685 of 802 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T688 claimed 06:52Z, lease until 09:52Z; lane 3: T734 claimed 06:54Z, lease until 09:54Z; lane 4: T657 claimed 06:50Z, lease until 09:50Z; lane 5: T849 claimed 05:54Z, lease until 08:54Z
 - **Week:** 12% used, 166.5M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:06Z, 0 min before this update
+- **Last run:** 07:07Z, 18 min before this update
 - **Keeper:** last ran 07:07Z, next wake 08:57Z
 
 ## Needs attention
@@ -32,12 +32,10 @@ error: test failed, to rerun pass `-p askhava-server --test action_links_route`
 Ci failed at step: All five jobs passed
 Checks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success
 ##[error]Process completed with exit code 1.
-- BLOCKED T856: plan gap reported: PLAN GAP: outside ownership: app/intake/src/replies.rs:367 (and replies.rs:204). The chat raw path web_chat::raw_turn -> replies::receive_raw_reply -> answer_name_address -> receive_answer (replies.rs:367) and reply_in's receive_text call (replies.rs:204) reach models::record_consent; T856 does not own replies.rs, TextIn has ~100 unowned builders, so only a runtime flag (set_chat_turn, D-5891) is possible in owned files. Reviewer (agent aec58822cf2c18f01) confirmed the gap with evidence at head c3beeeb4ca4cae1ff578a5f1aa7ea50d5c8e35e3; its only finding is that D-5891 should also cite replies.r; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T856 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 50% of the context window, over its 45% limit
-- PLAN GAP T856 (since 2026-11-27T02:15:00Z, no attempt used; a plan change fixes it): outside ownership: app/intake/src/replies.rs:367 (and replies.rs:204). The chat raw path web_chat::raw_turn -> replies::receive_raw_reply -> answer_name_address -> receive_answer (replies.rs:367) and reply_in's receive_text call (replies.rs:204) reach models::record_consent; T856 does not own replies.rs, TextIn has ~100 unowned builders, so only a runtime flag (set_chat_turn, D-5891) is possible in owned files. Reviewer (agent aec58822cf2c18f01) confirmed the gap with evidence at head c3beeeb4ca4cae1ff578a5f1aa7ea50d5c8e35e3; its only finding is that D-5891 should also cite replies.rs:204.
-- Strict plan check red: 67 problem(s) on tasks still to run (+595 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
+- Strict plan check red: 61 problem(s) on tasks still to run (+594 on DONE tasks); first: T704: stored context_pct 38% but it measures 43%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -65,36 +63,37 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 | T612 | harness: the WEB-029 and WEB-030 runtime checks on every sit | BLOCKED | 1 | 50 min | 18:35Z |  |
 
 ### Plan and harness merges on main
+- 07:26Z Plan: fraud-refund fix (D-5888), T820 fix (D-5889), T865 draft (D-5900), template line and T868 (D-5901), compliance (D-5907), T856 plan fix (D-5918) (#1
 - 23:18Z Plan: T801 web-chat consent chain re-split, per-request SMS consent, pick code by email (D-5848); T612 font fallback (D-5864); pre-flight fixes (D-5876, 
 - 18:27Z Plan: test clock for the J1/J2 journeys, T222 as J1 core, T799's Spanish wording (D-5836, D-5837) (#1472)
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 467 of 735 (63.5%) · partial 260 · unstarted 8
-**Tasks merged (throughput only):** 685 of 799
+**Requirements verified:** 139 of 735 (18.9%) · partial 588 · unstarted 8
+**Tasks merged (throughput only):** 685 of 802
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 28 | 7 | 0 | 35 |
-| ai | 11 | 15 | 3 | 29 |
-| businesses | 35 | 22 | 1 | 58 |
-| calls | 17 | 8 | 0 | 25 |
-| consent | 18 | 17 | 0 | 35 |
-| fees | 27 | 25 | 0 | 52 |
-| intake | 12 | 31 | 0 | 43 |
-| job-cards | 17 | 7 | 0 | 24 |
-| licensing | 41 | 7 | 0 | 48 |
-| lifecycle | 22 | 6 | 0 | 28 |
-| messaging | 24 | 21 | 0 | 45 |
-| ops-recovery | 35 | 18 | 1 | 54 |
-| privacy | 14 | 17 | 0 | 31 |
-| quiet-hours | 4 | 5 | 0 | 9 |
-| quotes-pick | 37 | 19 | 0 | 56 |
-| recurring | 10 | 1 | 0 | 11 |
-| security | 23 | 29 | 3 | 55 |
-| terms | 35 | 0 | 0 | 35 |
-| website | 27 | 3 | 0 | 30 |
-| wording | 30 | 2 | 0 | 32 |
+| accessibility | 5 | 30 | 0 | 35 |
+| ai | 1 | 25 | 3 | 29 |
+| businesses | 2 | 55 | 1 | 58 |
+| calls | 1 | 24 | 0 | 25 |
+| consent | 3 | 32 | 0 | 35 |
+| fees | 1 | 51 | 0 | 52 |
+| intake | 2 | 41 | 0 | 43 |
+| job-cards | 2 | 22 | 0 | 24 |
+| licensing | 0 | 48 | 0 | 48 |
+| lifecycle | 0 | 28 | 0 | 28 |
+| messaging | 2 | 43 | 0 | 45 |
+| ops-recovery | 32 | 21 | 1 | 54 |
+| privacy | 2 | 29 | 0 | 31 |
+| quiet-hours | 0 | 9 | 0 | 9 |
+| quotes-pick | 1 | 55 | 0 | 56 |
+| recurring | 3 | 8 | 0 | 11 |
+| security | 3 | 49 | 3 | 55 |
+| terms | 32 | 3 | 0 | 35 |
+| website | 24 | 6 | 0 | 30 |
+| wording | 23 | 9 | 0 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 

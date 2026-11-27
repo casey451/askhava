@@ -123621,7 +123621,7 @@
     "T747",
     "T839"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "consent-per-request",
    "type": "build",
@@ -123634,20 +123634,8 @@
     5893,
     5894
    ],
-   "reason": "plan gap reported: PLAN GAP: outside ownership: app/intake/src/replies.rs:367 (and replies.rs:204). The chat raw path web_chat::raw_turn -> replies::receive_raw_reply -> answer_name_address -> receive_answer (replies.rs:367) and reply_in's receive_text call (replies.rs:204) reach models::record_consent; T856 does not own replies.rs, TextIn has ~100 unowned builders, so only a runtime flag (set_chat_turn, D-5891) is possible in owned files. Reviewer (agent aec58822cf2c18f01) confirmed the gap with evidence at head c3beeeb4ca4cae1ff578a5f1aa7ea50d5c8e35e3; its only finding is that D-5891 should also cite replies.r; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T856 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: outside ownership: app/intake/src/replies.rs:367 (and replies.rs:204). The chat raw path web_chat::raw_turn -> replies::receive_raw_reply -> answer_name_address -> receive_answer (replies.rs:367) and reply_in's receive_text call (replies.rs:204) reach models::record_consent; T856 does not own replies.rs, TextIn has ~100 unowned builders, so only a runtime flag (set_chat_turn, D-5891) is possible in owned files. Reviewer (agent aec58822cf2c18f01) confirmed the gap with evidence at head c3beeeb4ca4cae1ff578a5f1aa7ea50d5c8e35e3; its only finding is that D-5891 should also cite replies.rs:204.",
-   "plan_gap": {
-    "at": "2026-11-27T02:15:00Z",
-    "problems": [
-     "outside ownership: app/intake/src/replies.rs:367 (and replies.rs:204). The chat raw path web_chat::raw_turn -> replies::receive_raw_reply -> answer_name_address -> receive_answer (replies.rs:367) and reply_in's receive_text call (replies.rs:204) reach models::record_consent; T856 does not own replies.rs, TextIn has ~100 unowned builders, so only a runtime flag (set_chat_turn, D-5891) is possible in owned files. Reviewer (agent aec58822cf2c18f01) confirmed the gap with evidence at head c3beeeb4ca4cae1ff578a5f1aa7ea50d5c8e35e3; its only finding is that D-5891 should also cite replies.rs:204."
-    ],
-    "paths": [
-     "app/intake/src/replies.rs:367 (and replies.rs:204). The chat raw path web_chat::raw_turn -> replies::receive_raw_reply -> answer_name_address -> receive_answer (replies.rs:367) and reply_in's receive_text call (replies.rs:204) reach models::record_consent; T856 does not own replies.rs",
-     "TextIn has ~100 unowned builders",
-     "so only a runtime flag (set_chat_turn",
-     "D-5891) is possible in owned files. Reviewer (agent aec58822cf2c18f01) confirmed the gap with evidence at head c3beeeb4ca4cae1ff578a5f1aa7ea50d5c8e35e3; its only finding is that D-5891 should also cite replies.rs:204."
-    ]
-   },
+   "reason": null,
+   "last_failure": "PLAN GAP: outside ownership: app/intake/src/replies.rs:367 (and replies.rs:204). The chat raw path web_chat::raw_turn -> replies::receive_raw_reply -> answer_name_address -> receive_answer (replies.rs:367) and reply_in's receive_text call (replies.rs:204) reach models::record_consent; T856 does not own replies.rs, TextIn has ~100 unowned builders, so only a runtime flag (set_chat_turn, D-5891) is possible in owned files. Reviewer (agent aec58822cf2c18f01) confirmed the gap with evidence at head c3beeeb4ca4cae1ff578a5f1aa7ea50d5c8e35e3; its only finding is that D-5891 should also cite replies.rs:204.\nre-queued after plan fix D-5918: D-5918 (PR #1480, merged 37f92ed): T856 now owns app/intake/src/replies.rs and the chat path writes no consent record; the reported plan gap is fixed",
    "history": [
     {
      "attempt": 1,
@@ -123672,6 +123660,21 @@
       }
      },
      "wip_skipped": "PII scan: a commit message in 2e19f8cd4466e19289adb202676322d93c16d00e"
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-27T07:26:16Z",
+     "reason": "D-5918 (PR #1480, merged 37f92ed): T856 now owns app/intake/src/replies.rs and the chat path writes no consent record; the reported plan gap is fixed",
+     "by": "manual-47385d8ba913",
+     "was": "plan gap reported: PLAN GAP: outside ownership: app/intake/src/replies.rs:367 (and replies.rs:204). The chat raw path web_chat::raw_turn -> replies::receive_raw_reply -> answer_name_address -> receive_answer (replies.rs:367) and reply_in's receive_text call (replies.rs:204) reach models::record_consent; T856 does not own replies.rs, TextIn has ~100 unowned builders, so only a runtime flag (set_chat_turn, D-5891) is possible in owned files. Reviewer (agent aec58822cf2c18f01) confirmed the gap with evidence at head c3beeeb4ca4cae1ff578a5f1aa7ea50d5c8e35e3; its only finding is that D-5891 should also cite replies.r; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T856 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-5918",
+     "plan_since": "2026-11-27T00:24:55Z",
+     "plan_base": "5ca4c08df8750f0d6238f7eecd2f9f1d2f8aa339",
+     "plan_head": "37f92ed093111a42071e9044252b0f7066aad712",
+     "plan_then": "258d6e5adb5b301f625ab9289d08b9aead38b8afaab55314da4eaa88ebf9fa62",
+     "plan_now": "3b75f4d4f16b62e2f94324a8e9b3cfe5a5a95e163b82a61e1e5a642eb05103a6"
     }
    ]
   },
@@ -132361,7 +132364,7 @@
    }
   }
  },
- "updated_at": "2026-11-27T07:07:02Z",
+ "updated_at": "2026-11-27T07:26:16Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -132459,8 +132462,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "c8cd2d18062a7f4f383f8def7362e28a4ccb1f84",
- "starter": "actions",
+ "runner_sha": "37f92ed093111a42071e9044252b0f7066aad712",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "5ca4c08df8750f0d6238f7eecd2f9f1d2f8aa339",
