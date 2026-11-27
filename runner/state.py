@@ -496,7 +496,74 @@ def open_deviations(state: State, now: datetime) -> list[Task]:
 SMOKE_REUSE_MAX_AGE = timedelta(hours=6)  # how long one green smoke on a head may stand for later start routines (D-2560)
 
 
-def reusable_smoke(state: State, head: str, now: datetime) -> Task | None:
+PLAN_HALF_MARK = "plan half of "  # in a run's `why`: the run is `smoke.sh --plan-half` standing on that base (D-5682)
+PLAN_HALF_BASE = re.compile(r"plan half of ([0-9a-f]{40})(?![0-9a-f])")
+# The paths a plan-only commit may touch (D-5682): full-match patterns; nothing read by a Rust, TypeScript or build
+# rule apart from kit/tasks.json, which the plan half's two Rust tests read at run time.
+PLAN_HALF_PATHS = tuple(re.compile(p) for p in (
+    r"kit/tasks\.json", r"kit/plan\.lock", r"kit/prompts/T[0-9]+\.md", r"kit/prompts/TEMPLATE\.md",
+    r"docs/decisions\.md", r"docs/for-casey-review\.md", r"docs/test-design\.md",
+    r"docs/spec/[^/]+\.md", r"docs/handoff/[^/]+\.md",
+))
+
+
+def plan_only(paths: list[str] | None) -> bool:
+    """Whether a commit's first-parent diff `paths` is non-empty and every path matches PLAN_HALF_PATHS (D-5682)."""
+    return bool(paths) and all(any(p.fullmatch(path) for p in PLAN_HALF_PATHS) for path in paths or [])
+
+
+def _plan_half_mark(run: Task) -> bool:
+    """Whether `run` is a plan-half run (its `why` names PLAN_HALF_MARK, D-5682)."""
+    return PLAN_HALF_MARK in str(run.get("why") or "")
+
+
+def _plan_half_green(state: State, run: Task) -> Task | None:
+    """The base's last real green run a plan-half `run` stands on (D-5682), or None: the marker's base must be 40 hex,
+    a real green of it still recorded in `smoke_runs` and nothing doubting it (`_clean_commit`)."""
+    found = PLAN_HALF_BASE.search(str(run.get("why") or ""))
+    if found is None or not _clean_commit(state, found.group(1)):
+        return None
+    real = [r for r in state.get("smoke_runs") or [] if isinstance(r, dict) and r.get("sha") == found.group(1) and _real_green(r)]
+    return real[-1] if real else None
+
+
+def _clean_since_done(state: State, chain: Callable[[], list[str] | None] | None) -> bool:
+    """Whether every first-parent commit from the head (`chain()[0]`) back to the last DONE merge, both included,
+    passes `_clean_commit` (D-5876); False when the chain cannot be read or holds no DONE merge."""
+    try:
+        commits = chain() if chain is not None else None
+    except Exception:  # noqa: BLE001  # reason: an unreadable chain only means no reuse (D-5876)
+        return False
+    merged = done_merges(state)
+    for sha in commits or []:
+        if not _clean_commit(state, sha):
+            return False
+        if sha in merged:
+            return True
+    return False
+
+
+def _plan_half_reuse(state: State, runs: list[Task], chain: Callable[[], list[str] | None] | None) -> Task | None:
+    """The last run on a head as `reusable_smoke` may reuse it with plan-half runs in mind (D-5682, D-5793, D-5876),
+    or None: a plan-half run comes back as a copy whose `reused` is its base's real green `at`; a reuse record on a
+    head with a plan-half run is one unless its `reused` is an unmarked real green's `at` there (then the base's
+    real green must still stand); a reuse record whose `reused` matches no run left there needs `_clean_since_done`."""
+    last = runs[-1]
+    marked = [r for r in runs if _plan_half_mark(r)]
+    if _plan_half_mark(last):
+        base = _plan_half_green(state, last)
+        return dict(last, reused=base["at"]) if base is not None and base.get("at") else None
+    if not last.get("reused"):
+        return last
+    if marked and not any(_real_green(r) and not _plan_half_mark(r) and r.get("at") == last["reused"] for r in runs):
+        return last if _plan_half_green(state, marked[-1]) is not None else None
+    if not any(r.get("at") == last["reused"] for r in runs):
+        return last if _clean_since_done(state, chain) else None
+    return last
+
+
+def reusable_smoke(state: State, head: str, now: datetime,
+                   chain: Callable[[], list[str] | None] | None = None) -> Task | None:
     """The recorded green smoke run that a start routine on main's `head` may reuse instead of running the smoke
     again (D-2560), or None. Only when `main` is not red, `head` was never the SHA of a red `main` (`main_red_history`),
     the LAST run recorded for `head` in `smoke_runs` is green and finished (a later red or timed-out run on the same
@@ -505,7 +572,10 @@ def reusable_smoke(state: State, head: str, now: datetime) -> Task | None:
     SMOKE_REUSE_MAX_AGE old: the same commit gives the same verdict, but the job's image and services drift. The
     caller adds what this state cannot tell (the nightly and `main`'s own checks on the head, `cycle._start_smoke`);
     clearing a red `main` never reuses (docs/governance.md 5.3). A last run that is itself an ancestry reuse (it names
-    a `base`, D-3058) is not reused here: `ancestry_smoke` judges the commits between again."""
+    a `base`, D-3058) is not reused here: `ancestry_smoke` judges the commits between again. D-5682: a plan-half run,
+    or a reuse that stands on one, ages from its base's real green and needs that green still recorded
+    (`_plan_half_reuse`); `chain`, when given, reads `main`'s first-parent commits from `head` for a reuse record
+    whose own green has left `smoke_runs` (none given: no such reuse)."""
     if not head or state.get("main_red"):
         return None
     if any(isinstance(r, dict) and r.get("sha") == head for r in state.get("main_red_history") or []):
@@ -517,11 +587,13 @@ def reusable_smoke(state: State, head: str, now: datetime) -> Task | None:
         return None
     if any(r.get("ok") is not True and not r.get("timed_out") for r in runs):
         return None
+    last = _plan_half_reuse(state, runs, chain)
+    if last is None:
+        return None
     try:
-        since = parse(str(runs[-1].get("reused") or runs[-1].get("at") or ""))
+        since = parse(str(last.get("reused") or last.get("at") or ""))
     except ValueError:
         return None
-    last: Task = runs[-1]
     return last if timedelta(0) <= now - since <= SMOKE_REUSE_MAX_AGE else None
 
 
@@ -536,8 +608,10 @@ def done_merges(state: State) -> set[str]:
 
 
 def _real_green(run: Task) -> bool:
-    """A finished green run the runner smoked itself: not a reuse of any kind (`reused`, `base`), not timed out."""
-    return run.get("ok") is True and not run.get("timed_out") and not run.get("reused") and not run.get("base")
+    """A finished green full run the runner smoked itself: not a reuse of any kind (`reused`, `base`), not timed out,
+    not a plan half (D-5682)."""
+    return (run.get("ok") is True and not run.get("timed_out") and not run.get("reused") and not run.get("base")
+            and not _plan_half_mark(run))
 
 
 def _clean_commit(state: State, sha: str) -> bool:
@@ -613,3 +687,34 @@ def _ancestry_base(state: State, sha: str, real: Task, now: datetime) -> tuple[s
     except ValueError:
         return None
     return (sha, real) if timedelta(0) <= now - since <= SMOKE_REUSE_MAX_AGE else None
+
+
+def plan_half_base(state: State, chain: list[str], merged: set[str], now: datetime, limit: int,
+                   proven: Callable[[str], bool] | None, paths: Callable[[str], list[str] | None]
+                   ) -> tuple[str, Task, list[str]] | None:
+    """The base of a plan-half smoke (D-5682): (the ancestor's SHA, its real green run, the plan-only commits'
+    paths), or None. `_ancestry_walk`'s walk over `chain` (`main`'s first parents from its head), except that each
+    commit after the base, the head included, may also qualify by being plan-only (`plan_only` of `paths(sha)`, the
+    env's first-parent diff reader, asked last) and at least one must; the base is a real full green
+    (`_real_green`, so never a plan-half run) that passes `_ancestry_base`. Never while `main` is red or with `limit`
+    below 1. The caller adds the nightly and `main`'s checks; an exception from `proven` or `paths` reaches it."""
+    if limit < 1 or not chain or state.get("main_red"):
+        return None
+    runs = [r for r in state.get("smoke_runs") or [] if isinstance(r, dict)]
+    found: list[str] = []
+    plan = False
+    for distance, sha in enumerate(chain[: limit + 1]):
+        real = [r for r in runs if r.get("sha") == sha and _real_green(r)]
+        if distance and real:
+            based = _ancestry_base(state, sha, real[-1], now) if plan else None
+            return (based[0], based[1], found) if based is not None else None
+        if real or distance >= limit or not _clean_commit(state, sha):
+            return None
+        if sha in merged or (proven is not None and proven(sha) is True):
+            continue
+        changed = paths(sha)
+        if not plan_only(changed):
+            return None
+        plan = True
+        found.extend(p for p in changed or [] if p not in found)
+    return None
