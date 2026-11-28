@@ -6,7 +6,9 @@
 //! rules are in [`crate::rules`]; this file is the database side. [`begin_job`] is the one
 //! job-opening path: the first job of a request, and the second job after an ALSO reply (INT-032;
 //! the two-trade detection and the reply are T042's). [`stop_if_under_18`] sends the one INT-038
-//! reply and closes the request. The name-and-address answer goes to the vault and nowhere else
+//! reply and closes the request; when the consent guard refuses that reply, the close, the job
+//! cancels and an under-13 purge still commit (D-5982). The name-and-address answer goes to the
+//! vault and nowhere else
 //! (INT-027, D-146): nothing in this file touches an AI. A new job's no-reply wait and each
 //! reply's restart of it are `handlers`' (INT-019).
 //!
@@ -282,17 +284,23 @@ pub async fn record_answer(
 /// earlier request is left as it is. The reply goes once: a closed request gets none. The caller
 /// screens for an emergency first (INT-002), so its 911 text is already queued before this one.
 ///
+/// D-5982 (child safety): the text is `None` only when the consent guard refused it with
+/// [`IntakeError::NoConsent`] (mapped by `text_unless_refused`); the close, the job cancels, the
+/// under-13 purge and the audit row then commit all the same. It never answers `Ok(None)` for a
+/// stated age under 18 because of a refusal, never makes a [`Queued`] and never skips the guard.
+///
 /// # Errors
 ///
 /// [`IntakeError::Template`], [`IntakeError::Outbox`], [`IntakeError::Audit`], [`IntakeError::Job`],
 /// [`IntakeError::Vault`], [`IntakeError::Quotes`] or [`IntakeError::Database`]; nothing is kept.
+/// Never [`IntakeError::NoConsent`].
 pub async fn stop_if_under_18(
     db: &mut PgConnection,
     secret: &SecretString,
     msg: &TextIn<'_>,
     conversation: Uuid,
     spanish_on: bool,
-) -> Result<Option<(AgeStop, Queued)>, IntakeError> {
+) -> Result<Option<(AgeStop, Option<Queued>)>, IntakeError> {
     let Some(stop) = age_stop(msg.inbound.words) else {
         return Ok(None);
     };
@@ -318,7 +326,8 @@ pub async fn stop_if_under_18(
         &subject,
         spanish_on,
     )
-    .await?;
+    .await;
+    let queued = text_unless_refused(queued)?;
     if stop == AgeStop::Under13 {
         purge_child(&mut tx, (conversation, homeowner), msg, &jobs).await?;
     }
@@ -334,6 +343,25 @@ pub async fn stop_if_under_18(
         .map_err(|_| IntakeError::Audit)?;
     tx.commit().await.map_err(|_| IntakeError::Database)?;
     Ok(Some((stop, queued)))
+}
+
+/// INT-038, PRIV-008, D-5982: the age stop's text as [`stop_if_under_18`] keeps it. A queued
+/// text passes through; a text the consent guard refused ([`IntakeError::NoConsent`]) is `None`,
+/// so the close, the job cancels, the under-13 purge and the audit row still commit; every other
+/// error stays an error, so the stop rolls back. It never makes a [`Queued`] and never asks or
+/// skips the guard.
+///
+/// # Errors
+///
+/// Every error of `sent` other than [`IntakeError::NoConsent`], unchanged.
+pub(crate) fn text_unless_refused(
+    sent: Result<Queued, IntakeError>,
+) -> Result<Option<Queued>, IntakeError> {
+    match sent {
+        Ok(queued) => Ok(Some(queued)),
+        Err(IntakeError::NoConsent) => Ok(None),
+        Err(other) => Err(other),
+    }
 }
 
 /// INT-038, PRIV-007, PRIV-008, D-4142, D-4294: under 13, each of `jobs` (the request's jobs,
