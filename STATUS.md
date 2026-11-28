@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-28T09:30:02Z by runner ff837bcec2ae (actions).
+Updated 2026-11-28T10:22:13Z by runner ff837bcec2ae (actions).
 
-**Idle since 09:25Z; 698 of 813 done; week 24% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Building: T857 in progress since 10:21Z; 698 of 813 done; week 24% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 698 of 813 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** idle since 09:25Z (no task in progress)
-- **Week:** 24% used, 148.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:24Z, 5 min before this update
+- **Lane:** lane 1: T857 claimed 10:21Z, lease until 13:21Z
+- **Week:** 24% used, 146.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
+- **Last run:** 09:30Z, 51 min before this update
 - **Keeper:** last ran 09:23Z, next wake 09:43Z
 
 ## Needs attention
@@ -37,7 +37,6 @@ Updated 2026-11-28T09:30:02Z by runner ff837bcec2ae (actions).
 | T734 | server and adapters: a business can leave in the portal, wit | check_failed | 2 | 2 h 44 min | 12:11Z |  |
 | T778 | jobs, core and server: a dead Payment pending timer is reviv | done | 1 | 114 min | 11:24Z |  |
 | T867 | picks and payments (harness): an early fraud warning before  | check_failed | 1 | 60 min | 10:24Z |  |
-| T868 | tests (harness): two DONE tests that can fail by chance are  | done | 1 | 85 min | 10:14Z |  |
 
 ### Plan and harness merges on main
 - 05:06Z Plan: T849 clears J1's own per-IP code buckets before step 6 (D-5998) (#1529)
@@ -84,7 +83,7 @@ Updated 2026-11-28T09:30:02Z by runner ff837bcec2ae (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-28T07:24:58Z (week)): week: 46.0M used, 148.0M left, resets 2026-12-03T17:00:00Z; projected finish 2026-12-12T05:18:43Z.
+- Pacing (session_reading 2026-11-28T09:23:08Z (week)): week: 48.0M used, 146.0M left, resets 2026-12-03T17:00:00Z; projected finish 2026-12-12T06:06:25Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -99,7 +98,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T857 (lease until 2026-11-28T13:21:57Z)
 
 ## Last usage reading
 - {"task": "T872", "at": "2026-11-28T08:47:59Z", "output_tokens": 20186, "cache_creation_input_tokens": 104725, "cache_read_input_tokens": 2069303, "input_tokens": 102}
