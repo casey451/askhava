@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-27T23:57:40Z by runner 83e824672bcc (actions).
+Updated 2026-11-28T00:22:39Z by runner 83e824672bcc (actions).
 
 **Building: T811 in progress since 23:45Z; 695 of 809 done; week 20% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 695 of 809 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T811 claimed 23:45Z, lease until 02:57Z
+- **Lane:** lane 1: T811 claimed 23:45Z, lease until 03:22Z
 - **Week:** 20% used, 154.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:52Z, 5 min before this update
+- **Last run:** 23:58Z, 24 min before this update
 - **Keeper:** last ran 23:38Z, next wake 23:58Z
 
 ## Needs attention
@@ -53,7 +53,6 @@ Updated 2026-11-27T23:57:40Z by runner 83e824672bcc (actions).
 | T861 | e2e (harness): J1 reads a sent text from the fake carrier on | done | 1 | 42 min | 01:13Z |  |
 | T783 | intake: a picture text's media is deleted at the provider af | done | 1 | 2 h 19 min | 00:37Z |  |
 | T309 | server and portals: the business Get help form and the site  | done | 1 | 2 h 8 min | 00:28Z |  |
-| T854 | portals and action links: sessions and admissions on `real_n | done | 1 | 2 h 5 min | 23:58Z |  |
 
 ### Plan and harness merges on main
 - 23:50Z Plan: PF-CHAIN2 fixes for the web-chat consent chain; seams T873-T876 (D-5989) (#1523)
@@ -113,7 +112,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T811 (lease until 2026-11-28T02:57:39Z)
+- T811 (lease until 2026-11-28T03:22:39Z)
 
 ## Last usage reading
 - {"task": "T871", "at": "2026-11-27T23:00:09Z", "input_tokens": 84, "cache_read_input_tokens": 2183726, "cache_creation_input_tokens": 122355, "output_tokens": 17523}
