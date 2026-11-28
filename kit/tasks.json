@@ -33079,7 +33079,8 @@
     "T868",
     "T869",
     "T870",
-    "T876"
+    "T876",
+    "T879"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -33337,7 +33338,8 @@
     "T868",
     "T869",
     "T870",
-    "T876"
+    "T876",
+    "T879"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -34156,7 +34158,8 @@
     "T868",
     "T869",
     "T870",
-    "T876"
+    "T876",
+    "T879"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -35668,7 +35671,8 @@
     "T868",
     "T869",
     "T870",
-    "T876"
+    "T876",
+    "T879"
    ],
    "model": null,
    "effort": null,
@@ -38590,7 +38594,8 @@
     "T868",
     "T869",
     "T870",
-    "T876"
+    "T876",
+    "T879"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -38697,7 +38702,8 @@
     "T868",
     "T869",
     "T870",
-    "T876"
+    "T876",
+    "T879"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -38799,7 +38805,8 @@
     "T868",
     "T869",
     "T870",
-    "T876"
+    "T876",
+    "T879"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -39110,7 +39117,8 @@
     "T868",
     "T869",
     "T870",
-    "T876"
+    "T876",
+    "T879"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -56134,7 +56142,7 @@
    "id": "T862",
    "slug": "conversation-email",
    "title": "privacy: the email she types in her own conversation is kept apart as her conversation address",
-   "goal": "Plan change D-5848 (PKE part 1; Fable's T1; D-1612's missing conversation address). No web-chat step of the Intake order table collects her email (`docs/spec/intake.md:60` to `:72`), and `privacy.contact.email` holds only the address shared at the page pick (`app/privacy/src/vault.rs:449`), which never gets a code (D-050). New migration `migrations/0218_privacy_conversation_email.sql`: `privacy.conversation_email`, one row per contact, sealed under `VAULT_KEY` bound to its row (as `privacy.update_email`, `app/privacy/src/update_email.rs`). An email address in a message she types in her own text or web-chat conversation (INT-012's \"my email is ...\") is taken where her raw words are scrubbed with her contact in hand (`privacy::api::read_inbound_for`, `app/privacy/src/scrub_context.rs`; the scrub already cuts it, `scrub.rs:745`) and stored there, replacing an earlier one, audited without the value; the scrubbed text is unchanged. New read for `picks` only under the `(Picks, PickCode)` grant, audited and counted; the contact purge deletes the row. Plan change D-5972: it adds the own-record read of her conversation address under `(PortalsHomeowner, OwnRecord)`, taking the vault and `HomeownerSessionProof`, as `read_own_contact` (`app/privacy/src/api.rs:317`) does, and T870 puts it in her download. No other caller outside `privacy` is edited here. Tests in the new `tests/integration/tests/conversation_email.rs`: a typed address is stored once and sealed; a quote-page or page-pick address is never returned by the new read; the purge removes it; with rows for A and B, A's proof returns only A's address; the read takes no contact ID besides the proof's (SEC-046); each read is audited without the value. Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`. Plan change D-5995 (Casey's answer (c)): an email she types at the web chat's update choice (INT-050, T878) is her conversation address too; it passes the same scrub with her contact in hand, so this capture takes it, and it may receive her pick code (PICK-029).",
+   "goal": "Plan change D-5848 (PKE part 1; Fable's T1; D-1612's missing conversation address). No web-chat step of the Intake order table collects her email (`docs/spec/intake.md:60` to `:72`), and `privacy.contact.email` holds only the address shared at the page pick (`app/privacy/src/vault.rs:449`), which never gets a code (D-050). New migration `migrations/0218_privacy_conversation_email.sql`: `privacy.conversation_email`, one row per contact, sealed under `VAULT_KEY` bound to its row (as `privacy.update_email`, `app/privacy/src/update_email.rs`). An email address in a message she types in her own text or web-chat conversation (INT-012's \"my email is ...\") is taken where her raw words are scrubbed with her contact in hand (`privacy::api::read_inbound_for`, `app/privacy/src/scrub_context.rs`; the scrub already cuts it, `scrub.rs:745`) and stored there, replacing an earlier one, audited without the value; the scrubbed text is unchanged. New read for `picks` only under the `(Picks, PickCode)` grant, audited and counted; the contact purge deletes the row. Plan change D-5972: it adds the own-record read of her conversation address under `(PortalsHomeowner, OwnRecord)`, taking the vault and `HomeownerSessionProof`, as `read_own_contact` (`app/privacy/src/api.rs:317`) does, and T870 puts it in her download. No other caller outside `privacy` is edited here. Tests in the new `tests/integration/tests/conversation_email.rs`: a typed address is stored once and sealed; a quote-page or page-pick address is never returned by the new read; the purge removes it; with rows for A and B, A's proof returns only A's address; the read takes no contact ID besides the proof's (SEC-046); each read is audited without the value. Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`. Plan change D-5995 (Casey's answer (c)): an email she types at the web chat's update choice (INT-050, T878) is her conversation address too; it passes the same scrub with her contact in hand, so this capture takes it, and it may receive her pick code (PICK-029). Plan change D-5996 (pre-claim routine): an Opus implementation draft checked against `main` is in `docs/handoff/drafts/T862.md`. Read docs/handoff/drafts/T862.md's 'Worker: read this first' header first; the goal and acceptance win over the draft. Plan change D-5996 (the draft's plan gap): `HomeownerSessionProof.contact_id` is private to `app/privacy/src/api.rs` (`:165` to `:167`), so this task owns `api.rs` for exactly one addition, a `pub(crate) const fn contact(&self) -> Uuid` on `HomeownerSessionProof` right after the struct (`:168`), besides its own `pub use` lines; nothing else in `api.rs` changes. Plan change D-5996 (overseer decision, safety): the conversation address is taken only when (a) her message carries INT-012's cue, English \"my email is\" or \"my email address is\", Spanish \"mi correo es\" or \"mi correo electrónico es\" (case- and accent-insensitive, an optional colon, then one well-formed address as the next token), or (b) she types it at the web chat's update choice (T878, later); the cue is matched on whole words (\"amy email is\" never counts), and any second, different address anywhere in the message refuses the capture; no other address in a message is ever taken, because since D-5995 this address also gets her pick code (PICK-029) and a forwarded or third-party address must never become it; tests: \"send it to my son at x@example.com\" and a quoted business address are not taken, a cued address is taken in English and Spanish.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -56162,7 +56170,8 @@
     "app/privacy/src/scrub.rs",
     "app/privacy/src/models.rs",
     "app/privacy/src/purge.rs",
-    "tests/integration/tests/conversation_email.rs"
+    "tests/integration/tests/conversation_email.rs",
+    "app/privacy/src/api.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -56171,7 +56180,8 @@
     "docs/spec/quotes-pick.md",
     "docs/spec/intake.md",
     "app/privacy/src/update_email.rs",
-    "docs/spec/messaging.md"
+    "docs/spec/messaging.md",
+    "docs/handoff/drafts/T862.md"
    ],
    "requirements": [
     "PICK-029",
@@ -56185,13 +56195,14 @@
    "decisions": [
     "D-5848",
     "D-5972",
-    "D-5995"
+    "D-5995",
+    "D-5996"
    ],
    "cites": [],
    "budget": {
-    "files": 7,
+    "files": 8,
     "lines": 450,
-    "context_pct": 32
+    "context_pct": 41
    },
    "checks": [
     "Ci",
@@ -56200,7 +56211,7 @@
    ],
    "branch": "claude/task/T862-conversation-email",
    "prompt": "kit/prompts/T862.md",
-   "acceptance": "The conversation address is sealed in its own table, read only by `picks` under the pick-code grant (its new reader, the only PickCode read of an email; `privacy.contact.email` stays unreadable under PickCode, with a test) and by her own-record read under `(PortalsHomeowner, OwnRecord)`, which T870 puts in her data copy; it is never filled from the quote page or the page pick and is purged with the contact; every existing test passes unchanged; two Opus review rounds."
+   "acceptance": "The conversation address is sealed in its own table, read only by `picks` under the pick-code grant (its new reader, the only PickCode read of an email; `privacy.contact.email` stays unreadable under PickCode, with a test) and by her own-record read under `(PortalsHomeowner, OwnRecord)`, which T870 puts in her data copy; it is never filled from the quote page or the page pick and is purged with the contact; every existing test passes unchanged; two Opus review rounds. Only a cued address (INT-012's cue, English or Spanish) is taken; an uncued, forwarded or quoted address never is."
   },
   {
    "id": "T863",
@@ -56214,7 +56225,8 @@
    "deps": [
     "T862",
     "T801",
-    "T854"
+    "T854",
+    "T880"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -56562,7 +56574,7 @@
    "id": "T872",
    "slug": "age-stop-text-optional",
    "title": "intake: the age stop closes and purges even when its text is refused",
-   "goal": "Plan change D-5982 (Fable's decision, child safety; split out of T857 so T857 stays within its context limit and its test edits sit in a harness task). Once T857 puts `queue_text` behind T856's guard, the under-18 text of `stop_if_under_18` (`app/intake/src/conversation.rs:289`) can be refused with `IntakeError::NoConsent`, and today that error would roll back the request's close and an under-13 child's purge. (1) `stop_if_under_18` returns `Result<Option<(AgeStop, Option<Queued>)>, IntakeError>`: only `IntakeError::NoConsent` from its `queue_text` becomes a `None` text; the close, the job cancels, the under-13 purge (`purge_child`) and the audit row are kept and committed; every other error rolls back as today. It never answers `Ok(None)` for an under-age age, never fabricates a `Queued` and never bypasses or exempts the text from the guard. (2) Callers: `Reply::UnderAge(AgeStop, Option<Queued>)` (`app/intake/src/replies.rs:101`); `replies.rs:336` passes the option through; `stop_after` (`replies.rs:373`) does `handled.texts.extend(stop.and_then(|(_, q)| q))`; `app/intake/src/web_chat.rs:437` and `:476` compile unchanged and are not edited. (3) Mechanical test edits only, no assertion weakened (each still asserts the same template where a text went, now through `Some(q)`): `app/intake/src/tests/conversation.rs:361`, `:391`; `tests/integration/tests/intake_boundary_count.rs:200`; `tests/integration/tests/under_13_purge.rs:182`. (4) The mapping goes in a small private helper in `conversation.rs` taking `Result<Queued, IntakeError>` to `Result<Option<Queued>, IntakeError>` (`IntakeError::NoConsent` to `Ok(None)`, every other error stays `Err`), unit-tested in `app/intake/src/tests/conversation.rs`: `NoConsent` gives `None`, `Database` and `Outbox` stay `Err`, and a `Queued` passes through; before T857 no guard refuses this text, so these unit tests keep the branch covered (the `conversation.rs` coverage floor), and the end-to-end refusal is proven by T857's refused-text test (`docs/handoff/drafts/T857.md` point 11: `Some((Under18, None))` at 16 with the request closed, `Some((Under13, None))` at 12 with the data purged). Fake data only. Update `app/intake/NOTES.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-5982 (Fable's decision, child safety; split out of T857 so T857 stays within its context limit and its test edits sit in a harness task). Once T857 puts `queue_text` behind T856's guard, the under-18 text of `stop_if_under_18` (`app/intake/src/conversation.rs:289`) can be refused with `IntakeError::NoConsent`, and today that error would roll back the request's close and an under-13 child's purge. (1) `stop_if_under_18` returns `Result<Option<(AgeStop, Option<Queued>)>, IntakeError>`: only `IntakeError::NoConsent` from its `queue_text` becomes a `None` text; the close, the job cancels, the under-13 purge (`purge_child`) and the audit row are kept and committed; every other error rolls back as today. It never answers `Ok(None)` for an under-age age, never fabricates a `Queued` and never bypasses or exempts the text from the guard. (2) Callers: `Reply::UnderAge(AgeStop, Option<Queued>)` (`app/intake/src/replies.rs:101`); `replies.rs:336` passes the option through; `stop_after` (`replies.rs:373`) does `handled.texts.extend(stop.and_then(|(_, q)| q))`; `app/intake/src/web_chat.rs:437` and `:476` compile unchanged and are not edited. (3) Mechanical test edits only, no assertion weakened (each still asserts the same template where a text went, now through `Some(q)`): `app/intake/src/tests/conversation.rs:361`, `:391`; `tests/integration/tests/intake_boundary_count.rs:200`; `tests/integration/tests/under_13_purge.rs:182`. (4) The mapping goes in a small private helper in `conversation.rs` taking `Result<Queued, IntakeError>` to `Result<Option<Queued>, IntakeError>` (`IntakeError::NoConsent` to `Ok(None)`, every other error stays `Err`), unit-tested in `app/intake/src/tests/conversation.rs`: `NoConsent` gives `None`, `Database` and `Outbox` stay `Err`, and a `Queued` passes through; before T857 no guard refuses this text, so these unit tests keep the branch covered (the `conversation.rs` coverage floor), and the end-to-end refusal is proven by T857's refused-text test (`docs/handoff/drafts/T857.md` point 11: `Some((Under18, None))` at 16 with the request closed, `Some((Under13, None))` at 12 with the data purged). Fake data only. Update `app/intake/NOTES.md` and `docs/decisions.md`. Plan change D-5996 (pre-claim routine): an Opus implementation draft checked against `main` is in `docs/handoff/drafts/T872.md`. Read docs/handoff/drafts/T872.md's 'Worker: read this first' header first; the goal and acceptance win over the draft.",
    "type": "harness",
    "phase": 1,
    "stage": "5",
@@ -56589,7 +56601,8 @@
    "reads": [
     "docs/architecture.md",
     "docs/spec/intake.md",
-    "docs/spec/privacy.md"
+    "docs/spec/privacy.md",
+    "docs/handoff/drafts/T872.md"
    ],
    "requirements": [
     "INT-038",
@@ -56597,13 +56610,14 @@
    ],
    "tests": [],
    "decisions": [
-    "D-5982"
+    "D-5982",
+    "D-5996"
    ],
    "cites": [],
    "budget": {
     "files": 5,
     "lines": 120,
-    "context_pct": 32
+    "context_pct": 35
    },
    "checks": [
     "Ci",
@@ -56968,6 +56982,106 @@
    "branch": "claude/task/T878-web-update-choice",
    "prompt": "kit/prompts/T878.md",
    "acceptance": "TD-INT-59 and TD-INT-60 pass; the choice is asked once per request at step 11a, never blocks it and queues no homeowner text; no number typed on the page is texted and no consent is recorded by the choice; Text and SKIP set nothing and never erase an email channel; the seven copy keys exist in English and Spanish; every existing test passes unchanged; two Opus review rounds."
+  },
+  {
+   "id": "T879",
+   "slug": "flake-run-workflow",
+   "title": "harness: a flake-run workflow that runs named tests many times on main",
+   "goal": "Plan change D-5996 (Casey: \"Can we make sure the tasks will pass when built beforehand?\", then \"Yes\" to the three-part pre-claim routine; part (b)). New `.github/workflows/flake-run.yml`, `on: workflow_dispatch` only, with inputs: a Rust target (crate and test binary, `cargo test -p <crate> --test <bin> -- <filter>`) or a Playwright spec (`npx playwright test <spec> --repeat-each <n>`), and a repeat count (default 10, at most 30, refused above). It reuses `.github/workflows/ci.yml`'s existing setup for the job it mirrors (the pinned checkout, the PostgreSQL 16 service and its `DATABASE_URL`, the toolchain and `Swatinem/rust-cache` restore with no save, `sqlx-cli` from the cache, the Node and Playwright setup for a spec), with actions pinned by SHA as ci.yml pins them; it runs the named tests N times in a loop that never stops at the first failure and writes the pass and fail counts (and the failing run numbers) to `$GITHUB_STEP_SUMMARY`. Read-only: `permissions: contents: read`, no pushes, no state or ref writes, no artifact upload of secrets, and no secret beyond what ci.yml's test jobs already use. Inputs (D-5996 review): each `workflow_dispatch` input reaches a step only through `env:`, never `${{ inputs.* }}` inside `run:`; each is checked first against a strict pattern (crate name `^[a-z0-9_-]+$`, test binary `^[a-z0-9_]+$`, test-name filter `^[A-Za-z0-9_:]*$`, Playwright spec a path under `tests/` matching `^tests/[A-Za-z0-9_./-]+\\.spec\\.ts$` with no `..`) and the count as an integer from 1 to 30, failing closed before any build. Tests in the new `tests/test_flake_run_workflow.py` in the style of `tests/test_ci_workflow.py`: the trigger is only `workflow_dispatch`, no `${{ inputs` appears in any `run:` block, each input is validated before use, the repeat default and cap, read-only permissions, no `git push` or state write, actions pinned by SHA, and the setup steps match ci.yml's. Update `docs/architecture.md` (the workflows list) and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": "ops",
+   "deps": [
+    "T869"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "security"
+   ],
+   "owns": [
+    ".github/workflows/flake-run.yml",
+    "tests/test_flake_run_workflow.py"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/governance.md",
+    ".github/workflows/ci.yml",
+    "tests/test_ci_workflow.py"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-5996"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 250,
+    "context_pct": 31
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T879-flake-run-workflow",
+   "prompt": "kit/prompts/T879.md",
+   "acceptance": "`tests/test_flake_run_workflow.py` passes; the workflow is `workflow_dispatch` only, takes a cargo test filter or a Playwright spec and a repeat count (default 10, at most 30), reuses ci.yml's setup, reports pass and fail counts in the job summary, pushes nothing, writes no state and uses no secret beyond ci.yml's test jobs; every existing workflow test passes unchanged."
+  },
+  {
+   "id": "T880",
+   "slug": "vault-readers-conversation-email",
+   "title": "harness: the vault-reader scan covers T862's two conversation-address reads",
+   "goal": "Plan change D-5996 (review: vault-reader coverage is required). `tests/security/tests/vault_readers.rs` checks only its fixed `READERS` list (`:18` to `:25`), so T862's two new plaintext reads are not scanned. Add `(\"read_conversation_for_pick_code\", &[\"picks\"])` and `(\"read_own_conversation_email\", &[\"portals\"])` (the names T862 merged; grep `app/privacy/src/api.rs` for them first and use the real names), growing the array's length, and a planted-source case for each that fails when named outside its crate. Never weaken an existing entry or rule. Update `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": "privacy",
+   "deps": [
+    "T862"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security",
+    "harness"
+   ],
+   "owns": [
+    "tests/security/tests/vault_readers.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/spec/privacy.md",
+    "docs/spec/security.md"
+   ],
+   "requirements": [
+    "PRIV-004",
+    "SEC-046"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-5996"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 1,
+    "lines": 40,
+    "context_pct": 21
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T880-vault-readers-conversation-email",
+   "prompt": "kit/prompts/T880.md",
+   "acceptance": "`cargo test -p askhava-security --test vault_readers` passes with the two new entries, and a planted source naming either read outside its allowed crate fails the scan; no existing entry or rule is weakened."
   }
  ]
 }
