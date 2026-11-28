@@ -1,17 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-28T04:39:50Z by runner 5c0500c3dc89 (actions).
+Updated 2026-11-28T04:41:14Z by runner 5c0500c3dc89 (actions).
 
-**Building: T849 in progress since 03:36Z; 696 of 813 done; week 22% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Idle since 04:41Z; 696 of 813 done; week 22% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 696 of 813 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T849 claimed 03:36Z, lease until 07:39Z
+- **Lane:** idle since 04:41Z (no task in progress)
 - **Week:** 22% used, 150.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:30Z, 9 min before this update
+- **Last run:** 04:40Z, 0 min before this update
 - **Keeper:** last ran 02:41Z, next wake 03:01Z
 
 ## Needs attention
+- BLOCKED T849: plan gap reported: PLAN GAP: tests/e2e/j1_homeowner.spec.ts:302 (not owned by T849; the per-IP limit is in app/portals/src/pick_flow.rs:846-858, also not owned) has J1 step 6 failing in the late project. D-5955 moved j1_homeowner.spec.ts into late, so it runs after every main spec in the same real hour; the pick page counts per-IP code sends at real_now() (D-5836), CODE_SENDS_PER_IP allows 10 an hour (app/portals/src/limits.rs:34), all e2e requests come from 127.0.0.1, so the budget is gone by step 6 and the send is refused (pick_flow.rs:825); #pick-result never appears and j1_homeowner.spec.ts:321 toBeFocused f; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T849 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
 - PLAN GAP T862 (since 2026-11-28T03:36:40Z, no attempt used; a plan change fixes it): T862: docs/handoff/drafts/T862.md is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
@@ -22,11 +23,12 @@ Updated 2026-11-28T04:39:50Z by runner 5c0500c3dc89 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T849 | server: the e2e web binary serves J1/J2 business time from t | BLOCKED | 5 | 64 min | 04:41Z | PLAN GAP: tests/e2e/j1_homeowner.spec.ts:302 (not owned by T849; the per-IP limit is in app/portals/src/pick_flow.rs:846 |
 | T811 | server: the Confirm link's code goes by email to a person wi | done | 1 | 2 h 19 min | 02:05Z |  |
 | T871 | portals: the link-only code send and check that email a pers | done | 1 | 114 min | 23:00Z |  |
 | T856 | intake: a request may be texted only with an `sms` consent r | done | 2 | 2 h 16 min | 19:33Z | PLAN GAP: outside ownership: app/intake/src/replies.rs:367 (and replies.rs:204). The chat raw path web_chat::raw_turn -> |
 | T749 | messaging: the unused `business_pick_waiting` text template  | check_failed | 1 | 44 min | 16:48Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
-| T849 | server: the e2e web binary serves J1/J2 business time from t | check_failed | 4 | 118 min | 15:27Z | PLAN GAP: outside ownership: tests/e2e/web_chat.spec.ts, tests/a11y/page_states.ts / D-5836 puts inbound SMS and action  |
+| T849 | server: the e2e web binary serves J1/J2 business time from t | check_failed | 4 | 118 min | 15:27Z |  |
 | T817 | messaging: a text re-checks the opt-out list after its claim | done | 1 | 67 min | 14:27Z |  |
 | T822 | docs: the privacy policy names the email link and the fuller | done | 1 | 54 min | 14:13Z |  |
 | T862 | privacy: the email she types in her own conversation is kept | BLOCKED | 1 | 4 min | 13:22Z | PLAN GAP: outside ownership: app/server/src/homeowner_portal.rs, app/portals/src/homeowner_portal.rs / Evidence: her dat |
@@ -110,7 +112,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T849 (lease until 2026-11-28T07:39:50Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T811", "at": "2026-11-28T02:05:19Z", "cache_read_input_tokens": 6181030, "input_tokens": 154, "output_tokens": 38145, "cache_creation_input_tokens": 139861}
+- {"task": "T849", "at": "2026-11-28T04:41:13Z", "output_tokens": 37382, "input_tokens": 215, "cache_creation_input_tokens": 158289, "cache_read_input_tokens": 7275769}

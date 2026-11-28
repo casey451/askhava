@@ -124491,8 +124491,8 @@
     "T854",
     "T847"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 4,
+   "status": "BLOCKED",
+   "attempts": 5,
    "slug": "clock-composition",
    "type": "build",
    "stage": "5",
@@ -124787,6 +124787,29 @@
        "turns": 41
       }
      }
+    },
+    {
+     "attempt": 5,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 140,
+     "head_sha": "5c0500c3dc895b318c65ad8f71d86a52a21e7263",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-28T03:36:40Z",
+     "ended_at": "2026-11-28T04:41:13Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 6145724,
+       "turns": 84
+      },
+      "reviewer": {
+       "tokens": 1325931,
+       "turns": 28
+      }
+     }
     }
    ],
    "reviewed_sha": "182ad72d3d140f20a4a748b0f64444255630480a",
@@ -124802,7 +124825,7 @@
     "why": "auto-merge on #1512 (gh pr merge)",
     "head": "50b1e164ae989fc426bb42e104fe126122342642"
    },
-   "last_failure": "PLAN GAP: outside ownership: tests/e2e/web_chat.spec.ts, tests/a11y/page_states.ts\nD-5836 puts inbound SMS and action links on the test-control clock. web_chat.spec.ts:64-68 (consentsSince with no contact, DB real clock_timestamp) and page_states.ts:249-250 (action link expires_at = now() + 2 hours in DB time) are not owned by T849. After j1_homeowner.spec.ts:219 advances the clock up to a day, 4 web_chat tests (:111,:131,:183,:206) and 3 site_speed.spec.ts:256 tests (404) fail. Reviewer confirmed. Fix: T849 owns web_chat.spec.ts and filters consentsSince by contact, and page_states.ts seeds link expiry from the control clock (or action links keep SystemClock).\nre-queued after plan fix D-5955: D-5955 (PR #1500, merged 703f1b5): j1_homeowner.spec.ts joins the late playwright project, so its clock advance no longer reaches web_chat.spec.ts or page_states.ts; T849 now owns tests/e2e/playwright.config.ts as a harness task\nre-queued after plan fix D-5978: D-5978 (PR #1514): seedPick dates the ROC check at the given time; T849 owns keyed.ts and j3.ts; re-hand-in the kept branch claude/task/T849-clock-composition-a3",
+   "last_failure": "PLAN GAP: tests/e2e/j1_homeowner.spec.ts:302 (not owned by T849; the per-IP limit is in app/portals/src/pick_flow.rs:846-858, also not owned) has J1 step 6 failing in the late project. D-5955 moved j1_homeowner.spec.ts into late, so it runs after every main spec in the same real hour; the pick page counts per-IP code sends at real_now() (D-5836), CODE_SENDS_PER_IP allows 10 an hour (app/portals/src/limits.rs:34), all e2e requests come from 127.0.0.1, so the budget is gone by step 6 and the send is refused (pick_flow.rs:825); #pick-result never appears and j1_homeowner.spec.ts:321 toBeFocused fails. Passes alone (11/11); fails in full runs (2 local, 1 Ci). Smallest plan change: T849 owns j1_homeowner.spec.ts and clears this IP's portals.code_sends_per_ip and code_tries_per_ip buckets in core.rate_limit before step 6, or per-spec client IPs. Reviewer confirmed. D-5978 fix (keyed.ts, j3.ts, D-5905) is committed at 5c0500c3d and approved.",
    "runner_closed_prs": [
     1491,
     1494,
@@ -124819,7 +124842,7 @@
      "at": "2026-11-27T07:44:33Z"
     }
    ],
-   "reason": null,
+   "reason": "plan gap reported: PLAN GAP: tests/e2e/j1_homeowner.spec.ts:302 (not owned by T849; the per-IP limit is in app/portals/src/pick_flow.rs:846-858, also not owned) has J1 step 6 failing in the late project. D-5955 moved j1_homeowner.spec.ts into late, so it runs after every main spec in the same real hour; the pick page counts per-IP code sends at real_now() (D-5836), CODE_SENDS_PER_IP allows 10 an hour (app/portals/src/limits.rs:34), all e2e requests come from 127.0.0.1, so the budget is gone by step 6 and the send is refused (pick_flow.rs:825); #pick-result never appears and j1_homeowner.spec.ts:321 toBeFocused f; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T849 --plan-fix D-### --reason \"...\"` (D-2859)",
    "requeues": [
     {
      "at": "2026-11-27T12:14:33Z",
@@ -124870,10 +124893,6 @@
    "update_waiting_since": null,
    "update_push_failures": null,
    "merge_turn_since": "2026-11-27T15:31:19Z",
-   "wip_claim": {
-    "attempt": 5,
-    "remote_sha": "182ad72d3d140f20a4a748b0f64444255630480a"
-   },
    "progress": [
     {
      "at": "2026-11-28T03:48:57Z",
@@ -126421,12 +126440,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T811",
-   "at": "2026-11-28T02:05:19Z",
-   "cache_read_input_tokens": 6181030,
-   "input_tokens": 154,
-   "output_tokens": 38145,
-   "cache_creation_input_tokens": 139861
+   "task": "T849",
+   "at": "2026-11-28T04:41:13Z",
+   "output_tokens": 37382,
+   "input_tokens": 215,
+   "cache_creation_input_tokens": 158289,
+   "cache_read_input_tokens": 7275769
   },
   "source": "session_reading 2026-11-28T02:41:09Z (week)",
   "by_task": {
@@ -134750,14 +134769,14 @@
     "estimated_bytes": 367695,
     "estimated_tokens": 1054474,
     "usage_counting": "message_id",
-    "cache_creation_input_tokens": 916416,
-    "output_tokens": 229989,
-    "input_tokens": 983,
-    "cache_read_input_tokens": 42400218,
-    "worker_tokens": 39349838,
-    "worker_turns": 400,
-    "reviewer_tokens": 4197768,
-    "reviewer_turns": 101,
+    "cache_creation_input_tokens": 1074705,
+    "output_tokens": 267371,
+    "input_tokens": 1198,
+    "cache_read_input_tokens": 49675987,
+    "worker_tokens": 45495562,
+    "worker_turns": 484,
+    "reviewer_tokens": 5523699,
+    "reviewer_turns": 129,
     "last_model": "claude-opus-5-5"
    },
    "T518": {
@@ -134973,12 +134992,12 @@
   },
   "windows": {
    "five_hour": {
-    "start": "2026-11-27T23:00:09Z",
-    "tokens": 1154597
+    "start": "2026-11-28T04:41:13Z",
+    "tokens": 923462
    },
    "week": {
     "start": "2026-11-26T20:01:04Z",
-    "tokens": 38442799
+    "tokens": 39366261
    }
   },
   "session_reading": {
@@ -134989,7 +135008,7 @@
    }
   }
  },
- "updated_at": "2026-11-28T04:39:50Z",
+ "updated_at": "2026-11-28T04:41:14Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
