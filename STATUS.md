@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-28T02:05:22Z by runner 173cc61bcac8 (actions).
+Updated 2026-11-28T02:06:05Z by runner 173cc61bcac8 (actions).
 
-**Building: T811 in progress since 23:45Z; 695 of 811 done; week 20% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Idle since 02:05Z; 695 of 811 done; week 20% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 695 of 811 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T811 claimed 23:45Z, lease until 05:03Z
+- **Lane:** idle since 02:05Z (no task in progress)
 - **Week:** 20% used, 154.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:03Z, 1 min before this update
+- **Last run:** 02:03Z, 2 min before this update
 - **Keeper:** last ran 23:38Z, next wake 23:58Z
 
 ## Needs attention
@@ -19,6 +19,7 @@ Updated 2026-11-28T02:05:22Z by runner 173cc61bcac8 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T811 | server: the Confirm link's code goes by email to a person wi | MERGE_PENDING | 1 | 2 h 19 min | 02:05Z |  |
 | T871 | portals: the link-only code send and check that email a pers | done | 1 | 114 min | 23:00Z |  |
 | T856 | intake: a request may be texted only with an `sms` consent r | done | 2 | 2 h 16 min | 19:33Z | PLAN GAP: outside ownership: app/intake/src/replies.rs:367 (and replies.rs:204). The chat raw path web_chat::raw_turn -> |
 | T749 | messaging: the unused `business_pick_waiting` text template  | check_failed | 1 | 44 min | 16:48Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
@@ -110,7 +111,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T811 (lease until 2026-11-28T05:03:01Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T871", "at": "2026-11-27T23:00:09Z", "input_tokens": 84, "cache_read_input_tokens": 2183726, "cache_creation_input_tokens": 122355, "output_tokens": 17523}
+- {"task": "T811", "at": "2026-11-28T02:05:19Z", "cache_read_input_tokens": 6181030, "input_tokens": 154, "output_tokens": 38145, "cache_creation_input_tokens": 139861}
