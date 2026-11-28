@@ -179,7 +179,7 @@ async fn td_int_20_under_13_clears_the_vault_name_and_address(mut db: Db) {
     let who = contact(&mut db, "(928) 555-0172").await;
     let id = named(&mut db, who, 0).await;
     assert_eq!(vault_row(&mut db, who).await, (true, true, true, 1, 1));
-    let Reply::UnderAge(stop, sent) = reply(&mut db, &text(who, "I'm 11", 10)).await else {
+    let Reply::UnderAge(stop, Some(sent)) = reply(&mut db, &text(who, "I'm 11", 10)).await else {
         panic!("I'm 11 stops");
     };
     assert_eq!((stop, sent.template), (AgeStop::Under13, UNDER_18_TEMPLATE));

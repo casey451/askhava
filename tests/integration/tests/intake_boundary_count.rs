@@ -197,7 +197,7 @@ async fn sent(db: &mut PgConnection, contact: u128, words: &str, minute: i64) ->
         Reply::Handled(Handled { texts, .. }) | Reply::NameAddress(_, Handled { texts, .. }) => {
             texts.iter().map(|q| q.template).collect()
         }
-        Reply::UnderAge(_, queued) => vec![queued.template],
+        Reply::UnderAge(_, Some(queued)) => vec![queued.template],
         other => panic!("handled, got {other:?}"),
     }
 }

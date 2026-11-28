@@ -15,10 +15,13 @@ use crate::api::{
     consent_records, conversation, hear, joining_job, receive_text, record_answer,
     stop_if_under_18, take_name_address,
 };
+use crate::conversation::text_unless_refused;
+use crate::models::IntakeError;
 use crate::rules::{
     AgeStop, Inbound, JOIN_WINDOW, NAME_ADDRESS_TEMPLATE, Settings, accepts_word_answer, age_stop,
     cancel_like, joins_open_job, opens_job, pick_option, split_name_address,
 };
+use crate::service::Queued;
 
 type Db = sqlx::pool::PoolConnection<sqlx::Postgres>;
 
@@ -360,8 +363,8 @@ async fn td_int_20_an_under_18_sender_gets_one_reply_and_the_request_closes(mut 
         .await
         .expect("stop");
     assert_eq!(
-        stop.map(|(s, q)| (s, q.template)),
-        Some((AgeStop::Under18, "under_18"))
+        stop.map(|(s, q)| (s, q.map(|q| q.template))),
+        Some((AgeStop::Under18, Some("under_18")))
     );
     let again = stop_if_under_18(&mut db, &secret(), &msg, id, false)
         .await
@@ -388,7 +391,10 @@ async fn td_int_20_an_under_18_sender_gets_one_reply_and_the_request_closes(mut 
     let stop = stop_if_under_18(&mut db, &secret(), &msg, gas_id, false)
         .await
         .expect("stop");
-    assert_eq!(stop.map(|(_, q)| q.template), Some("under_18"));
+    assert_eq!(
+        stop.and_then(|(_, q)| q).map(|q| q.template),
+        Some("under_18")
+    );
 
     let young = text_in(Uuid::from_u128(0xB3), 0, inbound("I'm 11"));
     let handled = receive_text(&mut db, &secret(), &young, settings)
@@ -426,6 +432,46 @@ async fn td_int_20_an_under_18_sender_gets_one_reply_and_the_request_closes(mut 
         .await,
         Ok(Opened::Created(_))
     ));
+}
+
+/// A fake queued INT-038 text (no real outbox row; the helper never reads the database).
+fn fake_under_18() -> Queued {
+    Queued {
+        outbox_id: Uuid::from_u128(0x0872_0001),
+        template: "under_18",
+    }
+}
+
+/// INT-038, PRIV-008, D-5982: a text the consent guard refused is no text, so the stop still
+/// closes and purges; never an error that rolls the stop back.
+#[test]
+fn d_5982_a_refused_age_stop_text_is_none() {
+    assert_eq!(text_unless_refused(Err(IntakeError::NoConsent)), Ok(None));
+}
+
+/// INT-038, D-5982: a database failure still rolls the stop back.
+#[test]
+fn d_5982_a_database_error_still_rolls_the_stop_back() {
+    assert_eq!(
+        text_unless_refused(Err(IntakeError::Database)),
+        Err(IntakeError::Database)
+    );
+}
+
+/// INT-038, D-5982: an outbox failure is not a refusal and still rolls the stop back.
+#[test]
+fn d_5982_an_outbox_error_still_rolls_the_stop_back() {
+    assert_eq!(
+        text_unless_refused(Err(IntakeError::Outbox)),
+        Err(IntakeError::Outbox)
+    );
+}
+
+/// INT-038, D-5982: a queued text passes through unchanged; the helper never makes one.
+#[test]
+fn d_5982_a_queued_age_stop_text_passes_through() {
+    let queued = fake_under_18();
+    assert_eq!(text_unless_refused(Ok(queued)), Ok(Some(queued)));
 }
 
 /// `text` with the brand file's names in place of its brand tokens, the Spanish names when
