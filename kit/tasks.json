@@ -35675,7 +35675,9 @@
     "T879",
     "T881",
     "T882",
-    "T883"
+    "T883",
+    "T884",
+    "T886"
    ],
    "model": null,
    "effort": null,
@@ -55707,7 +55709,7 @@
    "id": "T857",
    "slug": "guarded-enqueue-seam",
    "title": "intake: `queue_text` and `queue_body` behind the guard; a page sink for web dispatch only",
-   "goal": "Plan change D-5848 (task C, part 1; Fable's section C.2; verification R1-05, R1-06; round-1 review). `queue_text` (`conversation.rs:585`) and `queue_body` (`handlers.rs:379`) keep their signatures (callers `summary_step.rs:35`, `:193`, `photos.rs:236`, `order.rs:399`, `cards_out.rs:582`) and check T856's guard before every enqueue: an `sms` request to the outbox as today, anything else refused, except the chat exemption: a branch of T856's guard (`app/intake/src/consent_guard.rs`) under which a request whose only consent records are `web_chat` keeps outbox delivery until T801, whatever the caller (T649's fixture `ask()` calls `answer_zip` and `ask_name_address` straight through `intake::api`, `app/server/tests/web_chat_after_code.rs:231` to `:234`, and asserts a NAME_ADDRESS outbox row at `:325` to `:330`); its constant `CHAT_LEGACY_TEXTS` may stay in `web_chat.rs`, and T801 deletes both the constant and the branch, so every legacy caller on a `web_chat` request (`zip_step`, `ask_name_address` at `conversation.rs:420`, the T649 and T645 paths) keeps outbox delivery until T801. Page delivery happens only when web dispatch is the explicit caller: a new function returns the rendered reply in a chat result type of its own (`intake::api`), never an outbox row; the shared `Queued`/`Handled` (`service.rs:66` to `:86`) are not changed. The `order_dispatch` gates (`:371`, `:476`, `:522`) ask the same question per request (`may_text_request` for a text, the web request for the page) with small edits only. The guard resolves the request from `subject[0]`: a conversation ID, or a job ID mapped to its conversation; anything else is refused (an inbox-only subject is the named business-reply exemption, `service.rs:262`), and a request is never resolved by contact; tests for a conversation subject and a job subject. Every existing test passes unchanged, including `app/server/tests/web_chat_after_code.rs:216` to `:235`, `:325` to `:330`, `app/server/tests/web_chat_stops.rs:572` and `tests/integration/tests/web_chat.rs:360`. Tests in the new `tests/integration/tests/guarded_enqueue.rs`. Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`. Plan change D-5918 (Fable's pre-flight question, every caller grepped): `queue_text`'s callers also include `web_chat.rs:764` and `:767` (the consent and Spanish texts in `open_verified`, under the chat exemption) and `order.rs:399`; `queue_body`'s also include `replies.rs`, `zip_step.rs`, `order_dispatch.rs` and `handlers.rs`; both signatures are kept, so the unowned callers `replies.rs`, `zip_step.rs`, `photos.rs`, `cards_out.rs`, `order.rs` and `web_chat.rs` keep compiling unchanged. Plan change D-5981 (Sonnet trial): an Opus-written draft is in `docs/handoff/drafts/T857.md`; read its 'Worker: read this first' header first; the goal and acceptance win over the draft. Plan change D-5982: T872 (before this task) changes `stop_if_under_18`'s answer to `Option<(AgeStop, Option<Queued>)>` with a `None` text only on `IntakeError::NoConsent`; this task's guarded `queue_text` is what can now refuse it, and the draft's refused-text test (point 11) proves the close and the under-13 purge are kept.",
+   "goal": "Plan change D-5848 (task C, part 1; Fable's section C.2; verification R1-05, R1-06; round-1 review). `queue_text` (`conversation.rs:585`) and `queue_body` (`handlers.rs:379`) keep their signatures (callers `summary_step.rs:35`, `:193`, `photos.rs:236`, `order.rs:399`, `cards_out.rs:582`) and check T856's guard before every enqueue: an `sms` request to the outbox as today, anything else refused, except the chat exemption: a branch of T856's guard (`app/intake/src/consent_guard.rs`) under which a request whose only consent records are `web_chat` keeps outbox delivery until T801, whatever the caller (T649's fixture `ask()` calls `answer_zip` and `ask_name_address` straight through `intake::api`, `app/server/tests/web_chat_after_code.rs:231` to `:234`, and asserts a NAME_ADDRESS outbox row at `:325` to `:330`); its constant `CHAT_LEGACY_TEXTS` may stay in `web_chat.rs`, and T801 deletes both the constant and the branch, so every legacy caller on a `web_chat` request (`zip_step`, `ask_name_address` at `conversation.rs:420`, the T649 and T645 paths) keeps outbox delivery until T801. Page delivery happens only when web dispatch is the explicit caller: a new function returns the rendered reply in a chat result type of its own (`intake::api`), never an outbox row; the shared `Queued`/`Handled` (`service.rs:66` to `:86`) are not changed. The `order_dispatch` gates (`:371`, `:476`, `:522`) ask the same question per request (`may_text_request` for a text, the web request for the page) with small edits only. The guard resolves the request from `subject[0]`: a conversation ID, or a job ID mapped to its conversation; anything else is refused (an inbox-only subject is the named business-reply exemption, `service.rs:262`), and a request is never resolved by contact; tests for a conversation subject and a job subject. Every existing test passes unchanged, including `app/server/tests/web_chat_after_code.rs:216` to `:235`, `:325` to `:330`, `app/server/tests/web_chat_stops.rs:572` and `tests/integration/tests/web_chat.rs:360`. Tests in the new `tests/integration/tests/guarded_enqueue.rs`. Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`. Plan change D-5918 (Fable's pre-flight question, every caller grepped): `queue_text`'s callers also include `web_chat.rs:764` and `:767` (the consent and Spanish texts in `open_verified`, under the chat exemption) and `order.rs:399`; `queue_body`'s also include `replies.rs`, `zip_step.rs`, `order_dispatch.rs` and `handlers.rs`; both signatures are kept, so the unowned callers `replies.rs`, `zip_step.rs`, `photos.rs`, `cards_out.rs`, `order.rs` and `web_chat.rs` keep compiling unchanged. Plan change D-5981 (Sonnet trial): an Opus-written draft is in `docs/handoff/drafts/T857.md`; read its 'Worker: read this first' header first; the goal and acceptance win over the draft. Plan change D-5982: T872 (before this task) changes `stop_if_under_18`'s answer to `Option<(AgeStop, Option<Queued>)>` with a `None` text only on `IntakeError::NoConsent`; this task's guarded `queue_text` is what can now refuse it, and the draft's refused-text test (point 11) proves the close and the under-13 purge are kept. Plan change D-6021 (attempt 2): attempt 1's code and tests were verified (10 guarded_enqueue tests pass, both mutants caught); the only open finding is doc wording. Attempt 2 continues the kept work (`claude/wip/T857-a1`, 087e75d9e) and changes only `app/intake/CLAUDE.md:27` \"for a contact\" to \"for a request\" (the line reads \"nothing for a contact the consent guard refuses (T857)\"), then hands in.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -57118,7 +57120,7 @@
    "id": "T881",
    "slug": "keep-blocked-work",
    "title": "runner (harness): a blocked or stopped attempt's work is kept on a WIP ref even when origin has the task branch",
-   "goal": "Plan change D-6020 (Casey: \"Yes do it all\"; T849 attempt 5's commit 5c0500c3d was lost when it blocked on a plan gap). Today `_keep_wip` (`runner/cycle.py:2723`, called from `finish` at `:2859`) keeps a failed head on `claude/wip/<id>-a<n>` only for `review_failed` and `plan_gap` (`WIP_KINDS`, `:113`), only when origin had no task branch at the claim and only once per task (`_wip_kind`, `:2689` to `:2700`: `remote_sha` and `continued_from` at `:2696`, `wip_used` at `:2698`). T849 attempt 5 ended `plan_gap` (`record_plan_gap`, `:504`, from `_after_worker` at `:618`) on a branch origin already had, so nothing was kept; a session that stops without handing in (`.github/workflows/backup-runner.yml:672`, D-503: `tests_failed` with the log `session ended without handing in`, `:692`, `:701`) keeps nothing either. Change: (1) that safety hand-in, matched on its exact log text and never on a worker's own `tests_failed`, is kept as kind `stopped`, and any attempt that ends BLOCKED (a plan gap, a permission block, the last attempt) is kept as kind `blocked` when no narrower kind applies; (2) a head is kept even when the claim found the task branch on origin, when origin's tip at the claim (`wip_claim.remote_sha`) or the continued WIP's sha is an ancestor of the head and the head is ahead of it, checked by a new `runner/wip.py` helper (`git merge-base --is-ancestor` under `wip.git_env()`); a head that does not descend is not kept and its history row says why (`wip_skipped`); (3) `wip_used` no longer stops a later attempt's head being kept: each attempt keeps its own ref, only the newest record is offered (`_wip_offer`, `:2647`), and a `plan_gap` or `blocked` WIP only after a `--plan-fix` requeue (D-677); (4) every keep still passes `_wip_refusal` (`_wip_refusal`, `:2704`: the tamper words, then `env.wip_check`'s protected, locked and binary path rules and its gitleaks and PII scans) with the record written before the push; nothing goes to `claude/task/**`, never with `RUNNER_PUSH_TOKEN`, never forced; (5) the plan-gap outbox item (`_plan_gap_outbox`, `:539`) names the kept ref and sha when there is one. `runner/github_env.py` is not edited (T882 continues from such a WIP). Tests in `tests/test_runner_wip.py` with a fake Env: a `plan_gap` block on a branch origin had keeps the head; a `stopped` hand-in keeps it; a worker's ordinary `tests_failed` keeps nothing; a head that does not descend from origin's tip is skipped with a reason; a refused scan keeps nothing; a second continued attempt's head is kept and is the one offered; the outbox body names the ref. D-6020 supersedes only these assertions in `tests/test_runner_wip.py`, which change to match: the timeout case at `:132`, the origin-branch half of `:146` to `:150`, `:164` to `:172` (once per task), and `:97` to `:103` only if a last-attempt `tests_failed` there is now kept as `blocked` (its Env lacks the WIP methods, so it should not be). Nothing else in the file is edited. No Rust file changes, so `tests/coverage_floor.json` sets no floor; every new branch has a test. Update `docs/architecture.md` (the runner's kept work) and `docs/decisions.md`.",
+   "goal": "Plan change D-6020 (Casey: \"Yes do it all\"; T849 attempt 5's commit 5c0500c3d was lost when it blocked on a plan gap). Today `_keep_wip` (`runner/cycle.py:2723`, called from `finish` at `:2859`) keeps a failed head on `claude/wip/<id>-a<n>` only for `review_failed` and `plan_gap` (`WIP_KINDS`, `:113`), only when origin had no task branch at the claim and only once per task (`_wip_kind`, `:2689` to `:2700`: `remote_sha` and `continued_from` at `:2696`, `wip_used` at `:2698`). T849 attempt 5 ended `plan_gap` (`record_plan_gap`, `:504`, from `_after_worker` at `:618`) on a branch origin already had, so nothing was kept; a session that stops without handing in (`.github/workflows/backup-runner.yml:672`, D-503: `tests_failed` with the log `session ended without handing in`, `:692`, `:701`) keeps nothing either. Change: (1) that safety hand-in, matched on its exact log text and never on a worker's own `tests_failed`, is kept as kind `stopped`, and any attempt that ends BLOCKED (a plan gap, a permission block, the last attempt) is kept as kind `blocked` when no narrower kind applies; (2) a head is kept even when the claim found the task branch on origin, when origin's tip at the claim (`wip_claim.remote_sha`) or the continued WIP's sha is an ancestor of the head and the head is ahead of it, checked by a new `runner/wip.py` helper (`git merge-base --is-ancestor` under `wip.git_env()`); a head that does not descend is not kept and its history row says why (`wip_skipped`); (3) `wip_used` no longer stops a later attempt's head being kept: each attempt keeps its own ref, only the newest record is offered (`_wip_offer`, `:2647`), and a `plan_gap` or `blocked` WIP only after a `--plan-fix` requeue (D-677); (4) every keep still passes `_wip_refusal` (`_wip_refusal`, `:2704`: the tamper words, then `env.wip_check`'s protected, locked and binary path rules and its gitleaks and PII scans) with the record written before the push; nothing goes to `claude/task/**`, never with `RUNNER_PUSH_TOKEN`, never forced; (5) the plan-gap outbox item (`_plan_gap_outbox`, `:539`) names the kept ref and sha when there is one. `runner/github_env.py` is not edited (T882 continues from such a WIP). Tests in `tests/test_runner_wip.py` with a fake Env: a `plan_gap` block on a branch origin had keeps the head; a `stopped` hand-in keeps it; a worker's ordinary `tests_failed` keeps nothing; a head that does not descend from origin's tip is skipped with a reason; a refused scan keeps nothing; a second continued attempt's head is kept and is the one offered; the outbox body names the ref. D-6020 supersedes only these assertions in `tests/test_runner_wip.py`, which change to match: the timeout case at `:132`, the origin-branch half of `:146` to `:150`, `:164` to `:172` (once per task), the `\"wip\" not in entry` part of `:180` (the attempt after a dropped continuation now keeps its own head), and `:97` to `:103` only if a last-attempt `tests_failed` there is now kept as `blocked` (its Env lacks the WIP methods, so it should not be). Nothing else in the file is edited. No Rust file changes, so `tests/coverage_floor.json` sets no floor; every new branch has a test. Plan change D-6021 (T881 attempt 1's plan gap): this task also owns `kit/state_schema.json`, where only the `wip.kind` enum (`:429` to `:434`, today `[\"review\", \"plan_gap\"]`) gains `\"stopped\"` and `\"blocked\"`, so `scripts/check_state.py` passes on a record of each kind; nothing else in the schema changes. Update `docs/architecture.md` (the runner's kept work) and `docs/decisions.md`.",
    "type": "harness",
    "phase": 1,
    "stage": "5",
@@ -57138,7 +57140,8 @@
    "owns": [
     "runner/cycle.py",
     "runner/wip.py",
-    "tests/test_runner_wip.py"
+    "tests/test_runner_wip.py",
+    "kit/state_schema.json"
    ],
    "reads": [
     "docs/code-docs.md"
@@ -57151,7 +57154,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 3,
+    "files": 4,
     "lines": 450,
     "context_pct": 35
    },
@@ -57262,6 +57265,110 @@
    "branch": "claude/task/T883-workflow-checklist-goal-cap",
    "prompt": "kit/prompts/T883.md",
    "acceptance": "`python3 -m pytest tests/test_gen_prompts.py tests/test_session_checklist.py` passes, the new cases failing against `main`; every other workflow and runner test passes unchanged; `python3 scripts/gen_prompts.py --check` on `main`'s plan prints each goal length and passes; actionlint reports nothing new on `backup-runner.yml`."
+  },
+  {
+   "id": "T884",
+   "slug": "runner-hand-in-smoke",
+   "title": "runner (harness): the runner smokes every hand-in head itself and workers no longer run the smoke",
+   "goal": "Plan change D-6021 (Casey: \"Ok make it all happen\"; after T882 and T883). Workers spend turns starting, polling and re-running the smoke inside their session: T879 attempt 2's start smoke ran past the Bash tool's background limit and was rerun, and T872 spent turns 3 and 4 waiting on \"smoke running\" (overseer's session evidence, D-6021). The runner already smokes main before the session (`.github/workflows/backup-runner.yml:429` \"Warm the smoke build before the session (D-2007)\", `:446` \"Run the start-routine smoke before the session (D-2028)\", writing `target/smoke-pre.json`; the detached D-2560 smoke when main moved, `:521` to `:523`) and smokes a fix round's head itself at `--after` (D-3530: `after_smoke`, `runner/github_env.py:2827`, `:2881`), but only for a fix round: `fix_round` (`runner/__main__.py:517`, used at `:507`) gives a first-round hand-in no runner smoke because its worker ran one (`kit/prompts/TEMPLATE.md:14` Start step 2 and `:97` End step 1; session prompt step 5b, `backup-runner.yml:551`). Change: (1) `runner/__main__.py` `after`: every `submitted` hand-in with a hand-off file gets the runner's own full smoke of its head (`after_smoke`, unchanged: detached, `smoke_pending` until a verdict, nothing pushed meanwhile, a red held once as `smoke_red` and then `tests_failed`), not only a fix round; with no hand-off file nothing changes. (2) `write_handoff` (`:792`) adds `smoke`: {`sha` main's head the claim was judged on, `source` (`env.smoke_source`), `log` the path of this job's pre-session or background smoke log beside `target/smoke` when it exists for that sha, else \"\"}, each read with `getattr` and a default (no log path outside a real `GitHubEnv`), because the stand-in envs that call `write_handoff` (`tests/test_runner_api_death.py:295`, `tests/test_runner_decisions.py:89`, `tests/test_runner_live.py:544`, `:1584`, `tests/test_runner_model_window.py:208`, `tests/test_runner_two_lanes.py:361`) carry no smoke fields and must pass unchanged. (3) The session prompt (`backup-runner.yml` step 3, `:541`, and step 5b, `:551`) tells the worker and every fix-round worker, word for word: \"The runner smoked main before this claim and runs the full smoke on your hand-in head itself: skip the prompt's Start step 2, the full smoke in End step 1 and the Definition of done line '`bash scripts/smoke.sh` is green on your branch'; never start, poll or re-run `scripts/smoke.sh`; run 'Run your tests', then `bash scripts/prehandin.sh` and `bash scripts/prehandin.sh --ally` as the End routine says; the start smoke's log is the hand-off's `smoke.log` when you need it.\"; step 5b stops requiring the worker's `smoke.sh` and keeps `prehandin.sh`; step 4c (`:548`) loses only its clause that a fix-round worker runs the full smoke when its fixes touched more than one crate, since `--after` now smokes every head; step 5a is unchanged. No other session-prompt line changes; `kit/prompts/TEMPLATE.md` is locked and not edited here (a later plan change trims Start step 2 and End step 1 once this merges). Tests in a new `tests/test_runner_handin_smoke.py`: a first-round hand-in (one worker, no hold) passes the hand-off record and is `smoke_pending`, then a green verdict hands in; a red one is held once then fails; no hand-off file passes no record; `write_handoff` names the smoke log only for its own sha; steps 3 and 5b carry the sentence word for word. D-6021 supersedes only `tests/test_runner_after_smoke.py:57` to `:62` (the first-round case) the `(\"a1\",), False` case at `:73` (a first-round hand-in now gets the record) and the clause check at `:256` (`\"only when its fixes touched more than one crate\"`, now absent from 4c), which change to match; nothing else in that file is edited. No Rust file changes, so `tests/coverage_floor.json` sets no floor; every new branch has a test. Update `docs/architecture.md` (the runner smoke at hand-in) and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T882",
+    "T883"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness"
+   ],
+   "owns": [
+    "runner/__main__.py",
+    ".github/workflows/backup-runner.yml",
+    "tests/test_runner_after_smoke.py",
+    "tests/test_runner_handin_smoke.py"
+   ],
+   "reads": [
+    "docs/code-docs.md"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-2028",
+    "D-2560",
+    "D-3530",
+    "D-6021"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 350,
+    "context_pct": 24
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T884-runner-hand-in-smoke",
+   "prompt": "kit/prompts/T884.md",
+   "acceptance": "`python3 -m pytest tests/test_runner_handin_smoke.py tests/test_runner_after_smoke.py tests/test_runner_pre_smoke.py tests/test_runner_smoke_reuse.py` passes, the new cases failing against `main`'s runner; every other `tests/test_runner_*.py` and workflow test passes unchanged; `git diff origin/main -- runner/github_env.py runner/cycle.py kit/prompts/TEMPLATE.md` is empty; actionlint reports nothing new on `backup-runner.yml`."
+  },
+  {
+   "id": "T886",
+   "slug": "reviewer-doc-only-fix",
+   "title": "runner (harness): a reviewer may commit a doc-only fix after the findings round",
+   "goal": "Plan change D-6021 (Fable's ruling on Casey's \"Ok make it all happen\"; after T881, T882, T883 and T884). T857 attempt 1 failed only because the reviewer after the findings round still ended `REVIEW-VERDICT: FINDINGS` on one doc word (`app/intake/CLAUDE.md:27`), and the reviewer cost more than the worker (4.01M against 3.28M). Today such a round ends `review_failed` (`runner/cycle.py:107` to `:109`; session step 4, `.github/workflows/backup-runner.yml:546`: \"When the reviewer after the findings round still ends with `REVIEW-VERDICT: FINDINGS`, run step 5 with `--outcome review_failed`\"), and a reviewer that commits is no reviewer (`runner/review_proof.py:131`, `approval_problems`; rule (b), `authorship_problems`, `:142`, wants each commit in a `--worker-agent` transcript). Change: after the findings round, if every remaining finding is tagged DOC-ONLY with exact replacement text, the reviewer commits it and re-runs the doc checks (`python3 scripts/check_code_docs.py`, `python3 scripts/pii_scan.py --root .`). The runner accepts only if the commit's diff touches just `.md` files or `//`, `///`, `//!` comment lines in files the task owns or the shared doc paths (crate `CLAUDE.md`/`NOTES.md`, `docs/architecture.md` and its parts, `docs/decisions.md`); both removed and added lines must be whole comment lines (no commenting out code), and `//`/`///`/`//!` lines count only in `.rs`/`.ts` files; none locked (`scripts/check_plan_lock.py` `locked_paths`), protected (`kit/tasks.json` `protected_paths`) or tests (any path under `tests/` or a `src/tests/` folder), and at most 10 changed lines; otherwise it is `review_failed` as today (D-4720). `Ci`, `Twin`, `Ally` still gate the merge. (1) `runner/review_proof.py`: a new `doc_only(sha, task, git)` check; a reviewer commit counts as a doc fix only when that reviewer's own assistant text tags each fixed finding `DOC-ONLY:` before the commit's `[<branch> <abbrev>]` line and the commit's first parent is a commit rule (b) proves a worker made; in rule (a) a reviewer whose only commits are one or more such `doc_only` commits, each its own `[<branch> <abbrev>]` line, after which it approved the full head with its own `git rev-parse HEAD`, stays eligible; in rule (b) such a commit passes when that reviewer transcript holds its summary line; any other reviewer commit keeps today's rule. (2) The session prompt step 4 (`:546`) tells the reviewer of the findings round, word for word, to tag a finding `DOC-ONLY:` with its file:line and exact replacement only when it changes nothing but prose, and, when every remaining finding is so tagged, to make exactly those edits, commit with plain `git commit`, re-run the two doc checks and end with `REVIEW-VERDICT: APPROVED <new head>`; step 5 then runs with no `--outcome`. Tests in a new `tests/test_runner_doc_fix.py`: a reviewer's `.md` fix of 3 lines approved over the new head is accepted; a Rust `///` line accepted; a fix to a shared crate `CLAUDE.md` accepted; a commented-out code line refused; a diff of more than 10 changed lines refused; an 11-line fix, a code line, a test file, a locked or protected file, a file the task does not own and a fix with no approval of the new head are each refused (`review_missing`, then `tests_failed` as today); the workflow step carries the sentence. No existing assertion changes: `tests/test_runner_review_proof.py:140` to `:145` (\"a reviewer that committed is no reviewer\") still holds for a commit that is not doc-only; its fixture commit `c1` (`:59`, a one-line `.md` in the task's owned `docs/k10/`) stays refused because that transcript tags no `DOC-ONLY:` finding and no worker commit precedes it; any other case where the existing file's assertions would change is a `PLAN GAP:` report. No Rust file changes, so `tests/coverage_floor.json` sets no floor; every new branch has a test. Update `docs/architecture.md` (the review proof) and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T881",
+    "T882",
+    "T883",
+    "T884"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "security"
+   ],
+   "owns": [
+    "runner/review_proof.py",
+    ".github/workflows/backup-runner.yml",
+    "tests/test_runner_doc_fix.py"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "tests/test_runner_review_proof.py"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-3728",
+    "D-4720",
+    "D-6021"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 300,
+    "context_pct": 17
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T886-reviewer-doc-only-fix",
+   "prompt": "kit/prompts/T886.md",
+   "acceptance": "`python3 -m pytest tests/test_runner_doc_fix.py tests/test_runner_review_proof.py tests/test_runner_after_smoke.py` passes, the new cases failing against `main`'s runner; every other `tests/test_runner_*.py` and workflow test passes unchanged; `git diff origin/main -- runner/cycle.py runner/github_env.py runner/__main__.py` is empty; actionlint reports nothing new on `backup-runner.yml`."
   }
  ]
 }
