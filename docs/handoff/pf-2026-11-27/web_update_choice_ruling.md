@@ -1,0 +1,19 @@
+# Web-chat update choice (Nov 27-28; Casey + Fable)
+Casey, in his own words (answering "Should the web chat ask for an email, so a homeowner who uses only the web page can get back to her quotes?"): "Email or phone number and have option for both".
+Casey's answers to the three points that needed him (Nov 28, about 5:30 pm MST):
+(a) Keep the rule: the only text opt-in is her own inbound text (CON-005/D-5279). Choosing "Text" on the page shows "text <number> from your phone"; no number field on the page.
+(b) Bring the choice back for the web chat only (sets aside D-460 for web chat; text-first homeowners unchanged).
+(c) An email typed in the web chat is her conversation address and also receives pick codes (PICK-029/D-050 boundary moved for this address).
+Fable's design (read against main 82bf913df):
+1 Step 11a right after first name and address (INT-027): regular path before the card (so TXT-032's web sentence knows the answer); emergency path after the cards with step 11. Asked once per request, skippable, never blocks the request.
+ EN: "How should we send your quote updates? 1. Email 2. Text 3. Both. Or type SKIP to use your quote page only."
+ ES (draft, native review): "¿Cómo le enviamos las novedades de sus cotizaciones? 1. Correo electrónico 2. Texto 3. Ambos. O escriba SKIP para usar solo su página de cotizaciones."
+ Email ask reuses TXT-018: "What email should we use? We never share it with businesses."
+ Text when the number is live: "To get texts, text <number> from your phone. Texting Laftly is your OK to get automated texts about your request." + CON-025 disclosures.
+ Text when not live: "Texts aren't available yet. We can email you instead."
+2 Email: format check, one re-ask, then go on without it (as TXT-018); sealed in privacy.update_email with a new source 'web_chat' (check allows only 'quote_page' today, migrations/0215); set_update_channel(Email) in the same transaction; one-tap confirm in the first email (TXT-018); also T862's conversation address (PICK-029) per Casey (c).
+3 Phone: no number field; Verify number never texted (CON-021). She texts in; consent text first (CON-031); T856's path appends the sms record; request goes on by text (T801 (2)); opt-out and quiet hours as normal. Opted-out number: page changes nothing; only her own START reopens. Existing SMS request: ruling 5 (no attach, web_existing_text_request).
+4 Both: store email and set Both; texts refused until her sms record exists, falling to email only (app/intake/src/job_texts.rs:344); dedupe via existing router (update_emails.rs:139) and per-job keys; page notice always additional.
+5 Changes: amend docs/spec only (sources/ protected), lock rewrite + D entry quoting Casey (like D-5989's TXT-032): TXT-018 (asked on the web chat), the intake order table + a new INT row, CON-025 (the choice collects no consent), TXT-032 ("email on file" = the update address), TXT-034, new TD rows. New T877 (privacy, after T862): migration widening the source check + update_email.rs. New T878 (intake web-update-choice, after T860, T874, T877): new web_update_choice.rs, web_dispatch.rs, a test file, copy keys web_updates_ask, web_updates_email_bad, web_updates_saved, web_updates_text_how, web_updates_text_unavailable, web_updates_skip (EN+ES). T876 and T801 wait on T878. T877 takes the next migration number (shift queued phase-2 migrations again).
+ T876 bug: it gates on homeowner_has_email (privacy.contact.email, app/messaging/src/email.rs:792), which per T862 holds only the pick-shared address, so it would never fire at cards-out. Re-gate T876 on the update address + channel; it is the first email carrying the confirm link.
+Not verified by Fable: whether an unconfirmed update address gets later updates; full Both fallback beyond job_texts.rs:344; T877/T878/T801 context %; whether scripts demand a changes-file edit for a new requirement; emergency placement vs INT-029.
