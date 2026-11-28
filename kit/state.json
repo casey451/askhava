@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "phase": "kit",
- "current": "T811",
+ "current": "T849",
  "backup_runner": "on",
  "ruleset_verified": true,
  "lease": null,
@@ -124491,13 +124491,13 @@
     "T854",
     "T847"
    ],
-   "status": "QUEUED",
+   "status": "IN_PROGRESS",
    "attempts": 4,
    "slug": "clock-composition",
    "type": "build",
    "stage": "5",
-   "attempt_started_at": "2026-11-27T13:29:16Z",
-   "lane": "2",
+   "attempt_started_at": "2026-11-28T03:36:40Z",
+   "lane": "1",
    "decision_ids": [
     5902,
     5903,
@@ -125565,7 +125565,13 @@
      "plan_then": "014461fdaac370079435c8b32c9ae1c7d06268d0f16b8de7d2d9779f57a20ab9",
      "plan_now": "85b9b3c97da589eb0cc73e69375171b026a5d854f3a34d498f4e593437ca091b"
     }
-   ]
+   ],
+   "plan_gap": {
+    "at": "2026-11-28T03:36:40Z",
+    "problems": [
+     "T862: docs/handoff/drafts/T862.md is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet"
+    ]
+   }
   },
   {
    "id": "T863",
@@ -126251,7 +126257,13 @@
    "attempts": 0,
    "slug": "age-stop-text-optional",
    "type": "harness",
-   "stage": "5"
+   "stage": "5",
+   "plan_gap": {
+    "at": "2026-11-28T03:36:40Z",
+    "problems": [
+     "T872: docs/handoff/drafts/T872.md is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet"
+    ]
+   }
   },
   {
    "id": "T873",
@@ -126331,7 +126343,14 @@
    "attempts": 0,
    "slug": "flake-run-workflow",
    "type": "harness",
-   "stage": "5"
+   "stage": "5",
+   "plan_gap": {
+    "at": "2026-11-28T03:36:40Z",
+    "problems": [
+     "T879: prompt kit/prompts/T879.md is missing; run scripts/gen_prompts.py",
+     "T879: branch claude/task/T879-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet"
+    ]
+   }
   },
   {
    "id": "T880",
@@ -126377,7 +126396,7 @@
    "output_tokens": 38145,
    "cache_creation_input_tokens": 139861
   },
-  "source": "session_reading 2026-11-27T23:37:50Z (week)",
+  "source": "session_reading 2026-11-28T02:41:09Z (week)",
   "by_task": {
    "FIX-MAIN": {
     "estimated_bytes": 3756447,
@@ -134696,8 +134715,8 @@
     "last_model": "claude-sonnet-5-5"
    },
    "T849": {
-    "estimated_bytes": 325935,
-    "estimated_tokens": 934911,
+    "estimated_bytes": 367695,
+    "estimated_tokens": 1054474,
     "usage_counting": "message_id",
     "cache_creation_input_tokens": 916416,
     "output_tokens": 229989,
@@ -134938,7 +134957,7 @@
    }
   }
  },
- "updated_at": "2026-11-28T03:36:44Z",
+ "updated_at": "2026-11-28T03:37:34Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -135039,22 +135058,6 @@
  "runner_sha": "820c69ead2c264e87353ae23a36cf3f94455c0e4",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "02eda79e70d59b4c6cc85798f22738a632a2f9a4",
-   "ok": true,
-   "at": "2026-11-27T08:48:44Z",
-   "why": "start routine (ancestry reuse of 30d6084f0a45, 2026-11-27T06:50:03Z)",
-   "reused": "2026-11-27T06:50:03Z",
-   "base": "30d6084f0a458db4dfdd27668186efba74d04b7a"
-  },
-  {
-   "sha": "02eda79e70d59b4c6cc85798f22738a632a2f9a4",
-   "ok": true,
-   "at": "2026-11-27T09:09:15Z",
-   "why": "start routine (ancestry reuse of 30d6084f0a45, 2026-11-27T06:50:03Z)",
-   "reused": "2026-11-27T06:50:03Z",
-   "base": "30d6084f0a458db4dfdd27668186efba74d04b7a"
-  },
   {
    "sha": "02eda79e70d59b4c6cc85798f22738a632a2f9a4",
    "ok": true,
@@ -135195,24 +135198,39 @@
    "why": "start routine (ancestry reuse of e29a4938318b, 2026-11-27T21:05:36Z)",
    "reused": "2026-11-27T21:05:36Z",
    "base": "e29a4938318bc0418f1073fc18148b209a3d0702"
+  },
+  {
+   "sha": "820c69ead2c264e87353ae23a36cf3f94455c0e4",
+   "ok": true,
+   "at": "2026-11-28T03:36:06Z",
+   "why": "start routine (pre-session, ancestor of acb76f0c97e3)",
+   "seconds": 1864
+  },
+  {
+   "sha": "acb76f0c97e3fbd3894e5851b20a3a10e562d05f",
+   "ok": true,
+   "at": "2026-11-28T03:36:40Z",
+   "why": "start routine (ancestry reuse of 820c69ead2c2, 2026-11-28T03:36:06Z)",
+   "reused": "2026-11-28T03:36:06Z",
+   "base": "820c69ead2c264e87353ae23a36cf3f94455c0e4"
   }
  ],
  "main_red": null,
  "pacing": {
-  "last": "T811 estimated 1.6M tokens (calibrated); week has 154.0M left (no five-hour budget, D-3056) (session_reading 2026-11-27T23:37:50Z (week)); claimed",
-  "at": "2026-11-27T23:45:35Z",
+  "last": "T849 estimated 1.1M tokens (calibrated); week has 150.0M left (no five-hour budget, D-3056) (session_reading 2026-11-28T02:41:09Z (week)); claimed",
+  "at": "2026-11-28T03:36:40Z",
   "decision": "claim",
   "waiting_until": null,
   "standing": {
    "week": {
-    "used": 40000000,
+    "used": 44000000,
     "budget": 194000000,
-    "left": 154000000,
+    "left": 150000000,
     "resets_at": "2026-12-03T17:00:00Z"
    }
   },
-  "remaining_estimate": 376511544,
-  "projected_finish": "2026-12-11T13:48:39Z"
+  "remaining_estimate": 386466994,
+  "projected_finish": "2026-12-12T02:17:00Z"
  },
  "main_red_history": [
   {

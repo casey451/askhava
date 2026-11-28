@@ -1,19 +1,22 @@
 # Ask Hava build status
 
-Updated 2026-11-28T03:36:44Z by runner 820c69ead2c2 (actions).
+Updated 2026-11-28T03:37:34Z by runner 820c69ead2c2 (actions).
 
-**Idle since 02:44Z; 696 of 813 done; week 22% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Building: T849 in progress since 03:36Z; 696 of 813 done; week 22% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 696 of 813 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** idle since 02:44Z (no task in progress)
-- **Week:** 22% used, 154.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:08Z, 28 min before this update
+- **Lane:** lane 1: T849 claimed 03:36Z, lease until 06:36Z
+- **Week:** 22% used, 150.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
+- **Last run:** 03:08Z, 29 min before this update
 - **Keeper:** last ran 02:41Z, next wake 03:01Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
+- PLAN GAP T862 (since 2026-11-28T03:36:40Z, no attempt used; a plan change fixes it): T862: docs/handoff/drafts/T862.md is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
+- PLAN GAP T872 (since 2026-11-28T03:36:40Z, no attempt used; a plan change fixes it): T872: docs/handoff/drafts/T872.md is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
+- PLAN GAP T879 (since 2026-11-28T03:36:40Z, no attempt used; a plan change fixes it): T879: prompt kit/prompts/T879.md is missing; run scripts/gen_prompts.py; T879: branch claude/task/T879-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
 - Strict plan check red: 58 problem(s) on tasks still to run (+607 on DONE tasks); first: T704: stored context_pct 38% but it measures 44%; regenerate
 
 ## Last 24 hours
@@ -94,7 +97,7 @@ Updated 2026-11-28T03:36:44Z by runner 820c69ead2c2 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-27T23:37:50Z (week)): week: 40.0M used, 154.0M left, resets 2026-12-03T17:00:00Z; projected finish 2026-12-11T13:48:39Z.
+- Pacing (session_reading 2026-11-28T02:41:09Z (week)): week: 44.0M used, 150.0M left, resets 2026-12-03T17:00:00Z; projected finish 2026-12-12T02:17:00Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -109,7 +112,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T849 (lease until 2026-11-28T06:36:40Z)
 
 ## Last usage reading
 - {"task": "T811", "at": "2026-11-28T02:05:19Z", "cache_read_input_tokens": 6181030, "input_tokens": 154, "output_tokens": 38145, "cache_creation_input_tokens": 139861}
