@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-28T02:48:49Z by runner 820c69ead2c2 (actions).
+Updated 2026-11-28T03:07:42Z by runner 5e246f084f32 (manual).
 
-**Idle since 02:44Z; 696 of 811 done; week 22% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Idle since 02:44Z; 696 of 813 done; week 22% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 696 of 811 build tasks (owner gates not counted)
+- **Tasks done:** 696 of 813 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** idle since 02:44Z (no task in progress)
 - **Week:** 22% used, 154.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:42Z, 6 min before this update
+- **Last run:** 02:49Z, 18 min before this update
 - **Keeper:** last ran 02:41Z, next wake 03:01Z
 
 ## Needs attention
@@ -49,9 +49,9 @@ Updated 2026-11-28T02:48:49Z by runner 820c69ead2c2 (actions).
 | T518 | server, ops and payments: the Stripe-or-webhook-errors alert | resync | 1 | 2 h 9 min | 04:13Z |  |
 | T522 | server and portals: the business text-consent box is served  | done | 1 | 104 min | 04:07Z |  |
 | T612 | harness: the WEB-029 and WEB-030 runtime checks on every sit | QUEUED | 2 | 96 min | 03:36Z |  |
-| T799 | Templates and tests (harness): copy review fixes (refund att | done | 2 | 31 min | 02:52Z | PLAN GAP: contradiction: D-5401 requires es.json text "dentro de 72 horas de recibir los datos del cliente" (5 keys), bu |
 
 ### Plan and harness merges on main
+- 03:05Z Plan: pre-claim routine (drafts, chance-failure runs, coverage floors); T879, T880; T872/T862 drafts (D-5996) (#1526)
 - 00:49Z Plan: web-chat update choice: email, text or both (D-5995) (#1524)
 - 23:50Z Plan: PF-CHAIN2 fixes for the web-chat consent chain; seams T873-T876 (D-5989) (#1523)
 - 22:40Z Harness: workers post a short progress note about every 10 minutes (D-5988) (#1521)
@@ -66,8 +66,8 @@ Updated 2026-11-28T02:48:49Z by runner 820c69ead2c2 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 489 of 736 (66.4%) · partial 238 · unstarted 9
-**Tasks merged (throughput only):** 696 of 811
+**Requirements verified:** 488 of 736 (66.3%) · partial 239 · unstarted 9
+**Tasks merged (throughput only):** 696 of 813
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -83,7 +83,7 @@ Updated 2026-11-28T02:48:49Z by runner 820c69ead2c2 (actions).
 | lifecycle | 23 | 5 | 0 | 28 |
 | messaging | 25 | 20 | 0 | 45 |
 | ops-recovery | 37 | 16 | 1 | 54 |
-| privacy | 15 | 16 | 0 | 31 |
+| privacy | 14 | 17 | 0 | 31 |
 | quiet-hours | 5 | 4 | 0 | 9 |
 | quotes-pick | 40 | 16 | 0 | 56 |
 | recurring | 10 | 1 | 0 | 11 |
