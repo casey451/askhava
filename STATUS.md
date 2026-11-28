@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-28T00:22:39Z by runner 83e824672bcc (actions).
+Updated 2026-11-28T00:27:49Z by runner 82bf913df8ad (manual).
 
 **Building: T811 in progress since 23:45Z; 695 of 809 done; week 20% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-28T00:22:39Z by runner 83e824672bcc (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T811 claimed 23:45Z, lease until 03:22Z
 - **Week:** 20% used, 154.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:58Z, 24 min before this update
+- **Last run:** 00:23Z, 4 min before this update
 - **Keeper:** last ran 23:38Z, next wake 23:58Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
-- Strict plan check red: 58 problem(s) on tasks still to run (+607 on DONE tasks); first: T704: stored context_pct 38% but it measures 44%; regenerate
+- Strict plan check red: 58 problem(s) on tasks still to run (+605 on DONE tasks); first: T704: stored context_pct 38% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -68,8 +68,8 @@ Updated 2026-11-28T00:22:39Z by runner 83e824672bcc (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 486 of 735 (66.1%) · partial 241 · unstarted 8
-**Tasks merged (throughput only):** 695 of 805
+**Requirements verified:** 484 of 735 (65.9%) · partial 243 · unstarted 8
+**Tasks merged (throughput only):** 695 of 809
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -83,7 +83,7 @@ Updated 2026-11-28T00:22:39Z by runner 83e824672bcc (actions).
 | job-cards | 17 | 7 | 0 | 24 |
 | licensing | 41 | 7 | 0 | 48 |
 | lifecycle | 23 | 5 | 0 | 28 |
-| messaging | 28 | 17 | 0 | 45 |
+| messaging | 26 | 19 | 0 | 45 |
 | ops-recovery | 37 | 16 | 1 | 54 |
 | privacy | 15 | 16 | 0 | 31 |
 | quiet-hours | 5 | 4 | 0 | 9 |
