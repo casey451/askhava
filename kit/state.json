@@ -124879,6 +124879,11 @@
      "at": "2026-11-28T03:48:57Z",
      "attempt": 5,
      "note": "start smoke; done: read prompt, branch switched; next: reproduce J3 step5, fix keyed.ts ownerSql; tests: not run; turns: 8"
+    },
+    {
+     "at": "2026-11-28T04:12:47Z",
+     "attempt": 5,
+     "note": "reproduce J3 locally; done: e2e env set up (stripe-mock, fresh db); next: check openAsOwner locally via confirm_served; tests: j3 local fails step3 (env?); turns: 30"
     }
    ]
   },
@@ -134969,7 +134974,7 @@
    }
   }
  },
- "updated_at": "2026-11-28T03:48:57Z",
+ "updated_at": "2026-11-28T04:12:47Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
