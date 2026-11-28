@@ -3852,3 +3852,4 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 - D-6021 (4): a new small runner task (T884) has the runner, not the builder, run the long smoke test at the start and at hand-in, so builders stop spending turns waiting on it.
 - D-6021 (5) (Fable decided): a new small runner task (T886) lets the reviewer fix a tiny wording-only problem itself (at most 10 lines of notes or comments, never code or tests) instead of failing the whole try. T857's first try failed on exactly that: one word in a note.
 - D-6021 (6): T857's second try only changes that one word ("contact" to "request"); its code and tests already passed review.
+- D-6021 (7): T881's first try hit a gap in its own instructions: it needed to change the file that lists the allowed kinds of saved work, but it wasn't allowed to touch that file. It may now. The same check found two smaller gaps in T884 and T886, fixed before they start.
