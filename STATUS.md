@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-28T00:37:10Z by runner 83e824672bcc (actions).
+Updated 2026-11-28T01:16:25Z by runner 173cc61bcac8 (actions).
 
-**Building: T811 in progress since 23:45Z; 695 of 809 done; week 20% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Building: T811 in progress since 23:45Z; 695 of 811 done; week 20% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 695 of 809 build tasks (owner gates not counted)
+- **Tasks done:** 695 of 811 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T811 claimed 23:45Z, lease until 03:37Z
+- **Lane:** lane 1: T811 claimed 23:45Z, lease until 04:16Z
 - **Week:** 20% used, 154.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:28Z, 8 min before this update
+- **Last run:** 00:37Z, 38 min before this update
 - **Keeper:** last ran 23:38Z, next wake 23:58Z
 
 ## Needs attention
@@ -50,10 +50,9 @@ Updated 2026-11-28T00:37:10Z by runner 83e824672bcc (actions).
 | T612 | harness: the WEB-029 and WEB-030 runtime checks on every sit | QUEUED | 2 | 96 min | 03:36Z |  |
 | T799 | Templates and tests (harness): copy review fixes (refund att | done | 2 | 31 min | 02:52Z | PLAN GAP: contradiction: D-5401 requires es.json text "dentro de 72 horas de recibir los datos del cliente" (5 keys), bu |
 | T856 | intake: a request may be texted only with an `sms` consent r | BLOCKED | 1 | 110 min | 02:15Z |  |
-| T861 | e2e (harness): J1 reads a sent text from the fake carrier on | done | 1 | 42 min | 01:13Z |  |
-| T783 | intake: a picture text's media is deleted at the provider af | done | 1 | 2 h 19 min | 00:37Z |  |
 
 ### Plan and harness merges on main
+- 00:49Z Plan: web-chat update choice: email, text or both (D-5995) (#1524)
 - 23:50Z Plan: PF-CHAIN2 fixes for the web-chat consent chain; seams T873-T876 (D-5989) (#1523)
 - 22:40Z Harness: workers post a short progress note about every 10 minutes (D-5988) (#1521)
 - 20:24Z Plan: T857/T865 drafts bound to T856's guard; under-18 refused text; T872 (D-5982) (#1520)
@@ -111,7 +110,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T811 (lease until 2026-11-28T03:37:10Z)
+- T811 (lease until 2026-11-28T04:16:24Z)
 
 ## Last usage reading
 - {"task": "T871", "at": "2026-11-27T23:00:09Z", "input_tokens": 84, "cache_read_input_tokens": 2183726, "cache_creation_input_tokens": 122355, "output_tokens": 17523}
