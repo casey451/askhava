@@ -1,23 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-28T04:49:03Z by runner 04bdbc389c1c (actions).
+Updated 2026-11-28T04:49:43Z by runner 04bdbc389c1c (actions).
 
-**Idle since 04:41Z; 696 of 813 done; week 23% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Building: T879 in progress since 04:49Z; 696 of 813 done; week 23% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 696 of 813 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** idle since 04:41Z (no task in progress)
-- **Week:** 23% used, 150.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:43Z, 5 min before this update
+- **Lane:** lane 1: T879 claimed 04:49Z, lease until 07:49Z
+- **Week:** 23% used, 148.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
+- **Last run:** 04:43Z, 6 min before this update
 - **Keeper:** last ran 04:42Z, next wake 05:02Z
 
 ## Needs attention
 - BLOCKED T849: plan gap reported: PLAN GAP: tests/e2e/j1_homeowner.spec.ts:302 (not owned by T849; the per-IP limit is in app/portals/src/pick_flow.rs:846-858, also not owned) has J1 step 6 failing in the late project. D-5955 moved j1_homeowner.spec.ts into late, so it runs after every main spec in the same real hour; the pick page counts per-IP code sends at real_now() (D-5836), CODE_SENDS_PER_IP allows 10 an hour (app/portals/src/limits.rs:34), all e2e requests come from 127.0.0.1, so the budget is gone by step 6 and the send is refused (pick_flow.rs:825); #pick-result never appears and j1_homeowner.spec.ts:321 toBeFocused f; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T849 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
-- PLAN GAP T862 (since 2026-11-28T03:36:40Z, no attempt used; a plan change fixes it): T862: docs/handoff/drafts/T862.md is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
-- PLAN GAP T872 (since 2026-11-28T03:36:40Z, no attempt used; a plan change fixes it): T872: docs/handoff/drafts/T872.md is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
-- PLAN GAP T879 (since 2026-11-28T03:36:40Z, no attempt used; a plan change fixes it): T879: prompt kit/prompts/T879.md is missing; run scripts/gen_prompts.py; T879: branch claude/task/T879-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
 - Strict plan check red: 58 problem(s) on tasks still to run (+607 on DONE tasks); first: T704: stored context_pct 38% but it measures 44%; regenerate
 
 ## Last 24 hours
@@ -97,7 +94,7 @@ Updated 2026-11-28T04:49:03Z by runner 04bdbc389c1c (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-28T02:41:09Z (week)): week: 44.0M used, 150.0M left, resets 2026-12-03T17:00:00Z; projected finish 2026-12-12T02:17:00Z.
+- Pacing (session_reading 2026-11-28T04:42:04Z (week)): week: 46.0M used, 148.0M left, resets 2026-12-03T17:00:00Z; projected finish 2026-12-12T04:09:10Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -112,7 +109,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T879 (lease until 2026-11-28T07:49:00Z)
 
 ## Last usage reading
 - {"task": "T849", "at": "2026-11-28T04:41:13Z", "output_tokens": 37382, "input_tokens": 215, "cache_creation_input_tokens": 158289, "cache_read_input_tokens": 7275769}
