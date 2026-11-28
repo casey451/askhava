@@ -3850,3 +3850,5 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 - D-6021 (2): every task that touches shared test setup now gets an outside ChatGPT check before it starts; Opus verifies each point and Fable decides.
 - D-6021 (3): when a try fails in a way that looks like bad luck, the overseer first reruns that test many times with T879's button before retrying or changing the plan.
 - D-6021 (4): a new small runner task (T884) has the runner, not the builder, run the long smoke test at the start and at hand-in, so builders stop spending turns waiting on it.
+- D-6021 (5) (Fable decided): a new small runner task (T886) lets the reviewer fix a tiny wording-only problem itself (at most 10 lines of notes or comments, never code or tests) instead of failing the whole try. T857's first try failed on exactly that: one word in a note.
+- D-6021 (6): T857's second try only changes that one word ("contact" to "request"); its code and tests already passed review.
