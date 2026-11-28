@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-28T06:56:38Z by runner 11e3cb0aab80 (actions).
+Updated 2026-11-28T06:57:15Z by runner 11e3cb0aab80 (actions).
 
-**Building: T879 in progress since 05:58Z; 696 of 813 done; week 23% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Idle since 06:56Z; 696 of 813 done; week 23% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 696 of 813 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T879 claimed 05:58Z, lease until 09:54Z
+- **Lane:** idle since 06:56Z (no task in progress)
 - **Week:** 23% used, 148.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
 - **Last run:** 06:55Z, 1 min before this update
 - **Keeper:** last ran 05:53Z, next wake 06:13Z
@@ -20,7 +20,8 @@ Updated 2026-11-28T06:56:38Z by runner 11e3cb0aab80 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T879 | harness: a flake-run workflow that runs named tests many tim | QUEUED | 1 | 62 min | 05:51Z | Reviewer after the findings round still ends REVIEW-VERDICT: FINDINGS (head 97d7be0793d47a6bd0fca5b8b6517f58cab29aaf). F |
+| T879 | harness: a flake-run workflow that runs named tests many tim | MERGE_PENDING | 2 | 57 min | 06:56Z | Reviewer after the findings round still ends REVIEW-VERDICT: FINDINGS (head 97d7be0793d47a6bd0fca5b8b6517f58cab29aaf). F |
+| T879 | harness: a flake-run workflow that runs named tests many tim | QUEUED | 1 | 62 min | 05:51Z |  |
 | T849 | server: the e2e web binary serves J1/J2 business time from t | BLOCKED | 5 | 64 min | 04:41Z | PLAN GAP: tests/e2e/j1_homeowner.spec.ts:302 (not owned by T849; the per-IP limit is in app/portals/src/pick_flow.rs:846 |
 | T811 | server: the Confirm link's code goes by email to a person wi | done | 1 | 2 h 19 min | 02:05Z |  |
 | T871 | portals: the link-only code send and check that email a pers | done | 1 | 114 min | 23:00Z |  |
@@ -106,7 +107,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T879 (lease until 2026-11-28T09:54:57Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T879", "at": "2026-11-28T05:51:30Z", "output_tokens": 72466, "cache_read_input_tokens": 4022493, "input_tokens": 169, "cache_creation_input_tokens": 233196}
+- {"task": "T879", "at": "2026-11-28T06:56:37Z", "output_tokens": 34574, "cache_read_input_tokens": 2225826, "input_tokens": 80, "cache_creation_input_tokens": 117794}

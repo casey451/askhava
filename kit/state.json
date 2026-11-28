@@ -126380,7 +126380,7 @@
    "deps": [
     "T869"
    ],
-   "status": "IN_PROGRESS",
+   "status": "MERGE_PENDING",
    "attempts": 1,
    "slug": "flake-run-workflow",
    "type": "harness",
@@ -126440,12 +126440,31 @@
       }
      },
      "wip_skipped": "97d7be0793d4 changes .github"
+    },
+    {
+     "attempt": 2,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 63,
+     "head_sha": "11e3cb0aab80c36bb401e160747edc21cff774b1",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": true,
+     "started_at": "2026-11-28T05:58:54Z",
+     "ended_at": "2026-11-28T06:56:37Z",
+     "result": "MERGE_PENDING",
+     "usage": {
+      "worker": {
+       "tokens": 2014629,
+       "turns": 33
+      },
+      "reviewer": {
+       "tokens": 363645,
+       "turns": 9
+      }
+     }
     }
    ],
-   "wip_claim": {
-    "attempt": 2,
-    "remote_sha": ""
-   },
    "reviewed_sha": "11e3cb0aab80c36bb401e160747edc21cff774b1",
    "review_lease": {
     "task": "T879",
@@ -126453,7 +126472,11 @@
     "expires": "2026-11-28T09:54:57Z"
    },
    "branch": "claude/task/T879-flake-run-workflow",
-   "head_check_since": null
+   "auto_merge": {
+    "enabled": true,
+    "why": "auto-merge on #1530 (gh pr merge)",
+    "head": "11e3cb0aab80c36bb401e160747edc21cff774b1"
+   }
   },
   {
    "id": "T880",
@@ -126493,11 +126516,11 @@
  "usage": {
   "last_reading": {
    "task": "T879",
-   "at": "2026-11-28T05:51:30Z",
-   "output_tokens": 72466,
-   "cache_read_input_tokens": 4022493,
-   "input_tokens": 169,
-   "cache_creation_input_tokens": 233196
+   "at": "2026-11-28T06:56:37Z",
+   "output_tokens": 34574,
+   "cache_read_input_tokens": 2225826,
+   "input_tokens": 80,
+   "cache_creation_input_tokens": 117794
   },
   "source": "session_reading 2026-11-28T05:52:17Z (week)",
   "by_task": {
@@ -135045,25 +135068,25 @@
     "estimated_bytes": 449665,
     "estimated_tokens": 1289548,
     "usage_counting": "message_id",
-    "output_tokens": 72466,
-    "cache_read_input_tokens": 4022493,
-    "input_tokens": 169,
-    "cache_creation_input_tokens": 233196,
-    "worker_tokens": 3072403,
-    "worker_turns": 60,
-    "reviewer_tokens": 1255921,
-    "reviewer_turns": 28,
+    "output_tokens": 107040,
+    "cache_read_input_tokens": 6248319,
+    "input_tokens": 249,
+    "cache_creation_input_tokens": 350990,
+    "worker_tokens": 5087032,
+    "worker_turns": 93,
+    "reviewer_tokens": 1619566,
+    "reviewer_turns": 37,
     "last_model": "claude-opus-5-5"
    }
   },
   "windows": {
    "five_hour": {
     "start": "2026-11-28T04:41:13Z",
-    "tokens": 1631542
+    "tokens": 2006572
    },
    "week": {
     "start": "2026-11-26T20:01:04Z",
-    "tokens": 40074341
+    "tokens": 40449371
    }
   },
   "session_reading": {
@@ -135074,7 +135097,7 @@
    }
   }
  },
- "updated_at": "2026-11-28T06:56:38Z",
+ "updated_at": "2026-11-28T06:57:15Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
