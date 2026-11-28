@@ -24,7 +24,7 @@ The layer-7 crate that turns a homeowner's inbound text into a request (`docs/ar
 - PICK-046's notice goes by email only when its text cannot go, once per pick: `tests/integration/tests/pick_lapsed_email.rs` (T446). More: `(never 34)` in NOTES.md.
 - PICK-047's `pick_moved` text goes once per ended pick: `tests/integration/tests/pick_moved_text.rs` (T471). More: `(never 35)` in NOTES.md.
 - The intake order on texts (D-4360): consent then the ZIP question: `tests/integration/tests/intake_order_area_trade.rs` (TD-INT-45). More: `(never 36)` in NOTES.md.
-- Walker corrections (D-4441, D-4602): SAFE and an INT-037 answer are never a ZIP answer (`ask_open_again`, no `zip` row, the re-ask kept); nothing for a contact `may_text` refuses; Guarded by `tests/integration/tests/intake_order_corrections.rs`. More: `(never 20)` in NOTES.md.
+- Walker corrections (D-4441, D-4602): SAFE and an INT-037 answer are never a ZIP answer (`ask_open_again`, no `zip` row, the re-ask kept); nothing for a contact the consent guard refuses (T857); Guarded by `tests/integration/tests/intake_order_corrections.rs`. More: `(never 20)` in NOTES.md.
 - INT-032's two jobs (D-4486 to D-4488): `two_jobs` only after a two-trade first text; Guarded by `tests/integration/tests/intake_order_two_jobs.rs`. More: `(never 21)` in NOTES.md.
 - INT-032 corrections (D-4441, D-4778): `two_jobs` right after the first ZIP question only (after SAFE or the INT-037 answer on those paths); Guarded by `tests/integration/tests/intake_order_two_jobs_rules.rs`. More: `(never 22)` in NOTES.md.
 - CON-022: the consent sweep clears a vault phone only after `still_unlisted` answered true: `tests/integration/tests/consent_purge.rs` (`td_con_30_*`, T563). More: `(never 37)` in NOTES.md.
@@ -34,6 +34,7 @@ The layer-7 crate that turns a homeowner's inbound text into a request (`docs/ar
 - Web chat after the code (T645): an opt-out lists the number and texts nothing; INT-038 stops the chat: `app/server/tests/web_chat_stops.rs` (TD-CON-36). More: `(never 41)` in NOTES.md.
 - Trade questions: "Which fits best?" and `trade_ask` at most twice each: `tests/integration/tests/intake_order_trade_questions.rs`, `intake_boundary_count.rs`. More: `(never 42)` in NOTES.md.
 - An under-13 purge leaves none of her kept words and queues her Twilio body deletes at once: `tests/integration/tests/under_13_purge_complete.rs` (T839, D-5821).
+- No request text enters the outbox without T856's guard (D-6014): `queue_text` and `queue_body` resolve the request from `subject[0]` (a job on two requests is refused) and the web page's reply never touches the outbox (`page_reply`): `tests/integration/tests/guarded_enqueue.rs` (T857). More: NOTES.md `[CON-021]`.
 
 ## Detail
 Everything else about this crate (what it owns, the code behind each requirement ID, change recipes, the tests that guard it, decisions and history) is in `app/intake/NOTES.md`, one entry per line, each starting with its requirement IDs. Grep it by requirement ID, file or word (`grep -n 'FEE-039' app/intake/NOTES.md`); never read it whole. Add your own entries at its end, one line each (`docs/code-docs.md` section 2).

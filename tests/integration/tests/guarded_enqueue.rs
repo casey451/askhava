@@ -473,6 +473,49 @@ async fn a_job_subject_never_borrows_the_callers_request(pool: PgPool) {
     assert_eq!(all_rows(&mut db).await, before, "nothing queued");
 }
 
+/// CON-021, D-5848 (fail closed): a job two requests name resolves to neither, so the text is
+/// refused even though the caller's own request has an `sms` record.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn a_job_two_requests_name_is_refused(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("db");
+    let request = sms(&mut db, Uuid::from_u128(0x85781)).await;
+    let other = sms(&mut db, Uuid::from_u128(0x85782)).await;
+    let job = job_of(&mut db, request).await;
+    sqlx::query(
+        "INSERT INTO intake.request_job (conversation_id, job_id, opened_at) VALUES ($1, $2, now())",
+    )
+    .bind(other)
+    .bind(job)
+    .execute(&mut *db)
+    .await
+    .expect("second request names the job");
+    let before = all_rows(&mut db).await;
+    assert_eq!(
+        show(&mut db, (request, job)).await.expect_err("refused"),
+        REFUSED
+    );
+    assert_eq!(all_rows(&mut db).await, before, "nothing queued");
+}
+
+/// D-5848 (a close keeps the mapping): a job subject on a closed request still resolves to it, so
+/// a text about the job reaches the outbox (T865's closing text relies on this).
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn a_job_subject_on_a_closed_request_still_resolves(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("db");
+    let request = sms(&mut db, Uuid::from_u128(0x85791)).await;
+    let job = job_of(&mut db, request).await;
+    sqlx::query("UPDATE intake.conversation SET closed_at = now() WHERE id = $1")
+        .bind(request)
+        .execute(&mut *db)
+        .await
+        .expect("close");
+    assert!(!still_open(&mut db, request).await);
+    let before = all_rows(&mut db).await;
+    let shown = show(&mut db, (request, job)).await.expect("shown");
+    assert!(matches!(shown, Shown::Texted(_)));
+    assert_eq!(all_rows(&mut db).await, before + 1, "one text queued");
+}
+
 /// TXT-034, CON-005, D-5848 (T856's carrier-text append): once she texts into her web request it has an `sms`
 /// record of its own, so it goes on by text and the page function refuses it.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
