@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-28T04:42:04Z by runner 5c0500c3dc89 (actions).
+Updated 2026-11-28T04:43:00Z by runner 820c69ead2c2 (actions).
 
 **Idle since 04:41Z; 696 of 813 done; week 23% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-28T04:42:04Z by runner 5c0500c3dc89 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** idle since 04:41Z (no task in progress)
 - **Week:** 23% used, 150.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:41Z, 0 min before this update
-- **Keeper:** last ran 02:41Z, next wake 03:01Z
+- **Last run:** 04:42Z, 0 min before this update
+- **Keeper:** last ran 04:42Z, next wake 05:02Z
 
 ## Needs attention
 - BLOCKED T849: plan gap reported: PLAN GAP: tests/e2e/j1_homeowner.spec.ts:302 (not owned by T849; the per-IP limit is in app/portals/src/pick_flow.rs:846-858, also not owned) has J1 step 6 failing in the late project. D-5955 moved j1_homeowner.spec.ts into late, so it runs after every main spec in the same real hour; the pick page counts per-IP code sends at real_now() (D-5836), CODE_SENDS_PER_IP allows 10 an hour (app/portals/src/limits.rs:34), all e2e requests come from 127.0.0.1, so the budget is gone by step 6 and the send is refused (pick_flow.rs:825); #pick-result never appears and j1_homeowner.spec.ts:321 toBeFocused f; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T849 --plan-fix D-### --reason "..."` (D-2859)
@@ -18,7 +18,7 @@ Updated 2026-11-28T04:42:04Z by runner 5c0500c3dc89 (actions).
 - PLAN GAP T862 (since 2026-11-28T03:36:40Z, no attempt used; a plan change fixes it): T862: docs/handoff/drafts/T862.md is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
 - PLAN GAP T872 (since 2026-11-28T03:36:40Z, no attempt used; a plan change fixes it): T872: docs/handoff/drafts/T872.md is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
 - PLAN GAP T879 (since 2026-11-28T03:36:40Z, no attempt used; a plan change fixes it): T879: prompt kit/prompts/T879.md is missing; run scripts/gen_prompts.py; T879: branch claude/task/T879-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
-- Strict plan check red: 60 problem(s) on tasks still to run (+609 on DONE tasks); first: T704: stored context_pct 38% but it measures 44%; regenerate
+- Strict plan check red: 58 problem(s) on tasks still to run (+607 on DONE tasks); first: T704: stored context_pct 38% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -68,8 +68,8 @@ Updated 2026-11-28T04:42:04Z by runner 5c0500c3dc89 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 486 of 736 (66.0%) · partial 241 · unstarted 9
-**Tasks merged (throughput only):** 696 of 813
+**Requirements verified:** 489 of 736 (66.4%) · partial 238 · unstarted 9
+**Tasks merged (throughput only):** 696 of 811
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -79,15 +79,15 @@ Updated 2026-11-28T04:42:04Z by runner 5c0500c3dc89 (actions).
 | calls | 18 | 7 | 0 | 25 |
 | consent | 19 | 16 | 0 | 35 |
 | fees | 27 | 25 | 0 | 52 |
-| intake | 11 | 32 | 1 | 44 |
+| intake | 12 | 31 | 1 | 44 |
 | job-cards | 17 | 7 | 0 | 24 |
 | licensing | 41 | 7 | 0 | 48 |
 | lifecycle | 23 | 5 | 0 | 28 |
 | messaging | 25 | 20 | 0 | 45 |
 | ops-recovery | 37 | 16 | 1 | 54 |
-| privacy | 14 | 17 | 0 | 31 |
+| privacy | 15 | 16 | 0 | 31 |
 | quiet-hours | 5 | 4 | 0 | 9 |
-| quotes-pick | 39 | 17 | 0 | 56 |
+| quotes-pick | 40 | 16 | 0 | 56 |
 | recurring | 10 | 1 | 0 | 11 |
 | security | 27 | 25 | 3 | 55 |
 | terms | 35 | 0 | 0 | 35 |
