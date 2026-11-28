@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-28T08:48:01Z by runner c78daea39016 (actions).
+Updated 2026-11-28T08:48:38Z by runner c78daea39016 (actions).
 
-**Building: T872 in progress since 07:34Z; 697 of 813 done; week 23% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Idle since 08:47Z; 697 of 813 done; week 23% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 697 of 813 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T872 claimed 07:34Z, lease until 11:35Z
+- **Lane:** idle since 08:47Z (no task in progress)
 - **Week:** 23% used, 148.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:35Z, 12 min before this update
+- **Last run:** 08:35Z, 13 min before this update
 - **Keeper:** last ran 07:25Z, next wake 07:45Z
 
 ## Needs attention
@@ -19,6 +19,7 @@ Updated 2026-11-28T08:48:01Z by runner c78daea39016 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T872 | intake: the age stop closes and purges even when its text is | MERGE_PENDING | 1 | 73 min | 08:47Z |  |
 | T879 | harness: a flake-run workflow that runs named tests many tim | done | 2 | 57 min | 06:56Z | Reviewer after the findings round still ends REVIEW-VERDICT: FINDINGS (head 97d7be0793d47a6bd0fca5b8b6517f58cab29aaf). F |
 | T879 | harness: a flake-run workflow that runs named tests many tim | QUEUED | 1 | 62 min | 05:51Z |  |
 | T849 | server: the e2e web binary serves J1/J2 business time from t | BLOCKED | 5 | 64 min | 04:41Z | PLAN GAP: tests/e2e/j1_homeowner.spec.ts:302 (not owned by T849; the per-IP limit is in app/portals/src/pick_flow.rs:846 |
@@ -101,7 +102,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T872 (lease until 2026-11-28T11:35:05Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T879", "at": "2026-11-28T06:56:37Z", "output_tokens": 34574, "cache_read_input_tokens": 2225826, "input_tokens": 80, "cache_creation_input_tokens": 117794}
+- {"task": "T872", "at": "2026-11-28T08:47:59Z", "output_tokens": 20186, "cache_creation_input_tokens": 104725, "cache_read_input_tokens": 2069303, "input_tokens": 102}
