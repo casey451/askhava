@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-28T03:07:42Z by runner 5e246f084f32 (manual).
+Updated 2026-11-28T03:36:44Z by runner 820c69ead2c2 (actions).
 
 **Idle since 02:44Z; 696 of 813 done; week 22% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-28T03:07:42Z by runner 5e246f084f32 (manual).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** idle since 02:44Z (no task in progress)
 - **Week:** 22% used, 154.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:49Z, 18 min before this update
+- **Last run:** 03:08Z, 28 min before this update
 - **Keeper:** last ran 02:41Z, next wake 03:01Z
 
 ## Needs attention
@@ -48,7 +48,6 @@ Updated 2026-11-28T03:07:42Z by runner 5e246f084f32 (manual).
 | T843 | runner (harness): a 35-minute pre-session smoke cap, and a p | done | 1 | 78 min | 04:51Z |  |
 | T518 | server, ops and payments: the Stripe-or-webhook-errors alert | resync | 1 | 2 h 9 min | 04:13Z |  |
 | T522 | server and portals: the business text-consent box is served  | done | 1 | 104 min | 04:07Z |  |
-| T612 | harness: the WEB-029 and WEB-030 runtime checks on every sit | QUEUED | 2 | 96 min | 03:36Z |  |
 
 ### Plan and harness merges on main
 - 03:05Z Plan: pre-claim routine (drafts, chance-failure runs, coverage floors); T879, T880; T872/T862 drafts (D-5996) (#1526)
@@ -66,8 +65,8 @@ Updated 2026-11-28T03:07:42Z by runner 5e246f084f32 (manual).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 488 of 736 (66.3%) · partial 239 · unstarted 9
-**Tasks merged (throughput only):** 696 of 813
+**Requirements verified:** 489 of 736 (66.4%) · partial 238 · unstarted 9
+**Tasks merged (throughput only):** 696 of 811
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -83,7 +82,7 @@ Updated 2026-11-28T03:07:42Z by runner 5e246f084f32 (manual).
 | lifecycle | 23 | 5 | 0 | 28 |
 | messaging | 25 | 20 | 0 | 45 |
 | ops-recovery | 37 | 16 | 1 | 54 |
-| privacy | 14 | 17 | 0 | 31 |
+| privacy | 15 | 16 | 0 | 31 |
 | quiet-hours | 5 | 4 | 0 | 9 |
 | quotes-pick | 40 | 16 | 0 | 56 |
 | recurring | 10 | 1 | 0 | 11 |
@@ -103,7 +102,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 339 of 383 done
+- stage 5: 339 of 385 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done

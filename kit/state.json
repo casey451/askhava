@@ -27241,7 +27241,8 @@
     "T868",
     "T869",
     "T870",
-    "T876"
+    "T876",
+    "T879"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -27307,7 +27308,8 @@
     "T868",
     "T869",
     "T870",
-    "T876"
+    "T876",
+    "T879"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -27587,7 +27589,8 @@
     "T868",
     "T869",
     "T870",
-    "T876"
+    "T876",
+    "T879"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -32789,7 +32792,8 @@
     "T868",
     "T869",
     "T870",
-    "T876"
+    "T876",
+    "T879"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -32824,7 +32828,8 @@
     "T868",
     "T869",
     "T870",
-    "T876"
+    "T876",
+    "T879"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -32859,7 +32864,8 @@
     "T868",
     "T869",
     "T870",
-    "T876"
+    "T876",
+    "T879"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -82207,7 +82213,8 @@
     "T868",
     "T869",
     "T870",
-    "T876"
+    "T876",
+    "T879"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -82422,7 +82429,8 @@
     "T868",
     "T869",
     "T870",
-    "T876"
+    "T876",
+    "T879"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -125564,7 +125572,8 @@
    "deps": [
     "T862",
     "T801",
-    "T854"
+    "T854",
+    "T880"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -126311,6 +126320,28 @@
    "attempts": 0,
    "slug": "web-update-choice",
    "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T879",
+   "deps": [
+    "T869"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "flake-run-workflow",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T880",
+   "deps": [
+    "T862"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "vault-readers-conversation-email",
+   "type": "harness",
    "stage": "5"
   }
  ],
@@ -134907,7 +134938,7 @@
    }
   }
  },
- "updated_at": "2026-11-28T03:07:42Z",
+ "updated_at": "2026-11-28T03:36:44Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -135005,8 +135036,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "5e246f084f32d827de714eb21730edf1acf4cd2c",
- "starter": "manual",
+ "runner_sha": "820c69ead2c264e87353ae23a36cf3f94455c0e4",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "02eda79e70d59b4c6cc85798f22738a632a2f9a4",
