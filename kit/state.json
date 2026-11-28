@@ -125363,7 +125363,13 @@
     6017,
     6018
    ],
-   "progress": [],
+   "progress": [
+    {
+     "at": "2026-11-28T13:38:02Z",
+     "attempt": 2,
+     "note": "smoke; done: CLAUDE.md:27 wording fixed and committed; next: smoke then prehandin; tests: not run; turns: 6"
+    }
+   ],
    "last_failure": "Reviewer after the findings round still ended FINDINGS (head 087e75d9e56d022ae4ccc32727da20b554b306d1): app/intake/CLAUDE.md:27 says \"nothing for a contact the consent guard refuses (T857)\"; the guard is per request, so change \"for a contact\" to \"for a request\". Code and tests otherwise verified (10 guarded_enqueue tests pass, both mutants caught).",
    "history": [
     {
@@ -135516,7 +135522,7 @@
    }
   }
  },
- "updated_at": "2026-11-28T13:37:22Z",
+ "updated_at": "2026-11-28T13:38:02Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -135614,7 +135620,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "2bd1d51d11b0cd5d5b84f4d18329a6670105a364",
+ "runner_sha": "df6cb2216abaeacb583e7aa7ed82bcae722be09a",
  "starter": "actions",
  "smoke_runs": [
   {

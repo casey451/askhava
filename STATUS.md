@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-28T13:37:22Z by runner 2bd1d51d11b0 (actions).
+Updated 2026-11-28T13:38:02Z by runner df6cb2216aba (actions).
 
 **Building: T857 in progress since 13:35Z; 698 of 818 done; week 25% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 698 of 818 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T857 claimed 13:35Z, lease until 16:35Z
+- **Lane:** lane 1: T857 claimed 13:35Z, lease until 16:38Z
 - **Week:** 25% used, 144.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:29Z, 7 min before this update
+- **Last run:** 13:37Z, 0 min before this update
 - **Keeper:** last ran 13:08Z, next wake 13:28Z
 
 ## Needs attention
@@ -18,7 +18,7 @@ Second conflict: goal change (3) (wip_used no longer stops a later attempt's hea
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
 - PLAN GAP T881 (since 2026-11-28T13:07:02Z, no attempt used; a plan change fixes it): outside ownership: kit/state_schema.json
-- Strict plan check red: 59 problem(s) on tasks still to run (+608 on DONE tasks); first: T704: stored context_pct 38% but it measures 44%; regenerate
+- Strict plan check red: 59 problem(s) on tasks still to run (+608 on DONE tasks); first: T704: stored context_pct 38% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -98,7 +98,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T857 (lease until 2026-11-28T16:35:57Z)
+- T857 (lease until 2026-11-28T16:38:02Z)
 
 ## Last usage reading
 - {"task": "T881", "at": "2026-11-28T13:07:02Z", "output_tokens": 28923, "cache_read_input_tokens": 1566975, "input_tokens": 59, "cache_creation_input_tokens": 103111}
