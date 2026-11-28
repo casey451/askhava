@@ -10687,6 +10687,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
     "docs/code-docs.md",
     "docs/spec/quiet-hours.md",
     "docs/spec/messaging.md",
@@ -10714,7 +10715,7 @@
    "budget": {
     "files": 7,
     "lines": 320,
-    "context_pct": 38
+    "context_pct": 33
    },
    "checks": [
     "Ci",
@@ -10779,6 +10780,8 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-picks.md",
+    "docs/architecture/02-server.md",
     "docs/code-docs.md",
     "docs/spec/quiet-hours.md",
     "docs/spec/messaging.md",
@@ -10805,7 +10808,7 @@
    "budget": {
     "files": 3,
     "lines": 220,
-    "context_pct": 29
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -10847,6 +10850,8 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-calls.md",
+    "docs/architecture/02-picks.md",
     "docs/code-docs.md",
     "docs/spec/quiet-hours.md",
     "docs/spec/messaging.md",
@@ -10871,7 +10876,7 @@
    "budget": {
     "files": 3,
     "lines": 200,
-    "context_pct": 23
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -16539,7 +16544,7 @@
    "budget": {
     "files": 2,
     "lines": 600,
-    "context_pct": 20
+    "context_pct": 9
    },
    "checks": [
     "Ci",
@@ -16612,7 +16617,7 @@
    "budget": {
     "files": 1,
     "lines": 500,
-    "context_pct": 16
+    "context_pct": 8
    },
    "checks": [
     "Ci",
@@ -16672,7 +16677,7 @@
    "budget": {
     "files": 1,
     "lines": 600,
-    "context_pct": 18
+    "context_pct": 7
    },
    "checks": [
     "Ci",
@@ -31581,6 +31586,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/harness-checks.md",
     "docs/code-docs.md",
     "docs/spec/accessibility.md",
     "docs/brains/accessibility-forms.md"
@@ -31606,7 +31612,7 @@
    "budget": {
     "files": 4,
     "lines": 600,
-    "context_pct": 19
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -31649,6 +31655,8 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-server.md",
+    "docs/architecture/harness-checks.md",
     "docs/code-docs.md",
     "docs/spec/privacy.md",
     "docs/spec/security.md",
@@ -31735,6 +31743,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-server.md",
     "docs/code-docs.md",
     "docs/spec/privacy.md",
     "docs/spec/security.md",
@@ -31762,7 +31771,7 @@
    "budget": {
     "files": 1,
     "lines": 600,
-    "context_pct": 15
+    "context_pct": 11
    },
    "checks": [
     "Ci",
@@ -33113,7 +33122,7 @@
    "budget": {
     "files": 1,
     "lines": 300,
-    "context_pct": 14
+    "context_pct": 6
    },
    "checks": [
     "Ci",
@@ -33370,7 +33379,7 @@
    "budget": {
     "files": 1,
     "lines": 300,
-    "context_pct": 17
+    "context_pct": 6
    },
    "checks": [
     "Ci",
@@ -33427,7 +33436,7 @@
    "budget": {
     "files": 1,
     "lines": 300,
-    "context_pct": 12
+    "context_pct": 6
    },
    "checks": [
     "Ci",
@@ -34179,6 +34188,12 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/07-adapters.md",
+    "docs/architecture/08-contact-vault.md",
+    "docs/architecture/09-environments.md",
+    "docs/architecture/11-pinned-versions.md",
+    "docs/architecture/12-keeping-this-file-true.md",
+    "docs/architecture/harness-checks.md",
     "docs/build-readiness.md",
     "docs/code-docs.md",
     "twin/__main__.py",
@@ -34221,7 +34236,7 @@
    "budget": {
     "files": 14,
     "lines": 800,
-    "context_pct": 63
+    "context_pct": 44
    },
    "checks": [
     "Ci",
@@ -35351,7 +35366,13 @@
    ],
    "reads": [
     "docs/reviews/doc-efficiency-plan.md",
-    "docs/architecture.md"
+    "docs/architecture.md",
+    "docs/architecture/07-adapters.md",
+    "docs/architecture/08-contact-vault.md",
+    "docs/architecture/09-environments.md",
+    "docs/architecture/10-off-database-records.md",
+    "docs/architecture/11-pinned-versions.md",
+    "docs/architecture/12-keeping-this-file-true.md"
    ],
    "requirements": [],
    "tests": [],
@@ -35369,7 +35390,7 @@
    "budget": {
     "files": 4,
     "lines": 800,
-    "context_pct": 38
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -35677,7 +35698,8 @@
     "T882",
     "T883",
     "T884",
-    "T886"
+    "T886",
+    "T885"
    ],
    "model": null,
    "effort": null,
@@ -35691,7 +35713,8 @@
     "D-1154",
     "D-3856",
     "D-4392",
-    "D-5278"
+    "D-5278",
+    "D-6021"
    ],
    "cites": [
     "BUILD_BRIEF.md:174"
@@ -35787,6 +35810,9 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-adapters.md",
+    "docs/architecture/07-adapters.md",
+    "docs/architecture/harness-checks.md",
     "docs/spec/messaging.md",
     "docs/spec/security.md",
     "docs/brains/email-deliverability.md",
@@ -35904,6 +35930,9 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-adapters.md",
+    "docs/architecture/07-adapters.md",
+    "docs/architecture/harness-checks.md",
     "docs/spec/calls.md",
     "docs/brains/email-deliverability.md",
     "docs/brains/payments-stripe.md",
@@ -35994,6 +36023,11 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-adapters.md",
+    "docs/architecture/02-payments.md",
+    "docs/architecture/02-portals.md",
+    "docs/architecture/07-adapters.md",
+    "docs/architecture/harness-checks.md",
     "docs/spec/fees.md",
     "docs/spec/security.md",
     "docs/brains/email-deliverability.md",
@@ -36085,6 +36119,10 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-adapters.md",
+    "docs/architecture/02-businesses.md",
+    "docs/architecture/07-adapters.md",
+    "docs/architecture/harness-checks.md",
     "docs/spec/businesses.md",
     "docs/spec/messaging.md",
     "docs/spec/security.md",
@@ -36177,6 +36215,9 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-adapters.md",
+    "docs/architecture/07-adapters.md",
+    "docs/architecture/harness-checks.md",
     "docs/spec/job-cards.md",
     "docs/spec/licensing.md",
     "docs/spec/ops-recovery.md",
@@ -36254,6 +36295,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-core.md",
     "docs/code-docs.md",
     "docs/spec/ops-recovery.md",
     "docs/spec/security.md",
@@ -36285,7 +36327,7 @@
    "budget": {
     "files": 4,
     "lines": 300,
-    "context_pct": 16
+    "context_pct": 10
    },
    "checks": [
     "Ci",
@@ -36322,7 +36364,8 @@
     "docs/phase2/e2e-test-site.md"
    ],
    "reads": [
-    "docs/architecture.md"
+    "docs/architecture.md",
+    "docs/architecture/12-keeping-this-file-true.md"
    ],
    "requirements": [],
    "tests": [
@@ -36380,6 +36423,8 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-adapters.md",
+    "docs/architecture/07-adapters.md",
     "docs/code-docs.md",
     "docs/spec/ai.md",
     "docs/spec/security.md",
@@ -36410,7 +36455,7 @@
    "budget": {
     "files": 2,
     "lines": 400,
-    "context_pct": 14
+    "context_pct": 10
    },
    "checks": [
     "Ci",
@@ -36447,6 +36492,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-ai.md",
     "docs/code-docs.md",
     "docs/spec/ai.md",
     "docs/brains/rust-production.md",
@@ -36483,7 +36529,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 15
+    "context_pct": 9
    },
    "checks": [
     "Ci",
@@ -36518,6 +36564,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/harness-checks.md",
     "docs/spec/security.md"
    ],
    "requirements": [
@@ -36570,6 +36617,8 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/09-environments.md",
+    "docs/architecture/10-off-database-records.md",
     "docs/code-docs.md",
     "docs/spec/ops-recovery.md",
     "docs/brains/postgres-operations.md",
@@ -36598,7 +36647,7 @@
    "budget": {
     "files": 2,
     "lines": 350,
-    "context_pct": 16
+    "context_pct": 10
    },
    "checks": [
     "Ci",
@@ -36669,7 +36718,7 @@
    "budget": {
     "files": 2,
     "lines": 800,
-    "context_pct": 25
+    "context_pct": 18
    },
    "checks": [
     "Ci",
@@ -36765,6 +36814,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/harness-checks.md",
     "docs/threat-model.md",
     "docs/deploy.md",
     "docs/phase2/e2e-test-site.md",
@@ -36790,7 +36840,7 @@
    "budget": {
     "files": 8,
     "lines": 800,
-    "context_pct": 22
+    "context_pct": 18
    },
    "checks": [
     "Ci",
@@ -36828,6 +36878,9 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-adapters.md",
+    "docs/architecture/07-adapters.md",
+    "docs/architecture/harness-checks.md",
     "stand_ins/server.py",
     "stand_ins/ai.py",
     "app/adapters/src/ai.rs"
@@ -36887,6 +36940,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/harness-checks.md",
     "docs/spec/fees.md",
     "docs/spec/businesses.md",
     "docs/brains/payments-stripe.md",
@@ -36960,6 +37014,8 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-ai.md",
+    "docs/architecture/02-intake.md",
     "docs/code-docs.md",
     "docs/spec/ai.md",
     "docs/spec/intake.md",
@@ -37009,7 +37065,7 @@
    "budget": {
     "files": 8,
     "lines": 600,
-    "context_pct": 32
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -37071,6 +37127,9 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
+    "docs/architecture/02-server.md",
+    "docs/architecture/02-site.md",
     "docs/code-docs.md",
     "docs/spec/ai.md",
     "docs/spec/intake.md",
@@ -38623,6 +38682,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/harness-checks.md",
     "docs/code-docs.md",
     "docs/threat-model.md",
     "docs/spec/ai.md",
@@ -38662,7 +38722,7 @@
    "budget": {
     "files": 14,
     "lines": 800,
-    "context_pct": 24
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -38731,6 +38791,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/harness-checks.md",
     "docs/code-docs.md",
     "docs/threat-model.md",
     "docs/spec/ai.md",
@@ -38765,7 +38826,7 @@
    "budget": {
     "files": 14,
     "lines": 800,
-    "context_pct": 24
+    "context_pct": 16
    },
    "checks": [
     "Ci",
@@ -38834,6 +38895,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/harness-checks.md",
     "docs/code-docs.md",
     "docs/threat-model.md",
     "docs/spec/ai.md",
@@ -38868,7 +38930,7 @@
    "budget": {
     "files": 14,
     "lines": 800,
-    "context_pct": 24
+    "context_pct": 16
    },
    "checks": [
     "Ci",
@@ -38928,7 +38990,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 18
+    "context_pct": 11
    },
    "checks": [
     "Ci",
@@ -39045,7 +39107,7 @@
    "budget": {
     "files": 3,
     "lines": 300,
-    "context_pct": 11
+    "context_pct": 7
    },
    "checks": [
     "Ci",
@@ -39144,6 +39206,12 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/07-adapters.md",
+    "docs/architecture/08-contact-vault.md",
+    "docs/architecture/09-environments.md",
+    "docs/architecture/10-off-database-records.md",
+    "docs/architecture/11-pinned-versions.md",
+    "docs/architecture/12-keeping-this-file-true.md",
     "docs/build-readiness.md",
     "docs/code-docs.md",
     "docs/brains/postgres-operations.md"
@@ -39161,7 +39229,7 @@
    "budget": {
     "files": 6,
     "lines": 400,
-    "context_pct": 58
+    "context_pct": 49
    },
    "checks": [
     "Ci",
@@ -39492,6 +39560,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-ai.md",
     "docs/code-docs.md",
     "docs/spec/ai.md",
     "docs/spec/intake.md",
@@ -40171,6 +40240,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
     "docs/code-docs.md",
     "docs/spec/intake.md",
     "docs/brains/accessibility-forms.md",
@@ -40444,6 +40514,8 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-messaging.md",
+    "docs/architecture/harness-checks.md",
     "docs/code-docs.md",
     "docs/spec/job-cards.md",
     "docs/spec/businesses.md",
@@ -40469,7 +40541,7 @@
    "budget": {
     "files": 4,
     "lines": 350,
-    "context_pct": 26
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -40514,6 +40586,10 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-adapters.md",
+    "docs/architecture/02-payments.md",
+    "docs/architecture/07-adapters.md",
+    "docs/architecture/harness-checks.md",
     "docs/code-docs.md",
     "docs/spec/fees.md",
     "docs/brains/payments-stripe.md",
@@ -40535,7 +40611,7 @@
    "budget": {
     "files": 8,
     "lines": 450,
-    "context_pct": 36
+    "context_pct": 32
    },
    "checks": [
     "Ci",
@@ -40858,6 +40934,9 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-payments.md",
+    "docs/architecture/07-adapters.md",
+    "docs/architecture/harness-checks.md",
     "docs/code-docs.md",
     "docs/spec/fees.md",
     "docs/brains/payments-stripe.md",
@@ -40879,7 +40958,7 @@
    "budget": {
     "files": 6,
     "lines": 450,
-    "context_pct": 29
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -41275,6 +41354,10 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-businesses.md",
+    "docs/architecture/02-picks.md",
+    "docs/architecture/02-portals.md",
+    "docs/architecture/02-server.md",
     "docs/code-docs.md",
     "docs/spec/quotes-pick.md",
     "docs/spec/security.md",
@@ -41897,7 +41980,7 @@
    "budget": {
     "files": 3,
     "lines": 450,
-    "context_pct": 16
+    "context_pct": 9
    },
    "checks": [
     "Ci",
@@ -41943,6 +42026,10 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-ai.md",
+    "docs/architecture/02-intake.md",
+    "docs/architecture/07-adapters.md",
+    "docs/architecture/harness-checks.md",
     "docs/code-docs.md",
     "docs/spec/ai.md",
     "docs/spec/intake.md",
@@ -41978,7 +42065,7 @@
    "budget": {
     "files": 9,
     "lines": 600,
-    "context_pct": 28
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -45220,6 +45307,8 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-portals.md",
+    "docs/architecture/02-quotes.md",
     "docs/code-docs.md",
     "docs/spec/accessibility.md",
     "docs/brains/accessibility-forms.md",
@@ -45344,6 +45433,11 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-adapters.md",
+    "docs/architecture/02-messaging.md",
+    "docs/architecture/02-ops.md",
+    "docs/architecture/02-server.md",
+    "docs/architecture/07-adapters.md",
     "docs/code-docs.md",
     "docs/spec/security.md",
     "docs/spec/businesses.md",
@@ -47252,6 +47346,11 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-businesses.md",
+    "docs/architecture/02-messaging.md",
+    "docs/architecture/02-portals.md",
+    "docs/architecture/02-quotes.md",
+    "docs/architecture/02-server.md",
     "docs/code-docs.md",
     "docs/spec/businesses.md",
     "docs/spec/ops-recovery.md",
@@ -47329,6 +47428,11 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
+    "docs/architecture/02-payments.md",
+    "docs/architecture/02-picks.md",
+    "docs/architecture/02-server.md",
+    "docs/architecture/harness-checks.md",
     "docs/code-docs.md",
     "docs/spec/fees.md",
     "docs/spec/lifecycle.md",
@@ -47542,6 +47646,10 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-businesses.md",
+    "docs/architecture/02-picks.md",
+    "docs/architecture/02-portals.md",
+    "docs/architecture/02-server.md",
     "docs/code-docs.md",
     "docs/spec/quotes-pick.md",
     "docs/spec/fees.md",
@@ -47686,6 +47794,10 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-businesses.md",
+    "docs/architecture/02-messaging.md",
+    "docs/architecture/02-picks.md",
+    "docs/architecture/02-quotes.md",
     "docs/code-docs.md",
     "docs/spec/businesses.md",
     "docs/spec/consent.md",
@@ -47716,7 +47828,7 @@
    "budget": {
     "files": 6,
     "lines": 510,
-    "context_pct": 26
+    "context_pct": 18
    },
    "checks": [
     "Ci",
@@ -47817,6 +47929,8 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-quotes.md",
+    "docs/architecture/02-server.md",
     "docs/code-docs.md",
     "docs/spec/licensing.md",
     "app/licensing/src/class_map.rs",
@@ -47848,7 +47962,7 @@
    "budget": {
     "files": 6,
     "lines": 560,
-    "context_pct": 28
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -47952,6 +48066,11 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-adapters.md",
+    "docs/architecture/02-payments.md",
+    "docs/architecture/02-picks.md",
+    "docs/architecture/02-portals.md",
+    "docs/architecture/07-adapters.md",
     "docs/code-docs.md",
     "docs/spec/quotes-pick.md",
     "docs/spec/fees.md",
@@ -48474,6 +48593,11 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-businesses.md",
+    "docs/architecture/02-intake.md",
+    "docs/architecture/02-picks.md",
+    "docs/architecture/02-portals.md",
+    "docs/architecture/08-contact-vault.md",
     "docs/code-docs.md",
     "docs/spec/businesses.md",
     "docs/spec/privacy.md",
@@ -49154,6 +49278,9 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-businesses.md",
+    "docs/architecture/02-intake.md",
+    "docs/architecture/02-quotes.md",
     "docs/spec/intake.md",
     "docs/spec/ops-recovery.md",
     "docs/spec/messaging.md",
@@ -49195,7 +49322,7 @@
    "budget": {
     "files": 3,
     "lines": 600,
-    "context_pct": 42
+    "context_pct": 33
    },
    "checks": [
     "Ci",
@@ -49312,6 +49439,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
     "docs/spec/intake.md",
     "docs/spec/privacy.md",
     "docs/spec/job-cards.md",
@@ -49344,7 +49472,7 @@
    "budget": {
     "files": 2,
     "lines": 450,
-    "context_pct": 33
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -49383,6 +49511,8 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
+    "docs/architecture/02-quotes.md",
     "docs/spec/intake.md",
     "docs/spec/messaging.md",
     "docs/spec/quiet-hours.md",
@@ -49413,7 +49543,7 @@
    "budget": {
     "files": 4,
     "lines": 450,
-    "context_pct": 33
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -49850,6 +49980,9 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-portals.md",
+    "docs/architecture/02-server.md",
+    "docs/architecture/harness-checks.md",
     "docs/code-docs.md",
     "docs/spec/accessibility.md",
     "docs/spec/quotes-pick.md",
@@ -50063,6 +50196,11 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-adapters.md",
+    "docs/architecture/02-portals.md",
+    "docs/architecture/02-server.md",
+    "docs/architecture/07-adapters.md",
+    "docs/architecture/harness-checks.md",
     "docs/code-docs.md",
     "docs/spec/accessibility.md",
     "docs/spec/businesses.md",
@@ -50099,7 +50237,7 @@
    "budget": {
     "files": 7,
     "lines": 600,
-    "context_pct": 34
+    "context_pct": 29
    },
    "checks": [
     "Ci",
@@ -50141,6 +50279,10 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-businesses.md",
+    "docs/architecture/02-messaging.md",
+    "docs/architecture/02-portals.md",
+    "docs/architecture/02-server.md",
     "docs/code-docs.md",
     "docs/spec/job-cards.md",
     "docs/spec/businesses.md",
@@ -50204,6 +50346,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
     "docs/code-docs.md",
     "docs/spec/intake.md",
     "app/intake/src/rules.rs",
@@ -50229,7 +50372,7 @@
    "budget": {
     "files": 2,
     "lines": 400,
-    "context_pct": 29
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -50557,6 +50700,10 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-portals.md",
+    "docs/architecture/02-server.md",
+    "docs/architecture/02-site.md",
+    "docs/architecture/harness-checks.md",
     "docs/code-docs.md",
     "docs/spec/ops-recovery.md",
     "docs/spec/consent.md",
@@ -50580,7 +50727,7 @@
    "budget": {
     "files": 9,
     "lines": 700,
-    "context_pct": 24
+    "context_pct": 28
    },
    "checks": [
     "Ci",
@@ -50623,6 +50770,9 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
+    "docs/architecture/02-ops.md",
+    "docs/architecture/08-contact-vault.md",
     "docs/code-docs.md",
     "docs/spec/ops-recovery.md",
     "docs/spec/privacy.md",
@@ -50764,6 +50914,8 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-portals.md",
+    "docs/architecture/02-server.md",
     "docs/spec/job-cards.md",
     "docs/spec/quotes-pick.md",
     "docs/spec/accessibility.md"
@@ -50786,7 +50938,7 @@
    "budget": {
     "files": 6,
     "lines": 450,
-    "context_pct": 42
+    "context_pct": 34
    },
    "checks": [
     "Ci",
@@ -50939,6 +51091,8 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-messaging.md",
+    "docs/architecture/12-keeping-this-file-true.md",
     "docs/code-docs.md"
    ],
    "requirements": [],
@@ -51560,6 +51714,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
     "docs/code-docs.md",
     "docs/spec/intake.md"
    ],
@@ -51577,7 +51732,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 22
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -52238,6 +52393,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-businesses.md",
     "docs/code-docs.md",
     "docs/spec/businesses.md",
     "docs/spec/security.md",
@@ -52259,7 +52415,7 @@
    "budget": {
     "files": 3,
     "lines": 300,
-    "context_pct": 21
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -52305,6 +52461,9 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-payments.md",
+    "docs/architecture/02-portals.md",
+    "docs/architecture/harness-checks.md",
     "docs/code-docs.md",
     "docs/spec/fees.md",
     "docs/brains/payments-stripe.md"
@@ -52328,7 +52487,7 @@
    "budget": {
     "files": 9,
     "lines": 800,
-    "context_pct": 44
+    "context_pct": 38
    },
    "checks": [
     "Ci",
@@ -52716,6 +52875,10 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-messaging.md",
+    "docs/architecture/02-picks.md",
+    "docs/architecture/02-server.md",
+    "docs/architecture/harness-checks.md",
     "docs/code-docs.md",
     "docs/spec/quiet-hours.md",
     "docs/spec/quotes-pick.md",
@@ -52776,6 +52939,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-messaging.md",
     "docs/code-docs.md",
     "docs/spec/quiet-hours.md",
     "docs/spec/messaging.md",
@@ -52796,7 +52960,7 @@
    "budget": {
     "files": 5,
     "lines": 450,
-    "context_pct": 31
+    "context_pct": 20
    },
    "branch": "claude/task/T793-email-quiet-drain",
    "prompt": "kit/prompts/T793.md",
@@ -52899,6 +53063,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-payments.md",
     "docs/code-docs.md",
     "docs/spec/fees.md",
     "docs/spec/quotes-pick.md",
@@ -52918,7 +53083,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 21
+    "context_pct": 13
    },
    "branch": "claude/task/T795-release-after-refund",
    "prompt": "kit/prompts/T795.md",
@@ -52954,6 +53119,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-payments.md",
     "docs/code-docs.md",
     "docs/spec/fees.md",
     "app/payments/src/refunds.rs",
@@ -52974,7 +53140,7 @@
    "budget": {
     "files": 2,
     "lines": 350,
-    "context_pct": 26
+    "context_pct": 18
    },
    "branch": "claude/task/T796-reconcile-partial-refunds",
    "prompt": "kit/prompts/T796.md",
@@ -53012,6 +53178,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-payments.md",
     "docs/code-docs.md",
     "docs/spec/fees.md"
    ],
@@ -53026,7 +53193,7 @@
    "budget": {
     "files": 3,
     "lines": 200,
-    "context_pct": 25
+    "context_pct": 16
    },
    "branch": "claude/task/T797-refund-status-guards",
    "prompt": "kit/prompts/T797.md",
@@ -53189,6 +53356,10 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
+    "docs/architecture/02-server.md",
+    "docs/architecture/02-site.md",
+    "docs/architecture/harness-checks.md",
     "docs/code-docs.md",
     "docs/spec/consent.md",
     "docs/spec/messaging.md",
@@ -53208,7 +53379,7 @@
    "budget": {
     "files": 5,
     "lines": 400,
-    "context_pct": 33
+    "context_pct": 27
    },
    "acceptance": "With texting live the chat opens no request and shows the number with the SMS disclosures and the 18-or-older line; an unverified session switches to it when texting goes live; outside that state every existing chat test passes unchanged; Ally passes.",
    "branch": "claude/task/T866-chat-live-handoff",
@@ -53295,6 +53466,10 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
+    "docs/architecture/02-server.md",
+    "docs/architecture/02-site.md",
+    "docs/architecture/harness-checks.md",
     "docs/spec/consent.md",
     "docs/spec/messaging.md",
     "docs/spec/intake.md",
@@ -53322,7 +53497,7 @@
    "budget": {
     "files": 14,
     "lines": 700,
-    "context_pct": 46
+    "context_pct": 40
    },
    "acceptance": "With texting live the chat opens no request and shows the number with the SMS disclosures; outside it a chat-run request runs on the page with zero texts and her first inbound text gets the consent text; only the listed transport assertions change (`web_chat_stops.rs:391` included); the TXT-041 line shows once on the page through the real code POST; the existing-request cases follow ruling 5; Ally passes.",
    "branch": "claude/task/T801-chat-code-not-optin",
@@ -54228,6 +54403,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
     "docs/code-docs.md",
     "docs/spec/intake.md",
     "docs/spec/privacy.md",
@@ -54249,7 +54425,7 @@
    "budget": {
     "files": 2,
     "lines": 220,
-    "context_pct": 20
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -54415,6 +54591,8 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
+    "docs/architecture/02-ops.md",
     "docs/code-docs.md",
     "docs/spec/consent.md",
     "tests/integration/tests/consent_purge.rs"
@@ -54437,7 +54615,7 @@
    "budget": {
     "files": 4,
     "lines": 380,
-    "context_pct": 25
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -54550,6 +54728,10 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
+    "docs/architecture/02-quotes.md",
+    "docs/architecture/02-server.md",
+    "docs/architecture/harness-checks.md",
     "docs/code-docs.md",
     "docs/spec/intake.md",
     "docs/spec/job-cards.md"
@@ -54581,7 +54763,7 @@
    "budget": {
     "files": 7,
     "lines": 560,
-    "context_pct": 45
+    "context_pct": 40
    },
    "checks": [
     "Ci",
@@ -54619,6 +54801,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
     "docs/code-docs.md",
     "docs/spec/lifecycle.md",
     "tests/integration/tests/close_which.rs",
@@ -54642,7 +54825,7 @@
    "budget": {
     "files": 2,
     "lines": 200,
-    "context_pct": 26
+    "context_pct": 16
    },
    "checks": [
     "Ci",
@@ -54688,6 +54871,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
     "docs/code-docs.md",
     "docs/spec/messaging.md",
     "docs/spec/intake.md"
@@ -54711,7 +54895,7 @@
    "budget": {
     "files": 8,
     "lines": 540,
-    "context_pct": 42
+    "context_pct": 38
    },
    "checks": [
     "Ci",
@@ -55279,7 +55463,7 @@
    "id": "T849",
    "slug": "clock-composition",
    "title": "server: the e2e web binary serves J1/J2 business time from the test-control clock",
-   "goal": "Plan change D-5836 (Fable C1 to C5 with the overseer's round-1 corrections; after T848 and T854). The web binary takes `control.clock()` once (`app/server/src/main.rs:63` to `:75`; the worker already does, `bin/worker.rs:49` to `:50`) and passes clones into new `build_router_with_clock`, `webhooks_with_clock` and `stripe_webhook_with_clock` constructors in `app/server/src/lib.rs`; the old functions stay as `SystemClock` wrappers with their signatures, because about 50 DONE test files call `build_router(pool, Router::new(), ...)` (e.g. `app/server/tests/action_links_route.rs:161`). The clock reaches `Webhooks.clock` (`lib.rs:962`: inbound SMS dispatch `inbound_text.rs:350`, voice, voice status and call status through the shared Arc, `lib.rs:993`), the pick flow (`lib.rs:672`), the quote page (`lib.rs:837`), action links (`lib.rs:591`), feedback (`lib.rs:598`), check-in (`app/server/src/checkin.rs:19`, merged at `lib.rs:599`) and `stripe_webhook` (`app/server/src/release_sink.rs:492`: `PickReleaser` `:121`, `:139`, Confirm, Stripe dispatch). Settling: `app/picks/src/settle.rs` gains `settle_at(tx, cleared, at)`, and `settle` stays as its `Timestamp::now()` wrapper; `settle_at` uses `at` for Connected (`:114`), `end_pending` (`:115`) and the accepted-quote task's `run_at` (`:164`); `release_sink.rs:167` and `:394` call `settle_at` with the release instant, so day 3's check-in is due from the release. The worker's session sweep and rate-limit prune take their cutoff from `real_now()` and keep their scheduling on `now()` (the daily dedupe chain, `migrations/0020_core_task_queue.sql:22`, `app/core/src/tasks.rs:180`, must stay on the worker clock): `run_session_sweep_at` (`app/portals/src/session.rs:274` to `:286`, scheduling through `schedule_session_sweep` `:258`) and `run_prune_at` (`app/core/src/rate_limit.rs:332` to `:342`) each gain a variant taking `(schedule_now, cutoff_now)`, the old functions kept as wrappers passing one instant to both, and `lib.rs:2964` to `:2969` call the variants with `at.now()` and `at.real_now()`. Stay on `SystemClock`: the business portal (its statement month, `business_portal.rs:368`, `:415`, compares with `ledger_entry.recorded_at`, a database `DEFAULT now()`, `migrations/0090_payments_ledger.sql:21`), owner pages, help and digest (`lib.rs:476`, `:482`), RefusalLog (`lib.rs:676`), the job page, sign-in and sign-up, and the worker's Stripe hooks (`lib.rs:1144`). The release build is unchanged (`test_control.rs:86` to `:96`; `:163` to `:165` refuses Test and Live) and no TestControl error is replaced by system time. Tests in `app/server/tests/clock_composition.rs`, built with `*_with_clock` and an advanced clock: a signed inbound text after a 3-day advance is stored at the advanced instant; the router composes with no webhook keys; a Stripe webhook signed at real time after a 5-day advance is accepted and settles once; after a 100-day advance a business session issued at real time still opens Confirm and the charge lands, and the ledger row it writes shows in the business portal's statement for the current month, the CSV equal to the ledger; a released pick's Connected `status_at` equals the release instant; a session the sweep runs over after the advance is kept. Tests use a small local `Clock` impl defined in the test file (`now()` advanced, `real_now()` at system time), since `ManualClock`'s `real_now()` equals its `now()`. Update `docs/architecture.md` (the composition) and `docs/decisions.md`. Plan change D-5955: `tests/e2e/j1_homeowner.spec.ts:219` advances the forward-only clock inside the `main` project, since `LATE` (`tests/e2e/playwright.config.ts:21`) omits it, against D-3892's rule; once the web binary serves the control clock, that advance expires the 2-hour links and sessions later `main` specs rely on (`tests/e2e/web_chat.spec.ts:64` to `:68`, `tests/a11y/page_states.ts:249` to `:250`). So this task adds `\"**/j1_homeowner.spec.ts\"` to `LATE`; action links stay on the control clock (D-5836), and `web_chat.spec.ts` and `page_states.ts` are not edited. Earlier harness tasks own `playwright.config.ts` (T173, T227, T536), so this is a `harness` task (CLAUDE.md rule 7) on Opus with an Opus reviewer, changing `kit/plan.lock` only as its own files require. The move relies on `j1_homeowner.spec.ts` sorting before `j3_*.spec.ts` within `late` (one worker, alphabetical), because its visit date at `tests/e2e/j1_homeowner.spec.ts:183` is filled from real time. Acceptance stays the full e2e and a11y suites. T120, which also owns `playwright.config.ts`, runs after this task. Plan change D-5978 (attempts 1 and 4 failed J3 step 5 at `tests/e2e/j3.ts:336`): with the Confirm route on the control clock (D-5836), PICK-020's re-check (`app/portals/src/confirm_moves.rs:88` to `:106`, called at `:128`; `check_at_confirm`'s `fresh_active`, `app/picks/src/confirm.rs:159` to `:172`, `:216`, wants an ROC check under 24 hours old at `now`) reads licence freshness at the app clock, but `seedPick`'s `ownerSql` stamps the ROC check at database `now()` (`tests/e2e/keyed.ts:126` to `:127`), so after J3's 24-hour advance (`j3.ts:308`) the refused pick seeded at `j3.ts:362` ends as MovedOn (\"This pick can't be confirmed anymore\", `app/portals/src/confirm_pay.rs:330` to `:334`) before the OPS-024 pause answer (`confirm_moves.rs:159`). `ownerSql` takes `when` and dates the new business's `licensing.license_check` `checked_at` at `when` and `list_date` at `(when AT TIME ZONE 'America/Phoenix')::date`, unchanged (`now()`) without `at`; the `ownerSql` change plus the existing `at` at `j3.ts:362` is the fix; passing `at: await j.control.now()` at `j3.ts:216` and `:272` too is optional. No assertion is changed or weakened and no product code changes. First confirm the `j3.ts:336` text is the MovedOn line and the refused pick ended `ineligible` (`app/picks/src/confirm.rs:246`); any other J3 break is a `PLAN GAP:` report. Plan change D-5998 (SEC-014, PICK-055): in `late`, J1 step 6 runs after every `main` spec in one real hour from 127.0.0.1, so the 10-an-hour per-IP send budget, counted at `real_now()` (`app/portals/src/pick_flow.rs:846` to `:858`, `app/portals/src/limits.rs:34`), is spent and the send is refused (`pick_flow.rs:825`). So this task also owns `tests/e2e/j1_homeowner.spec.ts` (after its earlier owners, via T861): before step 6 it deletes only the `portals.code_sends_per_ip:ip:127.0.0.1` and `portals.code_tries_per_ip:ip:127.0.0.1` buckets (all `window_start` rows) from `core.rate_limit` (precedent `tests/e2e/action_links_served.spec.ts:147`; bucket naming `app/core/src/rate_limit.rs:198`), with a comment citing D-5998, first confirming that the rows' IP renders as 127.0.0.1. No product code, limit value or assertion changes; step 6 still asserts the real send, the wrong code and the pick. `tests/security/tests/rate_limits.rs:212` to `:229` and `tests/integration/tests/pick_code_limits.rs` are not edited. Attempt 5's commit 5c0500c3d was never pushed and is lost: attempt 6 starts from the kept branch `claude/task/T849-clock-composition-a3` at 182ad72 as the runner prepares it (never recreate, rebase or reset it), redoes the D-5978 `ownerSql` fix (it passed J3 step 5 in attempt 5) and this `j1_homeowner.spec.ts` change. Plan change D-6020 (cross-cutting task): then run the full e2e suite (`main` and `late`) at once, before any polishing, and report any plan gap then; run it again before hand-in.",
+   "goal": "Plan change D-5836 (Fable C1 to C5 with the overseer's round-1 corrections; after T848 and T854). The web binary takes `control.clock()` once (`app/server/src/main.rs:63` to `:75`; the worker already does, `bin/worker.rs:49` to `:50`) and passes clones into new `build_router_with_clock`, `webhooks_with_clock` and `stripe_webhook_with_clock` constructors in `app/server/src/lib.rs`; the old functions stay as `SystemClock` wrappers with their signatures, because about 50 DONE test files call `build_router(pool, Router::new(), ...)` (e.g. `app/server/tests/action_links_route.rs:161`). The clock reaches `Webhooks.clock` (`lib.rs:962`: inbound SMS dispatch `inbound_text.rs:350`, voice, voice status and call status through the shared Arc, `lib.rs:993`), the pick flow (`lib.rs:672`), the quote page (`lib.rs:837`), action links (`lib.rs:591`), feedback (`lib.rs:598`), check-in (`app/server/src/checkin.rs:19`, merged at `lib.rs:599`) and `stripe_webhook` (`app/server/src/release_sink.rs:492`: `PickReleaser` `:121`, `:139`, Confirm, Stripe dispatch). Settling: `app/picks/src/settle.rs` gains `settle_at(tx, cleared, at)`, and `settle` stays as its `Timestamp::now()` wrapper; `settle_at` uses `at` for Connected (`:114`), `end_pending` (`:115`) and the accepted-quote task's `run_at` (`:164`); `release_sink.rs:167` and `:394` call `settle_at` with the release instant, so day 3's check-in is due from the release. The worker's session sweep and rate-limit prune take their cutoff from `real_now()` and keep their scheduling on `now()` (the daily dedupe chain, `migrations/0020_core_task_queue.sql:22`, `app/core/src/tasks.rs:180`, must stay on the worker clock): `run_session_sweep_at` (`app/portals/src/session.rs:274` to `:286`, scheduling through `schedule_session_sweep` `:258`) and `run_prune_at` (`app/core/src/rate_limit.rs:332` to `:342`) each gain a variant taking `(schedule_now, cutoff_now)`, the old functions kept as wrappers passing one instant to both, and `lib.rs:2964` to `:2969` call the variants with `at.now()` and `at.real_now()`. Stay on `SystemClock`: the business portal (its statement month, `business_portal.rs:368`, `:415`, compares with `ledger_entry.recorded_at`, a database `DEFAULT now()`, `migrations/0090_payments_ledger.sql:21`), owner pages, help and digest (`lib.rs:476`, `:482`), RefusalLog (`lib.rs:676`), the job page, sign-in and sign-up, and the worker's Stripe hooks (`lib.rs:1144`). The release build is unchanged (`test_control.rs:86` to `:96`; `:163` to `:165` refuses Test and Live) and no TestControl error is replaced by system time. Tests in `app/server/tests/clock_composition.rs`, built with `*_with_clock` and an advanced clock: a signed inbound text after a 3-day advance is stored at the advanced instant; the router composes with no webhook keys; a Stripe webhook signed at real time after a 5-day advance is accepted and settles once; after a 100-day advance a business session issued at real time still opens Confirm and the charge lands, and the ledger row it writes shows in the business portal's statement for the current month, the CSV equal to the ledger; a released pick's Connected `status_at` equals the release instant; a session the sweep runs over after the advance is kept. Tests use a small local `Clock` impl defined in the test file (`now()` advanced, `real_now()` at system time), since `ManualClock`'s `real_now()` equals its `now()`. Update `docs/architecture.md` (the composition) and `docs/decisions.md`. Plan change D-5955: `tests/e2e/j1_homeowner.spec.ts:219` advances the forward-only clock inside the `main` project, since `LATE` (`tests/e2e/playwright.config.ts:21`) omits it, against D-3892's rule; once the web binary serves the control clock, that advance expires the 2-hour links and sessions later `main` specs rely on (`tests/e2e/web_chat.spec.ts:64` to `:68`, `tests/a11y/page_states.ts:249` to `:250`). So this task adds `\"**/j1_homeowner.spec.ts\"` to `LATE`; action links stay on the control clock (D-5836), and `web_chat.spec.ts` and `page_states.ts` are not edited. Earlier harness tasks own `playwright.config.ts` (T173, T227, T536), so this is a `harness` task (CLAUDE.md rule 7) on Opus with an Opus reviewer, changing `kit/plan.lock` only as its own files require. The move relies on `j1_homeowner.spec.ts` sorting before `j3_*.spec.ts` within `late` (one worker, alphabetical), because its visit date at `tests/e2e/j1_homeowner.spec.ts:183` is filled from real time. Acceptance stays the full e2e and a11y suites. T120, which also owns `playwright.config.ts`, runs after this task. Plan change D-5978 (attempts 1 and 4 failed J3 step 5 at `tests/e2e/j3.ts:336`): with the Confirm route on the control clock (D-5836), PICK-020's re-check (`app/portals/src/confirm_moves.rs:88` to `:106`, called at `:128`; `check_at_confirm`'s `fresh_active`, `app/picks/src/confirm.rs:159` to `:172`, `:216`, wants an ROC check under 24 hours old at `now`) reads licence freshness at the app clock, but `seedPick`'s `ownerSql` stamps the ROC check at database `now()` (`tests/e2e/keyed.ts:126` to `:127`), so after J3's 24-hour advance (`j3.ts:308`) the refused pick seeded at `j3.ts:362` ends as MovedOn (\"This pick can't be confirmed anymore\", `app/portals/src/confirm_pay.rs:330` to `:334`) before the OPS-024 pause answer (`confirm_moves.rs:159`). `ownerSql` takes `when` and dates the new business's `licensing.license_check` `checked_at` at `when` and `list_date` at `(when AT TIME ZONE 'America/Phoenix')::date`, unchanged (`now()`) without `at`; the `ownerSql` change plus the existing `at` at `j3.ts:362` is the fix; passing `at: await j.control.now()` at `j3.ts:216` and `:272` too is optional. No assertion is changed or weakened and no product code changes. First confirm the `j3.ts:336` text is the MovedOn line and the refused pick ended `ineligible` (`app/picks/src/confirm.rs:246`); any other J3 break is a `PLAN GAP:` report. Plan change D-5998 (SEC-014, PICK-055): in `late`, J1 step 6 runs after every `main` spec in one real hour from 127.0.0.1, so the 10-an-hour per-IP send budget, counted at `real_now()` (`app/portals/src/pick_flow.rs:846` to `:858`, `app/portals/src/limits.rs:34`), is spent and the send is refused (`pick_flow.rs:825`). So this task also owns `tests/e2e/j1_homeowner.spec.ts` (after its earlier owners, via T861): before step 6 it deletes only the `portals.code_sends_per_ip:ip:127.0.0.1` and `portals.code_tries_per_ip:ip:127.0.0.1` buckets (all `window_start` rows) from `core.rate_limit` (precedent `tests/e2e/action_links_served.spec.ts:147`; bucket naming `app/core/src/rate_limit.rs:198`), with a comment citing D-5998, first confirming that the rows' IP renders as 127.0.0.1. No product code, limit value or assertion changes; step 6 still asserts the real send, the wrong code and the pick. `tests/security/tests/rate_limits.rs:212` to `:229` and `tests/integration/tests/pick_code_limits.rs` are not edited. Attempt 5's commit 5c0500c3d was never pushed and is lost: attempt 6 starts from the kept branch `claude/task/T849-clock-composition-a3` at 182ad72 as the runner prepares it (never recreate, rebase or reset it), redoes the D-5978 `ownerSql` fix (it passed J3 step 5 in attempt 5) and this `j1_homeowner.spec.ts` change. Plan change D-6020 (cross-cutting task): then run the full e2e suite (`main` and `late`) at once, before any polishing, and report any plan gap then; run it again before hand-in. Plan change D-6022: if merging main conflicts on `docs/architecture.md` because of D-6022's split, put your kept §2 note in the index (`docs/architecture.md`) per D-6022, unchanged in wording.",
    "type": "harness",
    "phase": 1,
    "stage": "5",
@@ -55330,7 +55514,8 @@
     "D-5836",
     "D-5955",
     "D-5978",
-    "D-5998"
+    "D-5998",
+    "D-6022"
    ],
    "cites": [],
    "budget": {
@@ -55448,7 +55633,7 @@
    "budget": {
     "files": 2,
     "lines": 600,
-    "context_pct": 23
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -55709,7 +55894,7 @@
    "id": "T857",
    "slug": "guarded-enqueue-seam",
    "title": "intake: `queue_text` and `queue_body` behind the guard; a page sink for web dispatch only",
-   "goal": "Plan change D-5848 (task C, part 1; Fable's section C.2; verification R1-05, R1-06; round-1 review). `queue_text` (`conversation.rs:585`) and `queue_body` (`handlers.rs:379`) keep their signatures (callers `summary_step.rs:35`, `:193`, `photos.rs:236`, `order.rs:399`, `cards_out.rs:582`) and check T856's guard before every enqueue: an `sms` request to the outbox as today, anything else refused, except the chat exemption: a branch of T856's guard (`app/intake/src/consent_guard.rs`) under which a request whose only consent records are `web_chat` keeps outbox delivery until T801, whatever the caller (T649's fixture `ask()` calls `answer_zip` and `ask_name_address` straight through `intake::api`, `app/server/tests/web_chat_after_code.rs:231` to `:234`, and asserts a NAME_ADDRESS outbox row at `:325` to `:330`); its constant `CHAT_LEGACY_TEXTS` may stay in `web_chat.rs`, and T801 deletes both the constant and the branch, so every legacy caller on a `web_chat` request (`zip_step`, `ask_name_address` at `conversation.rs:420`, the T649 and T645 paths) keeps outbox delivery until T801. Page delivery happens only when web dispatch is the explicit caller: a new function returns the rendered reply in a chat result type of its own (`intake::api`), never an outbox row; the shared `Queued`/`Handled` (`service.rs:66` to `:86`) are not changed. The `order_dispatch` gates (`:371`, `:476`, `:522`) ask the same question per request (`may_text_request` for a text, the web request for the page) with small edits only. The guard resolves the request from `subject[0]`: a conversation ID, or a job ID mapped to its conversation; anything else is refused (an inbox-only subject is the named business-reply exemption, `service.rs:262`), and a request is never resolved by contact; tests for a conversation subject and a job subject. Every existing test passes unchanged, including `app/server/tests/web_chat_after_code.rs:216` to `:235`, `:325` to `:330`, `app/server/tests/web_chat_stops.rs:572` and `tests/integration/tests/web_chat.rs:360`. Tests in the new `tests/integration/tests/guarded_enqueue.rs`. Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`. Plan change D-5918 (Fable's pre-flight question, every caller grepped): `queue_text`'s callers also include `web_chat.rs:764` and `:767` (the consent and Spanish texts in `open_verified`, under the chat exemption) and `order.rs:399`; `queue_body`'s also include `replies.rs`, `zip_step.rs`, `order_dispatch.rs` and `handlers.rs`; both signatures are kept, so the unowned callers `replies.rs`, `zip_step.rs`, `photos.rs`, `cards_out.rs`, `order.rs` and `web_chat.rs` keep compiling unchanged. Plan change D-5981 (Sonnet trial): an Opus-written draft is in `docs/handoff/drafts/T857.md`; read its 'Worker: read this first' header first; the goal and acceptance win over the draft. Plan change D-5982: T872 (before this task) changes `stop_if_under_18`'s answer to `Option<(AgeStop, Option<Queued>)>` with a `None` text only on `IntakeError::NoConsent`; this task's guarded `queue_text` is what can now refuse it, and the draft's refused-text test (point 11) proves the close and the under-13 purge are kept. Plan change D-6021 (attempt 2): attempt 1's code and tests were verified (10 guarded_enqueue tests pass, both mutants caught); the only open finding is doc wording. Attempt 2 continues the kept work (`claude/wip/T857-a1`, 087e75d9e) and changes only `app/intake/CLAUDE.md:27` \"for a contact\" to \"for a request\" (the line reads \"nothing for a contact the consent guard refuses (T857)\"), then hands in.",
+   "goal": "Plan change D-5848 (task C, part 1; Fable's section C.2; verification R1-05, R1-06; round-1 review). `queue_text` (`conversation.rs:585`) and `queue_body` (`handlers.rs:379`) keep their signatures (callers `summary_step.rs:35`, `:193`, `photos.rs:236`, `order.rs:399`, `cards_out.rs:582`) and check T856's guard before every enqueue: an `sms` request to the outbox as today, anything else refused, except the chat exemption: a branch of T856's guard (`app/intake/src/consent_guard.rs`) under which a request whose only consent records are `web_chat` keeps outbox delivery until T801, whatever the caller (T649's fixture `ask()` calls `answer_zip` and `ask_name_address` straight through `intake::api`, `app/server/tests/web_chat_after_code.rs:231` to `:234`, and asserts a NAME_ADDRESS outbox row at `:325` to `:330`); its constant `CHAT_LEGACY_TEXTS` may stay in `web_chat.rs`, and T801 deletes both the constant and the branch, so every legacy caller on a `web_chat` request (`zip_step`, `ask_name_address` at `conversation.rs:420`, the T649 and T645 paths) keeps outbox delivery until T801. Page delivery happens only when web dispatch is the explicit caller: a new function returns the rendered reply in a chat result type of its own (`intake::api`), never an outbox row; the shared `Queued`/`Handled` (`service.rs:66` to `:86`) are not changed. The `order_dispatch` gates (`:371`, `:476`, `:522`) ask the same question per request (`may_text_request` for a text, the web request for the page) with small edits only. The guard resolves the request from `subject[0]`: a conversation ID, or a job ID mapped to its conversation; anything else is refused (an inbox-only subject is the named business-reply exemption, `service.rs:262`), and a request is never resolved by contact; tests for a conversation subject and a job subject. Every existing test passes unchanged, including `app/server/tests/web_chat_after_code.rs:216` to `:235`, `:325` to `:330`, `app/server/tests/web_chat_stops.rs:572` and `tests/integration/tests/web_chat.rs:360`. Tests in the new `tests/integration/tests/guarded_enqueue.rs`. Fake data only; no real vendor or number. Never weaken or edit a test you do not own; a needed change to an unowned file is a `PLAN GAP:` with file:line. Update the crate `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`. Plan change D-5918 (Fable's pre-flight question, every caller grepped): `queue_text`'s callers also include `web_chat.rs:764` and `:767` (the consent and Spanish texts in `open_verified`, under the chat exemption) and `order.rs:399`; `queue_body`'s also include `replies.rs`, `zip_step.rs`, `order_dispatch.rs` and `handlers.rs`; both signatures are kept, so the unowned callers `replies.rs`, `zip_step.rs`, `photos.rs`, `cards_out.rs`, `order.rs` and `web_chat.rs` keep compiling unchanged. Plan change D-5981 (Sonnet trial): an Opus-written draft is in `docs/handoff/drafts/T857.md`; read its 'Worker: read this first' header first; the goal and acceptance win over the draft. Plan change D-5982: T872 (before this task) changes `stop_if_under_18`'s answer to `Option<(AgeStop, Option<Queued>)>` with a `None` text only on `IntakeError::NoConsent`; this task's guarded `queue_text` is what can now refuse it, and the draft's refused-text test (point 11) proves the close and the under-13 purge are kept. Plan change D-6021 (attempt 2): attempt 1's code and tests were verified (10 guarded_enqueue tests pass, both mutants caught); the only open finding is doc wording. Attempt 2 continues the kept work (`claude/wip/T857-a1`, 087e75d9e) and changes only `app/intake/CLAUDE.md:27` \"for a contact\" to \"for a request\" (the line reads \"nothing for a contact the consent guard refuses (T857)\"), then hands in. Plan change D-6022: if merging main conflicts on `docs/architecture.md` because of D-6022's split, put your kept §2 note in the index (`docs/architecture.md`) per D-6022, unchanged in wording.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -55750,13 +55935,15 @@
    "decisions": [
     "D-5848",
     "D-5918",
-    "D-5982"
+    "D-5982",
+    "D-6022",
+    "D-6021"
    ],
    "cites": [],
    "budget": {
     "files": 4,
     "lines": 400,
-    "context_pct": 42
+    "context_pct": 29
    },
    "checks": [
     "Ci",
@@ -55799,6 +55986,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
     "docs/code-docs.md",
     "docs/spec/consent.md",
     "docs/spec/intake.md",
@@ -55822,7 +56010,7 @@
    "budget": {
     "files": 7,
     "lines": 400,
-    "context_pct": 39
+    "context_pct": 28
    },
    "checks": [
     "Ci",
@@ -55864,6 +56052,9 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
+    "docs/architecture/02-server.md",
+    "docs/architecture/02-site.md",
     "docs/code-docs.md",
     "docs/spec/consent.md",
     "docs/spec/intake.md",
@@ -55889,7 +56080,7 @@
    "budget": {
     "files": 5,
     "lines": 500,
-    "context_pct": 30
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -55932,6 +56123,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
     "docs/code-docs.md",
     "docs/spec/intake.md",
     "docs/spec/consent.md"
@@ -55957,7 +56149,7 @@
    "budget": {
     "files": 6,
     "lines": 500,
-    "context_pct": 41
+    "context_pct": 30
    },
    "checks": [
     "Ci",
@@ -56004,6 +56196,9 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
+    "docs/architecture/02-server.md",
+    "docs/architecture/02-site.md",
     "docs/code-docs.md",
     "docs/spec/intake.md",
     "docs/spec/security.md",
@@ -56026,7 +56221,7 @@
    "budget": {
     "files": 7,
     "lines": 500,
-    "context_pct": 42
+    "context_pct": 33
    },
    "checks": [
     "Ci",
@@ -56068,6 +56263,8 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
+    "docs/architecture/02-site.md",
     "docs/code-docs.md",
     "docs/spec/intake.md",
     "docs/spec/privacy.md",
@@ -56091,7 +56288,7 @@
    "budget": {
     "files": 7,
     "lines": 500,
-    "context_pct": 31
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -56189,6 +56386,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/08-contact-vault.md",
     "docs/code-docs.md",
     "docs/spec/privacy.md",
     "docs/spec/quotes-pick.md",
@@ -56217,7 +56415,7 @@
    "budget": {
     "files": 8,
     "lines": 500,
-    "context_pct": 42
+    "context_pct": 33
    },
    "checks": [
     "Ci",
@@ -56259,6 +56457,8 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-picks.md",
+    "docs/architecture/02-portals.md",
     "docs/code-docs.md",
     "docs/spec/quotes-pick.md",
     "docs/spec/messaging.md",
@@ -56285,7 +56485,7 @@
    "budget": {
     "files": 4,
     "lines": 500,
-    "context_pct": 30
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -56557,6 +56757,9 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-portals.md",
+    "docs/architecture/02-server.md",
+    "docs/architecture/08-contact-vault.md",
     "docs/code-docs.md",
     "docs/spec/privacy.md",
     "docs/spec/security.md",
@@ -56674,6 +56877,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
     "docs/spec/intake.md",
     "docs/spec/consent.md",
     "docs/spec/messaging.md",
@@ -56700,7 +56904,7 @@
    "budget": {
     "files": 5,
     "lines": 550,
-    "context_pct": 40
+    "context_pct": 29
    },
    "checks": [
     "Ci",
@@ -56737,6 +56941,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
     "docs/spec/intake.md",
     "docs/spec/privacy.md"
    ],
@@ -56756,7 +56961,7 @@
    "budget": {
     "files": 3,
     "lines": 350,
-    "context_pct": 25
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -56796,6 +57001,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
     "docs/spec/intake.md",
     "docs/spec/messaging.md",
     "docs/spec/consent.md",
@@ -56819,7 +57025,7 @@
    "budget": {
     "files": 6,
     "lines": 500,
-    "context_pct": 40
+    "context_pct": 29
    },
    "checks": [
     "Ci",
@@ -56858,6 +57064,8 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
+    "docs/architecture/02-messaging.md",
     "docs/spec/messaging.md",
     "docs/handoff/pf-2026-11-27/PF-CHAIN2_fable_rulings.md",
     "docs/spec/privacy.md"
@@ -56880,7 +57088,7 @@
    "budget": {
     "files": 3,
     "lines": 250,
-    "context_pct": 24
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -56918,6 +57126,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/08-contact-vault.md",
     "docs/spec/messaging.md",
     "docs/spec/privacy.md",
     "docs/handoff/pf-2026-11-27/web_update_choice_ruling.md"
@@ -56937,7 +57146,7 @@
    "budget": {
     "files": 3,
     "lines": 200,
-    "context_pct": 22
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -56976,6 +57185,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
     "docs/spec/intake.md",
     "docs/spec/messaging.md",
     "docs/spec/consent.md",
@@ -57004,7 +57214,7 @@
    "budget": {
     "files": 3,
     "lines": 550,
-    "context_pct": 21
+    "context_pct": 10
    },
    "checks": [
     "Ci",
@@ -57090,6 +57300,8 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/08-contact-vault.md",
+    "docs/architecture/harness-checks.md",
     "docs/spec/privacy.md",
     "docs/spec/security.md"
    ],
@@ -57105,7 +57317,7 @@
    "budget": {
     "files": 1,
     "lines": 40,
-    "context_pct": 21
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -57150,7 +57362,8 @@
    "tests": [],
    "decisions": [
     "D-4720",
-    "D-6020"
+    "D-6020",
+    "D-6021"
    ],
    "cites": [],
    "budget": {
@@ -57369,6 +57582,55 @@
    "branch": "claude/task/T886-reviewer-doc-only-fix",
    "prompt": "kit/prompts/T886.md",
    "acceptance": "`python3 -m pytest tests/test_runner_doc_fix.py tests/test_runner_review_proof.py tests/test_runner_after_smoke.py` passes, the new cases failing against `main`'s runner; every other `tests/test_runner_*.py` and workflow test passes unchanged; `git diff origin/main -- runner/cycle.py runner/github_env.py runner/__main__.py` is empty; actionlint reports nothing new on `backup-runner.yml`."
+  },
+  {
+   "id": "T885",
+   "slug": "architecture-parts-shared",
+   "title": "harness: the architecture part files can become a shared path and merge as insertions",
+   "goal": "Plan change D-6022 (Casey: \"Ok make it all happen\"). D-6022 moved most of `docs/architecture.md` verbatim into `docs/architecture/*.md` part files and left the file as an index, but a build task may edit only its owned files and the shared paths, and `kit/tasks.json` `shared_paths` may hold only `scripts/validate_tasks.py` `ALLOWED_SHARED` (`:139`, checked at `:1083`), which names `docs/architecture.md` and not the parts; so until this task merges, tasks add new notes to the index and a plan change moves them. Change: (1) `scripts/validate_tasks.py` `ALLOWED_SHARED` gains the directory entry `docs/architecture/` (a prefix, as `.sqlx/` is, `runner/verify.py:15`), with a comment citing D-6022; nothing else in the set or the file changes. (2) `runner/update_merge.py` `insert_only` (`:213`) also accepts a `docs/architecture/<name>.md` part, so two tasks that each append a line to the same part are resolved as insertions, main's first, as `docs/architecture.md` is today (`INSERT_ONLY`, `:75`); the locked-section check (`_sections_kept`, used only for `docs/architecture.md`) is unchanged, since the locked sections 3 to 6 stay in the index. Tests: `tests/test_validate_tasks.py` gains a case that a tasks file whose `shared_paths` holds `docs/architecture/` validates and one holding `docs/other/` still fails; `tests/test_runner_update_merge.py` gains a case that two sides' insertions into one part resolve, main's first, and a part conflict that is not pure insertions stays a conflict. No existing assertion changes. `kit/tasks.json` `shared_paths` and `kit/prompts/TEMPLATE.md`'s shared-paths line are not edited here: the plan change after this merges adds `docs/architecture/` to both and moves the index's interim notes into their parts. No Rust file changes, so `tests/coverage_floor.json` sets no floor. Update `docs/architecture.md` (the index's \"Parts\" paragraph: parts are shared once the plan change lands) and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T753"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness"
+   ],
+   "owns": [
+    "scripts/validate_tasks.py",
+    "runner/update_merge.py",
+    "tests/test_validate_tasks.py",
+    "tests/test_runner_update_merge.py"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "runner/verify.py"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-891",
+    "D-6022"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 150,
+    "context_pct": 26
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T885-architecture-parts-shared",
+   "prompt": "kit/prompts/T885.md",
+   "acceptance": "`python3 -m pytest tests/test_validate_tasks.py tests/test_runner_update_merge.py` passes, the new cases failing against `main`; every other `tests/test_runner_*.py` passes unchanged; `python3 scripts/validate_tasks.py` passes on `main`'s plan; `git diff origin/main -- kit/tasks.json kit/prompts/` is empty."
   }
  ]
 }
