@@ -124805,7 +124805,8 @@
    "last_failure": "PLAN GAP: outside ownership: tests/e2e/web_chat.spec.ts, tests/a11y/page_states.ts\nD-5836 puts inbound SMS and action links on the test-control clock. web_chat.spec.ts:64-68 (consentsSince with no contact, DB real clock_timestamp) and page_states.ts:249-250 (action link expires_at = now() + 2 hours in DB time) are not owned by T849. After j1_homeowner.spec.ts:219 advances the clock up to a day, 4 web_chat tests (:111,:131,:183,:206) and 3 site_speed.spec.ts:256 tests (404) fail. Reviewer confirmed. Fix: T849 owns web_chat.spec.ts and filters consentsSince by contact, and page_states.ts seeds link expiry from the control clock (or action links keep SystemClock).\nre-queued after plan fix D-5955: D-5955 (PR #1500, merged 703f1b5): j1_homeowner.spec.ts joins the late playwright project, so its clock advance no longer reaches web_chat.spec.ts or page_states.ts; T849 now owns tests/e2e/playwright.config.ts as a harness task\nre-queued after plan fix D-5978: D-5978 (PR #1514): seedPick dates the ROC check at the given time; T849 owns keyed.ts and j3.ts; re-hand-in the kept branch claude/task/T849-clock-composition-a3",
    "runner_closed_prs": [
     1491,
-    1494
+    1494,
+    1512
    ],
    "resyncs": [
     {
@@ -124868,7 +124869,11 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "merge_turn_since": "2026-11-27T15:31:19Z"
+   "merge_turn_since": "2026-11-27T15:31:19Z",
+   "wip_claim": {
+    "attempt": 5,
+    "remote_sha": "182ad72d3d140f20a4a748b0f64444255630480a"
+   }
   },
   {
    "id": "T850",
@@ -134957,7 +134962,7 @@
    }
   }
  },
- "updated_at": "2026-11-28T03:37:34Z",
+ "updated_at": "2026-11-28T03:38:08Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
