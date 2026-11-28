@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-28T04:50:08Z by runner 04bdbc389c1c (actions).
+Updated 2026-11-28T04:53:19Z by runner 04bdbc389c1c (actions).
 
 **Building: T879 in progress since 04:49Z; 696 of 813 done; week 23% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 696 of 813 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T879 claimed 04:49Z, lease until 07:49Z
+- **Lane:** lane 1: T879 claimed 04:49Z, lease until 07:53Z
 - **Week:** 23% used, 148.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:43Z, 6 min before this update
+- **Last run:** 04:50Z, 3 min before this update
 - **Keeper:** last ran 04:42Z, next wake 05:02Z
 
 ## Needs attention
@@ -47,7 +47,6 @@ Updated 2026-11-28T04:50:08Z by runner 04bdbc389c1c (actions).
 | T518 | server, ops and payments: the Stripe-or-webhook-errors alert | done | 1 | 51 min | 05:34Z |  |
 | T657 | quotes and portals: quote-form and sign-in errors mark the f | QUEUED | 2 | 25 min | 05:11Z |  |
 | T849 | server: the e2e web binary serves J1/J2 business time from t | check_failed | 1 | 103 min | 05:09Z |  |
-| T843 | runner (harness): a 35-minute pre-session smoke cap, and a p | done | 1 | 78 min | 04:51Z |  |
 
 ### Plan and harness merges on main
 - 03:05Z Plan: pre-claim routine (drafts, chance-failure runs, coverage floors); T879, T880; T872/T862 drafts (D-5996) (#1526)
@@ -109,7 +108,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T879 (lease until 2026-11-28T07:49:00Z)
+- T879 (lease until 2026-11-28T07:53:19Z)
 
 ## Last usage reading
 - {"task": "T849", "at": "2026-11-28T04:41:13Z", "output_tokens": 37382, "input_tokens": 215, "cache_creation_input_tokens": 158289, "cache_read_input_tokens": 7275769}
