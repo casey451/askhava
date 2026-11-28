@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-28T06:58:33Z by runner 6eeb54fb4874 (actions).
+Updated 2026-11-28T07:02:00Z by runner 6eeb54fb4874 (manual).
 
 **Idle since 06:56Z; 696 of 813 done; week 23% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,10 @@ Updated 2026-11-28T06:58:33Z by runner 6eeb54fb4874 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** idle since 06:56Z (no task in progress)
 - **Week:** 23% used, 148.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:58Z, 0 min before this update
+- **Last run:** 06:59Z, 2 min before this update
 - **Keeper:** last ran 06:58Z, next wake 07:18Z
 
 ## Needs attention
-- BLOCKED T849: plan gap reported: PLAN GAP: tests/e2e/j1_homeowner.spec.ts:302 (not owned by T849; the per-IP limit is in app/portals/src/pick_flow.rs:846-858, also not owned) has J1 step 6 failing in the late project. D-5955 moved j1_homeowner.spec.ts into late, so it runs after every main spec in the same real hour; the pick page counts per-IP code sends at real_now() (D-5836), CODE_SENDS_PER_IP allows 10 an hour (app/portals/src/limits.rs:34), all e2e requests come from 127.0.0.1, so the budget is gone by step 6 and the send is refused (pick_flow.rs:825); #pick-result never appears and j1_homeowner.spec.ts:321 toBeFocused f; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T849 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
 - Strict plan check red: 58 problem(s) on tasks still to run (+607 on DONE tasks); first: T704: stored context_pct 38% but it measures 44%; regenerate

@@ -124492,7 +124492,7 @@
     "T847",
     "T861"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 5,
    "slug": "clock-composition",
    "type": "build",
@@ -124826,7 +124826,7 @@
     "why": "auto-merge on #1512 (gh pr merge)",
     "head": "50b1e164ae989fc426bb42e104fe126122342642"
    },
-   "last_failure": "PLAN GAP: tests/e2e/j1_homeowner.spec.ts:302 (not owned by T849; the per-IP limit is in app/portals/src/pick_flow.rs:846-858, also not owned) has J1 step 6 failing in the late project. D-5955 moved j1_homeowner.spec.ts into late, so it runs after every main spec in the same real hour; the pick page counts per-IP code sends at real_now() (D-5836), CODE_SENDS_PER_IP allows 10 an hour (app/portals/src/limits.rs:34), all e2e requests come from 127.0.0.1, so the budget is gone by step 6 and the send is refused (pick_flow.rs:825); #pick-result never appears and j1_homeowner.spec.ts:321 toBeFocused fails. Passes alone (11/11); fails in full runs (2 local, 1 Ci). Smallest plan change: T849 owns j1_homeowner.spec.ts and clears this IP's portals.code_sends_per_ip and code_tries_per_ip buckets in core.rate_limit before step 6, or per-spec client IPs. Reviewer confirmed. D-5978 fix (keyed.ts, j3.ts, D-5905) is committed at 5c0500c3d and approved.",
+   "last_failure": "PLAN GAP: tests/e2e/j1_homeowner.spec.ts:302 (not owned by T849; the per-IP limit is in app/portals/src/pick_flow.rs:846-858, also not owned) has J1 step 6 failing in the late project. D-5955 moved j1_homeowner.spec.ts into late, so it runs after every main spec in the same real hour; the pick page counts per-IP code sends at real_now() (D-5836), CODE_SENDS_PER_IP allows 10 an hour (app/portals/src/limits.rs:34), all e2e requests come from 127.0.0.1, so the budget is gone by step 6 and the send is refused (pick_flow.rs:825); #pick-result never appears and j1_homeowner.spec.ts:321 toBeFocused fails. Passes alone (11/11); fails in full runs (2 local, 1 Ci). Smallest plan change: T849 owns j1_homeowner.spec.ts and clears this IP's portals.code_sends_per_ip and code_tries_per_ip buckets in core.rate_limit before step 6, or per-spec client IPs. Reviewer confirmed. D-5978 fix (keyed.ts, j3.ts, D-5905) is committed at 5c0500c3d and approved.\nre-queued after plan fix D-5998: D-5998 (PR #1529, merged 6eeb54f): T849 owns j1_homeowner.spec.ts and clears 127.0.0.1's two pick-code buckets before J1 step 6; the a5 commit 5c0500c3d was never pushed, so attempt 6 starts at claude/task/T849-clock-composition-a3 182ad72, redoes the D-5978 fix, then runs full e2e main+late",
    "runner_closed_prs": [
     1491,
     1494,
@@ -124843,7 +124843,7 @@
      "at": "2026-11-27T07:44:33Z"
     }
    ],
-   "reason": "plan gap reported: PLAN GAP: tests/e2e/j1_homeowner.spec.ts:302 (not owned by T849; the per-IP limit is in app/portals/src/pick_flow.rs:846-858, also not owned) has J1 step 6 failing in the late project. D-5955 moved j1_homeowner.spec.ts into late, so it runs after every main spec in the same real hour; the pick page counts per-IP code sends at real_now() (D-5836), CODE_SENDS_PER_IP allows 10 an hour (app/portals/src/limits.rs:34), all e2e requests come from 127.0.0.1, so the budget is gone by step 6 and the send is refused (pick_flow.rs:825); #pick-result never appears and j1_homeowner.spec.ts:321 toBeFocused f; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T849 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "reason": null,
    "requeues": [
     {
      "at": "2026-11-27T12:14:33Z",
@@ -124870,6 +124870,19 @@
      "plan_head": "12679cbd7990c6b73767ebccaa6bc74bb5c4cf21",
      "plan_then": "a0824f8393cda48f7b4b6519b3ff3f40f42ade3e61eba1609b2489df9007b9bf",
      "plan_now": "1af09bbda23e4fddba82ab853772da923f5804878547d95d0f15b990604fb24e"
+    },
+    {
+     "at": "2026-11-28T07:02:00Z",
+     "reason": "D-5998 (PR #1529, merged 6eeb54f): T849 owns j1_homeowner.spec.ts and clears 127.0.0.1's two pick-code buckets before J1 step 6; the a5 commit 5c0500c3d was never pushed, so attempt 6 starts at claude/task/T849-clock-composition-a3 182ad72, redoes the D-5978 fix, then runs full e2e main+late",
+     "by": "manual-062828c6bb76",
+     "was": "plan gap reported: PLAN GAP: tests/e2e/j1_homeowner.spec.ts:302 (not owned by T849; the per-IP limit is in app/portals/src/pick_flow.rs:846-858, also not owned) has J1 step 6 failing in the late project. D-5955 moved j1_homeowner.spec.ts into late, so it runs after every main spec in the same real hour; the pick page counts per-IP code sends at real_now() (D-5836), CODE_SENDS_PER_IP allows 10 an hour (app/portals/src/limits.rs:34), all e2e requests come from 127.0.0.1, so the budget is gone by step 6 and the send is refused (pick_flow.rs:825); #pick-result never appears and j1_homeowner.spec.ts:321 toBeFocused f; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T849 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 5,
+     "plan_fix": "D-5998",
+     "plan_since": "2026-11-28T03:36:40Z",
+     "plan_base": "5e246f084f32d827de714eb21730edf1acf4cd2c",
+     "plan_head": "6eeb54fb48746c1c67b7b64eae15108476f43afe",
+     "plan_then": "1af09bbda23e4fddba82ab853772da923f5804878547d95d0f15b990604fb24e",
+     "plan_now": "5dc7085be653780225a75f9cffa37a6c82eb2765691539b0a9359ed09df2f95c"
     }
    ],
    "update_merges": [
@@ -135097,7 +135110,7 @@
    }
   }
  },
- "updated_at": "2026-11-28T06:58:33Z",
+ "updated_at": "2026-11-28T07:02:00Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -135196,7 +135209,7 @@
   ]
  },
  "runner_sha": "6eeb54fb48746c1c67b7b64eae15108476f43afe",
- "starter": "actions",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "9fc6bfae88cb9262b74cbd155bdd8e58ba1c3e82",
