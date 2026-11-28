@@ -1,0 +1,308 @@
+# Flake run (D-5996 part b, T879): runs one named Rust test target or one Playwright spec N times on a chosen ref
+# with ci.yml's setup, never stopping at the first failure, and writes the pass and fail counts and the failing
+# run numbers to the job summary. Manual only and read-only: no push, no state, no ref write, no secret.
+# Each input reaches a step only through env: and is checked against a strict pattern before any build.
+name: Flake run
+on:
+  workflow_dispatch:
+    inputs:
+      kind:
+        description: "rust (cargo test -p <crate> --test <bin> -- <filter>) or playwright (one spec)"
+        type: choice
+        options: [rust, playwright]
+        default: rust
+      crate:
+        description: "Rust: the package, e.g. askhava-core"
+        default: ""
+      test_binary:
+        description: "Rust: the --test binary under the crate's tests/"
+        default: ""
+      filter:
+        description: "Rust: libtest name filter (may be empty)"
+        default: ""
+      spec:
+        description: "Playwright: the spec path, e.g. tests/e2e/business_team.spec.ts"
+        default: ""
+      repeat:
+        description: "How many runs, 1 to 30"
+        default: "10"
+permissions:
+  contents: read
+env:
+  CARGO_INCREMENTAL: "0"
+  CARGO_TERM_COLOR: always
+  KIND: ${{ inputs.kind }}
+  CRATE: ${{ inputs.crate }}
+  TEST_BINARY: ${{ inputs.test_binary }}
+  FILTER: ${{ inputs.filter }}
+  SPEC: ${{ inputs.spec }}
+  REPEAT: ${{ inputs.repeat }}
+jobs:
+  validate:
+    name: "Inputs"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Check every input against its pattern (fails closed before any build)
+        run: |
+          bad() { echo "::error::$1"; exit 1; }
+          [[ "$REPEAT" =~ ^[1-9][0-9]?$ ]] && [ "$REPEAT" -le 30 ] || bad "repeat must be an integer from 1 to 30"
+          if [ "$KIND" = rust ]; then
+            [[ "$CRATE" =~ ^[a-z0-9_-]+$ ]] || bad "crate must match ^[a-z0-9_-]+$"
+            [[ "$TEST_BINARY" =~ ^[a-z0-9_]+$ ]] || bad "test_binary must match ^[a-z0-9_]+$"
+            [[ "$FILTER" =~ ^[A-Za-z0-9_:]*$ ]] || bad "filter must match ^[A-Za-z0-9_:]*$"
+          elif [ "$KIND" = playwright ]; then
+            [[ "$SPEC" =~ ^tests/[A-Za-z0-9_./-]+\.spec\.ts$ ]] && [[ "$SPEC" != *..* ]] || bad "spec must be a tests/ path ending .spec.ts, no .."
+          else
+            bad "kind must be rust or playwright"
+          fi
+          echo "inputs ok: $KIND, $REPEAT runs"
+
+  rust:
+    name: "Rust flake run"
+    needs: validate
+    if: inputs.kind == 'rust'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    services:
+      postgres:
+        image: postgres:16@sha256:1beaa3084eee2676f20a9cd9928f0bf2c5bf674f8e49f81017912183d377c61c
+        env:
+          POSTGRES_USER: askhava_ci
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_DB: askhava_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U askhava_ci"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://askhava_ci@localhost:5432/askhava_ci
+      SQLX_OFFLINE: "true"
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+          fetch-depth: 200
+
+      - name: PostgreSQL 16's initdb, pg_ctl and pg_dump first on the path (D-4708)
+        run: |
+          pg16=/usr/lib/postgresql/16/bin; echo "Image: ${ImageOS:-unknown} ${ImageVersion:-unknown}"
+          major="$("$pg16/initdb" --version 2>/dev/null | awk '{split($3, v, "."); print v[1]}')" || major=""
+          [ "$major" = 16 ] || { echo "::error::$pg16/initdb is missing or not PostgreSQL 16 (major '${major:-none}'): PostgreSQL 16's initdb, pg_ctl and pg_dump are not on the path (D-4708)"; exit 1; }
+          "$pg16/initdb" --version && echo "$pg16" >> "$GITHUB_PATH"
+
+      - name: Database roles the migrations grant to (askhava_app, askhava_migrator; D-092, D-491)
+        run: |
+          # askhava_ci is the service's superuser and runs the migrations here; the two application roles
+          # exist so GRANTs resolve, and askhava_ci is a member of both so tests can SET ROLE (T012 owns the
+          # Railway bootstrap, scripts/bootstrap_roles.sql, which creates the same roles with LOGIN).
+          for role in askhava_app askhava_migrator; do
+            psql "$DATABASE_URL" -qtc "SELECT 1 FROM pg_roles WHERE rolname = '${role}'" | grep -q 1 \
+              || psql "$DATABASE_URL" -qc "CREATE ROLE ${role} NOLOGIN"
+            psql "$DATABASE_URL" -qc "GRANT ${role} TO askhava_ci" >/dev/null
+          done
+
+      - name: Rust toolchain (the pinned release from rust-toolchain.toml)
+        run: |
+          rustup toolchain install "$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)" --profile minimal -c clippy -c rustfmt
+
+      - name: Rust build cache (Checks' entry, restored only, D-2782)
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          shared-key: checks-ubuntu-24.04
+          save-if: false
+
+      - name: sqlx-cli (restored from the cache Checks saves on main, D-693, D-2782)
+        id: sqlx-cli-cache
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.cargo/sqlx-cli
+          key: sqlx-cli-0.9.0-${{ runner.os }}-ubuntu-24.04-${{ hashFiles('rust-toolchain.toml') }}
+
+      - name: Install sqlx-cli 0.9.0 on a cache miss
+        if: steps.sqlx-cli-cache.outputs.cache-hit != 'true'
+        run: |
+          cargo install sqlx-cli --version 0.9.0 --locked --no-default-features --features postgres,rustls,sqlx-toml --root ~/.cargo/sqlx-cli
+
+      - name: Migrations
+        run: |
+          "$HOME/.cargo/sqlx-cli/bin/sqlx" migrate run
+
+      - name: The named tests, REPEAT times (never stops at the first failure)
+        run: |
+          set -o pipefail
+          args=(-p "$CRATE" --locked --test "$TEST_BINARY" --)
+          if [ -n "$FILTER" ]; then args+=("$FILTER"); fi
+          cargo test "${args[@]}" --list >/dev/null
+          pass=0; failed=()
+          for run in $(seq 1 "$REPEAT"); do
+            log="$RUNNER_TEMP/run-$run.log"
+            # A run passes only on exit 0 with at least one test passed (a filter matching nothing fails).
+            if cargo test "${args[@]}" 2>&1 | tee "$log" && grep -Eq '^test result: ok\. [1-9][0-9]* passed' "$log"; then
+              pass=$((pass + 1))
+            else
+              failed+=("$run")
+            fi
+          done
+          { echo "## Flake run: cargo test ${args[*]}"; echo "Runs: $REPEAT, passed: $pass, failed: ${#failed[@]}"
+            echo "Failing runs: ${failed[*]:-none}"; } >> "$GITHUB_STEP_SUMMARY"
+          [ "${#failed[@]}" -eq 0 ]
+
+  playwright:
+    name: "Playwright flake run"
+    needs: validate
+    if: inputs.kind == 'playwright'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    services:
+      postgres:
+        image: postgres:16@sha256:1beaa3084eee2676f20a9cd9928f0bf2c5bf674f8e49f81017912183d377c61c
+        env:
+          POSTGRES_USER: askhava_ci
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_DB: askhava_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U askhava_ci"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      stripe-mock:
+        image: stripe/stripe-mock:v0.206.0@sha256:aeb96b83e87a893d2ac005e363ac01ffa6e59a5ad85b49c155dfc9129de02e78
+        ports:
+          - 12111:12111
+    env:
+      DATABASE_URL: postgres://askhava_ci@localhost:5432/askhava_ci
+      SQLX_OFFLINE: "true"
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+          fetch-depth: 200
+
+      - name: PostgreSQL 16's initdb, pg_ctl and pg_dump first on the path (D-4708)
+        run: |
+          pg16=/usr/lib/postgresql/16/bin; echo "Image: ${ImageOS:-unknown} ${ImageVersion:-unknown}"
+          major="$("$pg16/initdb" --version 2>/dev/null | awk '{split($3, v, "."); print v[1]}')" || major=""
+          [ "$major" = 16 ] || { echo "::error::$pg16/initdb is missing or not PostgreSQL 16 (major '${major:-none}'): PostgreSQL 16's initdb, pg_ctl and pg_dump are not on the path (D-4708)"; exit 1; }
+          "$pg16/initdb" --version && echo "$pg16" >> "$GITHUB_PATH"
+
+      - name: Database roles the migrations grant to (askhava_app, askhava_migrator; D-092, D-491)
+        run: |
+          for role in askhava_app askhava_migrator; do
+            psql "$DATABASE_URL" -qtc "SELECT 1 FROM pg_roles WHERE rolname = '${role}'" | grep -q 1 \
+              || psql "$DATABASE_URL" -qc "CREATE ROLE ${role} NOLOGIN"
+            psql "$DATABASE_URL" -qc "GRANT ${role} TO askhava_ci" >/dev/null
+          done
+
+      - name: Rust toolchain (the pinned release from rust-toolchain.toml)
+        run: |
+          rustup toolchain install "$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)" --profile minimal
+
+      - name: Rust build cache (its own key, as the test-control feature changes the build, D-693)
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          shared-key: e2e-ubuntu-24.04
+          save-if: false
+
+      - name: Build server and worker with test-control (never the release build, SEC-035)
+        run: |
+          cargo build -p askhava-server --bins --locked --features askhava-core/test-control
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: npm ci and the browser scripts (npm run build writes the .js beside each .ts)
+        run: |
+          npm ci --ignore-scripts
+          npm run build
+
+      - name: Playwright browser cache (keyed by package-lock.json, which pins @playwright/test)
+        id: browsers
+        # Restored only; E2e saves it on main (D-3143).
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-ubuntu-24.04-${{ hashFiles('package-lock.json') }}
+
+      - name: Chromium and its system libraries
+        timeout-minutes: 15
+        env:
+          CACHE_HIT: ${{ steps.browsers.outputs.cache-hit }}
+        run: |
+          # An Ubuntu mirror outage must not fail the suite before it starts (D-3030): apt waits are bounded,
+          # install-deps is tried three times, and if the mirrors stay down the step goes on with the runner
+          # image's own libraries, but only once Chromium is proven to launch and render a page below.
+          printf '%s\n' 'Acquire::Retries "2";' 'Acquire::http::Timeout "20";' 'Acquire::https::Timeout "20";' \
+            'DPkg::Lock::Timeout "120";' | sudo tee /etc/apt/apt.conf.d/99-askhava-bounded >/dev/null
+          if [ "$CACHE_HIT" != "true" ]; then
+            npx playwright install chromium
+          fi
+          deps=false
+          for pause in 15 45 0; do
+            if timeout --kill-after=15s 150s npx playwright install-deps chromium; then
+              deps=true
+              break
+            fi
+            sudo pkill -x apt-get || true
+            if [ "$pause" -gt 0 ]; then
+              echo "install-deps failed; trying again in ${pause}s"
+              sleep "$pause"
+            fi
+          done
+          node -e "
+            const { chromium } = require('@playwright/test');
+            (async () => {
+              const browser = await chromium.launch();
+              const page = await browser.newPage();
+              await page.setContent('<p>Ask Hava</p>');
+              await browser.close();
+            })().catch((err) => { console.error(err); process.exit(1); });
+          "
+          if [ "$deps" != "true" ]; then
+            echo "::warning title=Chromium system libraries::apt could not reach the Ubuntu mirrors; Chromium launched with the runner image's libraries, without the optional fonts Playwright lists (D-3030)"
+          fi
+      - name: The spec, REPEAT times (--repeat-each, no retries; every run reported, never the first failure only)
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ runner.temp }}/flake-report.json
+        run: |
+          config="tests/$(cut -d/ -f2 <<< "$SPEC")/playwright.config.ts"
+          test -f "$SPEC" && test -f "$config" || { echo "::error::$SPEC or $config does not exist"; exit 1; }
+          # Playwright's own exit code is kept and judged with the report (a teardown error fails the run).
+          rc=0
+          npx playwright test --config "$config" "$SPEC" --repeat-each "$REPEAT" --retries 0 --reporter list,json || rc=$?
+          python3 - "$PLAYWRIGHT_JSON_OUTPUT_NAME" "$rc" "$REPEAT" <<'PY'
+          import json, os, sys
+          path, rc, n = sys.argv[1], int(sys.argv[2]), int(sys.argv[3])
+          problems = [f"Playwright exited {rc}"] if rc else []
+          try:
+              report = json.load(open(path, encoding="utf-8"))
+          except (OSError, ValueError) as err:
+              report = {}
+              problems.append(f"no readable JSON report ({err})")
+          if report.get("errors"):
+              problems.append(f"{len(report['errors'])} error(s) outside the tests in the report")
+          tests, stack = {}, list(report.get("suites", []))
+          while stack:
+              suite = stack.pop()
+              stack += suite.get("suites", [])
+              for spec in suite.get("specs", []):
+                  for test in spec.get("tests", []):
+                      key = (spec.get("file"), spec.get("line"), spec.get("title"), test.get("projectName"))
+                      tests.setdefault(key, []).append(test.get("status"))
+          if not tests:
+              problems.append("no test ran")
+          # Run k passes only if the k-th result of every test is "expected"; skipped, flaky, unexpected or missing fail it.
+          failed = sorted({k for runs in tests.values() for k in range(1, n + 1) if runs[k - 1 : k] != ["expected"]})
+          passed = n - len(failed) if tests else 0
+          ok = not failed and not problems
+          lines = [f"## Flake run: {os.environ['SPEC']}: {'PASSED' if ok else 'FAILED'}",
+                   f"Runs: {n}, passed: {passed}, failed: {n - passed}",
+                   f"Failing runs: {' '.join(map(str, failed)) or 'none'}"] + [f"- {p}" for p in problems]
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as out:
+              out.write("\n".join(lines) + "\n")
+          print("\n".join(lines))
+          sys.exit(0 if ok else 1)
+          PY
