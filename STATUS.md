@@ -1,16 +1,15 @@
 # Ask Hava build status
 
-Updated 2026-11-28T12:11:28Z by runner 7af0d0ffbf24 (actions).
+Updated 2026-11-28T12:15:02Z by runner 7af0d0ffbf24 (actions).
 
 **Building: T857 in progress since 10:21Z; 698 of 813 done; week 24% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 698 of 813 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T857 claimed 10:21Z, lease until 15:11Z
+- **Lane:** lane 1: T857 claimed 10:21Z, lease until 15:13Z
 - **Week:** 24% used, 146.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:25Z, 106 min before this update
+- **Last run:** 12:14Z, 0 min before this update
 - **Keeper:** last ran 09:23Z, next wake 09:43Z
-- **WARNING:** no runner cycle logged for over 90 minutes before this update
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
@@ -48,7 +47,6 @@ Updated 2026-11-28T12:11:28Z by runner 7af0d0ffbf24 (actions).
 - 16:39Z Plan: pre-flight fixes before claim (D-5979) (#1515)
 - 16:31Z Plan: T849 seeds J3's licence check at the app clock (D-5978) (#1514)
 - 16:15Z Plan: efficiency fixes (D-5971); T734 owns its template line, T862 split with T870 (D-5972) (#1513)
-- 12:14Z Plan: T657 waits on T811 (D-5954); T849 moves j1_homeowner into the late project (D-5955) (#1500)
 
 ## Progress (requirements verified)
 
@@ -96,7 +94,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T857 (lease until 2026-11-28T15:11:28Z)
+- T857 (lease until 2026-11-28T15:13:52Z)
 
 ## Last usage reading
 - {"task": "T872", "at": "2026-11-28T08:47:59Z", "output_tokens": 20186, "cache_creation_input_tokens": 104725, "cache_read_input_tokens": 2069303, "input_tokens": 102}
