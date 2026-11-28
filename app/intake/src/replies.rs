@@ -95,10 +95,11 @@ pub enum Reply {
     /// with the text it queued.
     Closed(Closing, Option<Queued>),
     /// A clear text in an open request stating an age under 18 (INT-038, D-4142): the request
-    /// closed with this INT-038 text, and under 13 its data and her vault contact's name and
-    /// address are gone. A stop after a 911-list match or on a first text is a
-    /// [`Reply::Handled`] whose texts end with the INT-038 text.
-    UnderAge(AgeStop, Queued),
+    /// closed with this INT-038 text, or with none when the consent guard refused it (D-5982),
+    /// and under 13 its data and her vault contact's name and address are gone either way. A
+    /// stop after a 911-list match or on a first text is a [`Reply::Handled`] whose texts end
+    /// with the INT-038 text when it was queued.
+    UnderAge(AgeStop, Option<Queued>),
     /// A plain-word question within 24 hours of her HELP (CON-034, D-4344): its auto-answer,
     /// with no help request and no notification.
     HelpAnswered(Queued),
@@ -359,7 +360,7 @@ async fn in_request(
 
 /// INT-038 after the 911 screen (INT-002, D-4142): when `handled`'s request, the one the text
 /// opened or went on, is stopped for a stated age under 18, the INT-038 text joins its texts
-/// last; true when it stopped.
+/// last if the consent guard let it go (D-5982); true when it stopped, with or without the text.
 async fn stop_after(
     tx: &mut PgConnection,
     secret: &SecretString,
@@ -372,7 +373,7 @@ async fn stop_after(
     };
     let stop = stop_if_under_18(tx, secret, msg, conversation, spanish_on).await?;
     let stopped = stop.is_some();
-    handled.texts.extend(stop.map(|(_, queued)| queued));
+    handled.texts.extend(stop.and_then(|(_, queued)| queued));
     Ok(stopped)
 }
 
