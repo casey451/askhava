@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-28T12:51:45Z by runner 087e75d9e56d (actions).
+Updated 2026-11-28T12:52:22Z by runner 087e75d9e56d (actions).
 
-**Building: T857 in progress since 10:21Z; 698 of 816 done; week 24% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Idle since 12:51Z; 698 of 816 done; week 24% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 698 of 816 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T857 claimed 10:21Z, lease until 15:48Z
+- **Lane:** idle since 12:51Z (no task in progress)
 - **Week:** 24% used, 146.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
 - **Last run:** 12:48Z, 3 min before this update
 - **Keeper:** last ran 09:23Z, next wake 09:43Z
@@ -19,6 +19,7 @@ Updated 2026-11-28T12:51:45Z by runner 087e75d9e56d (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T857 | intake: `queue_text` and `queue_body` behind the guard; a pa | QUEUED | 1 | 2 h 29 min | 12:51Z | Reviewer after the findings round still ended FINDINGS (head 087e75d9e56d022ae4ccc32727da20b554b306d1): app/intake/CLAUD |
 | T872 | intake: the age stop closes and purges even when its text is | done | 1 | 73 min | 08:47Z |  |
 | T879 | harness: a flake-run workflow that runs named tests many tim | done | 2 | 57 min | 06:56Z | Reviewer after the findings round still ends REVIEW-VERDICT: FINDINGS (head 97d7be0793d47a6bd0fca5b8b6517f58cab29aaf). F |
 | T879 | harness: a flake-run workflow that runs named tests many tim | QUEUED | 1 | 62 min | 05:51Z |  |
@@ -94,7 +95,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T857 (lease until 2026-11-28T15:48:02Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T872", "at": "2026-11-28T08:47:59Z", "output_tokens": 20186, "cache_creation_input_tokens": 104725, "cache_read_input_tokens": 2069303, "input_tokens": 102}
+- {"task": "T857", "at": "2026-11-28T12:51:08Z", "cache_read_input_tokens": 6976687, "cache_creation_input_tokens": 268098, "input_tokens": 240, "output_tokens": 47291}
