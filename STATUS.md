@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-28T13:08:01Z by runner 56386cb11f43 (actions).
+Updated 2026-11-28T13:08:24Z by runner 56386cb11f43 (actions).
 
 **Idle since 13:07Z; 698 of 816 done; week 25% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-28T13:08:01Z by runner 56386cb11f43 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** idle since 13:07Z (no task in progress)
 - **Week:** 25% used, 146.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:07Z, 0 min before this update
-- **Keeper:** last ran 12:53Z, next wake 13:13Z
+- **Last run:** 13:08Z, 0 min before this update
+- **Keeper:** last ran 13:08Z, next wake 13:28Z
 
 ## Needs attention
 - BLOCKED T881: plan gap reported: PLAN GAP: outside ownership: kit/state_schema.json
