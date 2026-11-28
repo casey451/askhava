@@ -125368,6 +125368,11 @@
      "at": "2026-11-28T13:38:02Z",
      "attempt": 2,
      "note": "smoke; done: CLAUDE.md:27 wording fixed and committed; next: smoke then prehandin; tests: not run; turns: 6"
+    },
+    {
+     "at": "2026-11-28T14:08:32Z",
+     "attempt": 2,
+     "note": "smoke; done: wording fix committed; next: smoke then prehandin; tests: running; turns: 10"
     }
    ],
    "last_failure": "Reviewer after the findings round still ended FINDINGS (head 087e75d9e56d022ae4ccc32727da20b554b306d1): app/intake/CLAUDE.md:27 says \"nothing for a contact the consent guard refuses (T857)\"; the guard is per request, so change \"for a contact\" to \"for a request\". Code and tests otherwise verified (10 guarded_enqueue tests pass, both mutants caught).",
@@ -135522,7 +135527,7 @@
    }
   }
  },
- "updated_at": "2026-11-28T13:38:02Z",
+ "updated_at": "2026-11-28T14:08:32Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
