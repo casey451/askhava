@@ -79,11 +79,12 @@ use askhava_portals::api::{
     CardDetach, CodeAddress, CodeFuture, CodeSent, CodeTo, ConfirmCodes, SESSION_COOKIE,
     business_principal, leave, set_inbox_shared,
 };
-use askhava_privacy::api::Vault;
+use askhava_privacy::api::{Vault, mailbox_for};
 use askhava_quotes::api::{
-    CardBusiness, CardFacts, CardJob, CardParts, DEFAULT_MIN_WORDS, OfferTown, Place, build_card,
-    card_digest, keep_card, mark_card_sent, send_cards, stored_facts,
+    CardBusiness, CardFacts, CardJob, CardParts, DEFAULT_MIN_WORDS, OfferTown, Place, Price,
+    build_card, card_digest, keep_card, mark_card_sent, quoted_prices, send_cards, stored_facts,
 };
+use askhava_server::action_links::LinkCodeAddress;
 use askhava_server::business_signup::IdentityCodes;
 use axum::Router;
 use axum::body::{Body, to_bytes};
@@ -543,10 +544,31 @@ async fn td_sec_44_the_quote_form_acts_once_and_bounces_a_phone_number(pool: PgP
         "a used link shows the job page again, one quote stored (SEC-026, D-5316): {}",
         again.text
     );
-    assert!(
-        !again.text.contains("990"),
-        "the second price is not stored"
+    let prices = quoted_prices(&mut db, w.job).await.expect("prices");
+    let prices: Vec<_> = prices.into_iter().map(|q| (q.business, q.price)).collect();
+    let stored = vec![(w.team.business, Some(Price::VisitFee(32_500)))];
+    assert_eq!(
+        prices, stored,
+        "the second price is not stored: still 32500 cents"
     );
+    let line = quote_line(&again.text);
+    assert_eq!(
+        line, "Sent to 1 business. Quotes so far: 1.",
+        "{}",
+        again.text
+    );
+    assert!(
+        !line.contains("$990"),
+        "the page's quote line shows no new price"
+    );
+}
+
+/// D-5889: the job page's quote line (`job-counts`), read alone so the page's random CSRF token,
+/// job ID and link token can never match a price.
+fn quote_line(page: &str) -> &str {
+    let start = "<p id=\"job-counts\">";
+    let line = page.split_once(start).map_or("", |(_, rest)| rest);
+    line.split_once("</p>").map_or("", |(line, _)| line)
 }
 
 /// SEC-026, D-5316, D-5320: the page a used link's second press shows for every kind but Quote
@@ -1216,17 +1238,25 @@ async fn td_sec_44_another_persons_or_businesss_busy_link_is_not_found(pool: PgP
 /// The code the fake Verify accepts.
 const RIGHT_CODE: &str = "424242";
 
-/// A fake Verify: counts its sends and accepts only [`RIGHT_CODE`].
-struct FakeVerify(Arc<AtomicUsize>);
+/// The fake sign-in address of an email-only person (D-5315).
+const EMAIL_ONLY: &str = "owner.only@example.com";
+
+/// Each code the fake Verify sent: to whom and by which channel.
+type Sends = Arc<Mutex<Vec<(String, CodeChannel)>>>;
+
+/// A fake Verify: counts and records its sends and accepts only [`RIGHT_CODE`].
+struct FakeVerify(Arc<AtomicUsize>, Sends);
 
 impl VerifyAdapter for FakeVerify {
     async fn send_code(
         &self,
         _: &IdempotencyKey,
-        _: &str,
-        _: CodeChannel,
+        to: &str,
+        channel: CodeChannel,
     ) -> Result<String, AdapterError> {
         self.0.fetch_add(1, Ordering::SeqCst);
+        let mut sends = self.1.lock().unwrap_or_else(PoisonError::into_inner);
+        sends.push((to.to_owned(), channel));
         Ok("sent".to_owned())
     }
 
@@ -1235,7 +1265,7 @@ impl VerifyAdapter for FakeVerify {
     }
 }
 
-/// Everyone's code address: a fake 555 phone, or an email-only person.
+/// Everyone's code address: a fake 555 phone, or an email-only person's [`EMAIL_ONLY`].
 struct FakeAddress(bool);
 
 impl CodeAddress for FakeAddress {
@@ -1244,11 +1274,10 @@ impl CodeAddress for FakeAddress {
         _: &'a mut PgConnection,
         _: Uuid,
     ) -> CodeFuture<'a, Result<CodeTo, PortalsError>> {
-        let fake = SecretString::from("+19285550142");
         let to = if self.0 {
-            CodeTo::Phone(fake)
+            CodeTo::Phone(SecretString::from("+19285550142"))
         } else {
-            CodeTo::Email(fake)
+            CodeTo::Email(SecretString::from(EMAIL_ONLY))
         };
         Box::pin(async move { Ok(to) })
     }
@@ -1257,15 +1286,26 @@ impl CodeAddress for FakeAddress {
 /// [`world`] whose router has the Confirm link's codes over the fake Verify (D-3889), and the
 /// fake's send count; `phone` says whether people have a phone that gets texts.
 async fn coded(pool: &PgPool, phone: bool) -> (World, Arc<AtomicUsize>) {
-    let mut w = world(pool).await;
-    let sends = Arc::new(AtomicUsize::new(0));
-    let verify = IdentityCodes::new(FakeVerify(Arc::clone(&sends)));
+    let (w, count, _) = with_codes(world(pool).await, FakeAddress(phone));
+    (w, count)
+}
+
+/// `w` whose router has the Confirm link's codes over the fake Verify and `to`, with the fake's
+/// send count and record.
+fn with_codes(mut w: World, to: impl CodeAddress) -> (World, Arc<AtomicUsize>, Sends) {
+    let (count, sends) = (Arc::new(AtomicUsize::new(0)), Sends::default());
+    let fake = FakeVerify(Arc::clone(&count), Arc::clone(&sends));
     let key = SecretString::from("a-fake-key-of-thirty-two-bytes-00");
-    let codes = ConfirmCodes::new(verify, FakeAddress(phone), key);
+    let codes = ConfirmCodes::new(IdentityCodes::new(fake), to, key);
     let parts = askhava_server::RouterParts::from((None, None, None, None));
     let parts = parts.with_confirm_link_codes(codes);
-    w.app = askhava_server::build_router(pool.clone(), Router::new(), parts);
-    (w, sends)
+    w.app = askhava_server::build_router(w.pool.clone(), Router::new(), parts);
+    (w, count, sends)
+}
+
+/// The codes `sends` recorded so far.
+fn sent_codes(sends: &Sends) -> Vec<(String, CodeChannel)> {
+    sends.lock().unwrap_or_else(PoisonError::into_inner).clone()
 }
 
 /// A `POST` of `path` with `extra` fields and `jar`: its status, its `Location` and the cookies
@@ -1386,9 +1426,10 @@ async fn td_sec_44_a_live_session_skips_the_code_unless_the_inbox_is_shared(pool
     assert!(unused(&w, &next).await && sends.load(Ordering::SeqCst) == 2);
 }
 
-/// TD-SEC-44, SEC-004, D-3889: with no codes configured the Confirm link sends, checks and uses
-/// nothing and says the code could not be sent; a person with no phone that gets texts is told
-/// to link one, with nothing sent or used.
+/// TD-SEC-44, TD-BIZ-25, SEC-004, D-3889, D-5315: with no codes configured the Confirm link
+/// sends, checks and uses nothing and says the code could not be sent; a person with no phone
+/// that gets texts is emailed one code at their sign-in address, none by text or call, with the
+/// link unused.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_sec_44_without_codes_or_a_texting_phone_the_confirm_link_uses_nothing(pool: PgPool) {
     let bare = world(&pool).await;
@@ -1399,12 +1440,107 @@ async fn td_sec_44_without_codes_or_a_texting_phone_the_confirm_link_uses_nothin
         assert!(reply.text.contains("send the code. Press"), "{extra}");
         assert!(unused(&bare, &path).await, "{extra}: used with no codes");
     }
-    let (w, sends) = coded(&pool, false).await;
+    let (w, _, sends) = with_codes(world(&pool).await, FakeAddress(false));
     let path = path_of(&live(&w, ActionKind::Confirm, Uuid::new_v4()).await);
     let reply = send(&w, (&Method::POST, &path, ""), Site::Own).await;
     assert_eq!(reply.status, 200);
+    assert!(
+        reply.text.contains(CodeSent::Emailed.line()),
+        "{}",
+        reply.text
+    );
+    let email = (EMAIL_ONLY.to_owned(), CodeChannel::Email);
+    assert_eq!(
+        sent_codes(&sends),
+        vec![email],
+        "one email, no text or call"
+    );
+    assert!(unused(&w, &path).await, "the emailed code used the link");
+}
+
+/// TD-BIZ-25, SEC-004, D-5315: an email-only person's right emailed code signs that browser in
+/// as the link's person and uses the link once (303 to the Confirm page); a replay sends nothing.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_biz_25_the_right_emailed_code_signs_in_and_uses_the_link_once(pool: PgPool) {
+    let (w, _, sends) = with_codes(world(&pool).await, FakeAddress(false));
+    let pick = Uuid::new_v4();
+    let path = path_of(&live(&w, ActionKind::Confirm, pick).await);
+    let (jar, _, _) = coded_in(&w, &path).await;
+    assert!(!unused(&w, &path).await, "the right code used the link");
+    assert!(session_at(&w, &jar, Timestamp::now()).await, "signed in");
+    let pre = ensure_pre_session(CookieJar::new()).expect("pre-session");
+    let right = format!("&code={RIGHT_CODE}");
+    let (status, to, replayed) = landed(&w, &path, &right, &pre).await;
+    assert_eq!((status, to), (303, format!("/b/picks/{pick}/confirm")));
+    assert!(
+        !session_at(&w, &replayed, Timestamp::now()).await,
+        "a replay signs nobody in"
+    );
+    let email = (EMAIL_ONLY.to_owned(), CodeChannel::Email);
+    assert_eq!(sent_codes(&sends), vec![email], "one email only");
+}
+
+/// TD-BIZ-25, SEC-004, D-5315: a wrong emailed code is the code step again and uses nothing.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_biz_25_a_wrong_emailed_code_uses_nothing(pool: PgPool) {
+    let (w, _, _) = with_codes(world(&pool).await, FakeAddress(false));
+    let path = path_of(&live(&w, ActionKind::Confirm, Uuid::new_v4()).await);
+    let wrong = send(&w, (&Method::POST, &path, "&code=000000"), Site::Own).await;
+    assert_eq!(wrong.status, 422, "{}", wrong.text);
+    assert!(wrong.text.contains("Check the text and type it again."));
+    assert!(unused(&w, &path).await, "a wrong code used the link");
+}
+
+/// TD-BIZ-25, SEC-027, D-5315: an email-only person whose inbox is marked shared (set straight
+/// through `set_inbox_shared` with a fake phone, since the switch refuses an email-only person)
+/// gets no email, and neither a signed-out press nor a code uses the link.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_biz_25_a_shared_inbox_gets_no_emailed_code(pool: PgPool) {
+    let (w, _, sends) = with_codes(world(&pool).await, FakeAddress(false));
+    let (member, jar) = signed_in(&w).await;
+    share_inbox(&w, member, &jar).await;
+    let path = live_for(&w, (ActionKind::Confirm, Uuid::new_v4()), member).await;
+    let reply = send(&w, (&Method::POST, &path, ""), Site::Own).await;
+    assert_eq!(reply.status, 200);
     assert!(reply.text.contains("link a phone that gets texts"));
-    assert!(unused(&w, &path).await && sends.load(Ordering::SeqCst) == 0);
+    let right = send(&w, (&Method::POST, &path, "&code=424242"), Site::Own).await;
+    assert_eq!(right.status, 422, "the code is not checked");
+    assert!(unused(&w, &path).await, "a shared inbox used the link");
+    assert!(sent_codes(&sends).is_empty(), "no email to a shared inbox");
+}
+
+/// TD-BIZ-25, SEC-004, D-5315: the real `LinkCodeAddress` opens a member's vault-sealed fake
+/// sign-in address: one email there, and the right code uses that member's link.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_biz_25_the_link_code_address_emails_the_sealed_sign_in_address(pool: PgPool) {
+    let w = world(&pool).await;
+    let address = "member.sealed@example.com";
+    let mut db = w.pool.acquire().await.expect("db");
+    let mailbox = mailbox_for(&mut db, &vault(), address).await.expect("box");
+    let added = add_member(
+        &mut db,
+        owner_acting(&w),
+        mailbox,
+        Roles::BOTH,
+        Timestamp::now(),
+    );
+    let member = added.await.expect("member");
+    drop(db);
+    let to = LinkCodeAddress::new(Some(Arc::new(vault())));
+    let (w, _, sends) = with_codes(w, to);
+    let path = live_for(&w, (ActionKind::Confirm, Uuid::new_v4()), member).await;
+    let (jar, _, _) = coded_in(&w, &path).await;
+    assert!(
+        held_at(&w, &jar, member, Timestamp::now()).await,
+        "signed in"
+    );
+    assert!(!unused(&w, &path).await, "the right code used the link");
+    let email = (address.to_owned(), CodeChannel::Email);
+    assert_eq!(
+        sent_codes(&sends),
+        vec![email],
+        "one email to the sealed address"
+    );
 }
 
 /// Two fake unlinked phones that were blocked on a call (555-01xx, never dialled).
