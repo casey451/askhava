@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-28T04:43:00Z by runner 820c69ead2c2 (actions).
+Updated 2026-11-28T04:49:03Z by runner 04bdbc389c1c (actions).
 
 **Idle since 04:41Z; 696 of 813 done; week 23% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-28T04:43:00Z by runner 820c69ead2c2 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** idle since 04:41Z (no task in progress)
 - **Week:** 23% used, 150.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:42Z, 0 min before this update
+- **Last run:** 04:43Z, 5 min before this update
 - **Keeper:** last ran 04:42Z, next wake 05:02Z
 
 ## Needs attention
@@ -68,8 +68,8 @@ Updated 2026-11-28T04:43:00Z by runner 820c69ead2c2 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 489 of 736 (66.4%) · partial 238 · unstarted 9
-**Tasks merged (throughput only):** 696 of 811
+**Requirements verified:** 486 of 736 (66.0%) · partial 241 · unstarted 9
+**Tasks merged (throughput only):** 696 of 813
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -79,15 +79,15 @@ Updated 2026-11-28T04:43:00Z by runner 820c69ead2c2 (actions).
 | calls | 18 | 7 | 0 | 25 |
 | consent | 19 | 16 | 0 | 35 |
 | fees | 27 | 25 | 0 | 52 |
-| intake | 12 | 31 | 1 | 44 |
+| intake | 11 | 32 | 1 | 44 |
 | job-cards | 17 | 7 | 0 | 24 |
 | licensing | 41 | 7 | 0 | 48 |
 | lifecycle | 23 | 5 | 0 | 28 |
 | messaging | 25 | 20 | 0 | 45 |
 | ops-recovery | 37 | 16 | 1 | 54 |
-| privacy | 15 | 16 | 0 | 31 |
+| privacy | 14 | 17 | 0 | 31 |
 | quiet-hours | 5 | 4 | 0 | 9 |
-| quotes-pick | 40 | 16 | 0 | 56 |
+| quotes-pick | 39 | 17 | 0 | 56 |
 | recurring | 10 | 1 | 0 | 11 |
 | security | 27 | 25 | 3 | 55 |
 | terms | 35 | 0 | 0 | 35 |
