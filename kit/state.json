@@ -126445,7 +126445,15 @@
    "wip_claim": {
     "attempt": 2,
     "remote_sha": ""
-   }
+   },
+   "reviewed_sha": "11e3cb0aab80c36bb401e160747edc21cff774b1",
+   "review_lease": {
+    "task": "T879",
+    "session": "actions-46110545621",
+    "expires": "2026-11-28T09:54:57Z"
+   },
+   "branch": "claude/task/T879-flake-run-workflow",
+   "head_check_since": null
   },
   {
    "id": "T880",
@@ -135066,7 +135074,7 @@
    }
   }
  },
- "updated_at": "2026-11-28T06:54:57Z",
+ "updated_at": "2026-11-28T06:56:38Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
