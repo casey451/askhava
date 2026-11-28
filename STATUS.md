@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-28T07:25:37Z by runner 6eeb54fb4874 (actions).
+Updated 2026-11-28T07:31:40Z by runner 17503a2227d1 (actions).
 
-**Idle since 06:56Z; 696 of 813 done; week 23% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Idle since 07:28Z; 697 of 813 done; week 23% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 696 of 813 build tasks (owner gates not counted)
+- **Tasks done:** 697 of 813 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** idle since 06:56Z (no task in progress)
+- **Lane:** idle since 07:28Z (no task in progress)
 - **Week:** 23% used, 148.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:25Z, 0 min before this update
+- **Last run:** 07:26Z, 5 min before this update
 - **Keeper:** last ran 07:25Z, next wake 07:45Z
 
 ## Needs attention
@@ -19,7 +19,7 @@ Updated 2026-11-28T07:25:37Z by runner 6eeb54fb4874 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T879 | harness: a flake-run workflow that runs named tests many tim | MERGE_PENDING | 2 | 57 min | 06:56Z | Reviewer after the findings round still ends REVIEW-VERDICT: FINDINGS (head 97d7be0793d47a6bd0fca5b8b6517f58cab29aaf). F |
+| T879 | harness: a flake-run workflow that runs named tests many tim | done | 2 | 57 min | 06:56Z | Reviewer after the findings round still ends REVIEW-VERDICT: FINDINGS (head 97d7be0793d47a6bd0fca5b8b6517f58cab29aaf). F |
 | T879 | harness: a flake-run workflow that runs named tests many tim | QUEUED | 1 | 62 min | 05:51Z |  |
 | T849 | server: the e2e web binary serves J1/J2 business time from t | BLOCKED | 5 | 64 min | 04:41Z | PLAN GAP: tests/e2e/j1_homeowner.spec.ts:302 (not owned by T849; the per-IP limit is in app/portals/src/pick_flow.rs:846 |
 | T811 | server: the Confirm link's code goes by email to a person wi | done | 1 | 2 h 19 min | 02:05Z |  |
@@ -58,12 +58,11 @@ Updated 2026-11-28T07:25:37Z by runner 6eeb54fb4874 (actions).
 - 16:31Z Plan: T849 seeds J3's licence check at the app clock (D-5978) (#1514)
 - 16:15Z Plan: efficiency fixes (D-5971); T734 owns its template line, T862 split with T870 (D-5972) (#1513)
 - 12:14Z Plan: T657 waits on T811 (D-5954); T849 moves j1_homeowner into the late project (D-5955) (#1500)
-- 07:26Z Plan: fraud-refund fix (D-5888), T820 fix (D-5889), T865 draft (D-5900), template line and T868 (D-5901), compliance (D-5907), T856 plan fix (D-5918) (#1
 
 ## Progress (requirements verified)
 
 **Requirements verified:** 486 of 736 (66.0%) · partial 241 · unstarted 9
-**Tasks merged (throughput only):** 696 of 813
+**Tasks merged (throughput only):** 697 of 813
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -99,7 +98,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 339 of 385 done
+- stage 5: 340 of 385 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done

@@ -126393,7 +126393,7 @@
    "deps": [
     "T869"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 1,
    "slug": "flake-run-workflow",
    "type": "harness",
@@ -126459,13 +126459,70 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 63,
      "head_sha": "11e3cb0aab80c36bb401e160747edc21cff774b1",
-     "pr": null,
-     "checks": null,
+     "pr": 1530,
+     "checks": [
+      {
+       "name": "backup lane 1",
+       "conclusion": null
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-28T05:58:54Z",
      "ended_at": "2026-11-28T06:56:37Z",
-     "result": "MERGE_PENDING",
+     "result": "done",
      "usage": {
       "worker": {
        "tokens": 2014629,
@@ -126490,7 +126547,15 @@
     "why": "auto-merge on #1530 (gh pr merge)",
     "head": "11e3cb0aab80c36bb401e160747edc21cff774b1"
    },
-   "merge_turn_since": "2026-11-28T07:24:20Z"
+   "merge_turn_since": "2026-11-28T07:24:20Z",
+   "merged_sha": "17503a2227d15342bda67b0b68fa35948eda82bd",
+   "merged_at": "2026-11-28T07:28:14Z",
+   "files": [
+    ".github/workflows/flake-run.yml",
+    "docs/architecture.md",
+    "docs/decisions.md",
+    "tests/test_flake_run_workflow.py"
+   ]
   },
   {
    "id": "T880",
@@ -135111,7 +135176,7 @@
    }
   }
  },
- "updated_at": "2026-11-28T07:25:37Z",
+ "updated_at": "2026-11-28T07:31:40Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -135209,7 +135274,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "6eeb54fb48746c1c67b7b64eae15108476f43afe",
+ "runner_sha": "17503a2227d15342bda67b0b68fa35948eda82bd",
  "starter": "actions",
  "smoke_runs": [
   {
