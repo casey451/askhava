@@ -35677,7 +35677,9 @@
     "T882",
     "T883",
     "T884",
-    "T886"
+    "T886",
+    "T887",
+    "T888"
    ],
    "model": null,
    "effort": null,
@@ -42063,7 +42065,9 @@
     "T773",
     "T835",
     "T843",
-    "T881"
+    "T881",
+    "T887",
+    "T888"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -57369,6 +57373,121 @@
    "branch": "claude/task/T886-reviewer-doc-only-fix",
    "prompt": "kit/prompts/T886.md",
    "acceptance": "`python3 -m pytest tests/test_runner_doc_fix.py tests/test_runner_review_proof.py tests/test_runner_after_smoke.py` passes, the new cases failing against `main`'s runner; every other `tests/test_runner_*.py` and workflow test passes unchanged; `git diff origin/main -- runner/cycle.py runner/github_env.py runner/__main__.py` is empty; actionlint reports nothing new on `backup-runner.yml`."
+  },
+  {
+   "id": "T887",
+   "slug": "attempt-budget",
+   "title": "runner (harness): a flat worker budget per attempt, measured by the runner, with a soft wrap-up and a hard stop",
+   "goal": "Plan change D-6028 (Casey approved; Fable's ruling; after T881, T882, T883, T884 and T886). Since Nov 25 only 48% of 337M tokens went to merged attempts, and three runaway attempts (T734 a2 39.3M / 203 turns, T849 a1 20.3M / 141, a4 13.5M / 119) were 22%. The cap is flat and worker-only, not a pacer multiple: soft at 8M weighted tokens or 80 turns, hard at 12M or 110. A task may carry a higher `budget.attempt_tokens` (and `budget.attempt_turns`) by plan change; `scripts/validate_tasks.py` is protected and not edited, so the runner reads both keys with defaults and ignores a non-integer. (1) New `runner/budget.py` (standard library): the runner measures, never the worker. `--renew` (`runner/__main__.py` `renew`, `:646`; its result stays exactly `renewed`, `renew_refused: ...` or `lost_race`, as `tests/test_runner_live.py:1352`, `:1365`, `:1377` assert) also prints one line `budget: ok|wrap_up|stop <tokens>/<turns>`. It globs this session's subagent transcripts as `find_transcripts` does (`runner/github_env.py:3062`) and sums the weighted usage with `role_reading`'s count (`:3030`) and the assistant turns of the worker and fix-round worker transcripts of this attempt (those started after the claim that are not a reviewer's: the hand-off file keeps the ids each `--renew` saw, and a reviewer's own `--renew` passes `--role reviewer`). Today's `turns: <n>` in the note is self-reported (`.github/workflows/backup-runner.yml:552`). The tests must show that `--renew` sees a transcript that is still being written (lines appended after the first read are counted on the next `--renew`); if the layout makes that impossible, report a `PLAN GAP:`. (2) Session prompt (step 6, `:552`, and the worker and fix-round instructions of steps 3 and 4c) tells every worker, word for word: on `budget: wrap_up`, finish the current step, commit, and start no new scope; on `budget: stop`, commit, write the progress note and return at once. On a stop, the session runs `--after --outcome over_budget --log <the note>`, unless the work was complete and handed in at the cap, which is reviewed and handed in as usual. (3) `runner/cycle.py` `_after_worker` (`:600`): `over_budget` makes the task BLOCKED at once with a reason opening `over budget` (as `record_plan_gap`, `:504`, does for a plan gap; not in `REQUEUABLE`, `:84`) and an outbox item `T###-over-budget` naming the tokens, turns and kept WIP; its head is kept as T881's `blocked` WIP. A new outcome `check_failed` (T886's sibling, for the hand-in suites task after this one) counts exactly as `tests_failed` (`record_failure`), and its head is kept with the existing WIP kind `review` (`WIP_KINDS`, `:113`), so `kit/state_schema.json` is not edited. (4) Continuing: the overseer requeues after Fable's ruling with a fresh budget, and the next attempt resumes the WIP (T882). A second over-budget stop of one task means a split or a plan fix, never a third requeue. Casey's 150-turn / 30M flag stays as the backstop for reviewer and whole-session spend, and no job is cancelled without him: the stop is the worker's own wrap-up. Tests in a new `tests/test_runner_attempt_budget.py`: ok, wrap_up and stop at each threshold for tokens and turns; a task's `budget.attempt_tokens` raises the cap; a reviewer transcript is not counted; a transcript appended to between two `--renew` calls; `over_budget` BLOCKED with its reason, outbox item and WIP; `check_failed` counted as `tests_failed` with a `review` WIP; the workflow sentences. No existing assertion changes; any that would is a `PLAN GAP:` report. No Rust file changes, so `tests/coverage_floor.json` sets no floor. Update `docs/architecture.md` (the runner's budget) and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "security"
+   ],
+   "requirements": [],
+   "tests": [],
+   "cites": [],
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "deps": [
+    "T881",
+    "T882",
+    "T883",
+    "T884",
+    "T886"
+   ],
+   "owns": [
+    "runner/cycle.py",
+    "runner/__main__.py",
+    "runner/budget.py",
+    ".github/workflows/backup-runner.yml",
+    "tests/test_runner_attempt_budget.py"
+   ],
+   "reads": [
+    "docs/code-docs.md"
+   ],
+   "decisions": [
+    "D-4720",
+    "D-6020",
+    "D-6021",
+    "D-6028"
+   ],
+   "budget": {
+    "files": 5,
+    "lines": 500,
+    "context_pct": 49
+   },
+   "branch": "claude/task/T887-attempt-budget",
+   "prompt": "kit/prompts/T887.md",
+   "acceptance": "`python3 -m pytest tests/test_runner_attempt_budget.py tests/test_runner_live.py tests/test_runner_wip.py tests/test_runner_logic.py tests/test_failure_drills.py` passes, the new cases failing against `main`'s runner; every other `tests/test_runner_*.py` and workflow test passes unchanged; `git diff origin/main -- runner/github_env.py kit/state_schema.json scripts/validate_tasks.py` is empty; actionlint reports nothing new on `backup-runner.yml`."
+  },
+  {
+   "id": "T888",
+   "slug": "runner-hand-in-suites",
+   "title": "runner (harness): the runner runs E2e and Ally at hand-in when the change touches them, with one fix round",
+   "goal": "Plan change D-6028 (Casey approved; Fable's ruling; after this task's sibling T887 and after T881, T882, T883, T884 and T886). The three runaway attempts of D-6028 (T734 a2, T849 a1 and a4) all failed E2e and Ally in `Ci` after hand-in. Trigger: the existing E2e/Ally path rule, read at run time from main's `.github/workflows/a11y.yml` (the step at `:59`, its `grep -Eq` pattern at `:76`, which `tests/test_ci_workflow.py` keeps equal to `ci.yml`'s E2e rule), on `main...head`, failing closed (an unreadable rule, fetch or diff runs the suites). There is no new list. (1) New `runner/handin_suites.py`: at `--after` (`runner/__main__.py` `after`; `runner/github_env.py` `collect_result`, after T884's runner smoke at `:2827` and before the review record and push), when the rule matches, and only when `collect_result` is given the hand-off record, as `after_smoke` is (so the direct callers, `tests/test_runner_live.py:325`, `:476`, `:704` to `:711` and `tests/test_runner_update_merge.py:310` to `:340`, whose heads change `Cargo.toml`, run no suites and pass unchanged), the runner runs the E2e suite (`tests/e2e`) and the Ally suite (`tests/a11y/playwright.config.ts`) on the head. It uses the setup `scripts/prehandin.sh --ally` uses (`:163` to `:328`, the run at `:267`: test-control build, `npm run build`, Chromium, `DATABASE_URL`), detached as D-2560's background smoke is (`start_background_smoke`, `runner/github_env.py:360`): `--after` answers `suites_pending` and the session calls it again, each wait at most 540 s; the worker has already returned. Limit 30 minutes: a timeout or a missing tool is logged and goes on to the hand-in, never a failure and never reported green. (2) A red suite holds the hand-in once (`suites_red`, as T443's `smoke_red`): the failing spec names and the last 150 log lines go to one fix-round worker in the same attempt, counted in the same budget (T887); a NEW reviewer approves the new head as step 5a does; then only the red suite runs again. A second red ends the attempt `check_failed` (T887: counted as `tests_failed`, WIP kept). (3) Session prompt (`.github/workflows/backup-runner.yml` steps 3, 5 and 5a): at hand-in the worker runs only the specs its change touches, not the full suites; D-6020 (1)'s early full e2e run for a cross-cutting task stays. `kit/prompts/TEMPLATE.md` is locked and changes later by plan change. Tests in a new `tests/test_runner_handin_suites.py`: the rule read from a11y.yml and refused-read fail-closed; no match runs nothing; pending, green, timeout (logged, handed in) and a skipped tool; red held once with spec names and a 150-line tail; a rerun of only the red suite; a second red is `check_failed`; the workflow sentences. No existing assertion changes (the hand-in fixtures of `tests/test_runner_after_smoke.py` and `tests/test_runner_review_proof.py` change only `docs/` paths, which the rule does not match); any that would is a `PLAN GAP:` report. No Rust file changes, so `tests/coverage_floor.json` sets no floor. Update `docs/architecture.md` (the runner's hand-in suites) and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "security"
+   ],
+   "requirements": [],
+   "tests": [],
+   "cites": [],
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "deps": [
+    "T887",
+    "T881",
+    "T882",
+    "T883",
+    "T884",
+    "T886"
+   ],
+   "owns": [
+    "runner/__main__.py",
+    "runner/github_env.py",
+    "runner/handin_suites.py",
+    ".github/workflows/backup-runner.yml",
+    "tests/test_runner_handin_suites.py"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    ".github/workflows/a11y.yml",
+    "scripts/prehandin.sh"
+   ],
+   "decisions": [
+    "D-2560",
+    "D-3530",
+    "D-6020",
+    "D-6028"
+   ],
+   "budget": {
+    "files": 5,
+    "lines": 500,
+    "context_pct": 48
+   },
+   "branch": "claude/task/T888-runner-hand-in-suites",
+   "prompt": "kit/prompts/T888.md",
+   "acceptance": "`python3 -m pytest tests/test_runner_handin_suites.py tests/test_runner_after_smoke.py tests/test_runner_review_proof.py tests/test_ci_workflow.py` passes, the new cases failing against `main`'s runner; every other `tests/test_runner_*.py` and workflow test passes unchanged; `git diff origin/main -- runner/cycle.py .github/workflows/a11y.yml .github/workflows/ci.yml` is empty; actionlint reports nothing new on `backup-runner.yml`."
   }
  ]
 }
