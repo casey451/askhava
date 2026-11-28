@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-28T13:36:00Z by runner 2bd1d51d11b0 (actions).
+Updated 2026-11-28T13:36:51Z by runner 2bd1d51d11b0 (actions).
 
-**Idle since 13:07Z; 698 of 818 done; week 25% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Building: T857 in progress since 13:35Z; 698 of 818 done; week 25% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 698 of 818 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** idle since 13:07Z (no task in progress)
-- **Week:** 25% used, 146.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:29Z, 6 min before this update
+- **Lane:** lane 1: T857 claimed 13:35Z, lease until 16:35Z
+- **Week:** 25% used, 144.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
+- **Last run:** 13:29Z, 7 min before this update
 - **Keeper:** last ran 13:08Z, next wake 13:28Z
 
 ## Needs attention
@@ -83,7 +83,7 @@ Second conflict: goal change (3) (wip_used no longer stops a later attempt's hea
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-28T12:53:05Z (week)): week: 48.0M used, 146.0M left, resets 2026-12-03T17:00:00Z; projected finish 2026-12-12T10:36:38Z.
+- Pacing (session_reading 2026-11-28T13:07:37Z (week)): week: 50.0M used, 144.0M left, resets 2026-12-03T17:00:00Z; projected finish 2026-12-12T12:04:35Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -98,7 +98,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T857 (lease until 2026-11-28T16:35:57Z)
 
 ## Last usage reading
 - {"task": "T881", "at": "2026-11-28T13:07:02Z", "output_tokens": 28923, "cache_read_input_tokens": 1566975, "input_tokens": 59, "cache_creation_input_tokens": 103111}
