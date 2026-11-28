@@ -58,8 +58,9 @@
 //! pick; T457, SEC-004, SEC-027, D-3675, D-3889) leads to the served Confirm page: [`confirm_post`]
 //! names the link's person in a rolled-back transaction; with that person's own live session and
 //! no shared inbox it uses the link and answers 303 to `/b/picks/{pick}/confirm`. Otherwise a
-//! `POST` with no `code` field texts a code (`send_confirm_code`, the link unused) and shows
-//! `confirm_link_code_page`; one with a `code` field checks it (`check_confirm_code`), and only a
+//! `POST` with no `code` field sends a code (`send_link_code`: a text, or an email to the sign-in
+//! address of a person with no texting phone, D-5315; the link unused) and shows
+//! `confirm_link_code_page`; one with a `code` field checks it (`check_link_code`), and only a
 //! right code uses the link, signs that device in (`confirm_link_session`, same transaction) and
 //! answers the 303. The codes are [`routes_with`]'s `ConfirmCodes`, built by
 //! [`confirm_link_codes`] over [`LinkCodeAddress`]; without them nothing is sent or used and the
@@ -102,13 +103,13 @@ use askhava_portals::api::{
 };
 use askhava_portals::api::{
     CodeAddress, CodeCheck, CodeFuture, CodeSent, CodeStep, CodeTo, ConfirmCodes, PortalsError,
-    VERIFY_DAILY_THRESHOLD, check_confirm_code, confirm_code_needed, confirm_link_code_page,
-    confirm_link_session, send_confirm_code,
+    VERIFY_DAILY_THRESHOLD, check_link_code, confirm_code_needed, confirm_link_code_page,
+    confirm_link_session, send_link_code,
 };
 use askhava_portals::api::{JobPageLinks, no_store};
 use askhava_portals::api::{SensitiveChange, StepUpError};
 use askhava_portals::api::{action_done_page, used_action_link};
-use askhava_privacy::api::{BusinessPurpose, Vault, read_staff_phone};
+use askhava_privacy::api::{BusinessPurpose, Vault, read_business_mailbox, read_staff_phone};
 use askhava_quotes::api::{
     Bounce, NoteProblem, PageParts, Price, PriceFields, PriceProblem, QuoteForm, QuoteRules,
     Submitted, check_note, job_page, last_facts, parse_price, parse_quote, quote_rules,
@@ -773,7 +774,8 @@ async fn hold_post(links: &Links, (pick, token): (Uuid, &str)) -> Result<Respons
 /// `POST`. The link's person is named by `use_action_link` in a transaction that is committed
 /// only when `confirm_code_needed` says no code is needed (that person's own live session, inbox
 /// not shared): then 303 to the Confirm page. Otherwise it is rolled back, so the link stays
-/// unused: with no `code` field a code is texted, with one it is checked, and only a right code
+/// unused: with no `code` field a code is sent (`send_link_code`), with one it is checked
+/// (`check_link_code`, D-5315), and only a right code
 /// goes on to [`code_passed`]; every other answer is the code step again. With no codes
 /// configured nothing is sent or checked and the step shows `CodeSent::Failed`'s line.
 async fn confirm_post(
@@ -806,7 +808,7 @@ async fn confirm_post(
         },
         (Some(codes), None) => code_sent(links, codes, (ip, grant.member(), pick), now).await?,
         (Some(codes), Some(code)) => {
-            let checked = check_confirm_code(codes, &links.pool, who, code, real).await;
+            let checked = check_link_code(codes, &links.pool, who, code, real).await;
             match checked.map_err(failed)? {
                 CodeCheck::Right => {
                     return code_passed(links, (pick, token), jar, (now, real)).await;
@@ -832,8 +834,9 @@ fn confirm_path(pick: Uuid) -> String {
     format!("/b/picks/{pick}/confirm")
 }
 
-/// SEC-004, SEC-014, SEC-027, D-3889: texts the link's person a code for the pick through
-/// `codes` and gives the step's line; a person with no texting phone gets `CodeSent::NoPhone`'s.
+/// SEC-004, SEC-014, SEC-027, D-3889, D-5315: sends the link's person a code for the pick
+/// through `codes` (`send_link_code`: a text, or an email to a person with no texting phone) and
+/// gives the step's line; a shared inbox with no texting phone gets `CodeSent::NoPhone`'s.
 async fn code_sent(
     links: &Links,
     codes: &LinkCodes,
@@ -841,7 +844,7 @@ async fn code_sent(
     now: Timestamp,
 ) -> Result<CodeStep, Stop> {
     let threshold = i32::try_from(VERIFY_DAILY_THRESHOLD).unwrap_or(i32::MAX);
-    let sent = send_confirm_code(codes, &links.pool, to, (now, threshold)).await;
+    let sent = send_link_code(codes, &links.pool, to, (now, threshold)).await;
     Ok(CodeStep {
         line: Some(sent.map_err(failed)?.line()),
         error: None,
@@ -867,9 +870,9 @@ async fn code_passed(
     Ok((jar, Redirect::to(&confirm_path(pick))).into_response())
 }
 
-/// SEC-004, SEC-027, D-3562: where the Confirm link's code goes: the member's own first texting
-/// line, opened under `SignInCode`. A member with none is an email address the code is never sent
-/// to (`CodeSent::NoPhone`); no vault or a removed member: no code.
+/// SEC-004, SEC-027, D-3562, D-5315: where the Confirm link's code goes: the member's own first
+/// texting line, else the member's own sign-in address, each opened from the vault under
+/// `SignInCode` and never logged or shown; no vault or a removed member: no code.
 pub struct LinkCodeAddress {
     vault: Option<Arc<Vault>>,
 }
@@ -881,17 +884,23 @@ impl LinkCodeAddress {
         Self { vault }
     }
 
-    /// SEC-004: `member`'s own texting phone, else the empty address that gets nothing.
+    /// SEC-004, D-5315: `member`'s own texting phone, else `member`'s sign-in address (the
+    /// `mailbox` of `sign_in_lines`), both read under `BusinessPurpose::SignInCode`.
     async fn find(&self, db: &mut PgConnection, member: Uuid) -> Result<CodeTo, PortalsError> {
         let lines = sign_in_lines(db, member).await;
         let lines = lines.map_err(|_| PortalsError::Database)?;
         let lines = lines.ok_or(PortalsError::Database)?;
-        let Some(line) = lines.texting_lines.first() else {
-            return Ok(CodeTo::Email(SecretString::default()));
-        };
         let vault = self.vault.as_deref().ok_or(PortalsError::Database)?;
-        let phone = read_staff_phone(db, vault, BusinessPurpose::SignInCode, *line).await;
-        phone.map(CodeTo::Phone).map_err(|_| PortalsError::Database)
+        let purpose = BusinessPurpose::SignInCode;
+        let to = match lines.texting_lines.first() {
+            Some(line) => read_staff_phone(db, vault, purpose, *line)
+                .await
+                .map(CodeTo::Phone),
+            None => read_business_mailbox(db, vault, purpose, lines.mailbox)
+                .await
+                .map(CodeTo::Email),
+        };
+        to.map_err(|_| PortalsError::Database)
     }
 }
 
