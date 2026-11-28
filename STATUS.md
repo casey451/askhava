@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-28T00:27:49Z by runner 82bf913df8ad (manual).
+Updated 2026-11-28T00:37:10Z by runner 83e824672bcc (actions).
 
 **Building: T811 in progress since 23:45Z; 695 of 809 done; week 20% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 695 of 809 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T811 claimed 23:45Z, lease until 03:22Z
+- **Lane:** lane 1: T811 claimed 23:45Z, lease until 03:37Z
 - **Week:** 20% used, 154.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:23Z, 4 min before this update
+- **Last run:** 00:28Z, 8 min before this update
 - **Keeper:** last ran 23:38Z, next wake 23:58Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
-- Strict plan check red: 58 problem(s) on tasks still to run (+605 on DONE tasks); first: T704: stored context_pct 38% but it measures 44%; regenerate
+- Strict plan check red: 58 problem(s) on tasks still to run (+607 on DONE tasks); first: T704: stored context_pct 38% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -52,7 +52,6 @@ Updated 2026-11-28T00:27:49Z by runner 82bf913df8ad (manual).
 | T856 | intake: a request may be texted only with an `sms` consent r | BLOCKED | 1 | 110 min | 02:15Z |  |
 | T861 | e2e (harness): J1 reads a sent text from the fake carrier on | done | 1 | 42 min | 01:13Z |  |
 | T783 | intake: a picture text's media is deleted at the provider af | done | 1 | 2 h 19 min | 00:37Z |  |
-| T309 | server and portals: the business Get help form and the site  | done | 1 | 2 h 8 min | 00:28Z |  |
 
 ### Plan and harness merges on main
 - 23:50Z Plan: PF-CHAIN2 fixes for the web-chat consent chain; seams T873-T876 (D-5989) (#1523)
@@ -68,8 +67,8 @@ Updated 2026-11-28T00:27:49Z by runner 82bf913df8ad (manual).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 484 of 735 (65.9%) · partial 243 · unstarted 8
-**Tasks merged (throughput only):** 695 of 809
+**Requirements verified:** 486 of 735 (66.1%) · partial 241 · unstarted 8
+**Tasks merged (throughput only):** 695 of 805
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -83,7 +82,7 @@ Updated 2026-11-28T00:27:49Z by runner 82bf913df8ad (manual).
 | job-cards | 17 | 7 | 0 | 24 |
 | licensing | 41 | 7 | 0 | 48 |
 | lifecycle | 23 | 5 | 0 | 28 |
-| messaging | 26 | 19 | 0 | 45 |
+| messaging | 28 | 17 | 0 | 45 |
 | ops-recovery | 37 | 16 | 1 | 54 |
 | privacy | 15 | 16 | 0 | 31 |
 | quiet-hours | 5 | 4 | 0 | 9 |
@@ -112,7 +111,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T811 (lease until 2026-11-28T03:22:39Z)
+- T811 (lease until 2026-11-28T03:37:10Z)
 
 ## Last usage reading
 - {"task": "T871", "at": "2026-11-27T23:00:09Z", "input_tokens": 84, "cache_read_input_tokens": 2183726, "cache_creation_input_tokens": 122355, "output_tokens": 17523}
