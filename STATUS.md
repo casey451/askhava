@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-28T13:08:24Z by runner 56386cb11f43 (actions).
+Updated 2026-11-28T13:36:00Z by runner 2bd1d51d11b0 (actions).
 
-**Idle since 13:07Z; 698 of 816 done; week 25% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Idle since 13:07Z; 698 of 818 done; week 25% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 698 of 816 build tasks (owner gates not counted)
+- **Tasks done:** 698 of 818 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** idle since 13:07Z (no task in progress)
 - **Week:** 25% used, 146.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:08Z, 0 min before this update
+- **Last run:** 13:29Z, 6 min before this update
 - **Keeper:** last ran 13:08Z, next wake 13:28Z
 
 ## Needs attention
@@ -36,10 +36,9 @@ Second conflict: goal change (3) (wip_used no longer stops a later attempt's hea
 | T849 | server: the e2e web binary serves J1/J2 business time from t | check_failed | 4 | 118 min | 15:27Z |  |
 | T817 | messaging: a text re-checks the opt-out list after its claim | done | 1 | 67 min | 14:27Z |  |
 | T822 | docs: the privacy policy names the email link and the fuller | done | 1 | 54 min | 14:13Z |  |
-| T862 | privacy: the email she types in her own conversation is kept | BLOCKED | 1 | 4 min | 13:22Z | PLAN GAP: outside ownership: app/server/src/homeowner_portal.rs, app/portals/src/homeowner_portal.rs / Evidence: her dat |
-| T734 | server and adapters: a business can leave in the portal, wit | BLOCKED | 3 | 26 min | 13:10Z | PLAN GAP: app/portals/templates/business_leave.html:25 owned by T228 and T410, not T734. Smallest plan change: let T734  |
 
 ### Plan and harness merges on main
+- 13:29Z Plan: efficiency 2: pre-claim split check, cross-cutting pre-flights, flake-run first, T884 runner-side smoke, T886 doc-only review fixes, T857 narrowed,
 - 12:32Z Plan: efficiency changes: early full e2e for cross-cutting tasks, split after a second plan gap, keep blocked work (T881, T882), checklist and goal cap (
 - 05:06Z Plan: T849 clears J1's own per-IP code buckets before step 6 (D-5998) (#1529)
 - 03:05Z Plan: pre-claim routine (drafts, chance-failure runs, coverage floors); T879, T880; T872/T862 drafts (D-5996) (#1526)
@@ -56,7 +55,7 @@ Second conflict: goal change (3) (wip_used no longer stops a later attempt's hea
 ## Progress (requirements verified)
 
 **Requirements verified:** 486 of 736 (66.0%) · partial 241 · unstarted 9
-**Tasks merged (throughput only):** 698 of 816
+**Tasks merged (throughput only):** 698 of 818
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -92,7 +91,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 341 of 388 done
+- stage 5: 341 of 390 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
