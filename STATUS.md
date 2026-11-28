@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-28T08:17:31Z by runner c78daea39016 (actions).
+Updated 2026-11-28T08:35:05Z by runner c78daea39016 (actions).
 
 **Building: T872 in progress since 07:34Z; 697 of 813 done; week 23% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 697 of 813 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T872 claimed 07:34Z, lease until 11:17Z
+- **Lane:** lane 1: T872 claimed 07:34Z, lease until 11:35Z
 - **Week:** 23% used, 148.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:08Z, 9 min before this update
+- **Last run:** 08:18Z, 16 min before this update
 - **Keeper:** last ran 07:25Z, next wake 07:45Z
 
 ## Needs attention
@@ -40,8 +40,6 @@ Updated 2026-11-28T08:17:31Z by runner c78daea39016 (actions).
 | T849 | server: the e2e web binary serves J1/J2 business time from t | BLOCKED | 3 | 7 min | 09:16Z |  |
 | T734 | server and adapters: a business can leave in the portal, wit | QUEUED | 1 | 2 h 19 min | 09:14Z |  |
 | T869 | harness: the PII scan allows the Co-Authored-By no-reply add | done | 1 | 82 min | 08:53Z |  |
-| T849 | server: the e2e web binary serves J1/J2 business time from t | check_failed | 2 | 45 min | 08:29Z |  |
-| T688 | server: a call to the Laftly main number hears the greeting  | done | 1 | 85 min | 08:17Z |  |
 
 ### Plan and harness merges on main
 - 05:06Z Plan: T849 clears J1's own per-IP code buckets before step 6 (D-5998) (#1529)
@@ -103,7 +101,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T872 (lease until 2026-11-28T11:17:31Z)
+- T872 (lease until 2026-11-28T11:35:05Z)
 
 ## Last usage reading
 - {"task": "T879", "at": "2026-11-28T06:56:37Z", "output_tokens": 34574, "cache_read_input_tokens": 2225826, "input_tokens": 80, "cache_creation_input_tokens": 117794}
