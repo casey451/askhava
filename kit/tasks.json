@@ -35675,7 +35675,8 @@
     "T879",
     "T881",
     "T882",
-    "T883"
+    "T883",
+    "T884"
    ],
    "model": null,
    "effort": null,
@@ -57262,6 +57263,57 @@
    "branch": "claude/task/T883-workflow-checklist-goal-cap",
    "prompt": "kit/prompts/T883.md",
    "acceptance": "`python3 -m pytest tests/test_gen_prompts.py tests/test_session_checklist.py` passes, the new cases failing against `main`; every other workflow and runner test passes unchanged; `python3 scripts/gen_prompts.py --check` on `main`'s plan prints each goal length and passes; actionlint reports nothing new on `backup-runner.yml`."
+  },
+  {
+   "id": "T884",
+   "slug": "runner-hand-in-smoke",
+   "title": "runner (harness): the runner smokes every hand-in head itself and workers no longer run the smoke",
+   "goal": "Plan change D-6021 (Casey: \"Ok make it all happen\"; after T882 and T883). Workers spend turns starting, polling and re-running the smoke inside their session: T879 attempt 2's start smoke ran past the Bash tool's background limit and was rerun, and T872 spent turns 3 and 4 waiting on \"smoke running\" (overseer's session evidence, D-6021). The runner already smokes main before the session (`.github/workflows/backup-runner.yml:429` \"Warm the smoke build before the session (D-2007)\", `:446` \"Run the start-routine smoke before the session (D-2028)\", writing `target/smoke-pre.json`; the detached D-2560 smoke when main moved, `:521` to `:523`) and smokes a fix round's head itself at `--after` (D-3530: `after_smoke`, `runner/github_env.py:2827`, `:2881`), but only for a fix round: `fix_round` (`runner/__main__.py:517`, used at `:507`) gives a first-round hand-in no runner smoke because its worker ran one (`kit/prompts/TEMPLATE.md:14` Start step 2 and `:97` End step 1; session prompt step 5b, `backup-runner.yml:551`). Change: (1) `runner/__main__.py` `after`: every `submitted` hand-in with a hand-off file gets the runner's own full smoke of its head (`after_smoke`, unchanged: detached, `smoke_pending` until a verdict, nothing pushed meanwhile, a red held once as `smoke_red` and then `tests_failed`), not only a fix round; with no hand-off file nothing changes. (2) `write_handoff` (`:792`) adds `smoke`: {`sha` main's head the claim was judged on, `source` (`env.smoke_source`), `log` the path of this job's pre-session or background smoke log beside `target/smoke` when it exists for that sha, else \"\"}. (3) The session prompt (`backup-runner.yml` step 3, `:541`, and step 5b, `:551`) tells the worker and every fix-round worker, word for word: \"The runner smoked main before this claim and runs the full smoke on your hand-in head itself: skip the prompt's Start step 2 and the full smoke in End step 1, never start, poll or re-run `scripts/smoke.sh`; run 'Run your tests', then `bash scripts/prehandin.sh` and `bash scripts/prehandin.sh --ally` as the End routine says; the start smoke's log is the hand-off's `smoke.log` when you need it.\"; step 5b stops requiring the worker's `smoke.sh` and keeps `prehandin.sh`; steps 4c and 5a are unchanged. No other session-prompt line changes; `kit/prompts/TEMPLATE.md` is locked and not edited here (a later plan change trims Start step 2 and End step 1 once this merges). Tests in a new `tests/test_runner_handin_smoke.py`: a first-round hand-in (one worker, no hold) passes the hand-off record and is `smoke_pending`, then a green verdict hands in; a red one is held once then fails; no hand-off file passes no record; `write_handoff` names the smoke log only for its own sha; steps 3 and 5b carry the sentence word for word. D-6021 supersedes only `tests/test_runner_after_smoke.py:57` to `:62` (the first-round case) and the `(\"a1\",), False` case at `:73` (a first-round hand-in now gets the record), which change to match; nothing else in that file is edited. No Rust file changes, so `tests/coverage_floor.json` sets no floor; every new branch has a test. Update `docs/architecture.md` (the runner smoke at hand-in) and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T882",
+    "T883"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness"
+   ],
+   "owns": [
+    "runner/__main__.py",
+    ".github/workflows/backup-runner.yml",
+    "tests/test_runner_after_smoke.py",
+    "tests/test_runner_handin_smoke.py"
+   ],
+   "reads": [
+    "docs/code-docs.md"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-2028",
+    "D-2560",
+    "D-3530",
+    "D-6021"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 350,
+    "context_pct": 24
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T884-runner-hand-in-smoke",
+   "prompt": "kit/prompts/T884.md",
+   "acceptance": "`python3 -m pytest tests/test_runner_handin_smoke.py tests/test_runner_after_smoke.py tests/test_runner_pre_smoke.py tests/test_runner_smoke_reuse.py` passes, the new cases failing against `main`'s runner; every other `tests/test_runner_*.py` and workflow test passes unchanged; `git diff origin/main -- runner/github_env.py runner/cycle.py kit/prompts/TEMPLATE.md` is empty; actionlint reports nothing new on `backup-runner.yml`."
   }
  ]
 }
