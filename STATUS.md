@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-28T07:38:54Z by runner 17503a2227d1 (actions).
+Updated 2026-11-28T08:07:28Z by runner c78daea39016 (actions).
 
 **Building: T872 in progress since 07:34Z; 697 of 813 done; week 23% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 697 of 813 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T872 claimed 07:34Z, lease until 10:38Z
+- **Lane:** lane 1: T872 claimed 07:34Z, lease until 11:07Z
 - **Week:** 23% used, 148.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:34Z, 4 min before this update
+- **Last run:** 07:39Z, 28 min before this update
 - **Keeper:** last ran 07:25Z, next wake 07:45Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
-- Strict plan check red: 59 problem(s) on tasks still to run (+609 on DONE tasks); first: T704: stored context_pct 38% but it measures 44%; regenerate
+- Strict plan check red: 59 problem(s) on tasks still to run (+608 on DONE tasks); first: T704: stored context_pct 38% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -42,7 +42,6 @@ Updated 2026-11-28T07:38:54Z by runner 17503a2227d1 (actions).
 | T869 | harness: the PII scan allows the Co-Authored-By no-reply add | done | 1 | 82 min | 08:53Z |  |
 | T849 | server: the e2e web binary serves J1/J2 business time from t | check_failed | 2 | 45 min | 08:29Z |  |
 | T688 | server: a call to the Laftly main number hears the greeting  | done | 1 | 85 min | 08:17Z |  |
-| T657 | quotes and portals: quote-form and sign-in errors mark the f | check_failed | 3 | 75 min | 08:05Z | Worker stopped with no edits: start smoke exceeded ~20 min. Finding: J3 step 5 owner sign-in (signInOwner, tests/e2e/own |
 
 ### Plan and harness merges on main
 - 05:06Z Plan: T849 clears J1's own per-IP code buckets before step 6 (D-5998) (#1529)
@@ -104,7 +103,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T872 (lease until 2026-11-28T10:38:53Z)
+- T872 (lease until 2026-11-28T11:07:27Z)
 
 ## Last usage reading
 - {"task": "T879", "at": "2026-11-28T06:56:37Z", "output_tokens": 34574, "cache_read_input_tokens": 2225826, "input_tokens": 80, "cache_creation_input_tokens": 117794}
