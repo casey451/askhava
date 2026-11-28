@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-28T08:49:55Z by runner 17503a2227d1 (actions).
+Updated 2026-11-28T08:54:47Z by runner 17503a2227d1 (actions).
 
 **Idle since 08:47Z; 697 of 813 done; week 24% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-28T08:49:55Z by runner 17503a2227d1 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** idle since 08:47Z (no task in progress)
 - **Week:** 24% used, 148.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:49Z, 0 min before this update
+- **Last run:** 08:50Z, 4 min before this update
 - **Keeper:** last ran 08:49Z, next wake 09:09Z
 
 ## Needs attention
@@ -40,7 +40,6 @@ Updated 2026-11-28T08:49:55Z by runner 17503a2227d1 (actions).
 | T868 | tests (harness): two DONE tests that can fail by chance are  | done | 1 | 85 min | 10:14Z |  |
 | T849 | server: the e2e web binary serves J1/J2 business time from t | BLOCKED | 3 | 7 min | 09:16Z |  |
 | T734 | server and adapters: a business can leave in the portal, wit | QUEUED | 1 | 2 h 19 min | 09:14Z |  |
-| T869 | harness: the PII scan allows the Co-Authored-By no-reply add | done | 1 | 82 min | 08:53Z |  |
 
 ### Plan and harness merges on main
 - 05:06Z Plan: T849 clears J1's own per-IP code buckets before step 6 (D-5998) (#1529)
