@@ -1,25 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-28T02:41:47Z by runner f2bc6a8c3b34 (actions).
+Updated 2026-11-28T02:48:49Z by runner 820c69ead2c2 (actions).
 
-**Idle since 02:05Z; 695 of 811 done; week 22% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Idle since 02:44Z; 696 of 811 done; week 22% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 695 of 811 build tasks (owner gates not counted)
+- **Tasks done:** 696 of 811 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** idle since 02:05Z (no task in progress)
+- **Lane:** idle since 02:44Z (no task in progress)
 - **Week:** 22% used, 154.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:41Z, 0 min before this update
+- **Last run:** 02:42Z, 6 min before this update
 - **Keeper:** last ran 02:41Z, next wake 03:01Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
-- Strict plan check red: 58 problem(s) on tasks still to run (+605 on DONE tasks); first: T704: stored context_pct 38% but it measures 44%; regenerate
+- Strict plan check red: 58 problem(s) on tasks still to run (+607 on DONE tasks); first: T704: stored context_pct 38% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T811 | server: the Confirm link's code goes by email to a person wi | MERGE_PENDING | 1 | 2 h 19 min | 02:05Z |  |
+| T811 | server: the Confirm link's code goes by email to a person wi | done | 1 | 2 h 19 min | 02:05Z |  |
 | T871 | portals: the link-only code send and check that email a pers | done | 1 | 114 min | 23:00Z |  |
 | T856 | intake: a request may be texted only with an `sms` consent r | done | 2 | 2 h 16 min | 19:33Z | PLAN GAP: outside ownership: app/intake/src/replies.rs:367 (and replies.rs:204). The chat raw path web_chat::raw_turn -> |
 | T749 | messaging: the unused `business_pick_waiting` text template  | check_failed | 1 | 44 min | 16:48Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
@@ -66,14 +66,14 @@ Updated 2026-11-28T02:41:47Z by runner f2bc6a8c3b34 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 483 of 736 (65.6%) · partial 244 · unstarted 9
-**Tasks merged (throughput only):** 695 of 811
+**Requirements verified:** 489 of 736 (66.4%) · partial 238 · unstarted 9
+**Tasks merged (throughput only):** 696 of 811
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 30 | 5 | 0 | 35 |
 | ai | 11 | 15 | 3 | 29 |
-| businesses | 36 | 21 | 1 | 58 |
+| businesses | 37 | 20 | 1 | 58 |
 | calls | 18 | 7 | 0 | 25 |
 | consent | 19 | 16 | 0 | 35 |
 | fees | 27 | 25 | 0 | 52 |
@@ -85,9 +85,9 @@ Updated 2026-11-28T02:41:47Z by runner f2bc6a8c3b34 (actions).
 | ops-recovery | 37 | 16 | 1 | 54 |
 | privacy | 15 | 16 | 0 | 31 |
 | quiet-hours | 5 | 4 | 0 | 9 |
-| quotes-pick | 38 | 18 | 0 | 56 |
+| quotes-pick | 40 | 16 | 0 | 56 |
 | recurring | 10 | 1 | 0 | 11 |
-| security | 24 | 28 | 3 | 55 |
+| security | 27 | 25 | 3 | 55 |
 | terms | 35 | 0 | 0 | 35 |
 | website | 29 | 1 | 0 | 30 |
 | wording | 31 | 1 | 0 | 32 |
@@ -103,7 +103,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 338 of 383 done
+- stage 5: 339 of 383 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
