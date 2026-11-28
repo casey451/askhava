@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-28T12:53:05Z by runner 087e75d9e56d (actions).
+Updated 2026-11-28T12:53:57Z by runner ff837bcec2ae (actions).
 
 **Idle since 12:51Z; 698 of 816 done; week 24% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-28T12:53:05Z by runner 087e75d9e56d (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** idle since 12:51Z (no task in progress)
 - **Week:** 24% used, 146.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:52Z, 0 min before this update
-- **Keeper:** last ran 09:23Z, next wake 09:43Z
+- **Last run:** 12:53Z, 0 min before this update
+- **Keeper:** last ran 12:53Z, next wake 13:13Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
-- Strict plan check red: 59 problem(s) on tasks still to run (+608 on DONE tasks); first: T704: stored context_pct 38% but it measures 45%; regenerate
+- Strict plan check red: 59 problem(s) on tasks still to run (+608 on DONE tasks); first: T704: stored context_pct 38% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
