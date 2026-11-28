@@ -124889,6 +124889,11 @@
      "at": "2026-11-28T04:20:01Z",
      "attempt": 5,
      "note": "full e2e run; done: keyed.ts ownerSql fix, J3 passes locally; next: smoke, commit, prehandin; tests: j3 1 passed, tsc/eslint clean; turns: 45"
+    },
+    {
+     "at": "2026-11-28T04:29:35Z",
+     "attempt": 5,
+     "note": "investigating j1_homeowner step 6 in late; done: J3 fix committed; next: full e2e rerun, smoke, prehandin; tests: j3 pass, full e2e 251 pass 1 fail (j1 step6, also in CI); turns: 70"
     }
    ]
   },
@@ -134979,7 +134984,7 @@
    }
   }
  },
- "updated_at": "2026-11-28T04:20:01Z",
+ "updated_at": "2026-11-28T04:29:35Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -135077,7 +135082,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "d42944fc74c2d47dad34cd8573177f8f3967af5d",
+ "runner_sha": "5c0500c3dc895b318c65ad8f71d86a52a21e7263",
  "starter": "actions",
  "smoke_runs": [
   {
