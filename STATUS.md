@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-28T03:38:08Z by runner 820c69ead2c2 (actions).
+Updated 2026-11-28T03:48:57Z by runner d42944fc74c2 (actions).
 
 **Building: T849 in progress since 03:36Z; 696 of 813 done; week 22% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 696 of 813 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T849 claimed 03:36Z, lease until 06:36Z
+- **Lane:** lane 1: T849 claimed 03:36Z, lease until 06:48Z
 - **Week:** 22% used, 150.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:08Z, 29 min before this update
+- **Last run:** 03:38Z, 10 min before this update
 - **Keeper:** last ran 02:41Z, next wake 03:01Z
 
 ## Needs attention
@@ -17,7 +17,7 @@ Updated 2026-11-28T03:38:08Z by runner 820c69ead2c2 (actions).
 - PLAN GAP T862 (since 2026-11-28T03:36:40Z, no attempt used; a plan change fixes it): T862: docs/handoff/drafts/T862.md is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
 - PLAN GAP T872 (since 2026-11-28T03:36:40Z, no attempt used; a plan change fixes it): T872: docs/handoff/drafts/T872.md is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
 - PLAN GAP T879 (since 2026-11-28T03:36:40Z, no attempt used; a plan change fixes it): T879: prompt kit/prompts/T879.md is missing; run scripts/gen_prompts.py; T879: branch claude/task/T879-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
-- Strict plan check red: 58 problem(s) on tasks still to run (+607 on DONE tasks); first: T704: stored context_pct 38% but it measures 44%; regenerate
+- Strict plan check red: 60 problem(s) on tasks still to run (+609 on DONE tasks); first: T704: stored context_pct 38% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -68,8 +68,8 @@ Updated 2026-11-28T03:38:08Z by runner 820c69ead2c2 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 489 of 736 (66.4%) · partial 238 · unstarted 9
-**Tasks merged (throughput only):** 696 of 811
+**Requirements verified:** 486 of 736 (66.0%) · partial 241 · unstarted 9
+**Tasks merged (throughput only):** 696 of 813
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -79,15 +79,15 @@ Updated 2026-11-28T03:38:08Z by runner 820c69ead2c2 (actions).
 | calls | 18 | 7 | 0 | 25 |
 | consent | 19 | 16 | 0 | 35 |
 | fees | 27 | 25 | 0 | 52 |
-| intake | 12 | 31 | 1 | 44 |
+| intake | 11 | 32 | 1 | 44 |
 | job-cards | 17 | 7 | 0 | 24 |
 | licensing | 41 | 7 | 0 | 48 |
 | lifecycle | 23 | 5 | 0 | 28 |
 | messaging | 25 | 20 | 0 | 45 |
 | ops-recovery | 37 | 16 | 1 | 54 |
-| privacy | 15 | 16 | 0 | 31 |
+| privacy | 14 | 17 | 0 | 31 |
 | quiet-hours | 5 | 4 | 0 | 9 |
-| quotes-pick | 40 | 16 | 0 | 56 |
+| quotes-pick | 39 | 17 | 0 | 56 |
 | recurring | 10 | 1 | 0 | 11 |
 | security | 27 | 25 | 3 | 55 |
 | terms | 35 | 0 | 0 | 35 |
@@ -112,7 +112,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T849 (lease until 2026-11-28T06:36:40Z)
+- T849 (lease until 2026-11-28T06:48:57Z)
 
 ## Last usage reading
 - {"task": "T811", "at": "2026-11-28T02:05:19Z", "cache_read_input_tokens": 6181030, "input_tokens": 154, "output_tokens": 38145, "cache_creation_input_tokens": 139861}
