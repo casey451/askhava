@@ -126398,6 +126398,11 @@
      "at": "2026-11-28T06:03:46Z",
      "attempt": 2,
      "note": "workflow+tests written; done: flake-run.yml, tests; next: docs, smoke, prehandin; tests: 38 pass 0 fail; turns: 20"
+    },
+    {
+     "at": "2026-11-28T06:26:00Z",
+     "attempt": 2,
+     "note": "committed 11e3cb0aa; done: prehandin green, ally not needed; next: finish smoke; tests: 38 pass 0 fail; turns: 30"
     }
    ],
    "last_failure": "Reviewer after the findings round still ends REVIEW-VERDICT: FINDINGS (head 97d7be0793d47a6bd0fca5b8b6517f58cab29aaf). Finding: .github/workflows/flake-run.yml:278-308 the Playwright step ends with `|| true` and discards Playwright's exit code; the counter ignores the report's top-level `errors` list and counts status \"skipped\" as a pass (line 299), so a run Playwright failed (e.g. webserver teardown error, exit 1, all tests \"expected\") is reported as all passed and the step exits 0. Fix: keep the exit code (rc=0; npx ... || rc=$?), pass it to the counter, fail the step when it is non-zero or report[\"errors\"] is not empty; add a test where every entry is \"expected\" but errors is non-empty (or exit code 1) and the counter must fail. The five earlier findings were verified fixed.",
@@ -135051,7 +135056,7 @@
    }
   }
  },
- "updated_at": "2026-11-28T06:03:46Z",
+ "updated_at": "2026-11-28T06:26:00Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -135149,7 +135154,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "6eeb54fb48746c1c67b7b64eae15108476f43afe",
+ "runner_sha": "11e3cb0aab80c36bb401e160747edc21cff774b1",
  "starter": "actions",
  "smoke_runs": [
   {
