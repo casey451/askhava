@@ -10,8 +10,8 @@
 //! [`first_text`] stores up to two `trade_reading` rows, opens her first job at once ([`open_job`],
 //! property `none`, no INT-009 lookup) when the text names a trade and opens a job (INT-007), keeps
 //! its scrubbed words once through `order::keep_words` (PRIV-008), and asks the ZIP after the
-//! consent text (CON-031). [`reply_step`] sends nothing to a contact `service::may_text` refuses
-//! (CON-009) or while a 911 text waits for SAFE (INT-005). SAFE, and a reply that answered an open
+//! consent text (CON-031). [`reply_step`] sends nothing for a request T856's guard refuses
+//! (`consent_guard::may_queue`, CON-021, D-5848; CON-009) or while a 911 text waits for SAFE (INT-005). SAFE, and a reply that answered an open
 //! INT-037 question (its `emergency_beep` row carries the reply's inbox ID), are never a step
 //! answer: they go to the open step ([`ask_open_again`]: the ZIP question when never asked, its
 //! text again with no row written when asked and her town is not stored, else nothing), so the one
@@ -67,7 +67,7 @@
 //! fits 2 segments, else her page link), which queues the 30-minute `intake.card_timer`. It is
 //! skipped, with nothing built, stored or sent, when the request has no job, step 5 never told
 //! the coverage, the job was chosen as an emergency (its card went at the choice, INT-029), a 911
-//! text waits for SAFE or `service::may_text` refuses; any failure after that is an error. While a
+//! text waits for SAFE or T856's guard refuses the request; any failure after that is an error. While a
 //! card row exists the next reply goes to [`card_answer`] before any other step: a shown card to
 //! `summary_step::answer_card` (EDIT or SEND; any other reply sends nothing and the timer goes
 //! on), and the reply after EDIT is kept through `order::keep_words` (PRIV-008) and the new card
@@ -104,6 +104,7 @@ use askhava_messaging::api::render;
 
 use askhava_quotes::api::Coverage;
 
+use crate::consent_guard::{TextKind, may_queue};
 use crate::conversation::{ADDRESS_CONTACT, name_address_open, queue_text};
 use crate::emergency::{Hazard, Urgency};
 use crate::handlers::{queue_body, schedule_no_reply};
@@ -128,7 +129,7 @@ use crate::routing_confidence::after_fit;
 use crate::rules::{SAFETY_TEMPLATE, Settings, Then, opens_job};
 use crate::service::{
     Handled, NEEDED_BY_TEMPLATE, Queued, Screened, TextIn, Trade, answer_how_soon, ask_how_soon,
-    audit_action, may_text, offer_emergency_choice, release_emergency, request_language,
+    audit_action, offer_emergency_choice, release_emergency, request_language,
 };
 use crate::summary_step::{AUTO_SEND_AFTER, CardStep, Shown, answer_card, card_reply};
 use crate::zip_step::{
@@ -353,7 +354,7 @@ async fn open_job(
 
 /// INT-043, INT-049, INT-025, INT-037, INT-016, INT-017, INT-027, CON-009, D-3702, D-4441: one
 /// reply in open request `conversation` that moved on (`screened` is clear or SAFE), as the module
-/// comment says. Returns the texts queued, in order; none to a contact `service::may_text` refuses.
+/// comment says. Returns the texts queued, in order; none for a request `consent_guard::may_queue` refuses (D-5848).
 ///
 /// # Errors
 ///
@@ -368,7 +369,7 @@ pub(crate) async fn reply_step(
     let Some(place) = locked(tx, conversation).await? else {
         return Ok(Vec::new());
     };
-    if place.waiting_safe || !may_text(tx, msg.contact).await? {
+    if place.waiting_safe || !may_queue(tx, conversation, TextKind::Request).await? {
         return Ok(Vec::new());
     }
     let request = (msg, conversation);
@@ -458,7 +459,8 @@ async fn answered_beep(
 /// never asked (`ask_zip`), its text again with no row written when it was asked and her town is
 /// not stored, so the one re-ask is neither used nor renewed; at step 5 an asked `trade_ask` or
 /// "Which fits best?" again, with no row written ([`open_question_again`], INT-014); nothing
-/// while a SAFE hold waits, nothing is open, the request is closed or `service::may_text` refuses the contact. A first ZIP
+/// while a SAFE hold waits, nothing is open, the request is closed or `consent_guard::may_queue` refuses the
+/// request (D-5848). A first ZIP
 /// question goes through [`ask_first_zip`] (INT-032's `two_jobs` after it, D-4441).
 ///
 /// # Errors
@@ -473,7 +475,7 @@ pub(crate) async fn ask_open_again(
     let Some(place) = locked(tx, request.1).await? else {
         return Ok(Vec::new());
     };
-    if place.waiting_safe || !may_text(tx, request.0.contact).await? {
+    if place.waiting_safe || !may_queue(tx, request.1, TextKind::Request).await? {
         return Ok(Vec::new());
     }
     let (msg, conversation) = request;
@@ -519,7 +521,7 @@ pub(crate) async fn show_card_step(
         return Ok(Vec::new());
     };
     let emergency = models::release_state(tx, conversation).await?.emergency;
-    if emergency || place.waiting_safe || !may_text(tx, msg.contact).await? {
+    if emergency || place.waiting_safe || !may_queue(tx, conversation, TextKind::Request).await? {
         return Ok(Vec::new());
     }
     if let Some(told) = refuse_card(tx, secret, (msg, conversation), &place).await? {

@@ -20,7 +20,7 @@
 
 use askhava_core::api::Guarded;
 use askhava_jobs::api::{JobStatus, LineCloseReason, create, current, move_to, queue_line_close};
-use askhava_messaging::api::{Language, NewText, Relation, enqueue, render};
+use askhava_messaging::api::{Language, render};
 use askhava_ops::api::{Actor, AuditEntry, Change, audit};
 use askhava_privacy::api::{Vault, purge_contact, purge_photos, set_name_address};
 use jiff::{SignedDuration, Timestamp};
@@ -29,7 +29,7 @@ use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
 
 use crate::address_wait::address_arrived;
-use crate::handlers::{restart_no_reply, schedule_no_reply};
+use crate::handlers::{queue_body, restart_no_reply, schedule_no_reply};
 use crate::models::{self, IntakeError};
 use crate::order::{Path, Step, order};
 use crate::rules::{
@@ -609,7 +609,12 @@ async fn within_retention(
     Ok(false)
 }
 
-/// Renders and queues one text to `recipient` under `subject` (TXT-011).
+/// Renders one text to `recipient` under `subject` (TXT-011) and queues it through
+/// `handlers::queue_body`, so T856's guard decides it (CON-021, CON-007, D-5848).
+///
+/// # Errors
+///
+/// [`IntakeError::Template`], or `queue_body`'s.
 pub(crate) async fn queue_text(
     db: &mut PgConnection,
     secret: &SecretString,
@@ -621,20 +626,7 @@ pub(crate) async fn queue_text(
     let body = render(template, language, spanish_on, &[])
         .map_err(|_| IntakeError::Template)?
         .body;
-    let text = NewText {
-        template_id: template,
-        subject,
-        recipient,
-        relation: Relation::OpenRequest,
-        body: &body,
-    };
-    let (outbox_id, _) = enqueue(db, secret, &text)
-        .await
-        .map_err(|_| IntakeError::Outbox)?;
-    Ok(Queued {
-        outbox_id,
-        template,
-    })
+    queue_body(db, secret, (recipient, template), subject, &body).await
 }
 
 /// The CON-001 reply to a business owner's message, with the sign-up link (INT-020, D-132).

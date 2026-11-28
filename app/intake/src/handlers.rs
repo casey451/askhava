@@ -12,6 +12,14 @@
 //! record gets both texts; the reminder goes once per job (the outbox key over template, contact
 //! and job).
 //!
+//! T857 (CON-021, CON-007, CON-005, TXT-034, D-5848): [`queue_body`] is the one guarded sink of
+//! request texts (`conversation::queue_text` renders and calls it). It resolves the request from
+//! `subject[0]` only (a request ID, or a job ID through `intake.request_job`, closed requests
+//! included; never by contact) and asks T856's guard (`consent_guard::may_queue`): an `sms` request
+//! goes to the outbox, a `web_chat`-only request too under the guard's chat exemption until T801,
+//! anything else is refused with nothing queued. [`page_reply`] is web dispatch's sink: a web
+//! request's reply returned as [`PageReply`] for the page, never an outbox row.
+//!
 //! INT-021: intake never calls the AI (no `askhava-ai` dependency, D-1030), so every step already
 //! runs at once on the AI-off path: keyword rules and the fixed questions, no hold, no "we have
 //! your message" text, no retry. TXT-031: [`answer_list`] answers LIST or LISTA with `quotes`' LIST
@@ -377,7 +385,14 @@ async fn tell(
 }
 
 /// Queues `body` from `template` to the request's homeowner `recipient` about `subject`
-/// (TXT-011: the outbox key is over template, recipient and subject).
+/// (TXT-011: the outbox key is over template, recipient and subject), only after T856's guard
+/// (CON-021, CON-007, D-5848): the request is `subject[0]`'s ([`request_of_subject`], never found
+/// by contact) and `consent_guard::may_queue` must allow it; otherwise nothing is queued.
+///
+/// # Errors
+///
+/// [`IntakeError::NoConsent`] when no one request is found or the guard refuses it;
+/// [`IntakeError::Outbox`] when the outbox fails; [`IntakeError::Database`].
 pub(crate) async fn queue_body(
     db: &mut PgConnection,
     secret: &SecretString,
@@ -385,6 +400,12 @@ pub(crate) async fn queue_body(
     subject: &[Uuid],
     body: &str,
 ) -> Result<Queued, IntakeError> {
+    let Some(request) = request_of_subject(db, subject).await? else {
+        return Err(IntakeError::NoConsent);
+    };
+    if !may_queue(db, request, TextKind::Request).await? {
+        return Err(IntakeError::NoConsent);
+    }
     let text = NewText {
         template_id: template,
         subject,
@@ -398,6 +419,78 @@ pub(crate) async fn queue_body(
     Ok(Queued {
         outbox_id,
         template,
+    })
+}
+
+/// D-5848, CON-021: the one request a text's `subject` is about, from `subject[0]` alone: a
+/// request ID, or a job ID mapped to the request that opened it (`intake.request_job`, kept after
+/// a close, or the request's first job). `None` for an empty subject, any other ID (an inbox-only
+/// subject is `service`'s business reply, never this sink's) or a job two requests name, so the
+/// caller refuses (fail closed). Never resolved by contact.
+async fn request_of_subject(
+    db: &mut PgConnection,
+    subject: &[Uuid],
+) -> Result<Option<Uuid>, IntakeError> {
+    let Some(&first) = subject.first() else {
+        return Ok(None);
+    };
+    let found = sqlx::query_scalar!(
+        r#"SELECT r.id AS "id!" FROM (SELECT id FROM intake.conversation WHERE id = $1
+           UNION SELECT conversation_id FROM intake.request_job WHERE job_id = $1
+           UNION SELECT id FROM intake.conversation WHERE job_id = $1) r LIMIT 2"#,
+        first
+    )
+    .fetch_all(db)
+    .await
+    .map_err(|_| IntakeError::Database)?;
+    Ok(match found.as_slice() {
+        [one] => Some(*one),
+        _ => None,
+    })
+}
+
+/// One reply for the web chat page to show, never an outbox row (TXT-034, CON-005, D-5848).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PageReply {
+    /// The request it answers.
+    pub conversation: Uuid,
+    /// The template it was rendered from.
+    pub template: &'static str,
+    /// The rendered words.
+    pub body: String,
+}
+
+/// TXT-034, CON-005, CON-021, D-5848: the reply `body` from `template` for web dispatch to show
+/// on the page of request `conversation` in chat session `session`; nothing is queued. Only a
+/// web request passes: one with a `web_chat` consent record of this session and no `sms`
+/// record (after her first text the request goes on by text). Anything else shows nothing.
+///
+/// # Errors
+///
+/// [`IntakeError::UnknownRequest`] for any other request or session, or
+/// [`IntakeError::Database`].
+pub async fn page_reply(
+    db: &mut PgConnection,
+    (conversation, session): (Uuid, Uuid),
+    (template, body): (&'static str, String),
+) -> Result<PageReply, IntakeError> {
+    let web = sqlx::query_scalar!(
+        "SELECT EXISTS (SELECT 1 FROM intake.consent_record WHERE conversation_id = $1 \
+         AND channel = 'web_chat' AND web_chat_session = $2) AND NOT EXISTS (SELECT 1 \
+         FROM intake.consent_record WHERE conversation_id = $1 AND channel = 'sms') AS \"ok!\"",
+        conversation,
+        session
+    )
+    .fetch_one(db)
+    .await
+    .map_err(|_| IntakeError::Database)?;
+    if !web {
+        return Err(IntakeError::UnknownRequest);
+    }
+    Ok(PageReply {
+        conversation,
+        template,
+        body,
     })
 }
 

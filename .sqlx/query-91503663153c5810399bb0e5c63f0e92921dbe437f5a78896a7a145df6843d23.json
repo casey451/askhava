@@ -1,0 +1,24 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT EXISTS (SELECT 1 FROM intake.consent_record WHERE conversation_id = $1 AND channel = 'web_chat' AND web_chat_session = $2) AND NOT EXISTS (SELECT 1 FROM intake.consent_record WHERE conversation_id = $1 AND channel = 'sms') AS \"ok!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "ok!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "91503663153c5810399bb0e5c63f0e92921dbe437f5a78896a7a145df6843d23"
+}

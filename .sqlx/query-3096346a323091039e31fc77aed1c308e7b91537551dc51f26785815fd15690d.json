@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT r.id AS \"id!\" FROM (SELECT id FROM intake.conversation WHERE id = $1\n           UNION SELECT conversation_id FROM intake.request_job WHERE job_id = $1\n           UNION SELECT id FROM intake.conversation WHERE job_id = $1) r LIMIT 2",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id!",
+        "type_info": "Uuid",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "3096346a323091039e31fc77aed1c308e7b91537551dc51f26785815fd15690d"
+}
