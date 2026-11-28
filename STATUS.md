@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-28T14:08:32Z by runner df6cb2216aba (actions).
+Updated 2026-11-28T14:11:04Z by runner 2bd1d51d11b0 (manual).
 
 **Building: T857 in progress since 13:35Z; 698 of 818 done; week 25% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-28T14:08:32Z by runner df6cb2216aba (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T857 claimed 13:35Z, lease until 17:08Z
 - **Week:** 25% used, 144.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:38Z, 29 min before this update
+- **Last run:** 14:09Z, 1 min before this update
 - **Keeper:** last ran 13:08Z, next wake 13:28Z
 
 ## Needs attention
@@ -18,7 +18,7 @@ Second conflict: goal change (3) (wip_used no longer stops a later attempt's hea
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
 - PLAN GAP T881 (since 2026-11-28T13:07:02Z, no attempt used; a plan change fixes it): outside ownership: kit/state_schema.json
-- Strict plan check red: 59 problem(s) on tasks still to run (+608 on DONE tasks); first: T704: stored context_pct 38% but it measures 45%; regenerate
+- Strict plan check red: 59 problem(s) on tasks still to run (+608 on DONE tasks); first: T704: stored context_pct 38% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -54,31 +54,31 @@ Second conflict: goal change (3) (wip_used no longer stops a later attempt's hea
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 486 of 736 (66.0%) · partial 241 · unstarted 9
+**Requirements verified:** 255 of 736 (34.6%) · partial 472 · unstarted 9
 **Tasks merged (throughput only):** 698 of 818
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 30 | 5 | 0 | 35 |
-| ai | 11 | 15 | 3 | 29 |
-| businesses | 37 | 20 | 1 | 58 |
-| calls | 18 | 7 | 0 | 25 |
-| consent | 19 | 16 | 0 | 35 |
-| fees | 27 | 25 | 0 | 52 |
-| intake | 11 | 32 | 1 | 44 |
-| job-cards | 17 | 7 | 0 | 24 |
-| licensing | 41 | 7 | 0 | 48 |
-| lifecycle | 23 | 5 | 0 | 28 |
-| messaging | 25 | 20 | 0 | 45 |
-| ops-recovery | 37 | 16 | 1 | 54 |
-| privacy | 14 | 17 | 0 | 31 |
-| quiet-hours | 5 | 4 | 0 | 9 |
-| quotes-pick | 39 | 17 | 0 | 56 |
-| recurring | 10 | 1 | 0 | 11 |
-| security | 27 | 25 | 3 | 55 |
-| terms | 35 | 0 | 0 | 35 |
-| website | 29 | 1 | 0 | 30 |
-| wording | 31 | 1 | 0 | 32 |
+| accessibility | 13 | 22 | 0 | 35 |
+| ai | 7 | 19 | 3 | 29 |
+| businesses | 17 | 40 | 1 | 58 |
+| calls | 12 | 13 | 0 | 25 |
+| consent | 8 | 27 | 0 | 35 |
+| fees | 18 | 34 | 0 | 52 |
+| intake | 5 | 38 | 1 | 44 |
+| job-cards | 11 | 13 | 0 | 24 |
+| licensing | 30 | 18 | 0 | 48 |
+| lifecycle | 16 | 12 | 0 | 28 |
+| messaging | 19 | 26 | 0 | 45 |
+| ops-recovery | 4 | 49 | 1 | 54 |
+| privacy | 6 | 25 | 0 | 31 |
+| quiet-hours | 3 | 6 | 0 | 9 |
+| quotes-pick | 22 | 34 | 0 | 56 |
+| recurring | 7 | 4 | 0 | 11 |
+| security | 7 | 45 | 3 | 55 |
+| terms | 25 | 10 | 0 | 35 |
+| website | 8 | 22 | 0 | 30 |
+| wording | 17 | 15 | 0 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
