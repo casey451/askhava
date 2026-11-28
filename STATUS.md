@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-28T05:26:27Z by runner 55d2ccd2fb50 (actions).
+Updated 2026-11-28T05:36:43Z by runner 55d2ccd2fb50 (actions).
 
 **Building: T879 in progress since 04:49Z; 696 of 813 done; week 23% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-28T05:26:27Z by runner 55d2ccd2fb50 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T879 claimed 04:49Z, lease until 08:26Z
 - **Week:** 23% used, 148.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:06Z, 19 min before this update
+- **Last run:** 05:36Z, 0 min before this update
 - **Keeper:** last ran 04:42Z, next wake 05:02Z
 
 ## Needs attention
@@ -44,7 +44,6 @@ Updated 2026-11-28T05:26:27Z by runner 55d2ccd2fb50 (actions).
 | T657 | quotes and portals: quote-form and sign-in errors mark the f | check_failed | 3 | 75 min | 08:05Z | Worker stopped with no edits: start smoke exceeded ~20 min. Finding: J3 step 5 owner sign-in (signInOwner, tests/e2e/own |
 | T849 | server: the e2e web binary serves J1/J2 business time from t | resync | 2 | 102 min | 07:36Z |  |
 | T612 | harness: the WEB-029 and WEB-030 runtime checks on every sit | done | 3 | 2 h 5 min | 05:50Z | Reviewer on head 700f50e1fce2ee8fc4392587b89d7a82a956f72f still ended REVIEW-VERDICT: FINDINGS after the fix round: / 1. |
-| T518 | server, ops and payments: the Stripe-or-webhook-errors alert | done | 1 | 51 min | 05:34Z |  |
 
 ### Plan and harness merges on main
 - 05:06Z Plan: T849 clears J1's own per-IP code buckets before step 6 (D-5998) (#1529)
