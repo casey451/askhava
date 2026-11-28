@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-28T04:55:14Z by runner 04bdbc389c1c (actions).
+Updated 2026-11-28T05:26:27Z by runner 55d2ccd2fb50 (actions).
 
 **Building: T879 in progress since 04:49Z; 696 of 813 done; week 23% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 696 of 813 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T879 claimed 04:49Z, lease until 07:55Z
+- **Lane:** lane 1: T879 claimed 04:49Z, lease until 08:26Z
 - **Week:** 23% used, 148.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:53Z, 1 min before this update
+- **Last run:** 05:06Z, 19 min before this update
 - **Keeper:** last ran 04:42Z, next wake 05:02Z
 
 ## Needs attention
@@ -45,10 +45,9 @@ Updated 2026-11-28T04:55:14Z by runner 04bdbc389c1c (actions).
 | T849 | server: the e2e web binary serves J1/J2 business time from t | resync | 2 | 102 min | 07:36Z |  |
 | T612 | harness: the WEB-029 and WEB-030 runtime checks on every sit | done | 3 | 2 h 5 min | 05:50Z | Reviewer on head 700f50e1fce2ee8fc4392587b89d7a82a956f72f still ended REVIEW-VERDICT: FINDINGS after the fix round: / 1. |
 | T518 | server, ops and payments: the Stripe-or-webhook-errors alert | done | 1 | 51 min | 05:34Z |  |
-| T657 | quotes and portals: quote-form and sign-in errors mark the f | QUEUED | 2 | 25 min | 05:11Z |  |
-| T849 | server: the e2e web binary serves J1/J2 business time from t | check_failed | 1 | 103 min | 05:09Z |  |
 
 ### Plan and harness merges on main
+- 05:06Z Plan: T849 clears J1's own per-IP code buckets before step 6 (D-5998) (#1529)
 - 03:05Z Plan: pre-claim routine (drafts, chance-failure runs, coverage floors); T879, T880; T872/T862 drafts (D-5996) (#1526)
 - 00:49Z Plan: web-chat update choice: email, text or both (D-5995) (#1524)
 - 23:50Z Plan: PF-CHAIN2 fixes for the web-chat consent chain; seams T873-T876 (D-5989) (#1523)
@@ -108,7 +107,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T879 (lease until 2026-11-28T07:55:13Z)
+- T879 (lease until 2026-11-28T08:26:27Z)
 
 ## Last usage reading
 - {"task": "T849", "at": "2026-11-28T04:41:13Z", "output_tokens": 37382, "input_tokens": 215, "cache_creation_input_tokens": 158289, "cache_read_input_tokens": 7275769}
