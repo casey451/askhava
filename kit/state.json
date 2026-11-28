@@ -126790,8 +126790,8 @@
     "T843",
     "T869"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "BLOCKED",
+   "attempts": 1,
    "slug": "keep-blocked-work",
    "type": "harness",
    "stage": "5",
@@ -126803,15 +126803,47 @@
     6026,
     6027
    ],
-   "wip_claim": {
-    "attempt": 1,
-    "remote_sha": ""
-   },
    "progress": [
     {
      "at": "2026-11-28T13:05:35Z",
      "attempt": 1,
      "note": "plan gap; done: cycle.py/wip.py/tests drafted; next: report PLAN GAP kit/state_schema.json wip.kind enum; tests: 42 pass 2 fail; turns: 20"
+    }
+   ],
+   "reason": "plan gap reported: PLAN GAP: outside ownership: kit/state_schema.json\nThe wip.kind enum (kit/state_schema.json:429-434) is [\"review\",\"plan_gap\"]. T881's acceptance line (kit/prompts/T881.md:11) needs scripts/check_state.py to pass on wip records of kinds stopped and blocked, so the schema must gain both kinds. T881 owns only runner/cycle.py, runner/wip.py and tests/test_runner_wip.py (T881.md:37-39, :45).\nSecond conflict: goal change (3) (wip_used no longer stops a later attempt's head being kept) breaks tests/test_runner_wip.py:180 (`\"wip\" not in entry`), which is not in the prompt's superseded-assertion list (; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T881 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: outside ownership: kit/state_schema.json\nThe wip.kind enum (kit/state_schema.json:429-434) is [\"review\",\"plan_gap\"]. T881's acceptance line (kit/prompts/T881.md:11) needs scripts/check_state.py to pass on wip records of kinds stopped and blocked, so the schema must gain both kinds. T881 owns only runner/cycle.py, runner/wip.py and tests/test_runner_wip.py (T881.md:37-39, :45).\nSecond conflict: goal change (3) (wip_used no longer stops a later attempt's head being kept) breaks tests/test_runner_wip.py:180 (`\"wip\" not in entry`), which is not in the prompt's superseded-assertion list (:132, :146-150, :164-172, :97-103). Smallest plan fix: add that line to the list, with a docs/decisions.md entry.\nProof: pytest tests/test_runner_wip.py::test_check_state_reads_a_wip_record_of_each_kind fails with \"state.tasks[0].wip.kind: 'stopped' is not one of ['review', 'plan_gap']\". Reviewer a757becb6ba2e86e5 confirmed both points at HEAD 56386cb11f4378ad8145ddcb806ef599f6f2b8c6.",
+   "plan_gap": {
+    "at": "2026-11-28T13:07:02Z",
+    "problems": [
+     "outside ownership: kit/state_schema.json"
+    ],
+    "paths": [
+     "kit/state_schema.json"
+    ]
+   },
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 53,
+     "head_sha": "56386cb11f4378ad8145ddcb806ef599f6f2b8c6",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-28T12:59:26Z",
+     "ended_at": "2026-11-28T13:07:02Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 1572016,
+       "turns": 26
+      },
+      "reviewer": {
+       "tokens": 127052,
+       "turns": 5
+      }
+     }
     }
    ]
   },
@@ -126864,12 +126896,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T857",
-   "at": "2026-11-28T12:51:08Z",
-   "cache_read_input_tokens": 6976687,
-   "cache_creation_input_tokens": 268098,
-   "input_tokens": 240,
-   "output_tokens": 47291
+   "task": "T881",
+   "at": "2026-11-28T13:07:02Z",
+   "output_tokens": 28923,
+   "cache_read_input_tokens": 1566975,
+   "input_tokens": 59,
+   "cache_creation_input_tokens": 103111
   },
   "source": "session_reading 2026-11-28T12:53:05Z (week)",
   "by_task": {
@@ -135457,17 +135489,27 @@
    },
    "T881": {
     "estimated_bytes": 273038,
-    "estimated_tokens": 779356
+    "estimated_tokens": 779356,
+    "usage_counting": "message_id",
+    "output_tokens": 28923,
+    "cache_read_input_tokens": 1566975,
+    "input_tokens": 59,
+    "cache_creation_input_tokens": 103111,
+    "worker_tokens": 1572016,
+    "worker_turns": 26,
+    "reviewer_tokens": 127052,
+    "reviewer_turns": 5,
+    "last_model": "claude-opus-5-5"
    }
   },
   "windows": {
    "five_hour": {
     "start": "2026-11-28T12:51:08Z",
-    "tokens": 1013297
+    "tokens": 1302087
    },
    "week": {
     "start": "2026-11-26T20:01:04Z",
-    "tokens": 41794611
+    "tokens": 42083401
    }
   },
   "session_reading": {
@@ -135478,7 +135520,7 @@
    }
   }
  },
- "updated_at": "2026-11-28T13:05:35Z",
+ "updated_at": "2026-11-28T13:07:03Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

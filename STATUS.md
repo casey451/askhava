@@ -1,24 +1,29 @@
 # Ask Hava build status
 
-Updated 2026-11-28T13:05:35Z by runner 56386cb11f43 (actions).
+Updated 2026-11-28T13:07:03Z by runner 56386cb11f43 (actions).
 
-**Building: T881 in progress since 12:59Z; 698 of 816 done; week 24% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
+**Idle since 13:07Z; 698 of 816 done; week 24% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 698 of 816 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T881 claimed 12:59Z, lease until 16:05Z
+- **Lane:** idle since 13:07Z (no task in progress)
 - **Week:** 24% used, 146.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:00Z, 5 min before this update
+- **Last run:** 13:05Z, 1 min before this update
 - **Keeper:** last ran 12:53Z, next wake 13:13Z
 
 ## Needs attention
+- BLOCKED T881: plan gap reported: PLAN GAP: outside ownership: kit/state_schema.json
+The wip.kind enum (kit/state_schema.json:429-434) is ["review","plan_gap"]. T881's acceptance line (kit/prompts/T881.md:11) needs scripts/check_state.py to pass on wip records of kinds stopped and blocked, so the schema must gain both kinds. T881 owns only runner/cycle.py, runner/wip.py and tests/test_runner_wip.py (T881.md:37-39, :45).
+Second conflict: goal change (3) (wip_used no longer stops a later attempt's head being kept) breaks tests/test_runner_wip.py:180 (`"wip" not in entry`), which is not in the prompt's superseded-assertion list (; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T881 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 48% of the context window, over its 45% limit
+- PLAN GAP T881 (since 2026-11-28T13:07:02Z, no attempt used; a plan change fixes it): outside ownership: kit/state_schema.json
 - Strict plan check red: 59 problem(s) on tasks still to run (+608 on DONE tasks); first: T704: stored context_pct 38% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T881 | runner (harness): a blocked or stopped attempt's work is kep | BLOCKED | 1 | 7 min | 13:07Z | PLAN GAP: outside ownership: kit/state_schema.json / The wip.kind enum (kit/state_schema.json:429-434) is ["review","pla |
 | T857 | intake: `queue_text` and `queue_body` behind the guard; a pa | QUEUED | 1 | 2 h 29 min | 12:51Z | Reviewer after the findings round still ended FINDINGS (head 087e75d9e56d022ae4ccc32727da20b554b306d1): app/intake/CLAUD |
 | T872 | intake: the age stop closes and purges even when its text is | done | 1 | 73 min | 08:47Z |  |
 | T879 | harness: a flake-run workflow that runs named tests many tim | done | 2 | 57 min | 06:56Z | Reviewer after the findings round still ends REVIEW-VERDICT: FINDINGS (head 97d7be0793d47a6bd0fca5b8b6517f58cab29aaf). F |
@@ -94,7 +99,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T881 (lease until 2026-11-28T16:05:35Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T857", "at": "2026-11-28T12:51:08Z", "cache_read_input_tokens": 6976687, "cache_creation_input_tokens": 268098, "input_tokens": 240, "output_tokens": 47291}
+- {"task": "T881", "at": "2026-11-28T13:07:02Z", "output_tokens": 28923, "cache_read_input_tokens": 1566975, "input_tokens": 59, "cache_creation_input_tokens": 103111}
