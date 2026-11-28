@@ -10687,6 +10687,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
     "docs/code-docs.md",
     "docs/spec/quiet-hours.md",
     "docs/spec/messaging.md",
@@ -10714,7 +10715,7 @@
    "budget": {
     "files": 7,
     "lines": 320,
-    "context_pct": 38
+    "context_pct": 33
    },
    "checks": [
     "Ci",
@@ -10779,6 +10780,8 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-picks.md",
+    "docs/architecture/02-server.md",
     "docs/code-docs.md",
     "docs/spec/quiet-hours.md",
     "docs/spec/messaging.md",
@@ -10805,7 +10808,7 @@
    "budget": {
     "files": 3,
     "lines": 220,
-    "context_pct": 29
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -10847,6 +10850,8 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-calls.md",
+    "docs/architecture/02-picks.md",
     "docs/code-docs.md",
     "docs/spec/quiet-hours.md",
     "docs/spec/messaging.md",
@@ -10871,7 +10876,7 @@
    "budget": {
     "files": 3,
     "lines": 200,
-    "context_pct": 23
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -16539,7 +16544,7 @@
    "budget": {
     "files": 2,
     "lines": 600,
-    "context_pct": 20
+    "context_pct": 9
    },
    "checks": [
     "Ci",
@@ -16612,7 +16617,7 @@
    "budget": {
     "files": 1,
     "lines": 500,
-    "context_pct": 16
+    "context_pct": 8
    },
    "checks": [
     "Ci",
@@ -16672,7 +16677,7 @@
    "budget": {
     "files": 1,
     "lines": 600,
-    "context_pct": 18
+    "context_pct": 7
    },
    "checks": [
     "Ci",
@@ -31581,6 +31586,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/harness-checks.md",
     "docs/code-docs.md",
     "docs/spec/accessibility.md",
     "docs/brains/accessibility-forms.md"
@@ -31606,7 +31612,7 @@
    "budget": {
     "files": 4,
     "lines": 600,
-    "context_pct": 19
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -31649,6 +31655,8 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-server.md",
+    "docs/architecture/harness-checks.md",
     "docs/code-docs.md",
     "docs/spec/privacy.md",
     "docs/spec/security.md",
@@ -31735,6 +31743,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-server.md",
     "docs/code-docs.md",
     "docs/spec/privacy.md",
     "docs/spec/security.md",
@@ -31762,7 +31771,7 @@
    "budget": {
     "files": 1,
     "lines": 600,
-    "context_pct": 15
+    "context_pct": 11
    },
    "checks": [
     "Ci",
@@ -33113,7 +33122,7 @@
    "budget": {
     "files": 1,
     "lines": 300,
-    "context_pct": 14
+    "context_pct": 6
    },
    "checks": [
     "Ci",
@@ -33370,7 +33379,7 @@
    "budget": {
     "files": 1,
     "lines": 300,
-    "context_pct": 17
+    "context_pct": 6
    },
    "checks": [
     "Ci",
@@ -33427,7 +33436,7 @@
    "budget": {
     "files": 1,
     "lines": 300,
-    "context_pct": 12
+    "context_pct": 6
    },
    "checks": [
     "Ci",
@@ -34179,6 +34188,12 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/07-adapters.md",
+    "docs/architecture/08-contact-vault.md",
+    "docs/architecture/09-environments.md",
+    "docs/architecture/11-pinned-versions.md",
+    "docs/architecture/12-keeping-this-file-true.md",
+    "docs/architecture/harness-checks.md",
     "docs/build-readiness.md",
     "docs/code-docs.md",
     "twin/__main__.py",
@@ -34221,7 +34236,7 @@
    "budget": {
     "files": 14,
     "lines": 800,
-    "context_pct": 63
+    "context_pct": 44
    },
    "checks": [
     "Ci",
@@ -35351,7 +35366,13 @@
    ],
    "reads": [
     "docs/reviews/doc-efficiency-plan.md",
-    "docs/architecture.md"
+    "docs/architecture.md",
+    "docs/architecture/07-adapters.md",
+    "docs/architecture/08-contact-vault.md",
+    "docs/architecture/09-environments.md",
+    "docs/architecture/10-off-database-records.md",
+    "docs/architecture/11-pinned-versions.md",
+    "docs/architecture/12-keeping-this-file-true.md"
    ],
    "requirements": [],
    "tests": [],
@@ -35369,7 +35390,7 @@
    "budget": {
     "files": 4,
     "lines": 800,
-    "context_pct": 38
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -35675,7 +35696,8 @@
     "T879",
     "T881",
     "T882",
-    "T883"
+    "T883",
+    "T885"
    ],
    "model": null,
    "effort": null,
@@ -35785,6 +35807,9 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-adapters.md",
+    "docs/architecture/07-adapters.md",
+    "docs/architecture/harness-checks.md",
     "docs/spec/messaging.md",
     "docs/spec/security.md",
     "docs/brains/email-deliverability.md",
@@ -35902,6 +35927,9 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-adapters.md",
+    "docs/architecture/07-adapters.md",
+    "docs/architecture/harness-checks.md",
     "docs/spec/calls.md",
     "docs/brains/email-deliverability.md",
     "docs/brains/payments-stripe.md",
@@ -35992,6 +36020,11 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-adapters.md",
+    "docs/architecture/02-payments.md",
+    "docs/architecture/02-portals.md",
+    "docs/architecture/07-adapters.md",
+    "docs/architecture/harness-checks.md",
     "docs/spec/fees.md",
     "docs/spec/security.md",
     "docs/brains/email-deliverability.md",
@@ -36083,6 +36116,10 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-adapters.md",
+    "docs/architecture/02-businesses.md",
+    "docs/architecture/07-adapters.md",
+    "docs/architecture/harness-checks.md",
     "docs/spec/businesses.md",
     "docs/spec/messaging.md",
     "docs/spec/security.md",
@@ -36175,6 +36212,9 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-adapters.md",
+    "docs/architecture/07-adapters.md",
+    "docs/architecture/harness-checks.md",
     "docs/spec/job-cards.md",
     "docs/spec/licensing.md",
     "docs/spec/ops-recovery.md",
@@ -36252,6 +36292,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-core.md",
     "docs/code-docs.md",
     "docs/spec/ops-recovery.md",
     "docs/spec/security.md",
@@ -36283,7 +36324,7 @@
    "budget": {
     "files": 4,
     "lines": 300,
-    "context_pct": 16
+    "context_pct": 10
    },
    "checks": [
     "Ci",
@@ -36320,7 +36361,8 @@
     "docs/phase2/e2e-test-site.md"
    ],
    "reads": [
-    "docs/architecture.md"
+    "docs/architecture.md",
+    "docs/architecture/12-keeping-this-file-true.md"
    ],
    "requirements": [],
    "tests": [
@@ -36378,6 +36420,8 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-adapters.md",
+    "docs/architecture/07-adapters.md",
     "docs/code-docs.md",
     "docs/spec/ai.md",
     "docs/spec/security.md",
@@ -36408,7 +36452,7 @@
    "budget": {
     "files": 2,
     "lines": 400,
-    "context_pct": 14
+    "context_pct": 10
    },
    "checks": [
     "Ci",
@@ -36445,6 +36489,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-ai.md",
     "docs/code-docs.md",
     "docs/spec/ai.md",
     "docs/brains/rust-production.md",
@@ -36481,7 +36526,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 15
+    "context_pct": 9
    },
    "checks": [
     "Ci",
@@ -36516,6 +36561,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/harness-checks.md",
     "docs/spec/security.md"
    ],
    "requirements": [
@@ -36568,6 +36614,8 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/09-environments.md",
+    "docs/architecture/10-off-database-records.md",
     "docs/code-docs.md",
     "docs/spec/ops-recovery.md",
     "docs/brains/postgres-operations.md",
@@ -36596,7 +36644,7 @@
    "budget": {
     "files": 2,
     "lines": 350,
-    "context_pct": 16
+    "context_pct": 10
    },
    "checks": [
     "Ci",
@@ -36667,7 +36715,7 @@
    "budget": {
     "files": 2,
     "lines": 800,
-    "context_pct": 25
+    "context_pct": 18
    },
    "checks": [
     "Ci",
@@ -36763,6 +36811,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/harness-checks.md",
     "docs/threat-model.md",
     "docs/deploy.md",
     "docs/phase2/e2e-test-site.md",
@@ -36788,7 +36837,7 @@
    "budget": {
     "files": 8,
     "lines": 800,
-    "context_pct": 22
+    "context_pct": 18
    },
    "checks": [
     "Ci",
@@ -36826,6 +36875,9 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-adapters.md",
+    "docs/architecture/07-adapters.md",
+    "docs/architecture/harness-checks.md",
     "stand_ins/server.py",
     "stand_ins/ai.py",
     "app/adapters/src/ai.rs"
@@ -36885,6 +36937,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/harness-checks.md",
     "docs/spec/fees.md",
     "docs/spec/businesses.md",
     "docs/brains/payments-stripe.md",
@@ -36958,6 +37011,8 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-ai.md",
+    "docs/architecture/02-intake.md",
     "docs/code-docs.md",
     "docs/spec/ai.md",
     "docs/spec/intake.md",
@@ -37007,7 +37062,7 @@
    "budget": {
     "files": 8,
     "lines": 600,
-    "context_pct": 32
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -37069,6 +37124,9 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
+    "docs/architecture/02-server.md",
+    "docs/architecture/02-site.md",
     "docs/code-docs.md",
     "docs/spec/ai.md",
     "docs/spec/intake.md",
@@ -38621,6 +38679,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/harness-checks.md",
     "docs/code-docs.md",
     "docs/threat-model.md",
     "docs/spec/ai.md",
@@ -38660,7 +38719,7 @@
    "budget": {
     "files": 14,
     "lines": 800,
-    "context_pct": 24
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -38729,6 +38788,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/harness-checks.md",
     "docs/code-docs.md",
     "docs/threat-model.md",
     "docs/spec/ai.md",
@@ -38763,7 +38823,7 @@
    "budget": {
     "files": 14,
     "lines": 800,
-    "context_pct": 24
+    "context_pct": 16
    },
    "checks": [
     "Ci",
@@ -38832,6 +38892,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/harness-checks.md",
     "docs/code-docs.md",
     "docs/threat-model.md",
     "docs/spec/ai.md",
@@ -38866,7 +38927,7 @@
    "budget": {
     "files": 14,
     "lines": 800,
-    "context_pct": 24
+    "context_pct": 16
    },
    "checks": [
     "Ci",
@@ -38926,7 +38987,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 18
+    "context_pct": 11
    },
    "checks": [
     "Ci",
@@ -39043,7 +39104,7 @@
    "budget": {
     "files": 3,
     "lines": 300,
-    "context_pct": 11
+    "context_pct": 7
    },
    "checks": [
     "Ci",
@@ -39142,6 +39203,12 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/07-adapters.md",
+    "docs/architecture/08-contact-vault.md",
+    "docs/architecture/09-environments.md",
+    "docs/architecture/10-off-database-records.md",
+    "docs/architecture/11-pinned-versions.md",
+    "docs/architecture/12-keeping-this-file-true.md",
     "docs/build-readiness.md",
     "docs/code-docs.md",
     "docs/brains/postgres-operations.md"
@@ -39159,7 +39226,7 @@
    "budget": {
     "files": 6,
     "lines": 400,
-    "context_pct": 58
+    "context_pct": 49
    },
    "checks": [
     "Ci",
@@ -39490,6 +39557,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-ai.md",
     "docs/code-docs.md",
     "docs/spec/ai.md",
     "docs/spec/intake.md",
@@ -40169,6 +40237,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
     "docs/code-docs.md",
     "docs/spec/intake.md",
     "docs/brains/accessibility-forms.md",
@@ -40442,6 +40511,8 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-messaging.md",
+    "docs/architecture/harness-checks.md",
     "docs/code-docs.md",
     "docs/spec/job-cards.md",
     "docs/spec/businesses.md",
@@ -40467,7 +40538,7 @@
    "budget": {
     "files": 4,
     "lines": 350,
-    "context_pct": 26
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -40512,6 +40583,10 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-adapters.md",
+    "docs/architecture/02-payments.md",
+    "docs/architecture/07-adapters.md",
+    "docs/architecture/harness-checks.md",
     "docs/code-docs.md",
     "docs/spec/fees.md",
     "docs/brains/payments-stripe.md",
@@ -40533,7 +40608,7 @@
    "budget": {
     "files": 8,
     "lines": 450,
-    "context_pct": 36
+    "context_pct": 32
    },
    "checks": [
     "Ci",
@@ -40856,6 +40931,9 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-payments.md",
+    "docs/architecture/07-adapters.md",
+    "docs/architecture/harness-checks.md",
     "docs/code-docs.md",
     "docs/spec/fees.md",
     "docs/brains/payments-stripe.md",
@@ -40877,7 +40955,7 @@
    "budget": {
     "files": 6,
     "lines": 450,
-    "context_pct": 29
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -41273,6 +41351,10 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-businesses.md",
+    "docs/architecture/02-picks.md",
+    "docs/architecture/02-portals.md",
+    "docs/architecture/02-server.md",
     "docs/code-docs.md",
     "docs/spec/quotes-pick.md",
     "docs/spec/security.md",
@@ -41895,7 +41977,7 @@
    "budget": {
     "files": 3,
     "lines": 450,
-    "context_pct": 16
+    "context_pct": 9
    },
    "checks": [
     "Ci",
@@ -41941,6 +42023,10 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-ai.md",
+    "docs/architecture/02-intake.md",
+    "docs/architecture/07-adapters.md",
+    "docs/architecture/harness-checks.md",
     "docs/code-docs.md",
     "docs/spec/ai.md",
     "docs/spec/intake.md",
@@ -41976,7 +42062,7 @@
    "budget": {
     "files": 9,
     "lines": 600,
-    "context_pct": 28
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -45218,6 +45304,8 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-portals.md",
+    "docs/architecture/02-quotes.md",
     "docs/code-docs.md",
     "docs/spec/accessibility.md",
     "docs/brains/accessibility-forms.md",
@@ -45342,6 +45430,11 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-adapters.md",
+    "docs/architecture/02-messaging.md",
+    "docs/architecture/02-ops.md",
+    "docs/architecture/02-server.md",
+    "docs/architecture/07-adapters.md",
     "docs/code-docs.md",
     "docs/spec/security.md",
     "docs/spec/businesses.md",
@@ -47250,6 +47343,11 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-businesses.md",
+    "docs/architecture/02-messaging.md",
+    "docs/architecture/02-portals.md",
+    "docs/architecture/02-quotes.md",
+    "docs/architecture/02-server.md",
     "docs/code-docs.md",
     "docs/spec/businesses.md",
     "docs/spec/ops-recovery.md",
@@ -47327,6 +47425,11 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
+    "docs/architecture/02-payments.md",
+    "docs/architecture/02-picks.md",
+    "docs/architecture/02-server.md",
+    "docs/architecture/harness-checks.md",
     "docs/code-docs.md",
     "docs/spec/fees.md",
     "docs/spec/lifecycle.md",
@@ -47540,6 +47643,10 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-businesses.md",
+    "docs/architecture/02-picks.md",
+    "docs/architecture/02-portals.md",
+    "docs/architecture/02-server.md",
     "docs/code-docs.md",
     "docs/spec/quotes-pick.md",
     "docs/spec/fees.md",
@@ -47684,6 +47791,10 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-businesses.md",
+    "docs/architecture/02-messaging.md",
+    "docs/architecture/02-picks.md",
+    "docs/architecture/02-quotes.md",
     "docs/code-docs.md",
     "docs/spec/businesses.md",
     "docs/spec/consent.md",
@@ -47714,7 +47825,7 @@
    "budget": {
     "files": 6,
     "lines": 510,
-    "context_pct": 26
+    "context_pct": 18
    },
    "checks": [
     "Ci",
@@ -47815,6 +47926,8 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-quotes.md",
+    "docs/architecture/02-server.md",
     "docs/code-docs.md",
     "docs/spec/licensing.md",
     "app/licensing/src/class_map.rs",
@@ -47846,7 +47959,7 @@
    "budget": {
     "files": 6,
     "lines": 560,
-    "context_pct": 28
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -47950,6 +48063,11 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-adapters.md",
+    "docs/architecture/02-payments.md",
+    "docs/architecture/02-picks.md",
+    "docs/architecture/02-portals.md",
+    "docs/architecture/07-adapters.md",
     "docs/code-docs.md",
     "docs/spec/quotes-pick.md",
     "docs/spec/fees.md",
@@ -48472,6 +48590,11 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-businesses.md",
+    "docs/architecture/02-intake.md",
+    "docs/architecture/02-picks.md",
+    "docs/architecture/02-portals.md",
+    "docs/architecture/08-contact-vault.md",
     "docs/code-docs.md",
     "docs/spec/businesses.md",
     "docs/spec/privacy.md",
@@ -49152,6 +49275,9 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-businesses.md",
+    "docs/architecture/02-intake.md",
+    "docs/architecture/02-quotes.md",
     "docs/spec/intake.md",
     "docs/spec/ops-recovery.md",
     "docs/spec/messaging.md",
@@ -49193,7 +49319,7 @@
    "budget": {
     "files": 3,
     "lines": 600,
-    "context_pct": 42
+    "context_pct": 33
    },
    "checks": [
     "Ci",
@@ -49310,6 +49436,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
     "docs/spec/intake.md",
     "docs/spec/privacy.md",
     "docs/spec/job-cards.md",
@@ -49342,7 +49469,7 @@
    "budget": {
     "files": 2,
     "lines": 450,
-    "context_pct": 33
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -49381,6 +49508,8 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
+    "docs/architecture/02-quotes.md",
     "docs/spec/intake.md",
     "docs/spec/messaging.md",
     "docs/spec/quiet-hours.md",
@@ -49411,7 +49540,7 @@
    "budget": {
     "files": 4,
     "lines": 450,
-    "context_pct": 33
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -49848,6 +49977,9 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-portals.md",
+    "docs/architecture/02-server.md",
+    "docs/architecture/harness-checks.md",
     "docs/code-docs.md",
     "docs/spec/accessibility.md",
     "docs/spec/quotes-pick.md",
@@ -50061,6 +50193,11 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-adapters.md",
+    "docs/architecture/02-portals.md",
+    "docs/architecture/02-server.md",
+    "docs/architecture/07-adapters.md",
+    "docs/architecture/harness-checks.md",
     "docs/code-docs.md",
     "docs/spec/accessibility.md",
     "docs/spec/businesses.md",
@@ -50097,7 +50234,7 @@
    "budget": {
     "files": 7,
     "lines": 600,
-    "context_pct": 34
+    "context_pct": 29
    },
    "checks": [
     "Ci",
@@ -50139,6 +50276,10 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-businesses.md",
+    "docs/architecture/02-messaging.md",
+    "docs/architecture/02-portals.md",
+    "docs/architecture/02-server.md",
     "docs/code-docs.md",
     "docs/spec/job-cards.md",
     "docs/spec/businesses.md",
@@ -50202,6 +50343,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
     "docs/code-docs.md",
     "docs/spec/intake.md",
     "app/intake/src/rules.rs",
@@ -50227,7 +50369,7 @@
    "budget": {
     "files": 2,
     "lines": 400,
-    "context_pct": 29
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -50555,6 +50697,10 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-portals.md",
+    "docs/architecture/02-server.md",
+    "docs/architecture/02-site.md",
+    "docs/architecture/harness-checks.md",
     "docs/code-docs.md",
     "docs/spec/ops-recovery.md",
     "docs/spec/consent.md",
@@ -50578,7 +50724,7 @@
    "budget": {
     "files": 9,
     "lines": 700,
-    "context_pct": 24
+    "context_pct": 28
    },
    "checks": [
     "Ci",
@@ -50621,6 +50767,9 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
+    "docs/architecture/02-ops.md",
+    "docs/architecture/08-contact-vault.md",
     "docs/code-docs.md",
     "docs/spec/ops-recovery.md",
     "docs/spec/privacy.md",
@@ -50762,6 +50911,8 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-portals.md",
+    "docs/architecture/02-server.md",
     "docs/spec/job-cards.md",
     "docs/spec/quotes-pick.md",
     "docs/spec/accessibility.md"
@@ -50784,7 +50935,7 @@
    "budget": {
     "files": 6,
     "lines": 450,
-    "context_pct": 42
+    "context_pct": 34
    },
    "checks": [
     "Ci",
@@ -50937,6 +51088,8 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-messaging.md",
+    "docs/architecture/12-keeping-this-file-true.md",
     "docs/code-docs.md"
    ],
    "requirements": [],
@@ -51558,6 +51711,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
     "docs/code-docs.md",
     "docs/spec/intake.md"
    ],
@@ -51575,7 +51729,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 22
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -52236,6 +52390,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-businesses.md",
     "docs/code-docs.md",
     "docs/spec/businesses.md",
     "docs/spec/security.md",
@@ -52257,7 +52412,7 @@
    "budget": {
     "files": 3,
     "lines": 300,
-    "context_pct": 21
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -52303,6 +52458,9 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-payments.md",
+    "docs/architecture/02-portals.md",
+    "docs/architecture/harness-checks.md",
     "docs/code-docs.md",
     "docs/spec/fees.md",
     "docs/brains/payments-stripe.md"
@@ -52326,7 +52484,7 @@
    "budget": {
     "files": 9,
     "lines": 800,
-    "context_pct": 44
+    "context_pct": 38
    },
    "checks": [
     "Ci",
@@ -52714,6 +52872,10 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-messaging.md",
+    "docs/architecture/02-picks.md",
+    "docs/architecture/02-server.md",
+    "docs/architecture/harness-checks.md",
     "docs/code-docs.md",
     "docs/spec/quiet-hours.md",
     "docs/spec/quotes-pick.md",
@@ -52774,6 +52936,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-messaging.md",
     "docs/code-docs.md",
     "docs/spec/quiet-hours.md",
     "docs/spec/messaging.md",
@@ -52794,7 +52957,7 @@
    "budget": {
     "files": 5,
     "lines": 450,
-    "context_pct": 31
+    "context_pct": 20
    },
    "branch": "claude/task/T793-email-quiet-drain",
    "prompt": "kit/prompts/T793.md",
@@ -52897,6 +53060,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-payments.md",
     "docs/code-docs.md",
     "docs/spec/fees.md",
     "docs/spec/quotes-pick.md",
@@ -52916,7 +53080,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 21
+    "context_pct": 13
    },
    "branch": "claude/task/T795-release-after-refund",
    "prompt": "kit/prompts/T795.md",
@@ -52952,6 +53116,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-payments.md",
     "docs/code-docs.md",
     "docs/spec/fees.md",
     "app/payments/src/refunds.rs",
@@ -52972,7 +53137,7 @@
    "budget": {
     "files": 2,
     "lines": 350,
-    "context_pct": 26
+    "context_pct": 18
    },
    "branch": "claude/task/T796-reconcile-partial-refunds",
    "prompt": "kit/prompts/T796.md",
@@ -53010,6 +53175,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-payments.md",
     "docs/code-docs.md",
     "docs/spec/fees.md"
    ],
@@ -53024,7 +53190,7 @@
    "budget": {
     "files": 3,
     "lines": 200,
-    "context_pct": 25
+    "context_pct": 16
    },
    "branch": "claude/task/T797-refund-status-guards",
    "prompt": "kit/prompts/T797.md",
@@ -53187,6 +53353,10 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
+    "docs/architecture/02-server.md",
+    "docs/architecture/02-site.md",
+    "docs/architecture/harness-checks.md",
     "docs/code-docs.md",
     "docs/spec/consent.md",
     "docs/spec/messaging.md",
@@ -53206,7 +53376,7 @@
    "budget": {
     "files": 5,
     "lines": 400,
-    "context_pct": 33
+    "context_pct": 27
    },
    "acceptance": "With texting live the chat opens no request and shows the number with the SMS disclosures and the 18-or-older line; an unverified session switches to it when texting goes live; outside that state every existing chat test passes unchanged; Ally passes.",
    "branch": "claude/task/T866-chat-live-handoff",
@@ -53293,6 +53463,10 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
+    "docs/architecture/02-server.md",
+    "docs/architecture/02-site.md",
+    "docs/architecture/harness-checks.md",
     "docs/spec/consent.md",
     "docs/spec/messaging.md",
     "docs/spec/intake.md",
@@ -53320,7 +53494,7 @@
    "budget": {
     "files": 14,
     "lines": 700,
-    "context_pct": 46
+    "context_pct": 40
    },
    "acceptance": "With texting live the chat opens no request and shows the number with the SMS disclosures; outside it a chat-run request runs on the page with zero texts and her first inbound text gets the consent text; only the listed transport assertions change (`web_chat_stops.rs:391` included); the TXT-041 line shows once on the page through the real code POST; the existing-request cases follow ruling 5; Ally passes.",
    "branch": "claude/task/T801-chat-code-not-optin",
@@ -54226,6 +54400,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
     "docs/code-docs.md",
     "docs/spec/intake.md",
     "docs/spec/privacy.md",
@@ -54247,7 +54422,7 @@
    "budget": {
     "files": 2,
     "lines": 220,
-    "context_pct": 20
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -54413,6 +54588,8 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
+    "docs/architecture/02-ops.md",
     "docs/code-docs.md",
     "docs/spec/consent.md",
     "tests/integration/tests/consent_purge.rs"
@@ -54435,7 +54612,7 @@
    "budget": {
     "files": 4,
     "lines": 380,
-    "context_pct": 25
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -54548,6 +54725,10 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
+    "docs/architecture/02-quotes.md",
+    "docs/architecture/02-server.md",
+    "docs/architecture/harness-checks.md",
     "docs/code-docs.md",
     "docs/spec/intake.md",
     "docs/spec/job-cards.md"
@@ -54579,7 +54760,7 @@
    "budget": {
     "files": 7,
     "lines": 560,
-    "context_pct": 45
+    "context_pct": 40
    },
    "checks": [
     "Ci",
@@ -54617,6 +54798,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
     "docs/code-docs.md",
     "docs/spec/lifecycle.md",
     "tests/integration/tests/close_which.rs",
@@ -54640,7 +54822,7 @@
    "budget": {
     "files": 2,
     "lines": 200,
-    "context_pct": 26
+    "context_pct": 16
    },
    "checks": [
     "Ci",
@@ -54686,6 +54868,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
     "docs/code-docs.md",
     "docs/spec/messaging.md",
     "docs/spec/intake.md"
@@ -54709,7 +54892,7 @@
    "budget": {
     "files": 8,
     "lines": 540,
-    "context_pct": 42
+    "context_pct": 38
    },
    "checks": [
     "Ci",
@@ -55446,7 +55629,7 @@
    "budget": {
     "files": 2,
     "lines": 600,
-    "context_pct": 23
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -55797,6 +55980,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
     "docs/code-docs.md",
     "docs/spec/consent.md",
     "docs/spec/intake.md",
@@ -55820,7 +56004,7 @@
    "budget": {
     "files": 7,
     "lines": 400,
-    "context_pct": 39
+    "context_pct": 28
    },
    "checks": [
     "Ci",
@@ -55862,6 +56046,9 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
+    "docs/architecture/02-server.md",
+    "docs/architecture/02-site.md",
     "docs/code-docs.md",
     "docs/spec/consent.md",
     "docs/spec/intake.md",
@@ -55887,7 +56074,7 @@
    "budget": {
     "files": 5,
     "lines": 500,
-    "context_pct": 30
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -55930,6 +56117,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
     "docs/code-docs.md",
     "docs/spec/intake.md",
     "docs/spec/consent.md"
@@ -55955,7 +56143,7 @@
    "budget": {
     "files": 6,
     "lines": 500,
-    "context_pct": 41
+    "context_pct": 30
    },
    "checks": [
     "Ci",
@@ -56002,6 +56190,9 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
+    "docs/architecture/02-server.md",
+    "docs/architecture/02-site.md",
     "docs/code-docs.md",
     "docs/spec/intake.md",
     "docs/spec/security.md",
@@ -56024,7 +56215,7 @@
    "budget": {
     "files": 7,
     "lines": 500,
-    "context_pct": 42
+    "context_pct": 33
    },
    "checks": [
     "Ci",
@@ -56066,6 +56257,8 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
+    "docs/architecture/02-site.md",
     "docs/code-docs.md",
     "docs/spec/intake.md",
     "docs/spec/privacy.md",
@@ -56089,7 +56282,7 @@
    "budget": {
     "files": 7,
     "lines": 500,
-    "context_pct": 31
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -56187,6 +56380,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/08-contact-vault.md",
     "docs/code-docs.md",
     "docs/spec/privacy.md",
     "docs/spec/quotes-pick.md",
@@ -56215,7 +56409,7 @@
    "budget": {
     "files": 8,
     "lines": 500,
-    "context_pct": 42
+    "context_pct": 33
    },
    "checks": [
     "Ci",
@@ -56257,6 +56451,8 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-picks.md",
+    "docs/architecture/02-portals.md",
     "docs/code-docs.md",
     "docs/spec/quotes-pick.md",
     "docs/spec/messaging.md",
@@ -56283,7 +56479,7 @@
    "budget": {
     "files": 4,
     "lines": 500,
-    "context_pct": 30
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -56555,6 +56751,9 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-portals.md",
+    "docs/architecture/02-server.md",
+    "docs/architecture/08-contact-vault.md",
     "docs/code-docs.md",
     "docs/spec/privacy.md",
     "docs/spec/security.md",
@@ -56672,6 +56871,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
     "docs/spec/intake.md",
     "docs/spec/consent.md",
     "docs/spec/messaging.md",
@@ -56698,7 +56898,7 @@
    "budget": {
     "files": 5,
     "lines": 550,
-    "context_pct": 40
+    "context_pct": 29
    },
    "checks": [
     "Ci",
@@ -56735,6 +56935,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
     "docs/spec/intake.md",
     "docs/spec/privacy.md"
    ],
@@ -56754,7 +56955,7 @@
    "budget": {
     "files": 3,
     "lines": 350,
-    "context_pct": 25
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -56794,6 +56995,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
     "docs/spec/intake.md",
     "docs/spec/messaging.md",
     "docs/spec/consent.md",
@@ -56817,7 +57019,7 @@
    "budget": {
     "files": 6,
     "lines": 500,
-    "context_pct": 40
+    "context_pct": 29
    },
    "checks": [
     "Ci",
@@ -56856,6 +57058,8 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
+    "docs/architecture/02-messaging.md",
     "docs/spec/messaging.md",
     "docs/handoff/pf-2026-11-27/PF-CHAIN2_fable_rulings.md",
     "docs/spec/privacy.md"
@@ -56878,7 +57082,7 @@
    "budget": {
     "files": 3,
     "lines": 250,
-    "context_pct": 24
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -56916,6 +57120,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/08-contact-vault.md",
     "docs/spec/messaging.md",
     "docs/spec/privacy.md",
     "docs/handoff/pf-2026-11-27/web_update_choice_ruling.md"
@@ -56935,7 +57140,7 @@
    "budget": {
     "files": 3,
     "lines": 200,
-    "context_pct": 22
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -56974,6 +57179,7 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/02-intake.md",
     "docs/spec/intake.md",
     "docs/spec/messaging.md",
     "docs/spec/consent.md",
@@ -57002,7 +57208,7 @@
    "budget": {
     "files": 3,
     "lines": 550,
-    "context_pct": 21
+    "context_pct": 10
    },
    "checks": [
     "Ci",
@@ -57088,6 +57294,8 @@
    ],
    "reads": [
     "docs/architecture.md",
+    "docs/architecture/08-contact-vault.md",
+    "docs/architecture/harness-checks.md",
     "docs/spec/privacy.md",
     "docs/spec/security.md"
    ],
@@ -57103,7 +57311,7 @@
    "budget": {
     "files": 1,
     "lines": 40,
-    "context_pct": 21
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -57262,6 +57470,55 @@
    "branch": "claude/task/T883-workflow-checklist-goal-cap",
    "prompt": "kit/prompts/T883.md",
    "acceptance": "`python3 -m pytest tests/test_gen_prompts.py tests/test_session_checklist.py` passes, the new cases failing against `main`; every other workflow and runner test passes unchanged; `python3 scripts/gen_prompts.py --check` on `main`'s plan prints each goal length and passes; actionlint reports nothing new on `backup-runner.yml`."
+  },
+  {
+   "id": "T885",
+   "slug": "architecture-parts-shared",
+   "title": "harness: the architecture part files can become a shared path and merge as insertions",
+   "goal": "Plan change D-6022 (Casey: \"Ok make it all happen\"). D-6022 moved most of `docs/architecture.md` verbatim into `docs/architecture/*.md` part files and left the file as an index, but a build task may edit only its owned files and the shared paths, and `kit/tasks.json` `shared_paths` may hold only `scripts/validate_tasks.py` `ALLOWED_SHARED` (`:139`, checked at `:1083`), which names `docs/architecture.md` and not the parts; so until this task merges, tasks add new notes to the index and a plan change moves them. Change: (1) `scripts/validate_tasks.py` `ALLOWED_SHARED` gains the directory entry `docs/architecture/` (a prefix, as `.sqlx/` is, `runner/verify.py:15`), with a comment citing D-6022; nothing else in the set or the file changes. (2) `runner/update_merge.py` `insert_only` (`:213`) also accepts a `docs/architecture/<name>.md` part, so two tasks that each append a line to the same part are resolved as insertions, main's first, as `docs/architecture.md` is today (`INSERT_ONLY`, `:75`); the locked-section check (`_sections_kept`, used only for `docs/architecture.md`) is unchanged, since the locked sections 3 to 6 stay in the index. Tests: `tests/test_validate_tasks.py` gains a case that a tasks file whose `shared_paths` holds `docs/architecture/` validates and one holding `docs/other/` still fails; `tests/test_runner_update_merge.py` gains a case that two sides' insertions into one part resolve, main's first, and a part conflict that is not pure insertions stays a conflict. No existing assertion changes. `kit/tasks.json` `shared_paths` and `kit/prompts/TEMPLATE.md`'s shared-paths line are not edited here: the plan change after this merges adds `docs/architecture/` to both and moves the index's interim notes into their parts. No Rust file changes, so `tests/coverage_floor.json` sets no floor. Update `docs/architecture.md` (the index's \"Parts\" paragraph: parts are shared once the plan change lands) and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T753"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness"
+   ],
+   "owns": [
+    "scripts/validate_tasks.py",
+    "runner/update_merge.py",
+    "tests/test_validate_tasks.py",
+    "tests/test_runner_update_merge.py"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "runner/verify.py"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-891",
+    "D-6022"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 150,
+    "context_pct": 26
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T885-architecture-parts-shared",
+   "prompt": "kit/prompts/T885.md",
+   "acceptance": "`python3 -m pytest tests/test_validate_tasks.py tests/test_runner_update_merge.py` passes, the new cases failing against `main`; every other `tests/test_runner_*.py` passes unchanged; `python3 scripts/validate_tasks.py` passes on `main`'s plan; `git diff origin/main -- kit/tasks.json kit/prompts/` is empty."
   }
  ]
 }
