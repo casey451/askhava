@@ -35672,7 +35672,10 @@
     "T869",
     "T870",
     "T876",
-    "T879"
+    "T879",
+    "T881",
+    "T882",
+    "T883"
    ],
    "model": null,
    "effort": null,
@@ -42057,7 +42060,8 @@
     "T753",
     "T773",
     "T835",
-    "T843"
+    "T843",
+    "T881"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -55273,7 +55277,7 @@
    "id": "T849",
    "slug": "clock-composition",
    "title": "server: the e2e web binary serves J1/J2 business time from the test-control clock",
-   "goal": "Plan change D-5836 (Fable C1 to C5 with the overseer's round-1 corrections; after T848 and T854). The web binary takes `control.clock()` once (`app/server/src/main.rs:63` to `:75`; the worker already does, `bin/worker.rs:49` to `:50`) and passes clones into new `build_router_with_clock`, `webhooks_with_clock` and `stripe_webhook_with_clock` constructors in `app/server/src/lib.rs`; the old functions stay as `SystemClock` wrappers with their signatures, because about 50 DONE test files call `build_router(pool, Router::new(), ...)` (e.g. `app/server/tests/action_links_route.rs:161`). The clock reaches `Webhooks.clock` (`lib.rs:962`: inbound SMS dispatch `inbound_text.rs:350`, voice, voice status and call status through the shared Arc, `lib.rs:993`), the pick flow (`lib.rs:672`), the quote page (`lib.rs:837`), action links (`lib.rs:591`), feedback (`lib.rs:598`), check-in (`app/server/src/checkin.rs:19`, merged at `lib.rs:599`) and `stripe_webhook` (`app/server/src/release_sink.rs:492`: `PickReleaser` `:121`, `:139`, Confirm, Stripe dispatch). Settling: `app/picks/src/settle.rs` gains `settle_at(tx, cleared, at)`, and `settle` stays as its `Timestamp::now()` wrapper; `settle_at` uses `at` for Connected (`:114`), `end_pending` (`:115`) and the accepted-quote task's `run_at` (`:164`); `release_sink.rs:167` and `:394` call `settle_at` with the release instant, so day 3's check-in is due from the release. The worker's session sweep and rate-limit prune take their cutoff from `real_now()` and keep their scheduling on `now()` (the daily dedupe chain, `migrations/0020_core_task_queue.sql:22`, `app/core/src/tasks.rs:180`, must stay on the worker clock): `run_session_sweep_at` (`app/portals/src/session.rs:274` to `:286`, scheduling through `schedule_session_sweep` `:258`) and `run_prune_at` (`app/core/src/rate_limit.rs:332` to `:342`) each gain a variant taking `(schedule_now, cutoff_now)`, the old functions kept as wrappers passing one instant to both, and `lib.rs:2964` to `:2969` call the variants with `at.now()` and `at.real_now()`. Stay on `SystemClock`: the business portal (its statement month, `business_portal.rs:368`, `:415`, compares with `ledger_entry.recorded_at`, a database `DEFAULT now()`, `migrations/0090_payments_ledger.sql:21`), owner pages, help and digest (`lib.rs:476`, `:482`), RefusalLog (`lib.rs:676`), the job page, sign-in and sign-up, and the worker's Stripe hooks (`lib.rs:1144`). The release build is unchanged (`test_control.rs:86` to `:96`; `:163` to `:165` refuses Test and Live) and no TestControl error is replaced by system time. Tests in `app/server/tests/clock_composition.rs`, built with `*_with_clock` and an advanced clock: a signed inbound text after a 3-day advance is stored at the advanced instant; the router composes with no webhook keys; a Stripe webhook signed at real time after a 5-day advance is accepted and settles once; after a 100-day advance a business session issued at real time still opens Confirm and the charge lands, and the ledger row it writes shows in the business portal's statement for the current month, the CSV equal to the ledger; a released pick's Connected `status_at` equals the release instant; a session the sweep runs over after the advance is kept. Tests use a small local `Clock` impl defined in the test file (`now()` advanced, `real_now()` at system time), since `ManualClock`'s `real_now()` equals its `now()`. Update `docs/architecture.md` (the composition) and `docs/decisions.md`. Plan change D-5955: `tests/e2e/j1_homeowner.spec.ts:219` advances the forward-only clock inside the `main` project, since `LATE` (`tests/e2e/playwright.config.ts:21`) omits it, against D-3892's rule; once the web binary serves the control clock, that advance expires the 2-hour links and sessions later `main` specs rely on (`tests/e2e/web_chat.spec.ts:64` to `:68`, `tests/a11y/page_states.ts:249` to `:250`). So this task adds `\"**/j1_homeowner.spec.ts\"` to `LATE`; action links stay on the control clock (D-5836), and `web_chat.spec.ts` and `page_states.ts` are not edited. Because `playwright.config.ts` is a test file earlier harness tasks own (T173, T227, T536), this task is now a `harness` task (`scripts/validate_tasks.py:633` to `:638`; CLAUDE.md rule 7), still on Opus with an Opus reviewer. As a harness task, T849 changes `kit/plan.lock` only as its own files require. The move relies on `j1_homeowner.spec.ts` sorting before `j3_*.spec.ts` within `late` (one worker, alphabetical), because its visit date at `tests/e2e/j1_homeowner.spec.ts:183` is filled from real time. Acceptance stays the full e2e and a11y suites. T120, which also owns `playwright.config.ts`, runs after this task. Plan change D-5978 (attempts 1 and 4 failed J3 step 5 at `tests/e2e/j3.ts:336`): with the Confirm route on the control clock (D-5836), PICK-020's re-check (`app/portals/src/confirm_moves.rs:88` to `:106`, called at `:128`; `check_at_confirm`'s `fresh_active`, `app/picks/src/confirm.rs:159` to `:172`, `:216`, wants an ROC check under 24 hours old at `now`) reads licence freshness at the app clock, but `seedPick`'s `ownerSql` stamps the ROC check at database `now()` (`tests/e2e/keyed.ts:126` to `:127`), so after J3's 24-hour advance (`j3.ts:308`) the refused pick seeded at `j3.ts:362` ends as MovedOn (\"This pick can't be confirmed anymore\", `app/portals/src/confirm_pay.rs:330` to `:334`) before the OPS-024 pause answer (`confirm_moves.rs:159`). `ownerSql` takes `when` and dates the new business's `licensing.license_check` `checked_at` at `when` and `list_date` at `(when AT TIME ZONE 'America/Phoenix')::date`, unchanged (`now()`) without `at`; the `ownerSql` change plus the existing `at` at `j3.ts:362` is the fix; passing `at: await j.control.now()` at `j3.ts:216` and `:272` too is optional. No assertion is changed or weakened and no product code changes. Before fixing, confirm that the received text at `j3.ts:336` is the MovedOn line and, in the database, that the refused pick ended `ineligible` (the licence re-check, `app/picks/src/confirm.rs:246`); any other J3 break is a `PLAN GAP:` report. Plan change D-5998 (SEC-014, PICK-055): in `late`, J1 step 6 runs after every `main` spec in one real hour from 127.0.0.1, so the 10-an-hour per-IP send budget, counted at `real_now()` (`app/portals/src/pick_flow.rs:846` to `:858`, `app/portals/src/limits.rs:34`), is spent and the send is refused (`pick_flow.rs:825`). So this task also owns `tests/e2e/j1_homeowner.spec.ts` (12 files) and depends on T861 (DONE), ordering it after that file's earlier owners: before step 6 it deletes only the `portals.code_sends_per_ip:ip:127.0.0.1` and `portals.code_tries_per_ip:ip:127.0.0.1` buckets (all `window_start` rows) from `core.rate_limit` (precedent `tests/e2e/action_links_served.spec.ts:147`; bucket naming `app/core/src/rate_limit.rs:198`), with a comment citing D-5998, first confirming that the rows' IP renders as 127.0.0.1. No product code, limit value or assertion changes; step 6 still asserts the real send, the wrong code and the pick. `tests/security/tests/rate_limits.rs:212` to `:229` and `tests/integration/tests/pick_code_limits.rs` are not edited. Attempt 5's commit 5c0500c3d was never pushed and is lost: attempt 6 starts from the kept branch `claude/task/T849-clock-composition-a3` at 182ad72 as the runner prepares it (never recreate, rebase or reset it), redoes the D-5978 fix itself (the `keyed.ts` `ownerSql` change above, which passed J3 step 5 in attempt 5), then makes this `j1_homeowner.spec.ts` change, then runs the full e2e suite (`main` and `late`) before hand-in.",
+   "goal": "Plan change D-5836 (Fable C1 to C5 with the overseer's round-1 corrections; after T848 and T854). The web binary takes `control.clock()` once (`app/server/src/main.rs:63` to `:75`; the worker already does, `bin/worker.rs:49` to `:50`) and passes clones into new `build_router_with_clock`, `webhooks_with_clock` and `stripe_webhook_with_clock` constructors in `app/server/src/lib.rs`; the old functions stay as `SystemClock` wrappers with their signatures, because about 50 DONE test files call `build_router(pool, Router::new(), ...)` (e.g. `app/server/tests/action_links_route.rs:161`). The clock reaches `Webhooks.clock` (`lib.rs:962`: inbound SMS dispatch `inbound_text.rs:350`, voice, voice status and call status through the shared Arc, `lib.rs:993`), the pick flow (`lib.rs:672`), the quote page (`lib.rs:837`), action links (`lib.rs:591`), feedback (`lib.rs:598`), check-in (`app/server/src/checkin.rs:19`, merged at `lib.rs:599`) and `stripe_webhook` (`app/server/src/release_sink.rs:492`: `PickReleaser` `:121`, `:139`, Confirm, Stripe dispatch). Settling: `app/picks/src/settle.rs` gains `settle_at(tx, cleared, at)`, and `settle` stays as its `Timestamp::now()` wrapper; `settle_at` uses `at` for Connected (`:114`), `end_pending` (`:115`) and the accepted-quote task's `run_at` (`:164`); `release_sink.rs:167` and `:394` call `settle_at` with the release instant, so day 3's check-in is due from the release. The worker's session sweep and rate-limit prune take their cutoff from `real_now()` and keep their scheduling on `now()` (the daily dedupe chain, `migrations/0020_core_task_queue.sql:22`, `app/core/src/tasks.rs:180`, must stay on the worker clock): `run_session_sweep_at` (`app/portals/src/session.rs:274` to `:286`, scheduling through `schedule_session_sweep` `:258`) and `run_prune_at` (`app/core/src/rate_limit.rs:332` to `:342`) each gain a variant taking `(schedule_now, cutoff_now)`, the old functions kept as wrappers passing one instant to both, and `lib.rs:2964` to `:2969` call the variants with `at.now()` and `at.real_now()`. Stay on `SystemClock`: the business portal (its statement month, `business_portal.rs:368`, `:415`, compares with `ledger_entry.recorded_at`, a database `DEFAULT now()`, `migrations/0090_payments_ledger.sql:21`), owner pages, help and digest (`lib.rs:476`, `:482`), RefusalLog (`lib.rs:676`), the job page, sign-in and sign-up, and the worker's Stripe hooks (`lib.rs:1144`). The release build is unchanged (`test_control.rs:86` to `:96`; `:163` to `:165` refuses Test and Live) and no TestControl error is replaced by system time. Tests in `app/server/tests/clock_composition.rs`, built with `*_with_clock` and an advanced clock: a signed inbound text after a 3-day advance is stored at the advanced instant; the router composes with no webhook keys; a Stripe webhook signed at real time after a 5-day advance is accepted and settles once; after a 100-day advance a business session issued at real time still opens Confirm and the charge lands, and the ledger row it writes shows in the business portal's statement for the current month, the CSV equal to the ledger; a released pick's Connected `status_at` equals the release instant; a session the sweep runs over after the advance is kept. Tests use a small local `Clock` impl defined in the test file (`now()` advanced, `real_now()` at system time), since `ManualClock`'s `real_now()` equals its `now()`. Update `docs/architecture.md` (the composition) and `docs/decisions.md`. Plan change D-5955: `tests/e2e/j1_homeowner.spec.ts:219` advances the forward-only clock inside the `main` project, since `LATE` (`tests/e2e/playwright.config.ts:21`) omits it, against D-3892's rule; once the web binary serves the control clock, that advance expires the 2-hour links and sessions later `main` specs rely on (`tests/e2e/web_chat.spec.ts:64` to `:68`, `tests/a11y/page_states.ts:249` to `:250`). So this task adds `\"**/j1_homeowner.spec.ts\"` to `LATE`; action links stay on the control clock (D-5836), and `web_chat.spec.ts` and `page_states.ts` are not edited. Earlier harness tasks own `playwright.config.ts` (T173, T227, T536), so this is a `harness` task (CLAUDE.md rule 7) on Opus with an Opus reviewer, changing `kit/plan.lock` only as its own files require. The move relies on `j1_homeowner.spec.ts` sorting before `j3_*.spec.ts` within `late` (one worker, alphabetical), because its visit date at `tests/e2e/j1_homeowner.spec.ts:183` is filled from real time. Acceptance stays the full e2e and a11y suites. T120, which also owns `playwright.config.ts`, runs after this task. Plan change D-5978 (attempts 1 and 4 failed J3 step 5 at `tests/e2e/j3.ts:336`): with the Confirm route on the control clock (D-5836), PICK-020's re-check (`app/portals/src/confirm_moves.rs:88` to `:106`, called at `:128`; `check_at_confirm`'s `fresh_active`, `app/picks/src/confirm.rs:159` to `:172`, `:216`, wants an ROC check under 24 hours old at `now`) reads licence freshness at the app clock, but `seedPick`'s `ownerSql` stamps the ROC check at database `now()` (`tests/e2e/keyed.ts:126` to `:127`), so after J3's 24-hour advance (`j3.ts:308`) the refused pick seeded at `j3.ts:362` ends as MovedOn (\"This pick can't be confirmed anymore\", `app/portals/src/confirm_pay.rs:330` to `:334`) before the OPS-024 pause answer (`confirm_moves.rs:159`). `ownerSql` takes `when` and dates the new business's `licensing.license_check` `checked_at` at `when` and `list_date` at `(when AT TIME ZONE 'America/Phoenix')::date`, unchanged (`now()`) without `at`; the `ownerSql` change plus the existing `at` at `j3.ts:362` is the fix; passing `at: await j.control.now()` at `j3.ts:216` and `:272` too is optional. No assertion is changed or weakened and no product code changes. First confirm the `j3.ts:336` text is the MovedOn line and the refused pick ended `ineligible` (`app/picks/src/confirm.rs:246`); any other J3 break is a `PLAN GAP:` report. Plan change D-5998 (SEC-014, PICK-055): in `late`, J1 step 6 runs after every `main` spec in one real hour from 127.0.0.1, so the 10-an-hour per-IP send budget, counted at `real_now()` (`app/portals/src/pick_flow.rs:846` to `:858`, `app/portals/src/limits.rs:34`), is spent and the send is refused (`pick_flow.rs:825`). So this task also owns `tests/e2e/j1_homeowner.spec.ts` (after its earlier owners, via T861): before step 6 it deletes only the `portals.code_sends_per_ip:ip:127.0.0.1` and `portals.code_tries_per_ip:ip:127.0.0.1` buckets (all `window_start` rows) from `core.rate_limit` (precedent `tests/e2e/action_links_served.spec.ts:147`; bucket naming `app/core/src/rate_limit.rs:198`), with a comment citing D-5998, first confirming that the rows' IP renders as 127.0.0.1. No product code, limit value or assertion changes; step 6 still asserts the real send, the wrong code and the pick. `tests/security/tests/rate_limits.rs:212` to `:229` and `tests/integration/tests/pick_code_limits.rs` are not edited. Attempt 5's commit 5c0500c3d was never pushed and is lost: attempt 6 starts from the kept branch `claude/task/T849-clock-composition-a3` at 182ad72 as the runner prepares it (never recreate, rebase or reset it), redoes the D-5978 `ownerSql` fix (it passed J3 step 5 in attempt 5) and this `j1_homeowner.spec.ts` change. Plan change D-6020 (cross-cutting task): then run the full e2e suite (`main` and `late`) at once, before any polishing, and report any plan gap then; run it again before hand-in.",
    "type": "harness",
    "phase": 1,
    "stage": "5",
@@ -57109,6 +57113,155 @@
    "branch": "claude/task/T880-vault-readers-conversation-email",
    "prompt": "kit/prompts/T880.md",
    "acceptance": "`cargo test -p askhava-security --test vault_readers` passes with the two new entries, and a planted source naming either read outside its allowed crate fails the scan; no existing entry or rule is weakened."
+  },
+  {
+   "id": "T881",
+   "slug": "keep-blocked-work",
+   "title": "runner (harness): a blocked or stopped attempt's work is kept on a WIP ref even when origin has the task branch",
+   "goal": "Plan change D-6020 (Casey: \"Yes do it all\"; T849 attempt 5's commit 5c0500c3d was lost when it blocked on a plan gap). Today `_keep_wip` (`runner/cycle.py:2723`, called from `finish` at `:2859`) keeps a failed head on `claude/wip/<id>-a<n>` only for `review_failed` and `plan_gap` (`WIP_KINDS`, `:113`), only when origin had no task branch at the claim and only once per task (`_wip_kind`, `:2689` to `:2700`: `remote_sha` and `continued_from` at `:2696`, `wip_used` at `:2698`). T849 attempt 5 ended `plan_gap` (`record_plan_gap`, `:504`, from `_after_worker` at `:618`) on a branch origin already had, so nothing was kept; a session that stops without handing in (`.github/workflows/backup-runner.yml:672`, D-503: `tests_failed` with the log `session ended without handing in`, `:692`, `:701`) keeps nothing either. Change: (1) that safety hand-in, matched on its exact log text and never on a worker's own `tests_failed`, is kept as kind `stopped`, and any attempt that ends BLOCKED (a plan gap, a permission block, the last attempt) is kept as kind `blocked` when no narrower kind applies; (2) a head is kept even when the claim found the task branch on origin, when origin's tip at the claim (`wip_claim.remote_sha`) or the continued WIP's sha is an ancestor of the head and the head is ahead of it, checked by a new `runner/wip.py` helper (`git merge-base --is-ancestor` under `wip.git_env()`); a head that does not descend is not kept and its history row says why (`wip_skipped`); (3) `wip_used` no longer stops a later attempt's head being kept: each attempt keeps its own ref, only the newest record is offered (`_wip_offer`, `:2647`), and a `plan_gap` or `blocked` WIP only after a `--plan-fix` requeue (D-677); (4) every keep still passes `_wip_refusal` (`_wip_refusal`, `:2704`: the tamper words, then `env.wip_check`'s protected, locked and binary path rules and its gitleaks and PII scans) with the record written before the push; nothing goes to `claude/task/**`, never with `RUNNER_PUSH_TOKEN`, never forced; (5) the plan-gap outbox item (`_plan_gap_outbox`, `:539`) names the kept ref and sha when there is one. `runner/github_env.py` is not edited (T882 continues from such a WIP). Tests in `tests/test_runner_wip.py` with a fake Env: a `plan_gap` block on a branch origin had keeps the head; a `stopped` hand-in keeps it; a worker's ordinary `tests_failed` keeps nothing; a head that does not descend from origin's tip is skipped with a reason; a refused scan keeps nothing; a second continued attempt's head is kept and is the one offered; the outbox body names the ref. D-6020 supersedes only these assertions in `tests/test_runner_wip.py`, which change to match: the timeout case at `:132`, the origin-branch half of `:146` to `:150`, `:164` to `:172` (once per task), and `:97` to `:103` only if a last-attempt `tests_failed` there is now kept as `blocked` (its Env lacks the WIP methods, so it should not be). Nothing else in the file is edited. No Rust file changes, so `tests/coverage_floor.json` sets no floor; every new branch has a test. Update `docs/architecture.md` (the runner's kept work) and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T835",
+    "T843",
+    "T869"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "security"
+   ],
+   "owns": [
+    "runner/cycle.py",
+    "runner/wip.py",
+    "tests/test_runner_wip.py"
+   ],
+   "reads": [
+    "docs/code-docs.md"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-4720",
+    "D-6020"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 450,
+    "context_pct": 35
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T881-keep-blocked-work",
+   "prompt": "kit/prompts/T881.md",
+   "acceptance": "`python3 -m pytest tests/test_runner_wip.py tests/test_runner_wip_env.py tests/test_runner_logic.py tests/test_failure_drills.py tests/test_safety_hand_in_release.py` passes, the new cases failing against `main`'s runner; every other `tests/test_runner_*.py` passes unchanged; `python3 scripts/check_state.py` passes on a state with a `wip` record of each kind; `git diff origin/main -- runner/github_env.py .github/` is empty."
+  },
+  {
+   "id": "T882",
+   "slug": "continue-kept-work",
+   "title": "runner (harness): the next attempt continues a kept WIP head even when origin has an older task branch",
+   "goal": "Plan change D-6020 (Casey: \"Yes do it all\"; after T881). `prepare_branch` (`runner/github_env.py:2456`) continues a WIP only when origin has no task branch (`_prepare`, `:2515` to `:2517`); when origin has one it starts at origin's tip and records `wip_dropped` \"origin has the task branch\" (`:2489` to `:2490`), so a head T881 keeps for a branch origin already had would be dropped. Change: when the task carries `wip_continue` {ref, sha}, origin's tip of that WIP ref is that sha, and origin's task-branch tip is an ancestor of it, the branch starts at the WIP head with main merged in (as `_continue_wip`, `:2493`, does today: `base` \"wip\", `continued_from`, `wip_sha`) and keeps the `remote_sha` of origin's tip, so the next push still fast-forwards origin's branch and never forces it (BUILD_BRIEF.md:303); the open pull request and auto-merge rules of `_prepare` (`:2522` to `:2544`) apply unchanged before the branch is set; when origin's tip is not an ancestor of the WIP sha, or the WIP ref is gone or moved, the usual path runs with `wip_dropped` naming why. A resync (`resync`, D-891) never continues a WIP. Tests in `tests/test_runner_wip_env.py` with real local git repositories as the file already builds them: continue over an older origin tip; a WIP that does not descend from origin's tip is dropped with a reason; a moved WIP ref is dropped; an open auto-merge pull request is still closed first; the push after a continued attempt fast-forwards origin's branch. D-6020 supersedes only `tests/test_runner_wip_env.py:646` to `:649` (origin's tip equals the WIP sha, so the branch now continues instead of being dropped), which changes to match; nothing else in the file is edited. No Rust file changes, so `tests/coverage_floor.json` sets no floor; every new branch has a test. Update `docs/architecture.md` (the runner's kept work) and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T881"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "security"
+   ],
+   "owns": [
+    "runner/github_env.py",
+    "tests/test_runner_wip_env.py"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "runner/wip.py"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-4720",
+    "D-6020"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 300,
+    "context_pct": 35
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T882-continue-kept-work",
+   "prompt": "kit/prompts/T882.md",
+   "acceptance": "`python3 -m pytest tests/test_runner_wip_env.py tests/test_runner_wip.py tests/test_runner_live.py` passes, the new cases failing against `main`'s runner; every other `tests/test_runner_*.py` passes unchanged; `git diff origin/main -- runner/cycle.py runner/wip.py .github/` is empty."
+  },
+  {
+   "id": "T883",
+   "slug": "workflow-checklist-goal-cap",
+   "title": "harness: a workflow and script checklist for workers and reviewers, and a goal-length cap in gen_prompts",
+   "goal": "Plan change D-6020 (Casey: \"Yes do it all\"; T879 attempt 1 failed review on a `|| true` that dropped Playwright's exit code, D-6004). (a) Checklist: in the session prompt of `.github/workflows/backup-runner.yml`, step 3 (the worker, `:541`) and step 4 (the fresh-eyes reviewer, `:546`) gain one sentence each: when the task owns or changes a path under `.github/workflows/` or `scripts/`, or a `*.sh` file, tell the worker and every fix-round worker, word for word, and the reviewer to check, a miss being a finding: \"Keep every tool's exit code (`rc=0; cmd || rc=$?`, never `|| true` or an unchecked pipe); fail on any error the tool reports in its output or report, not only on its exit code; never count a skipped, missing or flaky result as passed.\" No other line of the session prompt changes. `BUILD_BRIEF.md` Appendix A's routine prompt is locked and not owned here, so it is not edited (no `routine` session in the last 3,000 runner-log rows). (b) Goal cap: `scripts/gen_prompts.py` prints each prompt's goal length in characters beside its token estimate (`estimate_line`, `:627`), and `--check` (`check`, `:646`) fails a QUEUED task whose goal is over `GOAL_CAP_CHARS = 5500` (the 90th percentile of the QUEUED goals on `main` 1063164, D-6020) and longer than the same task's goal on `--base` (default `origin/main`, read with `git show`), so a plan change cannot grow an over-cap goal and must cite earlier decisions by D-id instead of restating them; an over-cap goal that did not grow is a `WARN` line. QUEUED comes from `kit/state.json` on `origin/claude/kit-state`, read only as `scripts/plan_health.py` reads it (`STATE_REF`, `:85`; `--state PATH`); when the state or the base cannot be read the cap only reports. Tests: in `tests/test_gen_prompts.py`, the length is printed; a grown over-cap QUEUED goal fails; an unchanged over-cap one warns; a DONE task over the cap is ignored; an unreadable state only reports; every prompt renders byte-identical. In a new `tests/test_session_checklist.py`: steps 3 and 4 carry the sentence word for word, and the rest of the session prompt is unchanged against `main`'s copy minus those two sentences. No Rust file changes, so `tests/coverage_floor.json` sets no floor. Update `docs/architecture.md` (the session prompt and plan checks) and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T843",
+    "T879"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness"
+   ],
+   "owns": [
+    ".github/workflows/backup-runner.yml",
+    "scripts/gen_prompts.py",
+    "tests/test_gen_prompts.py",
+    "tests/test_session_checklist.py"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "docs/governance.md",
+    "scripts/plan_health.py"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-6004",
+    "D-6020"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 300,
+    "context_pct": 26
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T883-workflow-checklist-goal-cap",
+   "prompt": "kit/prompts/T883.md",
+   "acceptance": "`python3 -m pytest tests/test_gen_prompts.py tests/test_session_checklist.py` passes, the new cases failing against `main`; every other workflow and runner test passes unchanged; `python3 scripts/gen_prompts.py --check` on `main`'s plan prints each goal length and passes; actionlint reports nothing new on `backup-runner.yml`."
   }
  ]
 }
