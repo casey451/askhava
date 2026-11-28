@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-28T01:16:25Z by runner 173cc61bcac8 (actions).
+Updated 2026-11-28T02:03:01Z by runner 173cc61bcac8 (actions).
 
 **Building: T811 in progress since 23:45Z; 695 of 811 done; week 20% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 695 of 811 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T811 claimed 23:45Z, lease until 04:16Z
+- **Lane:** lane 1: T811 claimed 23:45Z, lease until 05:03Z
 - **Week:** 20% used, 154.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:37Z, 38 min before this update
+- **Last run:** 01:16Z, 46 min before this update
 - **Keeper:** last ran 23:38Z, next wake 23:58Z
 
 ## Needs attention
@@ -110,7 +110,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T811 (lease until 2026-11-28T04:16:24Z)
+- T811 (lease until 2026-11-28T05:03:01Z)
 
 ## Last usage reading
 - {"task": "T871", "at": "2026-11-27T23:00:09Z", "input_tokens": 84, "cache_read_input_tokens": 2183726, "cache_creation_input_tokens": 122355, "output_tokens": 17523}
