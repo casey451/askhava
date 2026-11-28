@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-28T12:53:57Z by runner ff837bcec2ae (actions).
+Updated 2026-11-28T12:59:30Z by runner 56386cb11f43 (actions).
 
 **Idle since 12:51Z; 698 of 816 done; week 24% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-28T12:53:57Z by runner ff837bcec2ae (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** idle since 12:51Z (no task in progress)
 - **Week:** 24% used, 146.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:53Z, 0 min before this update
+- **Last run:** 12:54Z, 4 min before this update
 - **Keeper:** last ran 12:53Z, next wake 13:13Z
 
 ## Needs attention
@@ -33,7 +33,6 @@ Updated 2026-11-28T12:53:57Z by runner ff837bcec2ae (actions).
 | T822 | docs: the privacy policy names the email link and the fuller | done | 1 | 54 min | 14:13Z |  |
 | T862 | privacy: the email she types in her own conversation is kept | BLOCKED | 1 | 4 min | 13:22Z | PLAN GAP: outside ownership: app/server/src/homeowner_portal.rs, app/portals/src/homeowner_portal.rs / Evidence: her dat |
 | T734 | server and adapters: a business can leave in the portal, wit | BLOCKED | 3 | 26 min | 13:10Z | PLAN GAP: app/portals/templates/business_leave.html:25 owned by T228 and T410, not T734. Smallest plan change: let T734  |
-| T867 | picks and payments (harness): an early fraud warning before  | done | 2 | 101 min | 12:57Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
 
 ### Plan and harness merges on main
 - 12:32Z Plan: efficiency changes: early full e2e for cross-cutting tasks, split after a second plan gap, keep blocked work (T881, T882), checklist and goal cap (
@@ -52,7 +51,7 @@ Updated 2026-11-28T12:53:57Z by runner ff837bcec2ae (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 486 of 736 (66.0%) · partial 241 · unstarted 9
-**Tasks merged (throughput only):** 698 of 813
+**Tasks merged (throughput only):** 698 of 816
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -88,7 +87,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 341 of 385 done
+- stage 5: 341 of 388 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
