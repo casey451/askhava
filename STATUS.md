@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-28T02:14:48Z by runner f2bc6a8c3b34 (actions).
+Updated 2026-11-28T02:25:26Z by runner f2bc6a8c3b34 (manual).
 
 **Idle since 02:05Z; 695 of 811 done; week 21% used, resets Thu 2026-12-03 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-28T02:14:48Z by runner f2bc6a8c3b34 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** idle since 02:05Z (no task in progress)
 - **Week:** 21% used, 154.0M tokens left; resets Thu 2026-12-03 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:14Z, 0 min before this update
+- **Last run:** 02:15Z, 10 min before this update
 - **Keeper:** last ran 02:14Z, next wake 02:34Z
 
 ## Needs attention
@@ -50,7 +50,6 @@ Updated 2026-11-28T02:14:48Z by runner f2bc6a8c3b34 (actions).
 | T522 | server and portals: the business text-consent box is served  | done | 1 | 104 min | 04:07Z |  |
 | T612 | harness: the WEB-029 and WEB-030 runtime checks on every sit | QUEUED | 2 | 96 min | 03:36Z |  |
 | T799 | Templates and tests (harness): copy review fixes (refund att | done | 2 | 31 min | 02:52Z | PLAN GAP: contradiction: D-5401 requires es.json text "dentro de 72 horas de recibir los datos del cliente" (5 keys), bu |
-| T856 | intake: a request may be texted only with an `sms` consent r | BLOCKED | 1 | 110 min | 02:15Z |  |
 
 ### Plan and harness merges on main
 - 00:49Z Plan: web-chat update choice: email, text or both (D-5995) (#1524)
